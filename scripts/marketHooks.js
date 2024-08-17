@@ -1,6 +1,5 @@
+import ItemData from './app/itemData.js';
 import { PurchaseScreenApp } from './app/purchase-screen-app.js';
-import { ItemData } from './app/itemData.js';
-
 
 Hooks.once('init', async function() {
 

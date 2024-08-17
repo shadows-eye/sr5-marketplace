@@ -18,4 +18,14 @@
   
   .sr5-marketplace-btn i {
     margin-right: 5px;
-  }  
+  }
+  
+  /* styles/marketplace.css */
+  .sr5-market > section.window-content{
+    background: none;
+  }
+  .sr5-market > section.window-content.sr5-marketplace {
+    background: url('systems/shadowrun5e/assets/light-page.webp') repeat !important;
+    padding: 20px;
+    border-radius: 10px;
+}

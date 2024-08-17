@@ -27,6 +27,9 @@
     ],
     "requires": []
   },
+  "styles": [
+    "styles/marketplace.css"
+  ],
   "esmodules": [
     "scripts/marketHooks.js"
   ],
