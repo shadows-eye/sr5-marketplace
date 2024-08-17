@@ -66,6 +66,6 @@ Clicking "Save" in the bottom right will save the new version, which means that 
 
 # FoundryVTT Module
 
-Does something, probably
+A Modul for Shadowrun 5e, it will provide a new actor type: Merchant and it will intorduce the Purchase Screen.
 
 ## Changelog

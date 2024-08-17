@@ -1,34 +1,47 @@
 {
-  "id": "module",
-  "title": "New Module",
+  "id": "sr5-marketplace",
+  "title": "Shadowrun 5e Marketplace",
   "description": "",
   "version": "#{VERSION}#",
   "library": "false",
   "manifestPlusVersion": "1.2.0",
   "compatibility": {
-    "minimum": 10,
-    "verified": 10,
-    "maximum": 11
+    "minimum": 12,
+    "verified": 12,
+    "maximum": 12
   },
   "authors": [
     {
-      "name": "The League of Extraordinary FVTT Developers",
-      "url": "https://github.com/League-of-Foundry-Developers",
-      "discord": "discordID#0001"
+      "name": "Shadow",
+      "url": "https://github.com/shadows-eye/sr5-marketplace",
+      "discord": "shadows_plays"
     }
   ],
   "relationships": {
-    "systems": [],
+    "systems": [
+      {
+        "id": "shadowrun5e",
+        "type": "system",
+        "compatibility": {}
+      }
+    ],
     "requires": []
   },
   "esmodules": [
-    "scripts/module.js"
+    "scripts/marketHooks.js"
   ],
   "scripts": [
-    "scripts/lib/lib.js"
+    "scripts/lib/helpers.js"
   ],
-  "styles": [
-    "styles/module.css"
+  "includes": [
+    "./assets/**",
+    "./packs/**",
+    "./languages/**",
+    "./scripts/**",
+    "./styles/**",
+    "./templates/**",
+    "./module.json",
+    "./README.md"
   ],
   "languages": [
     {
