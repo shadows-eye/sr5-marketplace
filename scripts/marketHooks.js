@@ -1,22 +1,26 @@
+import { PurchaseScreenApp } from './app/purchase-screen-app.js';
+import { ItemData } from './app/itemData.js';
+
+
 Hooks.once('init', async function() {
 
 });
 
 Hooks.once('ready', async function() {
-
+    const itemData = new ItemData();
+    await itemData.fetchItems();
+    console.log(itemData.itemsByType);
 });
 
-Hooks.on('renderSidebarTab', (app, html) => {
-    console.log("renderSidebarTab hook triggered");
-    if (app.options.id === "items") {
-        const button = $(`
-            <button class="sr5-marketplace-btn">
-               <i class="fas fa-shopping-cart"></i> Open Marketplace
-            </button>
-        `);
-        button.on('click', () => {
+Hooks.on('getSceneControlButtons', (controls) => {
+    const mainControl = controls.find(c => c.name === 'token'); // Use main control or any existing control
+    mainControl.tools.push({
+        name: 'sr5-marketplace',
+        title: 'Open Marketplace',
+        icon: 'fas fa-shopping-cart',
+        onClick: () => {
             new PurchaseScreenApp().render(true);
-        });
-        html.find('.directory-footer').append(button);
-    }
+        },
+        button: true
+    });
 });
