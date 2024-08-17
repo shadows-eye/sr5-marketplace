@@ -1,0 +1,21 @@
+/* styles/marketplace.css */
+.sr5-marketplace-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #2b2b2b;
+    color: #ffffff;
+    border: none;
+    padding: 5px;
+    margin-top: 5px;
+    width: 100%;
+    cursor: pointer;
+  }
+  
+  .sr5-marketplace-btn:hover {
+    background-color: #3d3d3d;
+  }
+  
+  .sr5-marketplace-btn i {
+    margin-right: 5px;
+  }  
