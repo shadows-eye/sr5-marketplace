@@ -16,6 +16,10 @@ export class PurchaseScreenApp extends Application {
         this.itemData = new ItemData();
         await this.itemData.fetchItems();
     
+        // Restore basket items from flags
+        const savedBasket = game.user.getFlag('sr5-marketplace', 'basket') || [];
+        this.itemData.basketItems = savedBasket;
+    
         // Preload the partial templates
         await loadTemplates([
             "modules/sr5-marketplace/templates/libraryItem.hbs",
@@ -24,8 +28,10 @@ export class PurchaseScreenApp extends Application {
     
         return {
             itemsByType: this.itemData.itemsByType, // Pass item types with items
+            basketItems: this.itemData.basketItems, // Pass basket items to be rendered
         };
     }
+    
 
     activateListeners(html) {
         super.activateListeners(html);
@@ -35,8 +41,12 @@ export class PurchaseScreenApp extends Application {
         // Trigger the initial render with the first item type
         const firstType = html.find(".item-type-selector option:first").val();
         if (firstType) {
-            this._renderItemList(this._getItemsByType(firstType), html);
-            html.find(".item-type-selector").val(firstType); // Set the first option as selected
+        this._renderItemList(this._getItemsByType(firstType), html);
+        html.find(".item-type-selector").val(firstType); // Set the first option as selected
+        }
+        // Render the basket if it already has items
+        if (this.itemData.basketItems.length > 0) {
+        this._renderBasket(html);
         }
         // Handle rating changes
         html.on('change', '.item-rating', event => this._onRatingChange(event, html));
