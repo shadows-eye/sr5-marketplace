@@ -1,6 +1,9 @@
 import ItemData from './app/itemData.js';
 import { PurchaseScreenApp } from './app/purchase-screen-app.js';
+import { registerBasicHelpers } from './lib/helpers.js';
 
+// Call the function to register helpers
+registerBasicHelpers();
 Hooks.once('init', async function() {
 
 });

@@ -31,21 +31,21 @@ export default class ItemData {
 
     get itemsByType() {
         return {
-            actions: this.getItemsByType("action"),
-            ammo: this.getItemsByType("ammo"),
+            rangedWeapons: this.getWeaponsByCategory("range"),
+            meleeWeapons: this.getWeaponsByCategory("melee"),
+            modifications: this.getItemsByType("modification"),
             armor: this.getItemsByType("armor"),
             bioware: this.getItemsByType("bioware"),
             cyberware: this.getItemsByType("cyberware"),
             devices: this.getItemsByType("device"),
+            ammo: this.getItemsByType("ammo"),
             equipment: this.getItemsByType("equipment"),
             lifestyles: this.getItemsByType("lifestyle"),
-            modifications: this.getItemsByType("modification"),
             programs: this.getItemsByType("program"),
             rituals: this.getItemsByType("ritual"),
             sins: this.getItemsByType("sin"),
             spells: this.getItemsByType("spell"),
-            rangedWeapons: this.getWeaponsByCategory("range"),
-            meleeWeapons: this.getWeaponsByCategory("melee"),
+            actions: this.getItemsByType("action"),
         };
     }
 
@@ -58,5 +58,11 @@ export default class ItemData {
             item.type === "weapon" && 
             item.system.category === itemCategory
         );
+    }
+    async getData() {
+        this.itemData = new ItemData();
+        await this.itemData.fetchItems();
+        window.itemData = this.itemData;  // Make it globally accessible
+        return super.getData();
     }
 }

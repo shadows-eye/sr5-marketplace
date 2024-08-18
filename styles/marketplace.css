@@ -1,4 +1,3 @@
-/* styles/marketplace.css */
 .sr5-marketplace-btn {
     display: flex;
     align-items: center;
@@ -10,22 +9,175 @@
     margin-top: 5px;
     width: 100%;
     cursor: pointer;
-  }
-  
-  .sr5-marketplace-btn:hover {
+}
+
+.sr5-marketplace-btn:hover {
     background-color: #3d3d3d;
-  }
-  
-  .sr5-marketplace-btn i {
+}
+
+.sr5-marketplace-btn i {
     margin-right: 5px;
-  }
-  
-  /* styles/marketplace.css */
-  .sr5-market > section.window-content{
-    background: none;
-  }
-  .sr5-market > section.window-content.sr5-marketplace {
-    background: url('systems/shadowrun5e/assets/light-page.webp') repeat !important;
+}
+
+.sr5-market {
+
+    background-color: rgb(102, 5, 5);
+    color: rgb(231, 190, 4);
+}
+
+.sr5-market > section.window-content {
+    max-width: 100%;
+    max-height: 100%;
+    background: url('/modules/sr5-marketplace/assets/light-page.webp') repeat;
     padding: 20px;
     border-radius: 10px;
 }
+
+.marketplace-filter {
+    margin-bottom: 10px;
+    height: auto;
+    padding: 10px;
+    background-color: #f4f4f4;
+    border-bottom: 1px solid #ccc;
+    z-index: 1;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 items per row */
+    gap: 15px;
+    padding: 10px;
+    overflow-y: auto;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.grid-item {
+    background-color: #f4f4f4;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.item-image img {
+    width: 80px;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+.item-details {
+    margin-bottom: 10px;
+}
+
+.item-action {
+    margin-top: auto;
+}
+
+.add-to-cart {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.add-to-cart i {
+    margin-right: 5px;
+}
+
+.marketplace-items::-webkit-scrollbar {
+    width: 8px;
+}
+
+.marketplace-items::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 4px;
+}
+
+.marketplace-items::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(150px, 1fr)) minmax(200px, 1fr); /* 4 flexible columns for items, 1 for the basket */
+    gap: 15px;
+    padding: 10px;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.marketplace-items {
+    grid-column: 1 / 5; /* Start at column 1, end at column 5 */
+    display: grid;
+    grid-template-columns: repeat(4, minmax(100px, 1fr)); /* Ensure items are in a 4-column grid, with min width */
+    gap: 15px;
+}
+
+.basket-content {
+    grid-column: 5 / 6; /* Start at column 5, end at column 6 */
+    background-color: #fff;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    overflow-y: auto;
+    min-width: 200px; /* Ensure basket has a minimum width */
+}
+
+@media (max-width: 900px) {
+    .grid-container {
+        grid-template-columns: repeat(3, minmax(150px, 1fr)) minmax(200px, 1fr); /* 3 columns for items, 1 for the basket */
+    }
+
+    .marketplace-items {
+        grid-column: 1 / 4; /* Start at column 1, end at column 4 */
+        grid-template-columns: repeat(3, minmax(100px, 1fr)); /* 3-column grid */
+    }
+
+    .basket-content {
+        grid-column: 4 / 5; /* Basket starts at column 4 */
+    }
+}
+
+@media (max-width: 600px) {
+    .grid-container {
+        grid-template-columns: repeat(2, minmax(150px, 1fr)) minmax(200px, 1fr); /* 2 columns for items, 1 for the basket */
+    }
+
+    .marketplace-items {
+        grid-column: 1 / 3; /* Start at column 1, end at column 3 */
+        grid-template-columns: repeat(2, minmax(100px, 1fr)); /* 2-column grid */
+    }
+
+    .basket-content {
+        grid-column: 3 / 4; /* Basket starts at column 3 */
+    }
+}
+
+@media (max-width: 400px) {
+    .grid-container {
+        grid-template-columns: 1fr minmax(200px, 1fr); /* 1 column for items, 1 for the basket */
+    }
+
+    .marketplace-items {
+        grid-column: 1 / 2; /* Occupy the first column */
+        grid-template-columns: minmax(100px, 1fr); /* Single-column grid */
+    }
+
+    .basket-content {
+        grid-column: 2 / 3; /* Basket starts at column 2 */
+    }
+}
+
+
+
+

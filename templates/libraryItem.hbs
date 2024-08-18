@@ -1,0 +1,16 @@
+    {{#each items}}
+    <div class="marketplace-item grid-item">
+        <div class="item-image">
+            <img src="{{this.img}}" alt="{{this.name}}">
+        </div>
+        <div class="item-details">
+            <h4>{{this.name}}</h4>
+            <p>Cost: {{this.system.technology.cost}} ¥</p>
+        </div>
+        <div class="item-action">
+            <button class="add-to-cart">
+                <i class="fas fa-shopping-cart"></i> <i class="fas fa-plus"></i>
+            </button>
+        </div>
+    </div>
+    {{/each}}

@@ -33,9 +33,6 @@
   "esmodules": [
     "scripts/marketHooks.js"
   ],
-  "scripts": [
-    "scripts/lib/helpers.js"
-  ],
   "includes": [
     "./assets/**",
     "./packs/**",

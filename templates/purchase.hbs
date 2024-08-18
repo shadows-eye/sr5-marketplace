@@ -1,17 +1,42 @@
 <div class="marketplace-container">
-    <h1>Marketplace</h1>
-    <div class="row">
-        <div class="col s12">
-            <ul class="collection">
-                <!-- Dynamically generate your item list here -->
-            </ul>
-        </div>
+    <header class="marketplace-header">
+        <h1>Marketplace</h1>
+    </header>
+
+    <div class="marketplace-filter">
+        <label for="item-type-selector">Select Item Type:</label>
+        <select id="item-type-selector" class="item-type-selector">
+            {{#each itemsByType as |items type|}}
+            {{#if items.length}}
+            <option value="{{type}}">{{type}}</option>
+            {{/if}}
+            {{/each}}
+        </select>
     </div>
-    <div class="row">
-        <div class="col s12">
-            <button class="btn waves-effect waves-light" type="submit" name="action">Purchase
-                <i class="material-icons right">send</i>
-            </button>
+
+    <div class="grid-container">
+        <div id="marketplace-items" class="marketplace-items">
+            {{> 'modules/sr5-marketplace/templates/libraryItem.hbs' }}
+        </div>
+        
+        <div class="basket-content">
+            <h3>Shopping Basket</h3>
+            <div id="basket-items">
+                <!-- Example basket item -->
+                <div class="basket-item">
+                    <span>Dummy Item 1</span>
+                    <button class="remove-from-basket">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div class="basket-item">
+                    <span>Dummy Item 2</span>
+                    <button class="remove-from-basket">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
