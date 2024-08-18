@@ -5,6 +5,7 @@ export default class ItemData {
         this.items = [];
         this.excludedItems = [];
         this.basketItems = [];
+        this.filteredItems = [];
     }
 
     async fetchItems() {
@@ -28,6 +29,7 @@ export default class ItemData {
             !["adept_power", "call_in_action", "complex_form", "critter_power", "echo", "host", "metamagic", "quality", "sprite_power"]
             .includes(item.type)
         );
+        this.filteredItems = this.items; // Initialize filteredItems with all items
     }
 
     get itemsByType() {
@@ -49,7 +51,10 @@ export default class ItemData {
             actions: this.getItemsByType("action"),
         };
     }
-
+    filterItemsByName(searchTerm) {
+        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+        this.filteredItems = this.items.filter(item => item.name.toLowerCase().includes(lowerCaseSearchTerm));
+    }
     getItemsByType(type) {
         return this.items.filter(item => item.type === type);
     }
@@ -103,6 +108,10 @@ export default class ItemData {
     }
     getBasketItems() {
         return this.basketItems;
+    }
+
+    getFilteredItemsByType(type) {
+        return this.filteredItems.filter(item => item.type === type);
     }
 
     calculateTotalCost() {

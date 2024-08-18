@@ -6,6 +6,7 @@
             "Availability": "Availability",
             "Total": "Total",
             "TotalAvailability": "Total Availability",
+            "SearchItems": "Name Search",
             "ItemTypes": {
                 "RangedWeapons": "Ranged Weapons",
                 "MeleeWeapons": "Melee Weapons",

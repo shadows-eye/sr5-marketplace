@@ -37,6 +37,9 @@ export class PurchaseScreenApp extends Application {
         super.activateListeners(html);
         // Listen for changes on any item type selector
         html.find(".item-type-selector").change(event => this._onFilterChange(event, html));
+
+        // Listen for input in the search box
+        html.find("#item-search").on("input", event => this._onSearchChange(event, html));
     
         // Trigger the initial render with the first item type
         const firstType = html.find(".item-type-selector option:first").val();
@@ -55,6 +58,12 @@ export class PurchaseScreenApp extends Application {
     
         // Listen for Remove from Basket button clicks
         html.on('click', '.remove-item', event => this._onRemoveFromBasket(event, html));
+    }
+    _onSearchChange(event, html) {
+        const searchTerm = event.target.value.toLowerCase();
+        this.itemData.filterItemsByName(searchTerm);
+        const selectedType = html.find(".item-type-selector").val();
+        this._renderItemList(this.itemData.getFilteredItemsByType(selectedType), html);
     }
     _onRatingChange(event, html) {
         const basketId = $(event.currentTarget).data('basketId');
@@ -102,6 +111,8 @@ export class PurchaseScreenApp extends Application {
             if (confirmed) {
                 await this._saveBasketState();
             }
+        } else {
+            await game.user.unsetFlag('sr5-marketplace', 'basket'); // Clear the basket flag if empty
         }
         return super.close(options);
     }
@@ -110,9 +121,11 @@ export class PurchaseScreenApp extends Application {
     
         const basketId = $(event.currentTarget).data('basketId');
         this.itemData.removeItemFromBasket(basketId); // Remove item using the unique basketId
-    
+        
         this._renderBasket(html); // Re-render the basket with updated items
-    }
+    
+        this._saveBasketState(); // Save the updated basket state
+    }    
     
     _updateTotalCost(html) {
         const totalCost = this.itemData.calculateTotalCost();

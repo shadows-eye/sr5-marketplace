@@ -6,6 +6,7 @@
             "Availability": "Verfügbarkeit",
             "Total": "Gesamt",
             "TotalAvailability": "Gesamtverfügbarkeit",
+            "SearchItems": "Namens Suche",
             "ItemTypes": {
                 "RangedWeapons": "Fernkampfwaffen",
                 "MeleeWeapons": "Nahkampfwaffen",
