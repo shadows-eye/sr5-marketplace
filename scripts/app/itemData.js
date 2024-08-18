@@ -51,10 +51,6 @@ export default class ItemData {
             actions: this.getItemsByType("action"),
         };
     }
-    filterItemsByName(searchTerm) {
-        const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        this.filteredItems = this.items.filter(item => item.name.toLowerCase().includes(lowerCaseSearchTerm));
-    }
     getItemsByType(type) {
         return this.items.filter(item => item.type === type);
     }
