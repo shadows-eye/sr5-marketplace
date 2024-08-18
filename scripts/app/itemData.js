@@ -4,6 +4,7 @@ export default class ItemData {
     constructor() {
         this.items = [];
         this.excludedItems = [];
+        this.basketItems = [];
     }
 
     async fetchItems() {
@@ -58,6 +59,60 @@ export default class ItemData {
             item.type === "weapon" && 
             item.system.category === itemCategory
         );
+    }
+    addItemToBasket(itemId) {
+        const item = this.items.find(item => item._id === itemId);
+        if (item) {
+            const basketItem = { 
+                ...item, 
+                basketId: foundry.utils.randomID(), 
+                selectedRating: item.system.technology.rating || 1, // Default rating
+                calculatedCost: item.system.technology.cost // Initial cost
+            };
+            basketItem.calculatedCost = this.calculateCost(basketItem);
+            this.basketItems.push(basketItem);
+        }
+    }
+    calculateCost(item) {
+        const rating = item.selectedRating || 1;
+        return item.system.technology.cost * rating;
+    }
+    
+    calculateAvailability(item) {
+        const rating = item.selectedRating || 1;
+        const baseAvailability = parseInt(item.system.technology.availability) || 0;
+        const text = item.system.technology.availability.replace(/^\d+/, ''); // Extract text after the number
+        return (baseAvailability * rating) + text;
+    }
+    
+    calculateEssence(item) {
+        const rating = item.selectedRating || 1;
+        return item.system.essence * rating;
+    }   
+
+    removeItemFromBasket(basketId) {
+        this.basketItems = this.basketItems.filter(item => item.basketId !== basketId);
+    }
+    updateBasketItem(basketId, selectedRating) {
+        const item = this.basketItems.find(i => i.basketId === basketId);
+        if (item) {
+            item.selectedRating = selectedRating;
+            item.calculatedCost = this.calculateCost(item);
+            item.calculatedAvailability = this.calculateAvailability(item);
+        }
+    }
+    getBasketItems() {
+        return this.basketItems;
+    }
+
+    calculateTotalCost() {
+        return this.basketItems.reduce((total, item) => total + item.system.technology.cost, 0);
+    }
+    calculateTotalAvailability() {
+        return this.basketItems.reduce((total, item) => {
+            const baseAvailability = parseInt(item.system.technology.availability) || 0;
+            return total + (baseAvailability * (item.selectedRating || 1));
+        }, 0);
     }
     async getData() {
         this.itemData = new ItemData();

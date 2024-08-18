@@ -8,8 +8,7 @@ export const registerBasicHelpers = () => {
         return options.inverse(this);
     });
 
-    // Add other helpers here if needed
-
+    // Add other helpers here if needed  
     Handlebars.registerHelper('for', function (from, to, options) {
             let accum = '';
             for (let i = from; i < to; i += 1) {
@@ -17,7 +16,7 @@ export const registerBasicHelpers = () => {
             }
     
             return accum;
-    });
+    });   
         
     Handlebars.registerHelper('hasprop', function (obj, prop, options) {
             if (obj.hasOwnProperty(prop)) {
@@ -61,4 +60,17 @@ export const registerBasicHelpers = () => {
     Handlebars.registerHelper('sum', function (v1, v2) {
             return v1 + v2;
         });
+    Handlebars.registerHelper('range', function(from, to, options) {
+        let accum = '';
+        for (let i = from; i < to; i++) {
+                accum += options.fn(i);
+        }
+            return accum;
+    });
+    Handlebars.registerHelper('ifeq', function(a, b, options) {
+        if (a === b) {
+            return options.fn(this);
+        }
+        return options.inverse(this);
+    });
 };

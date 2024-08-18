@@ -1,0 +1,29 @@
+{
+    "SR5": {
+        "Marketplace": {
+            "SelectItemType": "Artikeltyp auswählen",
+            "ShoppingBasket": "Einkaufskorb",
+            "Availability": "Verfügbarkeit",
+            "Total": "Gesamt",
+            "TotalAvailability": "Gesamtverfügbarkeit",
+            "ItemTypes": {
+                "RangedWeapons": "Fernkampfwaffen",
+                "MeleeWeapons": "Nahkampfwaffen",
+                "Modifications": "Modifikationen",
+                "Armor": "Rüstung",
+                "Bioware": "Bioware",
+                "Cyberware": "Cyberware",
+                "Devices": "Geräte",
+                "Ammo": "Munition",
+                "Equipment": "Ausrüstung",
+                "Lifestyles": "Lebensstile",
+                "Programs": "Programme",
+                "Rituals": "Rituale",
+                "SINs": "SINs",
+                "Spells": "Zauber",
+                "Actions": "Aktionen",
+                "Cost": "Kosten"
+            }
+        }
+    }
+}

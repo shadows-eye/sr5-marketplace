@@ -1,3 +1,30 @@
 {
-    "MODULE.hello": "hello"
+    "SR5": {
+        "Marketplace": {
+            "SelectItemType": "Select Item Type",
+            "ShoppingBasket": "Shopping Basket",
+            "Availability": "Availability",
+            "Total": "Total",
+            "TotalAvailability": "Total Availability",
+            "ItemTypes": {
+                "RangedWeapons": "Ranged Weapons",
+                "MeleeWeapons": "Melee Weapons",
+                "Modifications": "Modifications",
+                "Armor": "Armor",
+                "Bioware": "Bioware",
+                "Cyberware": "Cyberware",
+                "Devices": "Devices",
+                "Ammo": "Ammunition",
+                "Equipment": "Equipment",
+                "Lifestyles": "Lifestyles",
+                "Programs": "Programs",
+                "Rituals": "Rituals",
+                "SINs": "SINs",
+                "Spells": "Spells",
+                "Actions": "Actions",
+                "Cost": "Cost"
+            }
+        }
+    }
 }
+

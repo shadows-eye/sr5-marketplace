@@ -1,0 +1,25 @@
+{{#each items}}
+<div class="basket-item">
+    <span>{{this.name}}</span>
+    {{#if this.system.technology.rating}}
+    <select class="item-rating" data-basket-id="{{this.basketId}}">
+        {{#range 1 13}}
+        <option value="{{this}}" {{#ifeq this ../selectedRating}}selected{{/ifeq}}>{{this}}</option>
+        {{/range}}
+    </select>
+    {{/if}}
+    <span class="item-cost">{{this.calculatedCost}} ¥</span>
+    <span class="item-availability">{{localize 'SR5.Marketplace.Availability'}}: {{this.calculatedAvailability}}</span>
+    <button class="remove-item" data-basket-id="{{this.basketId}}">
+        <i class="fas fa-trash"></i>
+    </button>
+</div>
+{{/each}}
+
+<div id="total-cost" style="margin-top: 10px;">
+    {{localize 'SR5.Marketplace.Total'}}: 0 ¥
+</div>
+<div id="total-availability" style="margin-top: 10px;">
+    {{localize 'SR5.Marketplace.TotalAvailability'}}: 0
+</div>
+
