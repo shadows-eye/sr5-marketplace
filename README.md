@@ -1,6 +1,6 @@
 ![](https://img.shields.io/badge/Foundry-v10-informational)
 <!--- Downloads @ Latest Badge -->
-<!--- replace <user>/<repo> with your username/repository -->
+<!--- replace <user>/<repo> with your shadows-eye/sr5-marketplace -->
 <!--- ![Latest Release Download Count](https://img.shields.io/github/downloads/<user>/<repo>/latest/module.zip) -->
 
 <!--- Forge Bazaar Install % Badge -->
