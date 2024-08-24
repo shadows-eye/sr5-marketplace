@@ -44,6 +44,8 @@ export class PurchaseScreenApp extends Application {
             this._renderItemList(this._getItemsByType(firstType), html);
             html.find(".item-type-selector").val(firstType); // Set the first option as selected
         }
+        // Listen for search input
+        html.find(".marketplace-search").on("input", event => this._onSearchInput(event, html));
         // Render the basket if it already has items
         if (this.itemData.basketItems.length > 0) {
             this._renderBasket(html);
@@ -56,6 +58,19 @@ export class PurchaseScreenApp extends Application {
         html.on('click', '.remove-item', event => this._onRemoveFromBasket(event, html));
     }
 
+    _onSearchInput(event, html) {
+        const searchText = event.target.value.toLowerCase();
+        const items = html.find(".marketplace-item");
+    
+        items.each((index, item) => {
+            const itemName = $(item).find("h4").text().toLowerCase();
+            if (itemName.includes(searchText)) {
+                $(item).css("display", "flex"); // Show matching item
+            } else {
+                $(item).css("display", "none"); // Hide non-matching item
+            }
+        });
+    }
     _onFilterChange(event, html) {
         const selectedType = event.target.value;
         const items = this._getItemsByType(selectedType);
