@@ -6,7 +6,18 @@
             "Availability": "Availability",
             "Total": "Total",
             "TotalAvailability": "Total Availability",
-            "SearchItems": "Name Search",
+            "Search": "Search",
+            "Search items...": "Search items...",
+            "system": {
+                "avail": "Avail",
+                "essence": "Essence",
+                "technology": {
+                    "rating": "Rating",
+                    "availability": "Availability",
+                    "Cost": "Cost",
+                    "quantity": "Quantity"
+                }
+            },
             "ItemTypes": {
                 "RangedWeapons": "Ranged Weapons",
                 "MeleeWeapons": "Melee Weapons",
@@ -22,8 +33,7 @@
                 "Rituals": "Rituals",
                 "SINs": "SINs",
                 "Spells": "Spells",
-                "Actions": "Actions",
-                "Cost": "Cost"
+                "Actions": "Actions"
             }
         }
     }

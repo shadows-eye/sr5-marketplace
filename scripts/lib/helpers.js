@@ -73,4 +73,10 @@ export const registerBasicHelpers = () => {
         }
         return options.inverse(this);
     });
+    Handlebars.registerHelper('toLowerCase', function(str) {
+        return str ? str.toLowerCase() : '';
+    });
+    Handlebars.registerHelper('eq', function(a, b) {
+        return a === b;
+    });
 };
