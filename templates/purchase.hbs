@@ -1,76 +1,24 @@
 <div class="marketplace-container">
     <header class="marketplace-header">
-        <h1>{{localize "SR5.Marketplace.ShoppingBasket"}}</h1>
+        <h1>{{localize "SR5.Marketplace.ShoppingBasket"}}</h1> 
+        <nav class="marketplace-tabs">
+            <button id="id-shop" class="marketplace-tab active" data-tab="shop">{{localize "SR5.Marketplace.Tab.Shop"}}</button>
+            {{#if isGM}}
+            <button id= "id-orderReview"class="marketplace-tab" data-tab="orderReview">{{localize "SR5.Marketplace.Tab.OrderReview"}}</button>
+            {{/if}}
+        </nav>
     </header>
 
-    <div class="marketplace-filter">
-        <label for="item-type-selector">{{localize "SR5.Marketplace.SelectItemType"}}:</label>
-        <select id="item-type-selector" class="item-type-selector">
-            {{#each itemsByType as |items type|}}
-            {{#if items.length}}
-                {{#ifeq type "rangedWeapons"}}
-                    <option value="rangedWeapons">{{localize "SR5.Marketplace.ItemTypes.RangedWeapons"}}</option>
-                {{/ifeq}}
-                {{#ifeq type "meleeWeapons"}}
-                    <option value="meleeWeapons">{{localize "SR5.Marketplace.ItemTypes.MeleeWeapons"}}</option>
-                {{/ifeq}}
-                {{#ifeq type "modifications"}}
-                    <option value="modifications">{{localize "SR5.Marketplace.ItemTypes.Modifications"}}</option>
-                {{/ifeq}}
-                {{#ifeq type "armor"}}
-                    <option value="armor">{{localize "SR5.Marketplace.ItemTypes.Armor"}}</option>
-                {{/ifeq}}
-                {{#ifeq type "bioware"}}
-                    <option value="bioware">{{localize "SR5.Marketplace.ItemTypes.Bioware"}}</option>
-                {{/ifeq}}
-                {{#ifeq type "cyberware"}}
-                    <option value="cyberware">{{localize "SR5.Marketplace.ItemTypes.Cyberware"}}</option>
-                {{/ifeq}}
-                {{#ifeq type "devices"}}
-                    <option value="devices">{{localize "SR5.Marketplace.ItemTypes.Devices"}}</option>
-                {{/ifeq}}
-                {{#ifeq type "ammo"}}
-                    <option value="ammo">{{localize "SR5.Marketplace.ItemTypes.Ammo"}}</option>
-                {{/ifeq}}
-                {{#ifeq type "equipment"}}
-                    <option value="equipment">{{localize "SR5.Marketplace.ItemTypes.Equipment"}}</option>
-                {{/ifeq}}
-                {{#ifeq type "lifestyles"}}
-                    <option value="lifestyles">{{localize "SR5.Marketplace.ItemTypes.Lifestyles"}}</option>
-                {{/ifeq}}
-                {{#ifeq type "programs"}}
-                    <option value="programs">{{localize "SR5.Marketplace.ItemTypes.Programs"}}</option>
-                {{/ifeq}}
-                {{#ifeq type "rituals"}}
-                    <option value="rituals">{{localize "SR5.Marketplace.ItemTypes.Rituals"}}</option>
-                {{/ifeq}}
-                {{#ifeq type "sins"}}
-                    <option value="sins">{{localize "SR5.Marketplace.ItemTypes.SINs"}}</option>
-                {{/ifeq}}
-                {{#ifeq type "spells"}}
-                    <option value="spells">{{localize "SR5.Marketplace.ItemTypes.Spells"}}</option>
-                {{/ifeq}}
-                {{#ifeq type "actions"}}
-                    <option value="actions">{{localize "SR5.Marketplace.ItemTypes.Actions"}}</option>
-                {{/ifeq}}
-            {{/if}}
-            {{/each}}
-        </select>
-        <label for="search-box">{{localize "SR5.Marketplace.Search"}}:</label>
-        <input type="text" id="search-box" placeholder="Search items..." class="marketplace-search">
-    </div>
-
-    <div class="grid-container">
-        <div id="marketplace-items" class="marketplace-items">
-            {{> 'modules/sr5-marketplace/templates/libraryItem.hbs' }}
+    <!-- Content will be shown/hidden based on the selected tab -->
+    <div class="marketplace-tab-content" id="marketplace-tab-content">
+        <div class="tab-content" data-tab-content="shop">
+            {{> 'modules/sr5-marketplace/templates/shop.hbs' }}
         </div>
-
-        <div class="basket-content">
-            <h3>{{localize "SR5.Marketplace.ShoppingBasket"}}</h3>
-            <div id="basket-items">
-                {{> 'modules/sr5-marketplace/templates/basket.hbs' }}
-            </div>
-        </div>        
+        {{#if isGM}}
+        <div class="tab-content" data-tab-content="orderReview" style="display: none;">
+            {{> 'modules/sr5-marketplace/templates/orderReview.hbs' }}
+        </div>
+        {{/if}}
     </div>
 </div>
 

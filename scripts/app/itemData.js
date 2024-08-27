@@ -125,4 +125,29 @@ export default class ItemData {
         window.itemData = this.itemData;  // Make it globally accessible
         return super.getData();
     }
+
+    // send data to chat message hbs
+    sendBasketToChat() {
+        const basketItems = this.getBasketItems();
+        const totalCost = this.calculateTotalCost();
+
+        const messageData = {
+            items: basketItems.map(item => ({
+                name: item.name,
+                quantity: item.selectedRating || 1,
+                price: item.calculatedCost,
+                description: item.data?.description || item.system?.description
+            })),
+            totalCost: totalCost
+        };
+
+        // Render the message using the HBS template
+        renderTemplate('modules/sr5-marketplace/templates/chatMessage.hbs', messageData).then(html => {
+            ChatMessage.create({
+                user: game.user.id,
+                content: html,
+                type: CONST.CHAT_MESSAGE_TYPES.OTHER
+            });
+        });
+    }
 }

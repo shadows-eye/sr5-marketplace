@@ -8,8 +8,8 @@
         {{/range}}
     </select>
     {{/if}}
-    <span class="item-cost">{{this.calculatedCost}} ¥</span>
-    <span class="item-availability">{{localize 'SR5.Marketplace.Availability'}}: {{this.calculatedAvailability}}</span>
+    <span class="item-cost">{{this.calculatedCost}} <i class="fa-duotone fa-solid fa-circle-yen"></i></span>
+    
     <button class="remove-item" data-basket-id="{{this.basketId}}">
         <i class="fas fa-trash"></i>
     </button>
@@ -17,7 +17,7 @@
 {{/each}}
 
 <div id="total-cost" style="margin-top: 10px;">
-    {{localize 'SR5.Marketplace.Total'}}: 0 ¥
+    {{localize 'SR5.Marketplace.Total'}}: 0 <i class="fa-duotone fa-solid fa-circle-yen"></i>
 </div>
 <div id="total-availability" style="margin-top: 10px;">
     {{localize 'SR5.Marketplace.TotalAvailability'}}: 0
