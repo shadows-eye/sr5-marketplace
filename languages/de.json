@@ -7,7 +7,18 @@
             "Availability": "Verfügbarkeit",
             "Total": "Gesamt",
             "TotalAvailability": "Gesamtverfügbarkeit",
-            "SearchItems": "Namens Suche",
+            "Search": "Suche",
+            "Search items...": "Item Suche",
+            "system": {
+                "avail": "Verfg.",
+                "essence": "Essenz",
+                "technology": {
+                    "rating": "Rating",
+                    "availability": "Availability",
+                    "Cost": "Kosten",
+                    "quantity": "Quantity"
+                }
+            },
             "ItemTypes": {
                 "RangedWeapons": "Fernkampfwaffen",
                 "MeleeWeapons": "Nahkampfwaffen",
@@ -23,8 +34,7 @@
                 "Rituals": "Rituale",
                 "SINs": "SINs",
                 "Spells": "Zauber",
-                "Actions": "Aktionen",
-                "Cost": "Kosten"
+                "Actions": "Aktionen"
             }
         }
     }
