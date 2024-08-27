@@ -3,6 +3,7 @@
         "Marketplace": {
             "SelectItemType": "Artikeltyp auswählen",
             "ShoppingBasket": "Einkaufskorb",
+            "Marketplace": "Marktplatz",
             "Availability": "Verfügbarkeit",
             "Total": "Gesamt",
             "TotalAvailability": "Gesamtverfügbarkeit",

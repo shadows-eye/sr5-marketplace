@@ -3,6 +3,7 @@
         "Marketplace": {
             "SelectItemType": "Select Item Type",
             "ShoppingBasket": "Shopping Basket",
+            "Marketplace": "Marketplace",
             "Availability": "Availability",
             "Total": "Total",
             "TotalAvailability": "Total Availability",
