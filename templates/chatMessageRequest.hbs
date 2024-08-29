@@ -1,10 +1,13 @@
 <div class="shopping-basket-summary">
     <h2>Shopping Basket Summary</h2>
+    <p>Request from: {{this.requester}}</p>
     <ul>
       {{#each items}}
         <li>{{quantity}} x {{name}} - {{price}}¥ each</li>
       {{/each}}
     </ul>
     <p><strong>Total Cost: {{totalCost}}¥</strong></p>
-    <button class="confirm-order-button" data-action="openOrderReview">Review and Confirm Order</button>
+    <button class="review-request-button" data-request-id="{{this.id}}">
+        {{localize 'SR5.Marketplace.ReviewAndConfirm'}}
+    </button>
   </div>  

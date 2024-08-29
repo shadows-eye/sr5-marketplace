@@ -150,4 +150,24 @@ export default class ItemData {
             });
         });
     }
+    getItemsFromIds(itemIds) {
+        // Retrieve detailed item data from an array of item IDs
+        const items = itemIds.map(id => {
+            const item = game.items.get(id);
+            if (item) {
+                return {
+                    id: item.id,
+                    name: item.name,
+                    cost: item.system.technology.cost,
+                    availability: item.system.technology.availability,
+                    // Add other relevant properties as needed
+                };
+            } else {
+                console.warn(`Item with ID ${id} not found.`);
+                return null;
+            }
+        }).filter(item => item !== null); // Filter out null items
+    
+        return items;
+    }
 }

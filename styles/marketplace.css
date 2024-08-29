@@ -225,6 +225,12 @@ button.remove-item {
     margin: 2px;
     border: 0px;
 }
+.send-request-button{
+    max-width: 60px;
+}
+.marketplace-tab{
+    max-width: 60px;
+}
 .item-search-box {
     width: 100%;
     padding: 5px;

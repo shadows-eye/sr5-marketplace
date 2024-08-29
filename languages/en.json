@@ -5,6 +5,7 @@
             "ShoppingBasket": "Shopping Basket",
             "Marketplace": "Marketplace",
             "Availability": "Availability",
+            "OrderReview": "Order Review",
             "Total": "Total",
             "TotalAvailability": "Total Availability",
             "Search": "Search",
@@ -18,6 +19,10 @@
                     "Cost": "Cost",
                     "quantity": "Quantity"
                 }
+            },
+            "Tab": {
+                "Shop": "Shop",
+                "OrderReview": "Order Review"
             },
             "ItemTypes": {
                 "RangedWeapons": "Ranged Weapons",
