@@ -33,7 +33,11 @@ export class PurchaseScreenApp extends Application {
             "modules/sr5-marketplace/templates/basket.hbs",  // Preload the basket partial
             "modules/sr5-marketplace/templates/shop.hbs",
             "modules/sr5-marketplace/templates/orderReview.hbs"]
-        );
+        ).then(() => {
+            // Register partials after loading them
+        Handlebars.registerPartial('shop', 'modules/sr5-marketplace/templates/shop.hbs');
+        Handlebars.registerPartial('orderReview', 'modules/sr5-marketplace/templates/orderReview.hbs');
+        });
         console.log("User role:", game.user.role);
         console.log("Is the current user a GM?", this.isGM);
         return {
@@ -45,47 +49,28 @@ export class PurchaseScreenApp extends Application {
 
     activateListeners(html) {
         super.activateListeners(html);
-        // Listen for changes on any item type selector
+
+        // Existing listeners for search, selection, basket, etc.
         html.find(".item-type-selector").change(event => this._onFilterChange(event, html));
-    
-        // Trigger the initial render with the first item type
         const firstType = html.find(".item-type-selector option:first").val();
         if (firstType) {
             this._renderItemList(this._getItemsByType(firstType), html);
-            html.find(".item-type-selector").val(firstType); // Set the first option as selected
+            html.find(".item-type-selector").val(firstType);
         }
-        // Listen for search input
         html.find(".marketplace-search").on("input", event => this._onSearchInput(event, html));
-        // Render the basket if it already has items
         if (this.itemData.basketItems.length > 0) {
             this._renderBasket(html);
         }
-        // Handle rating changes
         html.on('change', '.item-rating', event => this._onRatingChange(event, html));
-        // Listen for Add to Basket button clicks
         html.on('click', '.add-to-cart', event => this._onAddToBasket(event, html));
-        // Listen for Remove from Basket button clicks
         html.on('click', '.remove-item', event => this._onRemoveFromBasket(event, html));
-        
-        // Function to handle tab switching
-        const handleTabSwitch = (selectedTab) => {
-            // Hide all tab content
-            html.find(".tab-content").hide();
-    
-            // Show the selected tab content
-            html.find(`.tab-content[data-tab-content="${selectedTab}"]`).show();
-    
-            // Update active tab state
-            html.find(".marketplace-tab").removeClass("active");
-            html.find(`#id-${selectedTab}`).addClass("active");
-        };
-    
-        // Set up click listeners for tab buttons
-        html.find("#id-shop").click(() => handleTabSwitch("shop"));
-        html.find("#id-orderReview").click(() => handleTabSwitch("orderReview"));
-    
+
+        // Tab Switching Logic
+        html.find("#id-shop").click(() => this._handleTabSwitch(html, "shop"));
+        html.find("#id-orderReview").click(() => this._handleTabSwitch(html, "orderReview"));
+
         // Initialize by showing the shop tab content
-        handleTabSwitch("shop");
+        this._handleTabSwitch(html, "shop");
     }
 
     _onSearchInput(event, html) {
@@ -182,27 +167,19 @@ export class PurchaseScreenApp extends Application {
             html.find("#basket-items").html(renderedHtml);
             this._updateTotalCost(html);
         });
-    } 
-}
-Hooks.on("renderPurchaseScreenApp", (app, html, data) => {
-    // Function to handle tab switching
-    function handleTabSwitch(selectedTab) {
-        // Hide all tab content
-        html.find(".tab-content").hide();
-
-        // Show the selected tab content
-        html.find(`.tab-content[data-tab-content="${selectedTab}"]`).show();
-
+    }
+    _handleTabSwitch(html, selectedTab) {
+        console.log(`Switching to tab: ${selectedTab}`); // Debugging output
+    
+        // Hide all tab content by removing 'active' class
+        html.find(".tab-content").removeClass("active");
+    
+        // Show the selected tab content by adding 'active' class
+        html.find(`.tab-content[data-tab-content="${selectedTab}"]`).addClass("active");
+    
         // Update active tab state
         html.find(".marketplace-tab").removeClass("active");
         html.find(`#id-${selectedTab}`).addClass("active");
     }
-
-    // Set up click listeners for tab buttons
-    html.find("#id-shop").click(() => handleTabSwitch("shop"));
-    html.find("#id-orderReview").click(() => handleTabSwitch("orderReview"));
-
-    // Initialize by showing the shop tab content
-    handleTabSwitch("shop");
-});
+}
   
