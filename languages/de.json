@@ -6,6 +6,8 @@
             "Marketplace": "Marktplatz",
             "Availability": "Verfügbarkeit",
             "OrderReview": "Order Überprüfung",
+            "SendRequest": "Kaufen",
+            "CancelRequest": "Abbruch",
             "Total": "Gesamt",
             "TotalAvailability": "Gesamtverfügbarkeit",
             "Search": "Suche",

@@ -206,14 +206,27 @@ export class PurchaseScreenApp extends Application {
 
         // Get an array of item IDs from the basket items
         const itemIds = basketItems.map(item => item._id); // Ensure only IDs are stored
+        const basketDetailed = basketItems.map(item => ({
+            id: _id,
+            name: item.name,
+            description: item.system.description, // Adjust this line to handle HTML strings safely if needed
+            cost: item.calculatedCost, // Use calculated cost if applicable
+            availability: item.calculatedAvailability // Use calculated availability if applicable
+        }));
+            // Save the request as a flag on the user
+            requestingUser.setFlag('sr5-marketplace', `${requestId}`, {
+                id: requestId,
+                items: itemIds, // Store only the item IDs
+                requester: isGM ? "GM" : requestingUser.name
+            });
 
-        const messageData = {
-            items: basketItems,
-            totalCost: totalCost,
-            totalAvailability: totalAvailability,
-            requesterName: isGM ? "GM" : requestingUser.name // Show "GM" if the request is from a GM
-        };
-
+            const messageData = {
+                items: basketDetailed, // Use detailed items in the chat message
+                totalCost: totalCost,
+                totalAvailability: totalAvailability,
+                requesterName: isGM ? "GM" : requestingUser.name, // Show "GM" if the request is from a GM
+                id: requestId // Include the request ID in the data
+            };    
         // Render the message using the chatMessageRequest.hbs template
         renderTemplate('modules/sr5-marketplace/templates/chatMessageRequest.hbs', messageData).then(htmlContent => {
             ChatMessage.create({
@@ -223,13 +236,6 @@ export class PurchaseScreenApp extends Application {
                 whisper: isGM ? [] : game.users.filter(u => u.isGM).map(u => u.id) // Whisper to GM(s) if not GM
             });
 
-            // Save the request as a flag on the user
-            requestingUser.setFlag('sr5-marketplace', `request-${requestId}`, {
-                id: requestId,
-                items: itemIds, // Store only the item IDs
-                requester: isGM ? "GM" : requestingUser.name
-            });
-
             // Empty the basket
             this.itemData.basketItems = [];
 
@@ -237,44 +243,96 @@ export class PurchaseScreenApp extends Application {
             this._renderBasket(html); // Update the UI to reflect the empty basket
         });
     }
-    _onReviewRequest(event) {
+    _onSendRequest(event, html) {
+        event.preventDefault();
+    
+        // Log the basket contents to debug
+        const basketItems = this.itemData.getBasketItems(); // Assuming itemData is accessible
+        console.log("Basket Items:", basketItems); // Log basket items for debugging
+    
+        const totalCost = this.itemData.calculateTotalCost();
+        const totalAvailability = this.itemData.calculateTotalAvailability();
+    
+        const requestingUser = game.user; // The user who clicked the button
+        const isGM = requestingUser.isGM;
+        const requestId = foundry.utils.randomID(); // Generate a unique request ID
+    
+        // Get an array of detailed item objects from the basket items
+        const itemDetails = basketItems.map(item => ({
+            id: item.id_Item, // Item ID
+            name: item.name, // Item name
+            image: item.img || "icons/svg/item-bag.svg", // Use a default image if none is set
+            description: item.system.description?.value || "", // Safe access to description text
+            type: item.type, // Item type
+            cost: item.calculatedCost || 0 // Use calculated cost or default to 0
+        }));
+    
+        // Log the item details array to check the IDs and other properties
+        console.log("Item Details:", itemDetails);
+    
+        // Save the request as a flag on the user with detailed item information
+        requestingUser.setFlag('sr5-marketplace', requestId, {
+            id: requestId,
+            items: itemDetails, // Store detailed item objects
+            requester: isGM ? "GM" : requestingUser.name // Identify the requester
+        }).then(() => {
+            console.log(`Flag set for request ${requestId} with items:`, itemDetails);
+        }).catch(err => {
+            console.error(`Failed to set flag for request ${requestId}:`, err);
+        });
+    
+        const messageData = {
+            items: itemDetails, // Use detailed items in the chat message
+            totalCost: totalCost,
+            totalAvailability: totalAvailability,
+            requesterName: isGM ? "GM" : requestingUser.name, // Show "GM" if the request is from a GM
+            id: requestId // Include the request ID in the data
+        };
+    
+        // Render the message using the chatMessageRequest.hbs template
+        renderTemplate('modules/sr5-marketplace/templates/chatMessageRequest.hbs', messageData).then(htmlContent => {
+            ChatMessage.create({
+                user: requestingUser.id, // Use the requesting user's ID
+                content: htmlContent,
+                style: CONST.CHAT_MESSAGE_STYLES.IC, // Use CHAT_MESSAGE_STYLES to avoid deprecation warning
+                whisper: isGM ? [] : game.users.filter(u => u.isGM).map(u => u.id) // Whisper to GM(s) if not GM
+            });
+    
+            // Empty the basket
+            this.itemData.basketItems = [];
+    
+            // Render the empty basket
+            this._renderBasket(html); // Update the UI to reflect the empty basket
+        });
+    }   
+
+    _onReviewRequest(event, html) {
         event.preventDefault();
     
         // Get the request ID from the button's data attribute
         const requestId = $(event.currentTarget).data('request-id');
     
-        // Find the flag that matches this request ID
-        const user = game.user; // You can adjust to target specific users or GM
-        const requestFlag = user.getFlag('sr5-marketplace', `request-${requestId}`);
+        // Retrieve the flag that matches this request ID (if necessary)
+        // const user = game.user; // Adjust to target specific users or GM
+        // const requestFlag = user.getFlag('sr5-marketplace', `request-${requestId}`);
     
-        if (requestFlag) {
-            // Mark the request as in review
-            user.setFlag('sr5-marketplace', `request-${requestId}`, {
-                ...requestFlag,
-                inReview: true
+        // Create a new instance or use existing instance of PurchaseScreenApp
+        if (!this.purchaseScreenApp) {
+            this.purchaseScreenApp = new PurchaseScreenApp({
+                defaultTab: "orderReview", // Pass option to open in orderReview tab
+                requestId: requestId // Store the requestId to be used later for loading data
             });
-    
-            // Use helper function to transform item IDs into detailed item objects
-            const items = this.getItemsFromIds(requestFlag.items);
-    
-            // Prepare data for the PurchaseScreenApp, specifically for the orderReview tab
-            const reviewData = {
-                items: items,
-                requesterName: requestFlag.requester,
-                totalCost: this._calculateTotalCost(items.map(item => item.id)),
-                totalAvailability: this._calculateTotalAvailability(items.map(item => item.id)),
-                requestId: requestFlag.id // Include the request ID
-            };
-    
-            // Open the PurchaseScreenApp directly to the orderReview tab
-            const purchaseApp = new PurchaseScreenApp({
-                tab: "orderReview", // Specify the tab to open
-                reviewData: reviewData // Pass the review data
-            });
-            purchaseApp.render(true);
-        } else {
-            console.error(`Request with ID ${requestId} not found.`);
         }
+    
+        // Set the tab to "orderReview"
+        this.purchaseScreenApp.defaultTab = "orderReview"; // Ensure it opens to the order review tab
+        this.purchaseScreenApp.requestId = requestId; // Pass the requestId for future use
+    
+        // Open the app
+        this.purchaseScreenApp.render(true);
+    
+        // Manually switch to the orderReview tab (in case already opened)
+        this._handleTabSwitch($("body"), "orderReview"); // Use a global selector if the tab is already rendered
     }
 }
   

@@ -6,6 +6,8 @@
             "Marketplace": "Marketplace",
             "Availability": "Availability",
             "OrderReview": "Order Review",
+            "SendRequest": "Buy",
+            "CancelRequest": "Cancel",
             "Total": "Total",
             "TotalAvailability": "Total Availability",
             "Search": "Search",

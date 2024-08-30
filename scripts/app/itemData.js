@@ -64,13 +64,19 @@ export default class ItemData {
     addItemToBasket(itemId) {
         const item = this.items.find(item => item._id === itemId);
         if (item) {
-            const basketItem = { 
-                ...item, 
-                basketId: foundry.utils.randomID(), 
+            const basketItem = {
+                ...item,
+                id_Item: item._id,
+                image: item.img,
+                name: item.name,
+                description: item.system.description ? item.system.description.value : "", // Safely access description
+                type: item.type,
+                basketId: foundry.utils.randomID(),
                 selectedRating: item.system.technology.rating || 1, // Default rating
-                calculatedCost: item.system.technology.cost // Initial cost
+                calculatedCost: this.calculateCost(item),
+                calculatedAvailability: this.calculateAvailability(item),
+                calculatedEssence: this.calculateEssence(item)
             };
-            basketItem.calculatedCost = this.calculateCost(basketItem);
             this.basketItems.push(basketItem);
         }
     }
@@ -160,6 +166,8 @@ export default class ItemData {
                     name: item.name,
                     cost: item.system.technology.cost,
                     availability: item.system.technology.availability,
+                    image: item.img,
+                    type: item.type,                    
                     // Add other relevant properties as needed
                 };
             } else {

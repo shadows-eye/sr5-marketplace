@@ -108,6 +108,7 @@ input#item-search {
     grid-template-columns: repeat(4, minmax(100px, 1fr));
     gap: 0.4em;
     overflow-y: auto; /* Make only marketplace-items scrollable */
+    max-height: 630px;
 }
 
 .basket-content {

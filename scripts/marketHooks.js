@@ -5,9 +5,7 @@ import { registerBasicHelpers } from './lib/helpers.js';
 // Call the function to register helpers
 registerBasicHelpers();
 Hooks.once('init', async function() {
-
 });
-
 Hooks.once('ready', async function() {
     const itemData = new ItemData();
     await itemData.fetchItems();
