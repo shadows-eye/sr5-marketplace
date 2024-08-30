@@ -6,6 +6,8 @@ export class PurchaseScreenApp extends Application {
     
         // Determine if the current user is a GM
         this.isGM = game.user.isGM;
+        this.tab = options.tab || "shop"; // Default to "shop" tab
+        this.reviewData = options.reviewData || null; // Store the review data if provided
       }
     static get defaultOptions() {
         return foundry.utils.mergeObject(super.defaultOptions, {
@@ -33,59 +35,52 @@ export class PurchaseScreenApp extends Application {
             "modules/sr5-marketplace/templates/basket.hbs",  // Preload the basket partial
             "modules/sr5-marketplace/templates/shop.hbs",
             "modules/sr5-marketplace/templates/orderReview.hbs"]
-        );
+        ).then(() => {
+            // Register partials after loading them
+        Handlebars.registerPartial('shop', 'modules/sr5-marketplace/templates/shop.hbs');
+        Handlebars.registerPartial('orderReview', 'modules/sr5-marketplace/templates/orderReview.hbs');
+        });
         console.log("User role:", game.user.role);
         console.log("Is the current user a GM?", this.isGM);
+        const reviewData = this.reviewData ? this.reviewData : {};
         return {
             itemsByType: this.itemData.itemsByType, // Pass item types with items
             basketItems: this.itemData.basketItems, // Pass basket items to be rendered
-            isGM: this.isGM
+            isGM: this.isGM,
+            reviewData: reviewData
         };
     }
 
     activateListeners(html) {
         super.activateListeners(html);
-        // Listen for changes on any item type selector
+
+        // Existing listeners for search, selection, basket, etc.
         html.find(".item-type-selector").change(event => this._onFilterChange(event, html));
-    
-        // Trigger the initial render with the first item type
         const firstType = html.find(".item-type-selector option:first").val();
         if (firstType) {
             this._renderItemList(this._getItemsByType(firstType), html);
-            html.find(".item-type-selector").val(firstType); // Set the first option as selected
+            html.find(".item-type-selector").val(firstType);
         }
-        // Listen for search input
         html.find(".marketplace-search").on("input", event => this._onSearchInput(event, html));
-        // Render the basket if it already has items
         if (this.itemData.basketItems.length > 0) {
             this._renderBasket(html);
         }
-        // Handle rating changes
         html.on('change', '.item-rating', event => this._onRatingChange(event, html));
-        // Listen for Add to Basket button clicks
         html.on('click', '.add-to-cart', event => this._onAddToBasket(event, html));
-        // Listen for Remove from Basket button clicks
         html.on('click', '.remove-item', event => this._onRemoveFromBasket(event, html));
-        
-        // Function to handle tab switching
-        const handleTabSwitch = (selectedTab) => {
-            // Hide all tab content
-            html.find(".tab-content").hide();
-    
-            // Show the selected tab content
-            html.find(`.tab-content[data-tab-content="${selectedTab}"]`).show();
-    
-            // Update active tab state
-            html.find(".marketplace-tab").removeClass("active");
-            html.find(`#id-${selectedTab}`).addClass("active");
-        };
-    
-        // Set up click listeners for tab buttons
-        html.find("#id-shop").click(() => handleTabSwitch("shop"));
-        html.find("#id-orderReview").click(() => handleTabSwitch("orderReview"));
+
+        // Tab Switching Logic
+        html.find("#id-shop").click(() => this._handleTabSwitch(html, "shop"));
+        html.find("#id-orderReview").click(() => this._handleTabSwitch(html, "orderReview"));
     
         // Initialize by showing the shop tab content
-        handleTabSwitch("shop");
+        this._handleTabSwitch(html, "shop");
+    
+        // Handle the "Send Request to GM" button click
+        html.on('click', '#send-request-button', event => this._onSendRequest(event, html));
+    
+        // Handle the "Review and Confirm" button click
+        html.on('click', '.review-request-button', event => this._onReviewRequest(event, html));
     }
 
     _onSearchInput(event, html) {
@@ -182,27 +177,162 @@ export class PurchaseScreenApp extends Application {
             html.find("#basket-items").html(renderedHtml);
             this._updateTotalCost(html);
         });
-    } 
-}
-Hooks.on("renderPurchaseScreenApp", (app, html, data) => {
-    // Function to handle tab switching
-    function handleTabSwitch(selectedTab) {
-        // Hide all tab content
-        html.find(".tab-content").hide();
-
-        // Show the selected tab content
-        html.find(`.tab-content[data-tab-content="${selectedTab}"]`).show();
-
+    }
+    _handleTabSwitch(html, selectedTab) {
+        console.log(`Switching to tab: ${selectedTab}`); // Debugging output
+    
+        // Hide all tab content by removing 'active' class
+        html.find(".tab-content").removeClass("active");
+    
+        // Show the selected tab content by adding 'active' class
+        html.find(`.tab-content[data-tab-content="${selectedTab}"]`).addClass("active");
+    
         // Update active tab state
         html.find(".marketplace-tab").removeClass("active");
         html.find(`#id-${selectedTab}`).addClass("active");
     }
+    /// send basket to GM
+    _onSendRequest(event, html) {
+        event.preventDefault();
 
-    // Set up click listeners for tab buttons
-    html.find("#id-shop").click(() => handleTabSwitch("shop"));
-    html.find("#id-orderReview").click(() => handleTabSwitch("orderReview"));
+        // Prepare the data for the chat message
+        const basketItems = this.itemData.getBasketItems(); // Assuming itemData is accessible
+        const totalCost = this.itemData.calculateTotalCost();
+        const totalAvailability = this.itemData.calculateTotalAvailability();
 
-    // Initialize by showing the shop tab content
-    handleTabSwitch("shop");
-});
+        const requestingUser = game.user; // The user who clicked the button
+        const isGM = requestingUser.isGM;
+        const requestId = foundry.utils.randomID(); // Generate a unique request ID
+
+        // Get an array of item IDs from the basket items
+        const itemIds = basketItems.map(item => item._id); // Ensure only IDs are stored
+        const basketDetailed = basketItems.map(item => ({
+            id: _id,
+            name: item.name,
+            description: item.system.description, // Adjust this line to handle HTML strings safely if needed
+            cost: item.calculatedCost, // Use calculated cost if applicable
+            availability: item.calculatedAvailability // Use calculated availability if applicable
+        }));
+            // Save the request as a flag on the user
+            requestingUser.setFlag('sr5-marketplace', `${requestId}`, {
+                id: requestId,
+                items: itemIds, // Store only the item IDs
+                requester: isGM ? "GM" : requestingUser.name
+            });
+
+            const messageData = {
+                items: basketDetailed, // Use detailed items in the chat message
+                totalCost: totalCost,
+                totalAvailability: totalAvailability,
+                requesterName: isGM ? "GM" : requestingUser.name, // Show "GM" if the request is from a GM
+                id: requestId // Include the request ID in the data
+            };    
+        // Render the message using the chatMessageRequest.hbs template
+        renderTemplate('modules/sr5-marketplace/templates/chatMessageRequest.hbs', messageData).then(htmlContent => {
+            ChatMessage.create({
+                user: requestingUser.id, // Use the requesting user's ID
+                content: htmlContent,
+                style: CONST.CHAT_MESSAGE_STYLES.IC, // In-character message
+                whisper: isGM ? [] : game.users.filter(u => u.isGM).map(u => u.id) // Whisper to GM(s) if not GM
+            });
+
+            // Empty the basket
+            this.itemData.basketItems = [];
+
+            // Render the empty basket
+            this._renderBasket(html); // Update the UI to reflect the empty basket
+        });
+    }
+    _onSendRequest(event, html) {
+        event.preventDefault();
+    
+        // Log the basket contents to debug
+        const basketItems = this.itemData.getBasketItems(); // Assuming itemData is accessible
+        console.log("Basket Items:", basketItems); // Log basket items for debugging
+    
+        const totalCost = this.itemData.calculateTotalCost();
+        const totalAvailability = this.itemData.calculateTotalAvailability();
+    
+        const requestingUser = game.user; // The user who clicked the button
+        const isGM = requestingUser.isGM;
+        const requestId = foundry.utils.randomID(); // Generate a unique request ID
+    
+        // Get an array of detailed item objects from the basket items
+        const itemDetails = basketItems.map(item => ({
+            id: item.id_Item, // Item ID
+            name: item.name, // Item name
+            image: item.img || "icons/svg/item-bag.svg", // Use a default image if none is set
+            description: item.system.description?.value || "", // Safe access to description text
+            type: item.type, // Item type
+            cost: item.calculatedCost || 0 // Use calculated cost or default to 0
+        }));
+    
+        // Log the item details array to check the IDs and other properties
+        console.log("Item Details:", itemDetails);
+    
+        // Save the request as a flag on the user with detailed item information
+        requestingUser.setFlag('sr5-marketplace', requestId, {
+            id: requestId,
+            items: itemDetails, // Store detailed item objects
+            requester: isGM ? "GM" : requestingUser.name // Identify the requester
+        }).then(() => {
+            console.log(`Flag set for request ${requestId} with items:`, itemDetails);
+        }).catch(err => {
+            console.error(`Failed to set flag for request ${requestId}:`, err);
+        });
+    
+        const messageData = {
+            items: itemDetails, // Use detailed items in the chat message
+            totalCost: totalCost,
+            totalAvailability: totalAvailability,
+            requesterName: isGM ? "GM" : requestingUser.name, // Show "GM" if the request is from a GM
+            id: requestId // Include the request ID in the data
+        };
+    
+        // Render the message using the chatMessageRequest.hbs template
+        renderTemplate('modules/sr5-marketplace/templates/chatMessageRequest.hbs', messageData).then(htmlContent => {
+            ChatMessage.create({
+                user: requestingUser.id, // Use the requesting user's ID
+                content: htmlContent,
+                style: CONST.CHAT_MESSAGE_STYLES.IC, // Use CHAT_MESSAGE_STYLES to avoid deprecation warning
+                whisper: isGM ? [] : game.users.filter(u => u.isGM).map(u => u.id) // Whisper to GM(s) if not GM
+            });
+    
+            // Empty the basket
+            this.itemData.basketItems = [];
+    
+            // Render the empty basket
+            this._renderBasket(html); // Update the UI to reflect the empty basket
+        });
+    }   
+
+    _onReviewRequest(event, html) {
+        event.preventDefault();
+    
+        // Get the request ID from the button's data attribute
+        const requestId = $(event.currentTarget).data('request-id');
+    
+        // Retrieve the flag that matches this request ID (if necessary)
+        // const user = game.user; // Adjust to target specific users or GM
+        // const requestFlag = user.getFlag('sr5-marketplace', `request-${requestId}`);
+    
+        // Create a new instance or use existing instance of PurchaseScreenApp
+        if (!this.purchaseScreenApp) {
+            this.purchaseScreenApp = new PurchaseScreenApp({
+                defaultTab: "orderReview", // Pass option to open in orderReview tab
+                requestId: requestId // Store the requestId to be used later for loading data
+            });
+        }
+    
+        // Set the tab to "orderReview"
+        this.purchaseScreenApp.defaultTab = "orderReview"; // Ensure it opens to the order review tab
+        this.purchaseScreenApp.requestId = requestId; // Pass the requestId for future use
+    
+        // Open the app
+        this.purchaseScreenApp.render(true);
+    
+        // Manually switch to the orderReview tab (in case already opened)
+        this._handleTabSwitch($("body"), "orderReview"); // Use a global selector if the tab is already rendered
+    }
+}
   

@@ -5,6 +5,9 @@
             "ShoppingBasket": "Einkaufskorb",
             "Marketplace": "Marktplatz",
             "Availability": "Verfügbarkeit",
+            "OrderReview": "Order Überprüfung",
+            "SendRequest": "Kaufen",
+            "CancelRequest": "Abbruch",
             "Total": "Gesamt",
             "TotalAvailability": "Gesamtverfügbarkeit",
             "Search": "Suche",
@@ -18,6 +21,10 @@
                     "Cost": "Kosten",
                     "quantity": "Quantity"
                 }
+            },
+            "Tab": {
+                "Shop": "Laden",
+                "OrderReview": "Überprf."
             },
             "ItemTypes": {
                 "RangedWeapons": "Fernkampfwaffen",

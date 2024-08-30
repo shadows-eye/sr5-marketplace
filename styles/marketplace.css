@@ -21,8 +21,12 @@
     display: none; /* Hide all tab contents initially */
 }
 
-.tab-content[data-tab-content="shop"] {
-    display: block; /* Shop tab content is visible by default */
+.tab-content.active {
+    display: block; /* Show active tab */
+}
+.marketplace-tab.active {
+    font-weight: bold;
+    color: #333; /* Style for active tab */
 }
 .sr5-marketplace-btn:hover {
     background-color: #3d3d3d;
@@ -104,6 +108,7 @@ input#item-search {
     grid-template-columns: repeat(4, minmax(100px, 1fr));
     gap: 0.4em;
     overflow-y: auto; /* Make only marketplace-items scrollable */
+    max-height: 630px;
 }
 
 .basket-content {
@@ -220,6 +225,12 @@ button.remove-item {
     max-width: fit-content;
     margin: 2px;
     border: 0px;
+}
+.send-request-button{
+    max-width: 60px;
+}
+.marketplace-tab{
+    max-width: 60px;
 }
 .item-search-box {
     width: 100%;
