@@ -194,62 +194,9 @@ export class PurchaseScreenApp extends Application {
     /// send basket to GM
     _onSendRequest(event, html) {
         event.preventDefault();
-
+    
         // Prepare the data for the chat message
         const basketItems = this.itemData.getBasketItems(); // Assuming itemData is accessible
-        const totalCost = this.itemData.calculateTotalCost();
-        const totalAvailability = this.itemData.calculateTotalAvailability();
-
-        const requestingUser = game.user; // The user who clicked the button
-        const isGM = requestingUser.isGM;
-        const requestId = foundry.utils.randomID(); // Generate a unique request ID
-
-        // Get an array of item IDs from the basket items
-        const itemIds = basketItems.map(item => item._id); // Ensure only IDs are stored
-        const basketDetailed = basketItems.map(item => ({
-            id: _id,
-            name: item.name,
-            description: item.system.description, // Adjust this line to handle HTML strings safely if needed
-            cost: item.calculatedCost, // Use calculated cost if applicable
-            availability: item.calculatedAvailability // Use calculated availability if applicable
-        }));
-            // Save the request as a flag on the user
-            requestingUser.setFlag('sr5-marketplace', `${requestId}`, {
-                id: requestId,
-                items: itemIds, // Store only the item IDs
-                requester: isGM ? "GM" : requestingUser.name
-            });
-
-            const messageData = {
-                items: basketDetailed, // Use detailed items in the chat message
-                totalCost: totalCost,
-                totalAvailability: totalAvailability,
-                requesterName: isGM ? "GM" : requestingUser.name, // Show "GM" if the request is from a GM
-                id: requestId // Include the request ID in the data
-            };    
-        // Render the message using the chatMessageRequest.hbs template
-        renderTemplate('modules/sr5-marketplace/templates/chatMessageRequest.hbs', messageData).then(htmlContent => {
-            ChatMessage.create({
-                user: requestingUser.id, // Use the requesting user's ID
-                content: htmlContent,
-                style: CONST.CHAT_MESSAGE_STYLES.IC, // In-character message
-                whisper: isGM ? [] : game.users.filter(u => u.isGM).map(u => u.id) // Whisper to GM(s) if not GM
-            });
-
-            // Empty the basket
-            this.itemData.basketItems = [];
-
-            // Render the empty basket
-            this._renderBasket(html); // Update the UI to reflect the empty basket
-        });
-    }
-    _onSendRequest(event, html) {
-        event.preventDefault();
-    
-        // Log the basket contents to debug
-        const basketItems = this.itemData.getBasketItems(); // Assuming itemData is accessible
-        console.log("Basket Items:", basketItems); // Log basket items for debugging
-    
         const totalCost = this.itemData.calculateTotalCost();
         const totalAvailability = this.itemData.calculateTotalAvailability();
     
@@ -259,16 +206,13 @@ export class PurchaseScreenApp extends Application {
     
         // Get an array of detailed item objects from the basket items
         const itemDetails = basketItems.map(item => ({
-            id: item.id_Item, // Item ID
+            id: item.id_Item || item._id, // Use id_Item if available, otherwise fallback to _id
             name: item.name, // Item name
-            image: item.img || "icons/svg/item-bag.svg", // Use a default image if none is set
-            description: item.system.description?.value || "", // Safe access to description text
+            image: item.img || "icons/svg/item-bag.svg", // Use the item image or default icon
+            description: item.system.description?.value || "", // Safely access description text
             type: item.type, // Item type
             cost: item.calculatedCost || 0 // Use calculated cost or default to 0
         }));
-    
-        // Log the item details array to check the IDs and other properties
-        console.log("Item Details:", itemDetails);
     
         // Save the request as a flag on the user with detailed item information
         requestingUser.setFlag('sr5-marketplace', requestId, {
@@ -294,7 +238,7 @@ export class PurchaseScreenApp extends Application {
             ChatMessage.create({
                 user: requestingUser.id, // Use the requesting user's ID
                 content: htmlContent,
-                style: CONST.CHAT_MESSAGE_STYLES.IC, // Use CHAT_MESSAGE_STYLES to avoid deprecation warning
+                style: CONST.CHAT_MESSAGE_STYLES.IC, // Corrected from type to style
                 whisper: isGM ? [] : game.users.filter(u => u.isGM).map(u => u.id) // Whisper to GM(s) if not GM
             });
     
@@ -304,7 +248,7 @@ export class PurchaseScreenApp extends Application {
             // Render the empty basket
             this._renderBasket(html); // Update the UI to reflect the empty basket
         });
-    }   
+    }  
 
     _onReviewRequest(event, html) {
         event.preventDefault();

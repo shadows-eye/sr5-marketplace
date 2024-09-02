@@ -3,10 +3,16 @@
     <h1>{{localize "SR5.Marketplace.OrderReview"}}</h1>
 </div>
 
-<div>
-    <ul id="order-review-items">
-        <!-- Dynamically populated by JavaScript when the tab is shown -->
-    </ul>
+<div class="grid">
+    div class="grid-item">
+        <h2>{{localize "SR5.Marketplace.OrderReview"}}</h2>
+        <p>{{localize "SR5.Marketplace.OrderReviewText"}}</p>
+    </div>
+    div class="grid-item">
+        <h3>{{localize "SR5.Marketplace.OrderReviewItems"}}</h3>
+        <ul id="order-review-items">
+            <!-- Items in the order will be added here -->
+        </ul>
     <p><strong>{{localize "SR5.Marketplace.Total"}} {{localize "SR5.Marketplace.system.technology.Cost"}}: <span id="order-review-total-cost">0</span>¥</strong></p>
     <!-- Additional buttons for confirming or modifying the order can be added here -->
 </div>

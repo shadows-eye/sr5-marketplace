@@ -178,4 +178,169 @@ export default class ItemData {
     
         return items;
     }
+    /**
+     * Retrieve order data from a flag using the provided flag ID.
+     * @param {string} flagId - The ID of the flag to retrieve data from.
+     * @returns {Object|null} - The flag data object or null if not found.
+     */
+    getOrderDataFromFlag(flagId) {
+        // Retrieve the specific flag under 'sr5-marketplace' using the flagId
+        const userFlags = game.user.getFlag('sr5-marketplace', flagId);
+        if (userFlags) {
+            const items = userFlags.items || [];
+            return {
+                id: userFlags.id,
+                items: items,
+                requester: userFlags.requester
+            };
+        }
+        console.warn(`No flag found with ID ${flagId}`);
+        return null;
+    }
+
+    /**
+     * Prepare the data for the order review tab using the retrieved flag data.
+     * @param {string} flagId - The ID of the flag to use for preparing data.
+     * @returns {Object} - The prepared order data.
+     */
+    prepareOrderReviewData(flagId) {
+        const orderData = this.getOrderDataFromFlag(flagId);
+        if (!orderData) {
+            console.warn(`Order data not found for flag ID ${flagId}`);
+            return null;
+        }
+
+        // Enrich item details using item IDs
+        const detailedItems = orderData.items.map(item => {
+            const gameItem = game.items.get(item.id);
+            return {
+                id: item.id,
+                name: item.name,
+                image: item.image,
+                description: item.description || gameItem.system.description?.value || "",
+                type: item.type,
+                cost: item.cost,
+                rating: gameItem.system.technology.rating || 1,
+                // Add any other relevant properties from gameItem
+            };
+        });
+
+        const totalCost = detailedItems.reduce((sum, item) => sum + item.cost, 0);
+
+        const preparedData = {
+            items: detailedItems,
+            totalCost: totalCost,
+            requester: orderData.requester
+        };
+
+        console.log('Prepared Order Review Data:', preparedData); // Log prepared data for debugging
+
+        return preparedData;
+    }
+
+    /**
+     * Retrieve a complete item object by its ID, dynamically handling different item types.
+     * @param {string} itemId - The ID of the item to retrieve.
+     * @returns {Object} - The complete item object with all relevant attributes.
+     */
+    getCompleteItemObject(itemId) {
+        const gameItem = game.items.get(itemId);
+        if (!gameItem) {
+            console.warn(`Item with ID ${itemId} not found.`);
+            return null;
+        }
+        
+        const itemValue = gameItem.value; // Access `value` key for item details
+        const itemType = itemValue.type;
+
+        switch (itemType) {
+            case 'weapon':
+                return this.getCompleteWeaponObject(itemValue);
+            case 'equipment':
+                return this.getCompleteEquipmentObject(itemValue);
+            case 'lifestyle':
+                return this.getCompleteLifestyleObject(itemValue);
+            // Add more cases as needed for different types
+            default:
+                return this.getGenericItemObject(itemValue);
+        }
+    }
+
+    /**
+     * Retrieve a complete weapon object with all relevant attributes.
+     * @param {Object} itemValue - The base item data from game items.
+     * @returns {Object} - The complete weapon object.
+     */
+    getCompleteWeaponObject(itemValue) {
+        return {
+            id: itemValue._id,
+            name: itemValue.name,
+            image: itemValue.img,
+            description: itemValue.system.description?.value || "",
+            type: itemValue.type,
+            cost: itemValue.system.technology?.cost || 0,
+            rating: itemValue.system.technology?.rating || 1,
+            damage: itemValue.system.action?.damage?.value || 0,
+            ap: itemValue.system.action?.damage?.ap?.value || 0,
+            test: itemValue.system.action?.test || "",
+            // Add other weapon-specific attributes here
+        };
+    }
+
+    /**
+     * Retrieve a complete equipment object with all relevant attributes.
+     * @param {Object} itemValue - The base item data from game items.
+     * @returns {Object} - The complete equipment object.
+     */
+    getCompleteEquipmentObject(itemValue) {
+        return {
+            id: itemValue._id,
+            name: itemValue.name,
+            image: itemValue.img,
+            description: itemValue.system.description?.value || "",
+            type: itemValue.type,
+            cost: itemValue.system.technology?.cost || 0,
+            rating: itemValue.system.technology?.rating || 1,
+            equipped: itemValue.system.technology?.equipped || false,
+            conditionMonitor: itemValue.system.technology?.condition_monitor || { value: 0, max: 0 },
+            // Add other equipment-specific attributes here
+        };
+    }
+
+    /**
+     * Retrieve a complete lifestyle object with all relevant attributes.
+     * @param {Object} itemValue - The base item data from game items.
+     * @returns {Object} - The complete lifestyle object.
+     */
+    getCompleteLifestyleObject(itemValue) {
+        return {
+            id: itemValue._id,
+            name: itemValue.name,
+            image: itemValue.img,
+            description: itemValue.system.description?.value || "",
+            type: itemValue.type,
+            cost: itemValue.system.technology?.cost || 0,
+            rating: itemValue.system.technology?.rating || 1,
+            comforts: itemValue.system.comforts || 0,
+            security: itemValue.system.security || 0,
+            // Add other lifestyle-specific attributes here
+        };
+    }
+
+    /**
+     * Retrieve a generic item object if no specific type handling is required.
+     * @param {Object} itemValue - The base item data from game items.
+     * @returns {Object} - The complete generic item object.
+     */
+    getGenericItemObject(itemValue) {
+        return {
+            id: itemValue._id,
+            name: itemValue.name,
+            image: itemValue.img,
+            description: itemValue.system.description?.value || "",
+            type: itemValue.type,
+            cost: itemValue.system.technology?.cost || 0,
+            // Add other generic attributes as needed
+        };
+    }
 }
