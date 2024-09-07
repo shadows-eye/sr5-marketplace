@@ -80,6 +80,9 @@ export default class ItemData {
             this.basketItems.push(basketItem);
         }
     }
+    getReviewItems() {
+        return this.reviewItems; // Return the prepared review items for rendering
+    }
     calculateCost(item) {
         const rating = item.selectedRating || 1;
         return item.system.technology.cost * rating;
@@ -122,7 +125,8 @@ export default class ItemData {
     calculateTotalAvailability() {
         return this.basketItems.reduce((total, item) => {
             const baseAvailability = parseInt(item.system.technology.availability) || 0;
-            return total + (baseAvailability * (item.selectedRating || 1));
+            const text = item.system.technology.availability.replace(/^\d+/, ''); // Extract text after the number
+            return total + (baseAvailability * (item.selectedRating || 1))+ text;
         }, 0);
     }
     async getData() {
@@ -199,43 +203,45 @@ export default class ItemData {
     }
 
     /**
-     * Prepare the data for the order review tab using the retrieved flag data.
-     * @param {string} flagId - The ID of the flag to use for preparing data.
-     * @returns {Object} - The prepared order data.
+     * Prepare the review order data for rendering the orderReview tab.
+     * This processes items based on their IDs and calculates the necessary details like cost, availability, and ratings.
+     * @param {Array} itemIds - An array of item IDs to prepare for review.
+     * @returns {Object} - The prepared order review data.
      */
-    prepareOrderReviewData(flagId) {
-        const orderData = this.getOrderDataFromFlag(flagId);
-        if (!orderData) {
-            console.warn(`Order data not found for flag ID ${flagId}`);
-            return null;
-        }
+    prepareOrderReviewData(itemIds) {
+        const reviewItems = [];
 
-        // Enrich item details using item IDs
-        const detailedItems = orderData.items.map(item => {
-            const gameItem = game.items.get(item.id);
-            return {
-                id: item.id,
-                name: item.name,
-                image: item.image,
-                description: item.description || gameItem.system.description?.value || "",
-                type: item.type,
-                cost: item.cost,
-                rating: gameItem.system.technology.rating || 1,
-                // Add any other relevant properties from gameItem
-            };
+        // Iterate over each item ID, find the full item object, and prepare it
+        itemIds.forEach(itemId => {
+            const item = game.items.get(itemId);
+            if (item) {
+                const reviewItem = {
+                    id_Item: item._id,
+                    name: item.name,
+                    image: item.img,
+                    description: item.system.description?.value || "",
+                    type: item.type,
+                    selectedRating: item.system.technology.rating || 1, // Default rating
+                    calculatedCost: this.calculateCost(item),
+                    calculatedAvailability: this.calculateAvailability(item),
+                    calculatedEssence: this.calculateEssence(item)
+                };
+                reviewItems.push(reviewItem);
+            } else {
+                console.warn(`Item with ID ${itemId} not found in game items.`);
+            }
         });
 
-        const totalCost = detailedItems.reduce((sum, item) => sum + item.cost, 0);
+        // Calculate total cost and total availability
+        const totalCost = reviewItems.reduce((sum, item) => sum + (item.calculatedCost || 0), 0);
+        const totalAvailability = reviewItems.reduce((sum, item) => sum + (item.calculatedAvailability || 0), 0);
 
-        const preparedData = {
-            items: detailedItems,
+        // Return the prepared data
+        return {
+            items: reviewItems,
             totalCost: totalCost,
-            requester: orderData.requester
+            totalAvailability: totalAvailability
         };
-
-        console.log('Prepared Order Review Data:', preparedData); // Log prepared data for debugging
-
-        return preparedData;
     }
 
     /**
@@ -250,7 +256,6 @@ export default class ItemData {
             return null;
         }
         
-        const itemValue = gameItem.value; // Access `value` key for item details
         const itemType = itemValue.type;
 
         switch (itemType) {

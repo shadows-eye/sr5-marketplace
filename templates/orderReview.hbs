@@ -1,18 +1,53 @@
-
 <div class="marketplace-filter">
     <h1>{{localize "SR5.Marketplace.OrderReview"}}</h1>
 </div>
 
 <div class="grid">
-    div class="grid-item">
+    <div class="grid-item">
         <h2>{{localize "SR5.Marketplace.OrderReview"}}</h2>
         <p>{{localize "SR5.Marketplace.OrderReviewText"}}</p>
     </div>
-    div class="grid-item">
+    
+    <div class="grid-item">
         <h3>{{localize "SR5.Marketplace.OrderReviewItems"}}</h3>
         <ul id="order-review-items">
-            <!-- Items in the order will be added here -->
+            {{#each items}}
+            <li class="basket-item">
+                <span class="item-name">{{this.name}}</span>
+
+                <!-- Render the rating dropdown if the item has a rating -->
+                {{#if this.selectedRating}}
+                <label for="item-rating-{{this.id_Item}}">{{localize "SR5.Marketplace.Rating"}}:</label>
+                <select class="item-rating" data-basket-id="{{this.id_Item}}" id="item-rating-{{this.id_Item}}">
+                    {{#range 1 13}}
+                    <option value="{{this}}" {{#ifeq this ../selectedRating}}selected{{/ifeq}}>{{this}}</option>
+                    {{/range}}
+                </select>
+                {{/if}}
+
+                <!-- Show the cost of the item -->
+                <span class="item-cost">{{this.calculatedCost}} ¥</span>
+
+                <!-- Remove button for each item -->
+                <button class="remove-item" data-basket-id="{{this.id_Item}}">
+                    <i class="fas fa-trash"></i> {{localize "SR5.Marketplace.RemoveItem"}}
+                </button>
+            </li>
+            {{/each}}
         </ul>
-    <p><strong>{{localize "SR5.Marketplace.Total"}} {{localize "SR5.Marketplace.system.technology.Cost"}}: <span id="order-review-total-cost">0</span>¥</strong></p>
-    <!-- Additional buttons for confirming or modifying the order can be added here -->
+
+        <!-- Display total cost and availability -->
+        <p><strong>{{localize "SR5.Marketplace.Total"}} {{localize "SR5.Marketplace.system.technology.Cost"}}: <span id="order-review-total-cost">{{totalCost}}</span>¥</strong></p>
+        <p><strong>{{localize "SR5.Marketplace.TotalAvailability"}}: <span id="order-review-total-availability">{{totalAvailability}}</span></strong></p>
+    </div>
+    
+    <!-- Additional buttons for confirming or modifying the order -->
+    <div class="grid-item">
+        <button id="send-request-button" class="send-request-button">
+            {{localize 'SR5.Marketplace.SendRequest'}}
+        </button>
+        <button id="cancel-request-button" class="send-request-button cancel">
+            {{localize 'SR5.Marketplace.CancelRequest'}}
+        </button>
+    </div>
 </div>

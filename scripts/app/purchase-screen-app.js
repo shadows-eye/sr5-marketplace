@@ -178,6 +178,22 @@ export class PurchaseScreenApp extends Application {
             this._updateTotalCost(html);
         });
     }
+    _renderOrderReview(html) {
+        const reviewItems = this.itemData.getReviewItems(); // Get the prepared review items
+        const totalCost = reviewItems.reduce((sum, item) => sum + (item.calculatedCost || 0), 0);
+        const totalAvailability = reviewItems.reduce((sum, item) => sum + (item.calculatedAvailability || 0), 0);
+    
+        const templateData = {
+            items: reviewItems,
+            totalCost: totalCost,
+            totalAvailability: totalAvailability
+        };
+    
+        // Render the orderReview.hbs template and inject it into the #order-review-container
+        renderTemplate("modules/sr5-marketplace/templates/orderReview.hbs", templateData).then(renderedHtml => {
+            html.find("#order-review-container").html(renderedHtml);
+        });
+    }
     _handleTabSwitch(html, selectedTab) {
         console.log(`Switching to tab: ${selectedTab}`); // Debugging output
     
@@ -250,33 +266,27 @@ export class PurchaseScreenApp extends Application {
         });
     }  
 
-    _onReviewRequest(event, html) {
-        event.preventDefault();
+    _renderOrderReview(html) {
+        const reviewItems = this.itemData.getReviewItems(); // Get the prepared review items
     
-        // Get the request ID from the button's data attribute
-        const requestId = $(event.currentTarget).data('request-id');
-    
-        // Retrieve the flag that matches this request ID (if necessary)
-        // const user = game.user; // Adjust to target specific users or GM
-        // const requestFlag = user.getFlag('sr5-marketplace', `request-${requestId}`);
-    
-        // Create a new instance or use existing instance of PurchaseScreenApp
-        if (!this.purchaseScreenApp) {
-            this.purchaseScreenApp = new PurchaseScreenApp({
-                defaultTab: "orderReview", // Pass option to open in orderReview tab
-                requestId: requestId // Store the requestId to be used later for loading data
-            });
+        if (!reviewItems || reviewItems.length === 0) {
+            console.warn('No review items to display.');
+            return;
         }
     
-        // Set the tab to "orderReview"
-        this.purchaseScreenApp.defaultTab = "orderReview"; // Ensure it opens to the order review tab
-        this.purchaseScreenApp.requestId = requestId; // Pass the requestId for future use
+        const totalCost = reviewItems.reduce((sum, item) => sum + (item.calculatedCost || 0), 0);
+        const totalAvailability = reviewItems.reduce((sum, item) => sum + (item.calculatedAvailability || 0), 0);
     
-        // Open the app
-        this.purchaseScreenApp.render(true);
+        const templateData = {
+            items: reviewItems,
+            totalCost: totalCost,
+            totalAvailability: totalAvailability
+        };
     
-        // Manually switch to the orderReview tab (in case already opened)
-        this._handleTabSwitch($("body"), "orderReview"); // Use a global selector if the tab is already rendered
+        // Render the orderReview.hbs template and inject it into the #order-review-container
+        renderTemplate("modules/sr5-marketplace/templates/orderReview.hbs", templateData).then(renderedHtml => {
+            html.find("#order-review-container").html(renderedHtml);
+        });
     }
 }
   

@@ -17,7 +17,13 @@ export const registerBasicHelpers = () => {
     
             return accum;
     });   
-        
+    Handlebars.registerHelper('range', function(min, max, block) {
+        let accum = '';
+        for (let i = min; i <= max; i++) {
+            accum += block.fn(i);
+        }
+        return accum;
+    });   
     Handlebars.registerHelper('hasprop', function (obj, prop, options) {
             if (obj.hasOwnProperty(prop)) {
                 return options.fn(this);
