@@ -24,14 +24,29 @@ Hooks.once('ready', async function() {
         if (orderData) {
             console.log('Order Data:', orderData);
     
-            // Prepare the order review data using the new method
-            const itemIds = orderData.items.map(item => item.id); // Extract the IDs of the items in the order
-            const orderReviewData = itemData.prepareOrderReviewData(itemIds); // Prepare the review data
+            // Array to store the complete item objects
+            const completeItemsArray = [];
     
-            console.log('Order Review Data Prepared:', orderReviewData); // Log the data we are passing to the template
+            // Iterate over each item ID in the order data and fetch the full item object
+            orderData.items.forEach(orderItem => {
+                const itemId = orderItem.id;
+                const fullItem = game.items.get(itemId); // Fetch the full item object using the ID
+                
+                if (fullItem) {
+                    completeItemsArray.push(fullItem); // Add the complete item object to the array
+                } else {
+                    console.warn(`Item with ID ${itemId} not found in game items.`);
+                }
+            });
     
-            // Open the PurchaseScreenApp
-            const purchaseScreenApp = new PurchaseScreenApp();
+            // Log the complete array of items
+            console.log('Complete Items Array:', completeItemsArray);
+    
+            // Open the PurchaseScreenApp and pass the orderData for rendering
+            const purchaseScreenApp = new PurchaseScreenApp({
+                orderData: orderData,  // Pass the order data to the app
+                completeItemsArray: completeItemsArray // Pass the complete item objects
+            });
             purchaseScreenApp.render(true);
     
             // Wait until the app is fully rendered and then switch to the orderReview tab
@@ -42,31 +57,20 @@ Hooks.once('ready', async function() {
                 const orderReviewButton = html.find("#id-orderReview"); // Use the correct selector for the tab switch button
     
                 if (orderReviewButton.length) {
-                    // Simulate the click or directly call the method responsible for switching tabs
                     orderReviewButton.click(); // Simulate the click on the orderReview tab
                     console.log('Switched to the orderReview tab.');
-    
-                    // Log that we are rendering the order review template
-                    console.log('Rendering orderReview.hbs with data:', orderReviewData);
-    
-                    // Render the template inside the order-review tab content
-                    renderTemplate('modules/sr5-marketplace/templates/orderReview.hbs', orderReviewData).then(htmlContent => {
-                        // Assuming you have a container to display the order review inside the app
-                        html.find('#order-review-container').html(htmlContent); // Inject the content into the correct container
-                        console.log('Order review data injected into the template.');
-                    }).catch(err => {
-                        console.error('Error rendering the order review template:', err);
-                    });
-    
                 } else {
                     console.warn('OrderReview button not found.');
                 }
+    
+                // Once in the orderReview tab, pass the data to the rendering function
+                app._renderOrderReview(html, completeItemsArray);  // Call the function to render data
             });
     
         } else {
             console.log(`No order review data found for flag ID ${flagId}`);
         }
-    });   
+    });  
 });
 
 Hooks.on('getSceneControlButtons', (controls) => {

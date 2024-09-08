@@ -7,7 +7,9 @@ export class PurchaseScreenApp extends Application {
         // Determine if the current user is a GM
         this.isGM = game.user.isGM;
         this.tab = options.tab || "shop"; // Default to "shop" tab
-        this.reviewData = options.reviewData || null; // Store the review data if provided
+        this.orderData = options.orderData || {};
+        this.completeItemsArray = options.completeItemsArray || [];
+        this.itemData = new ItemData();  // Instantiate ItemData here to use its methods
       }
     static get defaultOptions() {
         return foundry.utils.mergeObject(super.defaultOptions, {
@@ -22,32 +24,42 @@ export class PurchaseScreenApp extends Application {
     }
 
     async getData() {
+        // Ensure itemData is properly instantiated and fetch items
         this.itemData = new ItemData();
-        await this.itemData.fetchItems();
-
-        // Restore basket items from flags
+        await this.itemData.fetchItems(); // Fetch all items in your system
+    
+        // Initialize the completeItemsArray if not already set (may come from passed options)
+        this.completeItemsArray = this.completeItemsArray || [];
+    
+        // Restore basket items from flags (if needed)
         const savedBasket = game.user.getFlag('sr5-marketplace', 'basket') || [];
         this.itemData.basketItems = savedBasket;
-
+    
         // Preload the partial templates
         await loadTemplates([
             "modules/sr5-marketplace/templates/libraryItem.hbs",
             "modules/sr5-marketplace/templates/basket.hbs",  // Preload the basket partial
             "modules/sr5-marketplace/templates/shop.hbs",
-            "modules/sr5-marketplace/templates/orderReview.hbs"]
-        ).then(() => {
+            "modules/sr5-marketplace/templates/orderReview.hbs"
+        ]).then(() => {
             // Register partials after loading them
-        Handlebars.registerPartial('shop', 'modules/sr5-marketplace/templates/shop.hbs');
-        Handlebars.registerPartial('orderReview', 'modules/sr5-marketplace/templates/orderReview.hbs');
+            Handlebars.registerPartial('shop', 'modules/sr5-marketplace/templates/shop.hbs');
+            Handlebars.registerPartial('orderReview', 'modules/sr5-marketplace/templates/orderReview.hbs');
         });
+    
         console.log("User role:", game.user.role);
         console.log("Is the current user a GM?", this.isGM);
+    
+        // Set up review data if needed
         const reviewData = this.reviewData ? this.reviewData : {};
+    
+        // Return the data to the template for rendering
         return {
             itemsByType: this.itemData.itemsByType, // Pass item types with items
             basketItems: this.itemData.basketItems, // Pass basket items to be rendered
             isGM: this.isGM,
-            reviewData: reviewData
+            reviewData: reviewData,
+            completeItemsArray: this.completeItemsArray // Ensure the array is available in the template context
         };
     }
 
@@ -178,20 +190,17 @@ export class PurchaseScreenApp extends Application {
             this._updateTotalCost(html);
         });
     }
-    _renderOrderReview(html) {
-        const reviewItems = this.itemData.getReviewItems(); // Get the prepared review items
-        const totalCost = reviewItems.reduce((sum, item) => sum + (item.calculatedCost || 0), 0);
-        const totalAvailability = reviewItems.reduce((sum, item) => sum + (item.calculatedAvailability || 0), 0);
-    
-        const templateData = {
-            items: reviewItems,
-            totalCost: totalCost,
-            totalAvailability: totalAvailability
-        };
-    
-        // Render the orderReview.hbs template and inject it into the #order-review-container
-        renderTemplate("modules/sr5-marketplace/templates/orderReview.hbs", templateData).then(renderedHtml => {
-            html.find("#order-review-container").html(renderedHtml);
+    /**
+     * Render the order review tab with the data provided
+     */
+    _renderOrderReview(html, completeItemsArray) {
+        // Use itemData's prepareOrderReviewData method to prepare the review data
+        const itemIds = completeItemsArray.map(item => item._id); // Get all item IDs
+        const orderReviewData = this.itemData.prepareOrderReviewData(itemIds); // Use itemData's method
+
+        // Render the order review template with the prepared data
+        renderTemplate('modules/sr5-marketplace/templates/orderReview.hbs', orderReviewData).then(htmlContent => {
+            html.find(`.tab-content[data-tab-content="orderReview"]`).html(htmlContent); // Assuming you have a container with this ID
         });
     }
     _handleTabSwitch(html, selectedTab) {
@@ -265,28 +274,5 @@ export class PurchaseScreenApp extends Application {
             this._renderBasket(html); // Update the UI to reflect the empty basket
         });
     }  
-
-    _renderOrderReview(html) {
-        const reviewItems = this.itemData.getReviewItems(); // Get the prepared review items
-    
-        if (!reviewItems || reviewItems.length === 0) {
-            console.warn('No review items to display.');
-            return;
-        }
-    
-        const totalCost = reviewItems.reduce((sum, item) => sum + (item.calculatedCost || 0), 0);
-        const totalAvailability = reviewItems.reduce((sum, item) => sum + (item.calculatedAvailability || 0), 0);
-    
-        const templateData = {
-            items: reviewItems,
-            totalCost: totalCost,
-            totalAvailability: totalAvailability
-        };
-    
-        // Render the orderReview.hbs template and inject it into the #order-review-container
-        renderTemplate("modules/sr5-marketplace/templates/orderReview.hbs", templateData).then(renderedHtml => {
-            html.find("#order-review-container").html(renderedHtml);
-        });
-    }
 }
   
