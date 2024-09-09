@@ -24,28 +24,39 @@ Hooks.once('ready', async function() {
         if (orderData) {
             console.log('Order Data:', orderData);
     
-            // Array to store the complete item objects
             const completeItemsArray = [];
     
-            // Iterate over each item ID in the order data and fetch the full item object
+            // Iterate over each item in the orderData and merge with gameItem data
             orderData.items.forEach(orderItem => {
                 const itemId = orderItem.id;
-                const fullItem = game.items.get(itemId); // Fetch the full item object using the ID
-                
-                if (fullItem) {
-                    completeItemsArray.push(fullItem); // Add the complete item object to the array
+                const gameItem = game.items.get(itemId); // Fetch the game item object using the ID
+    
+                if (gameItem) {
+                    // Merge flag data (orderItem) with the game item data (gameItem)
+                    const enrichedItem = {
+                        id_Item: itemId,
+                        name: orderItem.name || gameItem.name,  // Use name from flag data or fallback to game item name
+                        image: orderItem.image || gameItem.img, // Use image from flag or fallback to game item
+                        description: orderItem.description || gameItem.system.description?.value || "",
+                        type: orderItem.type || gameItem.type,
+                        selectedRating: orderItem.rating || gameItem.system.technology?.rating || 1,  // Use rating from flag
+                        calculatedCost: orderItem.cost || gameItem.system.technology?.cost || 0, // Use cost from flag
+                        calculatedAvailability: orderItem.availability || gameItem.system.technology?.availability || 0, // Availability
+                    };
+    
+                    completeItemsArray.push(enrichedItem); // Add the enriched item to the array
                 } else {
                     console.warn(`Item with ID ${itemId} not found in game items.`);
                 }
             });
     
-            // Log the complete array of items
-            console.log('Complete Items Array:', completeItemsArray);
+            // Log the complete array of items for debugging
+            console.log('Complete Items Array with merged flag data:', completeItemsArray);
     
-            // Open the PurchaseScreenApp and pass the orderData for rendering
+            // Open the PurchaseScreenApp and pass the enriched orderData for rendering
             const purchaseScreenApp = new PurchaseScreenApp({
-                orderData: orderData,  // Pass the order data to the app
-                completeItemsArray: completeItemsArray // Pass the complete item objects
+                orderData: orderData,  // Pass the original order data
+                completeItemsArray: completeItemsArray // Pass the merged complete item objects
             });
             purchaseScreenApp.render(true);
     
@@ -64,13 +75,13 @@ Hooks.once('ready', async function() {
                 }
     
                 // Once in the orderReview tab, pass the data to the rendering function
-                app._renderOrderReview(html, completeItemsArray);  // Call the function to render data
+                app._renderOrderReview(html, flagId, completeItemsArray);  // Call the function to render data
             });
     
         } else {
             console.log(`No order review data found for flag ID ${flagId}`);
         }
-    });  
+    }); 
 });
 
 Hooks.on('getSceneControlButtons', (controls) => {

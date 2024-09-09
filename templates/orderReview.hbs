@@ -3,45 +3,63 @@
 </div>
 
 <div class="grid">
+    <!-- Section for Order Review description -->
     <div class="grid-item">
         <h2>{{localize "SR5.Marketplace.OrderReview"}}</h2>
         <p>{{localize "SR5.Marketplace.OrderReviewText"}}</p>
     </div>
     
+    <!-- Section for reviewing items in the order -->
     <div class="grid-item">
         <h3>{{localize "SR5.Marketplace.OrderReviewItems"}}</h3>
-        <ul id="order-review-items">
+        <div id="order-review-items" class="order-review-grid" data-flag-id="{{flagId}}">
             {{#each items}}
-            <li class="basket-item">
-                <span class="item-name">{{this.name}}</span>
+            <div class="order-review-item">
+                <div class="item-details">
+                    <span class="item-name">{{this.name}}</span>
+                    <img class="item-image" src="{{this.image}}" alt="{{this.name}}">
+                </div>
 
                 <!-- Render the rating dropdown if the item has a rating -->
-                {{#if this.selectedRating}}
-                <label for="item-rating-{{this.id_Item}}">{{localize "SR5.Marketplace.Rating"}}:</label>
-                <select class="item-rating" data-basket-id="{{this.id_Item}}" id="item-rating-{{this.id_Item}}">
-                    {{#range 1 13}}
-                    <option value="{{this}}" {{#ifeq this ../selectedRating}}selected{{/ifeq}}>{{this}}</option>
-                    {{/range}}
-                </select>
-                {{/if}}
+                <div class="item-rating-section">
+                    {{#if this.selectedRating}}
+                    <label for="item-rating-{{this.id_Item}}" class="rating-label">{{localize "SR5.Marketplace.Rating"}}:</label>
+                    <select class="order-review-rating" data-item-id="{{this.id_Item}}" data-flag-id="{{../flagId}}" id="item-rating-{{this.id_Item}}">
+                        {{#range 1 13}}
+                        <option value="{{this}}" {{#ifeq this ../selectedRating}}selected{{/ifeq}}>{{this}}</option>
+                        {{/range}}
+                    </select>
+                    {{/if}}
+                </div>
 
                 <!-- Show the cost of the item -->
-                <span class="item-cost">{{this.calculatedCost}} ¥</span>
+                <div class="item-cost-section">
+                    <span class="item-cost">{{this.calculatedCost}} ¥</span>
+                </div>
+
+                <!-- Show the availability of the item -->
+                <div class="item-availability-section">
+                    <span class="item-availability">{{this.calculatedAvailability}}</span>
+                </div>
 
                 <!-- Remove button for each item -->
-                <button class="remove-item" data-basket-id="{{this.id_Item}}">
-                    <i class="fas fa-trash"></i> {{localize "SR5.Marketplace.RemoveItem"}}
-                </button>
-            </li>
+                <div class="item-remove-section">
+                    <button class="remove-item" data-item-id="{{this.id_Item}}">
+                        <i class="fas fa-trash"></i> {{localize "SR5.Marketplace.RemoveItem"}}
+                    </button>
+                </div>
+            </div>
             {{/each}}
-        </ul>
+        </div>
 
-        <!-- Display total cost and availability -->
-        <p><strong>{{localize "SR5.Marketplace.Total"}} {{localize "SR5.Marketplace.system.technology.Cost"}}: <span id="order-review-total-cost">{{totalCost}}</span>¥</strong></p>
-        <p><strong>{{localize "SR5.Marketplace.TotalAvailability"}}: <span id="order-review-total-availability">{{totalAvailability}}</span></strong></p>
+        <!-- Section for displaying total cost and availability -->
+        <div class="order-review-summary">
+            <p><strong>{{localize "SR5.Marketplace.Total"}} {{localize "SR5.Marketplace.system.technology.Cost"}}: <span id="order-review-total-cost">{{totalCost}}</span> ¥</strong></p>
+            <p><strong>{{localize "SR5.Marketplace.TotalAvailability"}}: <span id="order-review-total-availability">{{totalAvailability}}</span></strong></p>
+        </div>
     </div>
     
-    <!-- Additional buttons for confirming or modifying the order -->
+    <!-- Section for confirm/cancel buttons -->
     <div class="grid-item">
         <button id="send-request-button" class="send-request-button">
             {{localize 'SR5.Marketplace.SendRequest'}}
@@ -51,3 +69,4 @@
         </button>
     </div>
 </div>
+

@@ -188,62 +188,95 @@ export default class ItemData {
      * @returns {Object|null} - The flag data object or null if not found.
      */
     getOrderDataFromFlag(flagId) {
-        // Retrieve the specific flag under 'sr5-marketplace' using the flagId
-        const userFlags = game.user.getFlag('sr5-marketplace', flagId);
-        if (userFlags) {
-            const items = userFlags.items || [];
+        // Access the 'sr5-marketplace' flag on the current user
+        const userFlags = game.user.flags['sr5-marketplace'];
+
+        if (userFlags && userFlags[flagId]) {
+            const flagData = userFlags[flagId];
+            const items = flagData.items || [];
+
+            // Return the flag data including requester information and the items
             return {
-                id: userFlags.id,
+                id: flagData.id,
                 items: items,
-                requester: userFlags.requester
+                requester: flagData.requester
             };
+        } else {
+            console.warn(`No flag found with ID ${flagId}`);
+            return null;
         }
-        console.warn(`No flag found with ID ${flagId}`);
-        return null;
     }
 
     /**
-     * Prepare the review order data for rendering the orderReview tab.
-     * This processes items based on their IDs and calculates the necessary details like cost, availability, and ratings.
-     * @param {Array} itemIds - An array of item IDs to prepare for review.
-     * @returns {Object} - The prepared order review data.
+     * Retrieve order data from a flag using the provided flag ID and enrich it with game item data.
+     * @param {string} flagId - The ID of the flag to retrieve data from.
+     * @returns {Object|null} - The order review data with enriched game item information, or null if not found.
      */
-    prepareOrderReviewData(itemIds) {
-        const reviewItems = [];
+    async prepareOrderReviewData(flagId) {
+        const userFlags = game.user.getFlag('sr5-marketplace', flagId);
+        if (!userFlags) {
+            console.warn(`No flag found with ID ${flagId}`);
+            return null;
+        }
 
-        // Iterate over each item ID, find the full item object, and prepare it
-        itemIds.forEach(itemId => {
-            const item = game.items.get(itemId);
-            if (item) {
-                const reviewItem = {
-                    id_Item: item._id,
-                    name: item.name,
-                    image: item.img,
-                    description: item.system.description?.value || "",
-                    type: item.type,
-                    selectedRating: item.system.technology.rating || 1, // Default rating
-                    calculatedCost: this.calculateCost(item),
-                    calculatedAvailability: this.calculateAvailability(item),
-                    calculatedEssence: this.calculateEssence(item)
-                };
-                reviewItems.push(reviewItem);
-            } else {
-                console.warn(`Item with ID ${itemId} not found in game items.`);
-            }
-        });
+        const flagItems = userFlags.items || [];
+        const completeItemsArray = [];
 
-        // Calculate total cost and total availability
-        const totalCost = reviewItems.reduce((sum, item) => sum + (item.calculatedCost || 0), 0);
-        const totalAvailability = reviewItems.reduce((sum, item) => sum + (item.calculatedAvailability || 0), 0);
+        for (const flagItem of flagItems) {
+            const itemId = flagItem.id;
+            const gameItem = game.items.get(itemId);
 
-        // Return the prepared data
+            // Combine flag and game item data
+            const enrichedItem = {
+                id_Item: itemId,
+                name: flagItem.name || gameItem.name,
+                image: flagItem.image || gameItem.img,
+                description: flagItem.description || gameItem.system.description?.value || "",
+                type: flagItem.type || gameItem.type,
+                selectedRating: flagItem.rating || (gameItem.system.technology?.rating || 1),
+                calculatedCost: flagItem.cost || (gameItem.system.technology?.cost || 0),
+                calculatedAvailability: flagItem.availability || (gameItem.system.technology?.availability || 0),
+                calculatedEssence: flagItem.essence || (gameItem.system.essence || 0),
+                gameItem: gameItem // Keep the full game item for further functions
+            };
+
+            completeItemsArray.push(enrichedItem);
+        }
+
+        // Calculate total cost and availability based on the modified flag data
+        const totalCost = completeItemsArray.reduce((sum, item) => sum + (item.calculatedCost || 0), 0);
+        const totalAvailability = completeItemsArray.reduce((sum, item) => sum + (item.calculatedAvailability || 0), 0);
+
+        // Return order review data, including the completeItemsArray
         return {
-            items: reviewItems,
+            id: flagId,
+            items: completeItemsArray,  // Pass the enriched complete items array
             totalCost: totalCost,
-            totalAvailability: totalAvailability
+            totalAvailability: totalAvailability,
+            requester: userFlags.requester // Include requester information if needed
         };
     }
 
+    updateOrderReviewItem(itemId, selectedRating) {
+        const item = game.items.get(itemId);
+        if (item) {
+            // Update the selected rating in the item's system data
+            item.system.technology.rating = selectedRating;
+    
+            // Recalculate cost and availability after the rating change
+            const updatedItem = {
+                ...item,
+                calculatedCost: this.calculateCost(item),
+                calculatedAvailability: this.calculateAvailability(item),
+                calculatedEssence: this.calculateEssence(item)  // Assuming essence depends on rating as well
+            };
+    
+            // Save or update the item data in the game's system (optional)
+            game.items.get(itemId).update(updatedItem);
+        } else {
+            console.warn(`Item with ID ${itemId} not found.`);
+        }
+    }
     /**
      * Retrieve a complete item object by its ID, dynamically handling different item types.
      * @param {string} itemId - The ID of the item to retrieve.

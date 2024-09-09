@@ -80,7 +80,8 @@ export class PurchaseScreenApp extends Application {
         html.on('change', '.item-rating', event => this._onRatingChange(event, html));
         html.on('click', '.add-to-cart', event => this._onAddToBasket(event, html));
         html.on('click', '.remove-item', event => this._onRemoveFromBasket(event, html));
-
+        //Order Review Change
+        html.on('change', '.order-review-rating', event => this._onRatingChangeOrderReview(event, html));
         // Tab Switching Logic
         html.find("#id-shop").click(() => this._handleTabSwitch(html, "shop"));
         html.find("#id-orderReview").click(() => this._handleTabSwitch(html, "orderReview"));
@@ -190,17 +191,88 @@ export class PurchaseScreenApp extends Application {
             this._updateTotalCost(html);
         });
     }
+    
+    _onRatingChangeOrderReview(event, html) {
+        const itemId = $(event.currentTarget).data('itemId');  // Get the item ID from the rating dropdown
+        const newRating = parseInt(event.currentTarget.value);  // Get the selected rating
+    
+        // Retrieve the flagId from the data attribute
+        const flagId = $(event.currentTarget).data('flagId');
+        
+        // Retrieve the corresponding game item using the item ID
+        const gameItem = game.items.get(itemId);
+        if (!gameItem) {
+            console.warn(`Game item with ID ${itemId} not found.`);
+            return;
+        }
+    
+        // Retrieve the current flag data for this order review
+        const orderData = game.user.getFlag('sr5-marketplace', flagId);
+        if (!orderData || !orderData.items) {
+            console.warn(`Order data with flag ID ${flagId} not found or items array is missing.`);
+            return;  // Early return if orderData or items are missing
+        }
+    
+        // Find the item in the flag data
+        const flagItem = orderData.items.find(item => item.id === itemId);
+        if (!flagItem) {
+            console.warn(`Flag item with ID ${itemId} not found in the flag.`);
+            return;
+        }
+    
+        // Recalculate the cost, availability, and essence based on the new rating
+        const baseCost = gameItem.system.technology?.cost || 0; // Base cost from the game item
+        const baseAvailability = gameItem.system.technology?.availability || "0"; // Base availability from the game item
+        const baseEssence = gameItem.system.essence || 0; // Base essence from the game item (if applicable)
+    
+        // Cost scales with rating, assume linear scaling for simplicity (adjust as needed)
+        const recalculatedCost = baseCost * newRating;
+        const recalculatedAvailability = baseAvailability; // Availability might not change with rating, adjust if needed
+    
+        // Recalculate essence, if applicable (essence might be reduced by higher rating)
+        const recalculatedEssence = baseEssence * (newRating / (gameItem.system.technology?.rating || 1));
+    
+        // Update the flag data with the new rating and recalculated values
+        flagItem.rating = newRating;
+        flagItem.cost = recalculatedCost;
+        flagItem.availability = recalculatedAvailability;
+        flagItem.essence = recalculatedEssence; // Update the essence if applicable
+    
+        // Save the updated flag back to the user's flag storage
+        game.user.setFlag('sr5-marketplace', flagId, orderData).then(() => {
+            console.log(`Updated flag data for item ${itemId} with new rating ${newRating}.`);
+        }).catch(err => {
+            console.error(`Failed to update flag data for item ${itemId}:`, err);
+        });
+    
+        // Re-render the order review with the updated data
+        this._renderOrderReview(html, flagId, orderData.items);
+    }
+
     /**
      * Render the order review tab with the data provided
      */
-    _renderOrderReview(html, completeItemsArray) {
-        // Use itemData's prepareOrderReviewData method to prepare the review data
-        const itemIds = completeItemsArray.map(item => item._id); // Get all item IDs
-        const orderReviewData = this.itemData.prepareOrderReviewData(itemIds); // Use itemData's method
-
+    _renderOrderReview(html, flagId, completeItemsArray) {
+        if (!completeItemsArray || completeItemsArray.length === 0) {
+            console.warn('No items found for order review.');
+            return;  // Early return if items array is missing or empty
+        }
+    
+        const templateData = {
+            flagId: flagId,  // Pass the correct flagId
+            items: completeItemsArray,  // This array now includes rating, cost, and availability from the flag
+            totalCost: completeItemsArray.reduce((sum, item) => sum + (item.calculatedCost || 0), 0),
+            totalAvailability: completeItemsArray.reduce((sum, item) => sum + (item.calculatedAvailability || 0), 0)
+        };
+    
+        // Log the object that we are sending to the template
+        console.log("Rendering Order Review with template data:", templateData);
+    
         // Render the order review template with the prepared data
-        renderTemplate('modules/sr5-marketplace/templates/orderReview.hbs', orderReviewData).then(htmlContent => {
+        renderTemplate('modules/sr5-marketplace/templates/orderReview.hbs', templateData).then(htmlContent => {
             html.find(`.tab-content[data-tab-content="orderReview"]`).html(htmlContent); // Assuming you have a container with this ID
+        }).catch(err => {
+            console.error("Error rendering order review:", err);
         });
     }
     _handleTabSwitch(html, selectedTab) {
@@ -236,7 +308,8 @@ export class PurchaseScreenApp extends Application {
             image: item.img || "icons/svg/item-bag.svg", // Use the item image or default icon
             description: item.system.description?.value || "", // Safely access description text
             type: item.type, // Item type
-            cost: item.calculatedCost || 0 // Use calculated cost or default to 0
+            cost: item.calculatedCost || 0 ,// Use calculated cost or default to 0
+            rating: item.selectedRating || 0 // Use selected rating or default to 0
         }));
     
         // Save the request as a flag on the user with detailed item information
