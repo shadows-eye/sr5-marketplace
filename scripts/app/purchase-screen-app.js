@@ -8,7 +8,7 @@ export class PurchaseScreenApp extends Application {
         this.isGM = game.user.isGM;
         this.tab = options.tab || "shop"; // Default to "shop" tab
         this.orderData = options.orderData || {};
-        this.completeItemsArray = options.completeItemsArray || [];
+        this.completeItemsArray = Array.isArray(options.completeItemsArray) ? options.completeItemsArray : [];
         this.itemData = new ItemData();  // Instantiate ItemData here to use its methods
       }
     static get defaultOptions() {
@@ -193,84 +193,45 @@ export class PurchaseScreenApp extends Application {
     }
     
     _onRatingChangeOrderReview(event, html) {
-        const itemId = $(event.currentTarget).data('itemId');  // Get the item ID from the rating dropdown
-        const newRating = parseInt(event.currentTarget.value);  // Get the selected rating
-    
-        // Retrieve the flagId from the data attribute
-        const flagId = $(event.currentTarget).data('flagId');
-        
-        // Retrieve the corresponding game item using the item ID
-        const gameItem = game.items.get(itemId);
-        if (!gameItem) {
-            console.warn(`Game item with ID ${itemId} not found.`);
-            return;
-        }
-    
-        // Retrieve the current flag data for this order review
-        const orderData = game.user.getFlag('sr5-marketplace', flagId);
-        if (!orderData || !orderData.items) {
-            console.warn(`Order data with flag ID ${flagId} not found or items array is missing.`);
-            return;  // Early return if orderData or items are missing
-        }
-    
-        // Find the item in the flag data
-        const flagItem = orderData.items.find(item => item.id === itemId);
-        if (!flagItem) {
-            console.warn(`Flag item with ID ${itemId} not found in the flag.`);
-            return;
-        }
-    
-        // Recalculate the cost, availability, and essence based on the new rating
-        const baseCost = gameItem.system.technology?.cost || 0; // Base cost from the game item
-        const baseAvailability = gameItem.system.technology?.availability || "0"; // Base availability from the game item
-        const baseEssence = gameItem.system.essence || 0; // Base essence from the game item (if applicable)
-    
-        // Cost scales with rating, assume linear scaling for simplicity (adjust as needed)
-        const recalculatedCost = baseCost * newRating;
-        const recalculatedAvailability = baseAvailability; // Availability might not change with rating, adjust if needed
-    
-        // Recalculate essence, if applicable (essence might be reduced by higher rating)
-        const recalculatedEssence = baseEssence * (newRating / (gameItem.system.technology?.rating || 1));
-    
-        // Update the flag data with the new rating and recalculated values
-        flagItem.rating = newRating;
-        flagItem.cost = recalculatedCost;
-        flagItem.availability = recalculatedAvailability;
-        flagItem.essence = recalculatedEssence; // Update the essence if applicable
-    
-        // Save the updated flag back to the user's flag storage
-        game.user.setFlag('sr5-marketplace', flagId, orderData).then(() => {
-            console.log(`Updated flag data for item ${itemId} with new rating ${newRating}.`);
-        }).catch(err => {
-            console.error(`Failed to update flag data for item ${itemId}:`, err);
-        });
-    
-        // Re-render the order review with the updated data
-        this._renderOrderReview(html, flagId, orderData.items);
-    }
+        const itemId = $(event.currentTarget).data('itemId');
+        const selectedRating = parseInt(event.currentTarget.value);
+        this.itemData.updateOrderReviewItem(itemId, selectedRating);  // Delegate to itemData.js
 
+        // Re-render the review
+        this._renderOrderReview(html);
+    }
+    _onRemoveFromOrderReview(event, html) {
+        event.preventDefault();
+        const itemId = $(event.currentTarget).data('itemId');
+        this.itemData.removeItemFromOrderReview(itemId);  // Delegate to itemData.js
+
+        // Re-render the review
+        this._renderOrderReview(html);
+    }
     /**
      * Render the order review tab with the data provided
      */
     _renderOrderReview(html, flagId, completeItemsArray) {
-        if (!completeItemsArray || completeItemsArray.length === 0) {
-            console.warn('No items found for order review.');
-            return;  // Early return if items array is missing or empty
-        }
+        // Ensure the items are passed to itemData for further calculations
+        this.itemData.orderReviewItems = completeItemsArray;  // Assign the array to itemData
+    
+        // Use itemData methods to calculate totals
+        const totalCost = this.itemData.calculateOrderReviewTotalCost();
+        const totalAvailability = this.itemData.calculateOrderReviewTotalAvailability();
     
         const templateData = {
-            flagId: flagId,  // Pass the correct flagId
-            items: completeItemsArray,  // This array now includes rating, cost, and availability from the flag
-            totalCost: completeItemsArray.reduce((sum, item) => sum + (item.calculatedCost || 0), 0),
-            totalAvailability: completeItemsArray.reduce((sum, item) => sum + (item.calculatedAvailability || 0), 0)
+            flagId: flagId,
+            items: completeItemsArray,  // Pass the enriched item data
+            totalCost,
+            totalAvailability
         };
     
-        // Log the object that we are sending to the template
-        console.log("Rendering Order Review with template data:", templateData);
+        // Log template data for debugging
+        console.log('Rendering Order Review with template data:', templateData);
     
         // Render the order review template with the prepared data
         renderTemplate('modules/sr5-marketplace/templates/orderReview.hbs', templateData).then(htmlContent => {
-            html.find(`.tab-content[data-tab-content="orderReview"]`).html(htmlContent); // Assuming you have a container with this ID
+            html.find(`.tab-content[data-tab-content="orderReview"]`).html(htmlContent);
         }).catch(err => {
             console.error("Error rendering order review:", err);
         });

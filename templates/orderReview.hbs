@@ -23,8 +23,8 @@
                 <!-- Render the rating dropdown if the item has a rating -->
                 <div class="item-rating-section">
                     {{#if this.selectedRating}}
-                    <label for="item-rating-{{this.id_Item}}" class="rating-label">{{localize "SR5.Marketplace.Rating"}}:</label>
-                    <select class="order-review-rating" data-item-id="{{this.id_Item}}" data-flag-id="{{../flagId}}" id="item-rating-{{this.id_Item}}">
+                    <label for="item-rating-{{this.id}}" class="rating-label">{{localize "SR5.Marketplace.Rating"}}:</label>
+                    <select class="order-review-rating" data-item-id="{{this.id}}" data-flag-id="{{../flagId}}" id="item-rating-{{this.id}}">
                         {{#range 1 13}}
                         <option value="{{this}}" {{#ifeq this ../selectedRating}}selected{{/ifeq}}>{{this}}</option>
                         {{/range}}
@@ -32,19 +32,19 @@
                     {{/if}}
                 </div>
 
-                <!-- Show the cost of the item -->
+                <!-- Show the cost of the item using the helper -->
                 <div class="item-cost-section">
-                    <span class="item-cost">{{this.calculatedCost}} ¥</span>
+                    <span class="item-cost">{{this.system.technology.cost}} ¥</span>
                 </div>
 
-                <!-- Show the availability of the item -->
+                <!-- Show the availability of the item using the helper -->
                 <div class="item-availability-section">
-                    <span class="item-availability">{{this.calculatedAvailability}}</span>
+                    <span class="item-availability">{{this.system.technology.availability}}</span>
                 </div>
 
                 <!-- Remove button for each item -->
                 <div class="item-remove-section">
-                    <button class="remove-item" data-item-id="{{this.id_Item}}">
+                    <button class="remove-item" data-item-id="{{this.id}}">
                         <i class="fas fa-trash"></i> {{localize "SR5.Marketplace.RemoveItem"}}
                     </button>
                 </div>
@@ -69,4 +69,3 @@
         </button>
     </div>
 </div>
-
