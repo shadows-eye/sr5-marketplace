@@ -150,17 +150,94 @@ input#item-search {
     margin-bottom: 10px; /* Space between image/button and item details */
 }
 .item-image {
-    max-width: fit-content; /* Adjust to fit the content */
+    max-width: 40px; /* Adjust to fit the content */
     background-color: #5f5f5f46;
     border-radius: 5px;
+}
+.item-name {
+    text-align: left;
+}
+.item-rating-section {
+    text-align: center;
+}
+.item-cost-section {
+    text-align: center;
+}
+.remove-item{
+    background:none;
+    cursor: pointer;
+}
+.rating-label:hover {
+    display: flex;
+}
+.item-availability-section {
+    text-align: center;
 }
 .item-image img {
     max-width: 60px;
     max-height: 60px;
     object-fit: contain;
     border: none; /* Remove any borders from the image */
+    margin-left: 0.1em;
+}
+.order-review-grid {
+    display: grid;
+    grid-template-columns: 4em 2fr 1fr 1fr 1fr 2em;  /* Define column widths explicitly */
+    grid-gap: 10px;
+    align-items: center;
+    justify-items: start;
+    width: 100%;
+    position: relative; /* Ensures the pseudo-element works */
+}
+.order-review-grid::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2.5em; /* Adjust this to the actual height of the row */
+    background-color: #8a8a8a;  /* Background color for the first row */
+    z-index: 1;  /* Send the background behind the content */
+}
+/* Ensure each column header spans its own space */
+.order-review-grid > .marketplace.item-header:nth-child(1),
+.order-review-grid > .marketplace.item-header:nth-child(2),
+.order-review-grid > .marketplace.item-header:nth-child(3),
+.order-review-grid > .marketplace.item-header:nth-child(4),
+.order-review-grid > .marketplace.item-header:nth-child(5),
+.order-review-grid > .marketplace.item-header:nth-child(6) {
+    background-color: transparent; /* Remove the background from individual elements */
+    padding-top: 0.8em;
+    color: #414141;
+    font-weight: bold;
+    text-align: center;
+    text-size-adjust: 1.5em;
+    z-index: 2;
+}
+.order-review-grid > .marketplace.item-header:nth-child(1){
+    padding-left: 0.5em;
+}
+.order-review-grid > .marketplace.item-header:nth-child(6){
+    background-color: transparent; /* Remove the background from individual elements */
+    margin-left: 0.3em;
+    color: #303030;
+    font-weight: bold;
+    text-align: center;
+    text-size-adjust: 1.5em;
+    z-index: 2;
+}
+.order-review-grid > .marketplace.item-header:hover {
+    /*text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3);*/
+    box-shadow: 0 0 10px rgba(245, 245, 245, 0.897), 0 0 5px rgba(255, 255, 255, 0.897);  /* Glow effect */
 }
 
+/* Glow effect on hover */
+.marketplace.item-header:hover::before {
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3);  /* Glow effect */
+}
+.order-review-item {
+    display: contents; /* So the individual grid items take up their respective places */
+}
 .item-details {
     font-size: 0.9em;
     text-align: left;
@@ -172,7 +249,12 @@ input#item-search {
     gap: 10px; /* Adjust the gap between elements as needed */
     align-items: center; /* Aligns the content vertically */
 }
-
+.item-rating-section,
+.item-cost-section,
+.item-availability-section,
+.item-remove-section {
+    text-align: center;
+}
 .item-essence, .item-all {
     grid-column: 1; /* Place in the first column */
     margin-top: -15px;
@@ -223,7 +305,7 @@ button.remove-item {
         color: rgb(134, 3, 3);
     }
     max-width: fit-content;
-    margin: 2px;
+    margin: 0.1em;
     border: 0px;
 }
 .send-request-button{

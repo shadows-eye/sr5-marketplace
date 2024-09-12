@@ -62,7 +62,7 @@ export default class ItemData {
             item.system.category === itemCategory
         );
     }
-    addItemToBasket(itemId) {
+    async addItemToBasket(itemId) {
         const item = this.items.find(item => item._id === itemId);
         if (item) {
             const basketItem = {
@@ -76,7 +76,7 @@ export default class ItemData {
                 selectedRating: item.system.technology.rating || 1, // Default rating
                 calculatedCost: this.calculateCost(item),
                 calculatedAvailability: this.calculateAvailability(item),
-                calculatedEssence: this.calculateEssence(item)
+                calculatedEssence: this.calculateEssence(item) // Calculate essence when adding to the basket
             };
             this.basketItems.push(basketItem);
         }
@@ -113,6 +113,9 @@ export default class ItemData {
         const text = item.system.technology.availability.replace(/^\d+/, ''); // Extract text after the number
         return (baseAvailability * rating) + text;
     }
+    calculateTotalEssenceCost() {
+        return this.basketItems.reduce((total, item) => total + this.calculateEssence(item), 0);
+    }
     calculateOrderReviewAvailability(item, selectedRating) {
         const baseAvailability = item.system.technology.availability || '0';
         const numericAvailability = parseInt(baseAvailability) || 0;
@@ -120,12 +123,13 @@ export default class ItemData {
     
         return `${numericAvailability * selectedRating}${availabilityModifier}`;  // Scale availability by rating
     }
-    calculateEssence(item) {
+    async calculateEssence(item) {
         const rating = item.selectedRating || 1;
-        return item.system.essence * rating;
-    }   
-
-    removeItemFromBasket(basketId) {
+        const baseEssence = item.system.essence || 0;
+        return baseEssence * rating;
+    }
+    
+    async removeItemFromBasket(basketId) {
         this.basketItems = this.basketItems.filter(item => item.basketId !== basketId);
     }
     updateBasketItem(basketId, selectedRating) {
@@ -134,6 +138,7 @@ export default class ItemData {
             item.selectedRating = selectedRating;
             item.calculatedCost = this.calculateCost(item);
             item.calculatedAvailability = this.calculateAvailability(item);
+            item.calculatedEssence = this.calculateEssence(item);
         }
     }
     /**
@@ -202,9 +207,33 @@ export default class ItemData {
     }
 
     calculateTotalCost() {
-        return this.basketItems.reduce((total, item) => total + item.system.technology.cost, 0);
+        return this.basketItems.reduce((total, item) => {
+            // Use the selectedRating to calculate the total cost dynamically
+            const rating = item.selectedRating || 1;  // Default to 1 if no rating is selected
+            const cost = item.system.technology.cost || 0;  // Ensure cost is present
+    
+            return total + (cost * rating);  // Calculate cost based on rating and add to total
+        }, 0);
     }
     calculateTotalAvailability() {
+        const availabilityData = this.basketItems.reduce((acc, item) => {
+            const baseAvailability = parseInt(item.system.technology.availability) || 0;
+            const text = item.system.technology.availability.replace(/^\d+/, ''); // Extract text like 'F' or 'R'
+    
+            acc.total += baseAvailability * (item.selectedRating || 1);
+            // Ensure we use the highest restriction (e.g., 'F' > 'R') if different types exist
+            if (acc.text === '' || text > acc.text) {
+                acc.text = text;
+            }
+            return acc;
+        }, { total: 0, text: '' });
+    
+        return `${availabilityData.total}${availabilityData.text}`;
+    }
+    calculateTotalCostUpdate() {
+        return this.basketItems.reduce((total, item) => total + item.system.technology.cost, 0);
+    }
+    calculateTotalAvailabilityUpdate() {
         return this.basketItems.reduce((total, item) => {
             const baseAvailability = parseInt(item.system.technology.availability) || 0;
             const text = item.system.technology.availability.replace(/^\d+/, ''); // Extract text after the number
@@ -280,7 +309,7 @@ export default class ItemData {
 
             // Step 1: Fetch each item by ID and prepare for enrichment (Async for each item)
             await Promise.all(items.map(async (flagItem) => {
-                const itemId = flagItem.id;
+                const itemId = flagItem.id || flagItem._id || flagItem.id_Item; // Adjust this based on how the ID is stored
                 const gameItem = game.items.get(itemId); // Fetch the item from the game world
 
                 if (gameItem) {
@@ -348,7 +377,7 @@ export default class ItemData {
         const completeItemsArray = [];
 
         for (const flagItem of flagItems) {
-            const itemId = flagItem.id;
+            const itemId = flagItem._id;
             const gameItem = game.items.get(itemId);
 
             // Combine flag and game item data

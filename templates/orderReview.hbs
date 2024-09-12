@@ -12,46 +12,60 @@
     <!-- Section for reviewing items in the order -->
     <div class="grid-item">
         <h3>{{localize "SR5.Marketplace.OrderReviewItems"}}</h3>
-        <div id="order-review-items" class="order-review-grid" data-flag-id="{{flagId}}">
+        <div id="order-review-items" class="order-review-grid" data-flag-id="{{this.flagId}}">
+                <div class="marketplace item-header">
+                    {{localize "SR5.Marketplace.Image"}}
+                </div>
+                <div class="marketplace item-header">
+                    {{localize "SR5.Marketplace.Name"}}
+                </div>
+                <div class="marketplace item-header">
+                    {{localize "SR5.Marketplace.system.technology.rating"}}
+                </div>
+                <div class="marketplace item-header">
+                    {{localize "SR5.Marketplace.system.technology.Cost"}}
+                </div>
+                <div class="marketplace item-header">
+                    {{localize "SR5.Marketplace.system.technology.availability"}}
+                </div>
+                <div class="marketplace item-header">
+                    <i class="fas fa-trash" aria-label='{{localize "SR5.Marketplace.RemoveItem"}}'></i>
+                </div>
+                
             {{#each items}}
-            <div class="order-review-item">
-                <div class="item-details">
-                    <span class="item-name">{{this.name}}</span>
-                    <img class="item-image" src="{{this.image}}" alt="{{this.name}}">
-                </div>
 
-                <!-- Render the rating dropdown if the item has a rating -->
+                    <img class="item-image" src="{{this.img}}" alt="{{this.name}}">
+                    <div class="item-name">{{this.name}}</div>
+                    <!-- Render the rating dropdown if the item has a rating -->
                 <div class="item-rating-section">
-                    {{#if this.selectedRating}}
-                    <label for="item-rating-{{this.id}}" class="rating-label">{{localize "SR5.Marketplace.Rating"}}:</label>
-                    <select class="order-review-rating" data-item-id="{{this.id}}" data-flag-id="{{../flagId}}" id="item-rating-{{this.id}}">
-                        {{#range 1 13}}
-                        <option value="{{this}}" {{#ifeq this ../selectedRating}}selected{{/ifeq}}>{{this}}</option>
-                        {{/range}}
-                    </select>
-                    {{/if}}
+                        {{#if this.selectedRating}}
+                        <label for="item-rating-{{this.id}}" class="rating-label hidden">{{localize "SR5.Marketplace.Rating"}}</label>
+                        <select class="order-review-rating" data-item-id="{{this._id}}" data-flag-id="{{../flagId}}" id="item-rating-{{this._id}}">
+                            {{#range 1 13}}
+                            <option value="{{this}}" {{#ifeq this ../selectedRating}}selected{{/ifeq}}>{{this}}</option>
+                            {{/range}}
+                        </select>
+                        {{/if}}
                 </div>
 
-                <!-- Show the cost of the item using the helper -->
+                    <!-- Show the cost of the item using the helper -->
                 <div class="item-cost-section">
-                    <span class="item-cost">{{this.system.technology.cost}} ¥</span>
+                    <div class="item-cost">{{this.system.technology.cost}} ¥</div>
                 </div>
 
-                <!-- Show the availability of the item using the helper -->
+                    <!-- Show the availability of the item using the helper -->
                 <div class="item-availability-section">
-                    <span class="item-availability">{{this.system.technology.availability}}</span>
+                    <div class="item-availability">{{this.system.technology.availability}}</div>
                 </div>
 
-                <!-- Remove button for each item -->
+                    <!-- Remove button for each item -->
                 <div class="item-remove-section">
-                    <button class="remove-item" data-item-id="{{this.id}}">
-                        <i class="fas fa-trash"></i> {{localize "SR5.Marketplace.RemoveItem"}}
-                    </button>
+                        <button class="remove-item" data-flag-id="{{../flagId}}" data-item-id="{{this._id}}">
+                            <i class="fas fa-trash" aria-label='{{localize "SR5.Marketplace.RemoveItem"}}' data-flag-id="{{../flagId}}" data-item-id="{{this._id}}"></i>
+                        </button>
                 </div>
-            </div>
             {{/each}}
         </div>
-
         <!-- Section for displaying total cost and availability -->
         <div class="order-review-summary">
             <p><strong>{{localize "SR5.Marketplace.Total"}} {{localize "SR5.Marketplace.system.technology.Cost"}}: <span id="order-review-total-cost">{{totalCost}}</span> ¥</strong></p>

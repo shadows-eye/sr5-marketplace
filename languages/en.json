@@ -1,6 +1,9 @@
 {
     "SR5": {
         "Marketplace": {
+            "Image": "Image",
+            "Name" : "Name",
+            "RemoveItem": "Remove",
             "SelectItemType": "Select Item Type",
             "ShoppingBasket": "Shopping Basket",
             "Marketplace": "Marketplace",
