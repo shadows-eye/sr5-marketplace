@@ -65,6 +65,13 @@ export default class ItemData {
     async addItemToBasket(itemId) {
         const item = this.items.find(item => item._id === itemId);
         if (item) {
+            // Ensure all async calculations are awaited before adding to the basket
+            const selectedRating = item.system.technology.rating || 1; // Default rating
+    
+            const calculatedCost = await this.calculateCost(item, selectedRating);
+            const calculatedAvailability = await this.calculateAvailability(item, selectedRating);
+            const calculatedEssence = await this.calculateEssence(item, selectedRating);
+    
             const basketItem = {
                 ...item,
                 id_Item: item._id,
@@ -73,17 +80,47 @@ export default class ItemData {
                 description: item.system.description ? item.system.description.value : "", // Safely access description
                 type: item.type,
                 basketId: foundry.utils.randomID(),
-                selectedRating: item.system.technology.rating || 1, // Default rating
-                calculatedCost: this.calculateCost(item),
-                calculatedAvailability: this.calculateAvailability(item),
-                calculatedEssence: this.calculateEssence(item) // Calculate essence when adding to the basket
+                selectedRating, // Default or selected rating
+                calculatedCost, // Use the awaited calculated cost
+                calculatedAvailability, // Use the awaited availability
+                calculatedEssence // Use the awaited essence
             };
+    
             this.basketItems.push(basketItem);
         }
     }
     calculateCost(item) {
-        const rating = item.selectedRating || 1;
-        return item.system.technology.cost * rating;
+        const rating = item.selectedRating || 1; // Default rating
+        const baseCost = item.system.technology?.cost || 0; // Get base cost from item data
+        return baseCost * rating; // Calculate the cost based on the rating
+    }
+    /**
+     * Asynchronously calculate the cost for the order review based on item rating.
+     * @param {Object} item - The game item object.
+     * @param {number} rating - The selected rating for the item.
+     * @returns {Promise<number>} - The calculated cost as a number.
+     */
+    async calculateCostReviewUpdate(item, rating) {
+        const baseItem = game.items.get(item._id || item.id); // Fetch the base item from the game world using the ID
+
+        if (!baseItem) {
+            console.warn(`Base item with ID ${item._id || item.id} not found.`);
+            return 0; // Return 0 if the base item isn't found
+        }
+
+        // Get the base cost from the game item
+        const baseCost = baseItem.system?.technology?.cost || 0;
+
+        // Ensure baseCost is a number before proceeding
+        if (typeof baseCost !== "number") {
+            console.warn(`Base cost is not a number for item ${item._id || item.id}, got:`, baseCost);
+            return 0; // Default to 0 if baseCost is not valid
+        }
+
+        const calculatedCost = baseCost * rating; // Calculate the cost based on the rating
+
+        // Return the recalculated cost
+        return parseFloat(calculatedCost) || 0; // Ensure that the result is a valid number
     }
     /**
      * Asynchronously calculate the availability for an order review item based on its rating.
@@ -147,6 +184,20 @@ export default class ItemData {
     calculateOrderReviewTotalCost() {
         return this.orderReviewItems.reduce((sum, item) => sum + (item.calculatedCost || 0), 0);
     }
+    /**
+     * Calculate total cost for the order review.
+     */
+    async calculateOrderReviewTotalCostUpdate() {
+        const totalCostPromises = this.orderReviewItems.map(async (item) => {
+            // Ensure that calculatedCost is awaited, as it may be a promise
+            const cost = item.calculatedCost || await this.calculateCostReviewUpdate(item, item.selectedRating || 1);
+            return cost;
+        });
+    
+        // Wait for all promises to resolve, then sum the total cost
+        const resolvedCosts = await Promise.all(totalCostPromises);
+        return resolvedCosts.reduce((sum, cost) => sum + cost, 0);
+    }
 
     /**
      * Calculate total availability for the order review.
@@ -188,7 +239,7 @@ export default class ItemData {
         const item = this.orderReviewItems.find(i => i.id_Item === itemId);
         if (item) {
             item.selectedRating = selectedRating;
-            item.calculatedCost = this.calculateCost(item);
+            item.calculatedCost = this.calculateCostReviewUpdate(item);
             item.calculatedAvailability = this.calculateAvailability(item);
         }
     }
@@ -301,43 +352,55 @@ export default class ItemData {
     async getOrderDataFromFlag(flagId) {
         // Access the 'sr5-marketplace' flag on the current user
         const userFlags = game.user.flags['sr5-marketplace'];
-
+    
         if (userFlags && userFlags[flagId]) {
             const flagData = userFlags[flagId];
             const items = flagData.items || [];
             const reviewPrep = []; // Temp array to hold the enriched game items
-
+    
             // Step 1: Fetch each item by ID and prepare for enrichment (Async for each item)
             await Promise.all(items.map(async (flagItem) => {
-                const itemId = flagItem.id || flagItem._id || flagItem.id_Item; // Adjust this based on how the ID is stored
+                const itemId = flagItem.id || flagItem._id || flagItem.id_Item; // Adjust based on how the ID is stored
                 const gameItem = game.items.get(itemId); // Fetch the item from the game world
-
+    
                 if (gameItem) {
                     // Create a shallow copy of the gameItem for enrichment
                     const enrichedItem = JSON.parse(JSON.stringify(gameItem));
-
+    
                     // Step 2: Enrich the item with flag data (cost, rating)
                     enrichedItem.selectedRating = flagItem.rating || enrichedItem.system.technology?.rating || 1;
-                    enrichedItem.calculatedCost = flagItem.cost || await this.calculateOrderReviewCost(enrichedItem, enrichedItem.selectedRating);
+    
+                    // Await for all calculations to complete and ensure results are numbers/strings, not objects
+                    let enrichtmentRating = Number(enrichedItem.selectedRating);
+                    enrichedItem.calculatedCost = flagItem.cost || (await this.calculateCostReviewUpdate(enrichedItem, enrichtmentRating));
+                    if (typeof enrichedItem.calculatedCost !== "number") {
+                        console.warn(`calculatedCost is not a number, got:`, enrichedItem.calculatedCost);
+                        enrichedItem.calculatedCost = parseFloat(enrichedItem.calculatedCost) || 0;
+                    }
+    
                     enrichedItem.calculatedAvailability = await this.calculateOrderReviewAvailability(enrichedItem, enrichedItem.selectedRating);
                     enrichedItem.calculatedEssence = await this.calculateEssence(enrichedItem);
-
+    
+                    // Ensure all calculated values are numbers/strings
+                    enrichedItem.calculatedAvailability = String(enrichedItem.calculatedAvailability || '');
+                    enrichedItem.calculatedEssence = parseFloat(enrichedItem.calculatedEssence) || 0;
+    
                     // Replace the values in the gameItem's system structure to reflect the flag's data
                     enrichedItem.system.technology.cost = enrichedItem.calculatedCost; // Override with flagged cost
                     enrichedItem.system.technology.rating = enrichedItem.selectedRating; // Override with flagged rating
                     enrichedItem.system.technology.availability = enrichedItem.calculatedAvailability; // Override availability
-
+    
                     // Store the enriched item in the reviewPrep array
                     reviewPrep.push(enrichedItem);
                 } else {
                     console.warn(`Game item with ID ${itemId} not found.`);
                 }
             }));
-
+    
             // Step 3: After fetching and enriching, calculate total cost and availability
             const totalCost = reviewPrep.reduce((sum, item) => sum + (item.calculatedCost || 0), 0);
             const totalAvailability = reviewPrep.reduce((acc, item) => acc + (item.calculatedAvailability || ''), '');
-
+    
             // Step 4: Save enriched items and calculated totals into completeItemsArray
             this.completeItemsArray = reviewPrep.map(item => ({
                 ...item,
@@ -346,7 +409,7 @@ export default class ItemData {
                     'sr5-marketplace': { flagId }
                 }
             }));
-
+    
             // Return the flag data including requester information and the enriched items in completeItemsArray
             return {
                 id: flagData.id,
@@ -421,7 +484,7 @@ export default class ItemData {
             reviewItem.selectedRating = selectedRating;
             
             // Recalculate cost, availability, and essence based on the new rating
-            reviewItem.calculatedCost = this.calculateCost(reviewItem);
+            reviewItem.calculatedCost = this.calculateCostReviewUpdate(reviewItem);
             reviewItem.calculatedAvailability = this.calculateAvailability(reviewItem);
             reviewItem.calculatedEssence = this.calculateEssence(reviewItem);  // Assuming essence depends on rating
 

@@ -111,7 +111,7 @@ export class PurchaseScreenApp extends Application {
             }
 
             // Find the index of the item in the flag's items array
-            const itemIndex = orderData.items.findIndex(item => item.id === itemId);
+            const itemIndex = orderData.items.findIndex(item => item._id === itemId || item.id === itemId);
             if (itemIndex === -1) {
                 console.warn(`Item with ID ${itemId} not found in flag data`);
                 return;
@@ -253,54 +253,48 @@ export class PurchaseScreenApp extends Application {
     async _onRatingChangeOrderReview(event, html) {
         event.preventDefault();
     
-        // Get the item ID and flag ID from the event
-        const itemId = $(event.currentTarget).data('itemId');
-        const newRating = parseInt(event.currentTarget.value);
-        const flagId = $(event.currentTarget).data('flagId');
+        const itemId = $(event.currentTarget).data('itemId'); // Get item ID
+        const flagId = $(event.currentTarget).closest('#order-review-items').data('flagId'); // Get flag ID
     
-        // Retrieve the order data associated with the flagId
-        const orderData = await this.itemData.getOrderDataFromFlag(flagId);
+        if (!itemId || !flagId) {
+            console.warn(`Missing itemId or flagId: itemId = ${itemId}, flagId = ${flagId}`);
+            return;
+        }
+    
+        const newRating = parseInt($(event.currentTarget).val()); // Get the new rating value from the dropdown
+    
+        // Fetch the current order data from the flag
+        let itemData = this.itemData
+        const orderData = await itemData.getOrderDataFromFlag(flagId);
         if (!orderData) {
-            console.warn(`Order data with flag ID ${flagId} not found.`);
+            console.warn(`No order data found for flag ID ${flagId}`);
             return;
         }
     
-        // Find the item in the orderData
-        const item = orderData.items.find(item => item._id === itemId);
-        if (!item) {
-            console.warn(`No item with ID ${itemId} found in flag data.`);
+        // Find the item in the order data
+        const flagItem = orderData.items.find(item => item._id === itemId);
+        if (!flagItem) {
+            console.warn(`Item with ID ${itemId} not found in flag data`);
             return;
         }
     
-        // Update the item's rating and recalculate the cost
-        item.rating = newRating;
-        item.cost = this.itemData.calculateCost(item); // Recalculate cost based on the new rating
+        // Update the item's rating in the flag data
+        flagItem.rating = newRating;
     
-        // Update the flag with the new rating and cost
+        // Update the flag data to reflect the new rating
         await game.user.setFlag('sr5-marketplace', flagId, orderData);
     
-        // Log the updated flag for debugging
-        console.log(`Updated Flag Data After Rating Change (flagId: ${flagId}):`, JSON.stringify(orderData, null, 2));
+        // Re-fetch the updated order data (with new rating) from the flag
+        const updatedOrderData = await itemData.getOrderDataFromFlag(flagId);
     
-        // Fetch the associated chat message by flag ID
-        const chatMessage = game.messages.contents.find(msg => {
-            return msg.content.includes(`data-request-id="${flagId}"`);
-        });
+        // Log the updated data for debugging
+        console.log("Updated Order Data:", updatedOrderData);
     
-        // If chat message is found, update its DOM elements
-        if (chatMessage) {
-            // Re-render the shopping basket summary in the chat message
-            const updatedHtml = await this._renderShoppingBasketSummary(orderData);
+        // Safeguard: Ensure the completeItemsArray is valid
+        const completeItemsArray = updatedOrderData.items || [];
     
-            // Update the chat message with the new HTML
-            await chatMessage.update({ content: updatedHtml });
-    
-            console.log(`Updated Chat Message for flagId ${flagId}.`);
-        }
-    
-        // Finally, re-render the order review
-        const updatedOrderData = await this.itemData.getOrderDataFromFlag(flagId);
-        this._renderOrderReview(html, flagId, updatedOrderData.items);
+        // Re-render the order review with the updated data
+        this._renderOrderReview(html, flagId, completeItemsArray);
     }
     _onRemoveFromOrderReview(event, html) {
         event.preventDefault();
@@ -315,8 +309,9 @@ export class PurchaseScreenApp extends Application {
      * @param {Object} orderData - The updated order data
      * @returns {string} - The rendered HTML content for the chat message
      */
-    async _renderShoppingBasketSummary(orderData) {
+    async _renderShoppingBasketSummary(orderData, flagId) {
         const templateData = {
+            id: flagId,
             requester: orderData.requester,
             items: orderData.items,
             totalCost: orderData.items.reduce((sum, item) => sum + item.cost, 0)  // Calculate total cost
