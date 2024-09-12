@@ -7,7 +7,9 @@ export class PurchaseScreenApp extends Application {
         // Determine if the current user is a GM
         this.isGM = game.user.isGM;
         this.tab = options.tab || "shop"; // Default to "shop" tab
-        this.reviewData = options.reviewData || null; // Store the review data if provided
+        this.orderData = options.orderData || {};
+        this.completeItemsArray = Array.isArray(options.completeItemsArray) ? options.completeItemsArray : [];
+        this.itemData = new ItemData();  // Instantiate ItemData here to use its methods
       }
     static get defaultOptions() {
         return foundry.utils.mergeObject(super.defaultOptions, {
@@ -22,32 +24,42 @@ export class PurchaseScreenApp extends Application {
     }
 
     async getData() {
+        // Ensure itemData is properly instantiated and fetch items
         this.itemData = new ItemData();
-        await this.itemData.fetchItems();
-
-        // Restore basket items from flags
+        await this.itemData.fetchItems(); // Fetch all items in your system
+    
+        // Initialize the completeItemsArray if not already set (may come from passed options)
+        this.completeItemsArray = this.completeItemsArray || [];
+    
+        // Restore basket items from flags (if needed)
         const savedBasket = game.user.getFlag('sr5-marketplace', 'basket') || [];
         this.itemData.basketItems = savedBasket;
-
+    
         // Preload the partial templates
         await loadTemplates([
             "modules/sr5-marketplace/templates/libraryItem.hbs",
             "modules/sr5-marketplace/templates/basket.hbs",  // Preload the basket partial
             "modules/sr5-marketplace/templates/shop.hbs",
-            "modules/sr5-marketplace/templates/orderReview.hbs"]
-        ).then(() => {
+            "modules/sr5-marketplace/templates/orderReview.hbs"
+        ]).then(() => {
             // Register partials after loading them
-        Handlebars.registerPartial('shop', 'modules/sr5-marketplace/templates/shop.hbs');
-        Handlebars.registerPartial('orderReview', 'modules/sr5-marketplace/templates/orderReview.hbs');
+            Handlebars.registerPartial('shop', 'modules/sr5-marketplace/templates/shop.hbs');
+            Handlebars.registerPartial('orderReview', 'modules/sr5-marketplace/templates/orderReview.hbs');
         });
+    
         console.log("User role:", game.user.role);
         console.log("Is the current user a GM?", this.isGM);
+    
+        // Set up review data if needed
         const reviewData = this.reviewData ? this.reviewData : {};
+    
+        // Return the data to the template for rendering
         return {
             itemsByType: this.itemData.itemsByType, // Pass item types with items
             basketItems: this.itemData.basketItems, // Pass basket items to be rendered
             isGM: this.isGM,
-            reviewData: reviewData
+            reviewData: reviewData,
+            completeItemsArray: this.completeItemsArray // Ensure the array is available in the template context
         };
     }
 
@@ -68,7 +80,8 @@ export class PurchaseScreenApp extends Application {
         html.on('change', '.item-rating', event => this._onRatingChange(event, html));
         html.on('click', '.add-to-cart', event => this._onAddToBasket(event, html));
         html.on('click', '.remove-item', event => this._onRemoveFromBasket(event, html));
-
+        //Order Review Change
+        html.on('change', '.order-review-rating', event => this._onRatingChangeOrderReview(event, html));
         // Tab Switching Logic
         html.find("#id-shop").click(() => this._handleTabSwitch(html, "shop"));
         html.find("#id-orderReview").click(() => this._handleTabSwitch(html, "orderReview"));
@@ -81,8 +94,58 @@ export class PurchaseScreenApp extends Application {
     
         // Handle the "Review and Confirm" button click
         html.on('click', '.review-request-button', event => this._onReviewRequest(event, html));
-    }
 
+        // Event listener for removing items in the order review
+        html.on('click', '.remove-item', async event => {
+            event.preventDefault();
+
+            // Retrieve the item ID and flag ID from the DOM
+            const itemId = $(event.currentTarget).data('itemId');
+            const flagId = $(event.currentTarget).closest('#order-review-items').data('flagId');
+
+            // Fetch the flag data associated with the flagId
+            const orderData = game.user.getFlag('sr5-marketplace', flagId);
+            if (!orderData) {
+                console.warn(`No order data found for flag ID ${flagId}`);
+                return;
+            }
+
+            // Find the index of the item in the flag's items array
+            const itemIndex = orderData.items.findIndex(item => item._id === itemId || item.id === itemId);
+            if (itemIndex === -1) {
+                console.warn(`Item with ID ${itemId} not found in flag data`);
+                return;
+            }
+
+            // Remove the item from the array
+            orderData.items.splice(itemIndex, 1);
+
+            // Check if only one item was left before deletion, in which case, remove the chat message
+            if (orderData.items.length === 0) {
+                // Find and delete the chat message with the matching button id (flagId)
+                const chatMessage = game.messages.contents.find(msg => {
+                    return msg.content.includes(`data-request-id="${flagId}"`);
+                });
+
+                if (chatMessage) {
+                    await chatMessage.delete();  // Delete the chat message
+                }
+            }
+
+            // Update the flag data without the removed item
+            await game.user.setFlag('sr5-marketplace', flagId, orderData);
+
+            // Fetch the updated flag data after the deletion
+            const updatedOrderData = await this.itemData.getOrderDataFromFlag(flagId);
+
+            // Re-render the order review with the updated data
+            this._renderOrderReview(html, flagId, updatedOrderData.items);
+
+            // Log the updated flag after it’s saved
+            console.log(`Updated Flag Data After Deletion (flagId: ${flagId}):`, JSON.stringify(updatedOrderData, null, 2));
+        });
+
+    }
     _onSearchInput(event, html) {
         const searchText = event.target.value.toLowerCase();
         const items = html.find(".marketplace-item");
@@ -120,11 +183,11 @@ export class PurchaseScreenApp extends Application {
         await game.user.setFlag('sr5-marketplace', 'basket', this.itemData.getBasketItems());
     }
 
-    _onAddToBasket(event, html) {
+    async _onAddToBasket(event, html) {
         event.preventDefault();
 
         const itemId = $(event.currentTarget).data('itemId');
-        this.itemData.addItemToBasket(itemId); // Add item to the basket
+        await this.itemData.addItemToBasket(itemId); // Add item to the basket
 
         this._renderBasket(html); // Re-render the basket with updated items
     }
@@ -144,7 +207,7 @@ export class PurchaseScreenApp extends Application {
         return super.close(options);
     }
 
-    _onRemoveFromBasket(event, html) {
+    async _onRemoveFromBasket(event, html) {
         event.preventDefault();
 
         const basketId = $(event.currentTarget).data('basketId');
@@ -164,9 +227,14 @@ export class PurchaseScreenApp extends Application {
     }
 
     _updateTotalCost(html) {
-        const totalCost = this.itemData.calculateTotalCost();
-        const totalAvailability = this.itemData.calculateTotalAvailability();
+        // Calculate the total cost and availability using itemData's calculation functions
+        const totalCost = this.itemData.calculateTotalCost(); 
+        const totalAvailability = this.itemData.calculateTotalAvailability(); 
+        
+        // Update the total cost in the DOM
         html.find("#total-cost").html(`Total: ${totalCost} <i class="fa-duotone fa-solid fa-circle-yen"></i>`);
+        
+        // Update the total availability in the DOM
         html.find("#total-availability").text(`Total Availability: ${totalAvailability}`);
     }
 
@@ -176,6 +244,108 @@ export class PurchaseScreenApp extends Application {
         renderTemplate("modules/sr5-marketplace/templates/basket.hbs", templateData).then(renderedHtml => {
             html.find("#basket-items").html(renderedHtml);
             this._updateTotalCost(html);
+        });
+    }
+    
+    /**
+     * Handle rating change in the order review
+     */
+    async _onRatingChangeOrderReview(event, html) {
+        event.preventDefault();
+    
+        const itemId = $(event.currentTarget).data('itemId'); // Get item ID
+        const flagId = $(event.currentTarget).closest('#order-review-items').data('flagId'); // Get flag ID
+    
+        if (!itemId || !flagId) {
+            console.warn(`Missing itemId or flagId: itemId = ${itemId}, flagId = ${flagId}`);
+            return;
+        }
+    
+        const newRating = parseInt($(event.currentTarget).val()); // Get the new rating value from the dropdown
+    
+        // Fetch the current order data from the flag
+        let itemData = this.itemData
+        const orderData = await itemData.getOrderDataFromFlag(flagId);
+        if (!orderData) {
+            console.warn(`No order data found for flag ID ${flagId}`);
+            return;
+        }
+    
+        // Find the item in the order data
+        const flagItem = orderData.items.find(item => item._id === itemId);
+        if (!flagItem) {
+            console.warn(`Item with ID ${itemId} not found in flag data`);
+            return;
+        }
+    
+        // Update the item's rating in the flag data
+        flagItem.rating = newRating;
+    
+        // Update the flag data to reflect the new rating
+        await game.user.setFlag('sr5-marketplace', flagId, orderData);
+    
+        // Re-fetch the updated order data (with new rating) from the flag
+        const updatedOrderData = await itemData.getOrderDataFromFlag(flagId);
+    
+        // Log the updated data for debugging
+        console.log("Updated Order Data:", updatedOrderData);
+    
+        // Safeguard: Ensure the completeItemsArray is valid
+        const completeItemsArray = updatedOrderData.items || [];
+    
+        // Re-render the order review with the updated data
+        this._renderOrderReview(html, flagId, completeItemsArray);
+    }
+    _onRemoveFromOrderReview(event, html) {
+        event.preventDefault();
+        const itemId = $(event.currentTarget).data('itemId');
+        this.itemData.removeItemFromOrderReview(itemId);  // Delegate to itemData.js
+
+        // Re-render the review
+        this._renderOrderReview(html);
+    }
+    /**
+     * Render the shopping basket summary for the chat message
+     * @param {Object} orderData - The updated order data
+     * @returns {string} - The rendered HTML content for the chat message
+     */
+    async _renderShoppingBasketSummary(orderData, flagId) {
+        const templateData = {
+            id: flagId,
+            requester: orderData.requester,
+            items: orderData.items,
+            totalCost: orderData.items.reduce((sum, item) => sum + item.cost, 0)  // Calculate total cost
+        };
+
+        // Render the shopping basket summary template with the updated data
+        return await renderTemplate('modules/sr5-marketplace/templates/chatMessageRequest.hbs', templateData);
+    }
+    /**
+     * Render the order review tab with the updated data
+     */
+    _renderOrderReview(html, flagId, completeItemsArray) {
+        // Ensure the items are passed to itemData for further calculations
+        this.itemData.orderReviewItems = completeItemsArray;  // Assign the array to itemData
+
+        // Use itemData methods to calculate totals
+        const totalCost = this.itemData.calculateOrderReviewTotalCost();
+        const totalAvailability = this.itemData.calculateOrderReviewTotalAvailability();
+
+        const templateData = {
+            flagId: flagId,
+            items: completeItemsArray,  // Pass the enriched item data
+            totalCost,
+            totalAvailability
+        };
+
+        // Log template data for debugging
+        console.log('Rendering Order Review with template data:', templateData);
+
+        // Render the order review template with the prepared data
+        renderTemplate('modules/sr5-marketplace/templates/orderReview.hbs', templateData).then(htmlContent => {
+            html.find(`.tab-content[data-tab-content="orderReview"]`).html(htmlContent);
+        }).catch(err => {
+            console.error("Error rendering order review:", err);
         });
     }
     _handleTabSwitch(html, selectedTab) {
@@ -192,66 +362,14 @@ export class PurchaseScreenApp extends Application {
         html.find(`#id-${selectedTab}`).addClass("active");
     }
     /// send basket to GM
-    _onSendRequest(event, html) {
+    async _onSendRequest(event, html) {
         event.preventDefault();
-
+    
         // Prepare the data for the chat message
-        const basketItems = this.itemData.getBasketItems(); // Assuming itemData is accessible
-        const totalCost = this.itemData.calculateTotalCost();
-        const totalAvailability = this.itemData.calculateTotalAvailability();
-
-        const requestingUser = game.user; // The user who clicked the button
-        const isGM = requestingUser.isGM;
-        const requestId = foundry.utils.randomID(); // Generate a unique request ID
-
-        // Get an array of item IDs from the basket items
-        const itemIds = basketItems.map(item => item._id); // Ensure only IDs are stored
-        const basketDetailed = basketItems.map(item => ({
-            id: _id,
-            name: item.name,
-            description: item.system.description, // Adjust this line to handle HTML strings safely if needed
-            cost: item.calculatedCost, // Use calculated cost if applicable
-            availability: item.calculatedAvailability // Use calculated availability if applicable
-        }));
-            // Save the request as a flag on the user
-            requestingUser.setFlag('sr5-marketplace', `${requestId}`, {
-                id: requestId,
-                items: itemIds, // Store only the item IDs
-                requester: isGM ? "GM" : requestingUser.name
-            });
-
-            const messageData = {
-                items: basketDetailed, // Use detailed items in the chat message
-                totalCost: totalCost,
-                totalAvailability: totalAvailability,
-                requesterName: isGM ? "GM" : requestingUser.name, // Show "GM" if the request is from a GM
-                id: requestId // Include the request ID in the data
-            };    
-        // Render the message using the chatMessageRequest.hbs template
-        renderTemplate('modules/sr5-marketplace/templates/chatMessageRequest.hbs', messageData).then(htmlContent => {
-            ChatMessage.create({
-                user: requestingUser.id, // Use the requesting user's ID
-                content: htmlContent,
-                style: CONST.CHAT_MESSAGE_STYLES.IC, // In-character message
-                whisper: isGM ? [] : game.users.filter(u => u.isGM).map(u => u.id) // Whisper to GM(s) if not GM
-            });
-
-            // Empty the basket
-            this.itemData.basketItems = [];
-
-            // Render the empty basket
-            this._renderBasket(html); // Update the UI to reflect the empty basket
-        });
-    }
-    _onSendRequest(event, html) {
-        event.preventDefault();
-    
-        // Log the basket contents to debug
-        const basketItems = this.itemData.getBasketItems(); // Assuming itemData is accessible
-        console.log("Basket Items:", basketItems); // Log basket items for debugging
-    
-        const totalCost = this.itemData.calculateTotalCost();
-        const totalAvailability = this.itemData.calculateTotalAvailability();
+        const basketItems = this.itemData.getBasketItems(); // Get basket items from itemData
+        const totalCost = this.itemData.calculateTotalCost(); // Use itemData to calculate total cost
+        const totalAvailability = this.itemData.calculateTotalAvailability(); // Use itemData to calculate total availability
+        const totalEssenceCost = this.itemData.calculateTotalEssenceCost(); // Calculate total essence cost
     
         const requestingUser = game.user; // The user who clicked the button
         const isGM = requestingUser.isGM;
@@ -259,80 +377,46 @@ export class PurchaseScreenApp extends Application {
     
         // Get an array of detailed item objects from the basket items
         const itemDetails = basketItems.map(item => ({
-            id: item.id_Item, // Item ID
+            id: item.id_Item || item._id, // Use id_Item if available, otherwise fallback to _id
             name: item.name, // Item name
-            image: item.img || "icons/svg/item-bag.svg", // Use a default image if none is set
-            description: item.system.description?.value || "", // Safe access to description text
+            image: item.img || "icons/svg/item-bag.svg", // Use the item image or default icon
+            description: item.system.description?.value || "", // Safely access description text
             type: item.type, // Item type
-            cost: item.calculatedCost || 0 // Use calculated cost or default to 0
+            cost: item.calculatedCost || 0, // Use calculated cost or default to 0
+            rating: item.selectedRating || 0, // Use selected rating or default to 0
+            essence: this.itemData.calculateEssence(item), // Calculate essence using the selected rating
         }));
     
-        // Log the item details array to check the IDs and other properties
-        console.log("Item Details:", itemDetails);
-    
         // Save the request as a flag on the user with detailed item information
-        requestingUser.setFlag('sr5-marketplace', requestId, {
+        await requestingUser.setFlag('sr5-marketplace', requestId, {
             id: requestId,
             items: itemDetails, // Store detailed item objects
             requester: isGM ? "GM" : requestingUser.name // Identify the requester
-        }).then(() => {
-            console.log(`Flag set for request ${requestId} with items:`, itemDetails);
-        }).catch(err => {
-            console.error(`Failed to set flag for request ${requestId}:`, err);
         });
     
         const messageData = {
             items: itemDetails, // Use detailed items in the chat message
             totalCost: totalCost,
             totalAvailability: totalAvailability,
+            totalEssenceCost: totalEssenceCost, // Include total essence cost
             requesterName: isGM ? "GM" : requestingUser.name, // Show "GM" if the request is from a GM
             id: requestId // Include the request ID in the data
         };
     
         // Render the message using the chatMessageRequest.hbs template
-        renderTemplate('modules/sr5-marketplace/templates/chatMessageRequest.hbs', messageData).then(htmlContent => {
-            ChatMessage.create({
-                user: requestingUser.id, // Use the requesting user's ID
-                content: htmlContent,
-                style: CONST.CHAT_MESSAGE_STYLES.IC, // Use CHAT_MESSAGE_STYLES to avoid deprecation warning
-                whisper: isGM ? [] : game.users.filter(u => u.isGM).map(u => u.id) // Whisper to GM(s) if not GM
-            });
-    
-            // Empty the basket
-            this.itemData.basketItems = [];
-    
-            // Render the empty basket
-            this._renderBasket(html); // Update the UI to reflect the empty basket
+        const htmlContent = await renderTemplate('modules/sr5-marketplace/templates/chatMessageRequest.hbs', messageData);
+        ChatMessage.create({
+            user: requestingUser.id, // Use the requesting user's ID
+            content: htmlContent,
+            style: CONST.CHAT_MESSAGE_STYLES.IC, // Corrected from type to style
+            whisper: isGM ? [] : game.users.filter(u => u.isGM).map(u => u.id) // Whisper to GM(s) if not GM
         });
-    }   
-
-    _onReviewRequest(event, html) {
-        event.preventDefault();
     
-        // Get the request ID from the button's data attribute
-        const requestId = $(event.currentTarget).data('request-id');
+        // Empty the basket
+        this.itemData.basketItems = [];
     
-        // Retrieve the flag that matches this request ID (if necessary)
-        // const user = game.user; // Adjust to target specific users or GM
-        // const requestFlag = user.getFlag('sr5-marketplace', `request-${requestId}`);
-    
-        // Create a new instance or use existing instance of PurchaseScreenApp
-        if (!this.purchaseScreenApp) {
-            this.purchaseScreenApp = new PurchaseScreenApp({
-                defaultTab: "orderReview", // Pass option to open in orderReview tab
-                requestId: requestId // Store the requestId to be used later for loading data
-            });
-        }
-    
-        // Set the tab to "orderReview"
-        this.purchaseScreenApp.defaultTab = "orderReview"; // Ensure it opens to the order review tab
-        this.purchaseScreenApp.requestId = requestId; // Pass the requestId for future use
-    
-        // Open the app
-        this.purchaseScreenApp.render(true);
-    
-        // Manually switch to the orderReview tab (in case already opened)
-        this._handleTabSwitch($("body"), "orderReview"); // Use a global selector if the tab is already rendered
-    }
+        // Render the empty basket
+        this._renderBasket(html); // Update the UI to reflect the empty basket
+    }      
 }
   

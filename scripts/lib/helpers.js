@@ -16,8 +16,28 @@ export const registerBasicHelpers = () => {
             }
     
             return accum;
+    }); 
+    Handlebars.registerHelper('getTechnologyCost', function(item) {
+        return item?.system?.technology?.cost || 0;  // Fallback to 0 if not found
+    });
+    
+    Handlebars.registerHelper('getAvailability', function(item) {
+        return item?.system?.technology?.availability || "Unknown";
+    });
+    
+    Handlebars.registerHelper('getEssence', function(item) {
+        return item?.system?.essence || 0;
+    });
+    Handlebars.registerHelper('getField', function(item, field) {
+        return item?.system?.[field] || "";
+    });  
+    Handlebars.registerHelper('range', function(min, max, block) {
+        let accum = '';
+        for (let i = min; i <= max; i++) {
+            accum += block.fn(i);
+        }
+        return accum;
     });   
-        
     Handlebars.registerHelper('hasprop', function (obj, prop, options) {
             if (obj.hasOwnProperty(prop)) {
                 return options.fn(this);
