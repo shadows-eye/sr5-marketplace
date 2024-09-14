@@ -1,13 +1,23 @@
 <div class="shopping-basket-summary">
-  <h2>Shopping Basket Summary</h2>
-  <p>Request from: {{this.requester}}</p>
+  <h2>{{localize "SR5.Marketplace.shoppingListRequest"}}</h2>
+  
+  <!-- Link to the actor this request is for -->
+  <p>{{localize "SR5.Marketplace.requestActor"}}: @Actor[{{actorId}}]</p>
+  
+  <h3>{{localize "SR5.Marketplace.Items"}}</h3>
   <ul>
     {{#each items}}
-      <li>{{localize "SR5.Marketplace.system.technology.rating"}}: {{rating}} of {{name}} - {{cost}}¥ each</li>
+      <li>
+        {{#if (neq type "weapon")}}
+          {{localize "SR5.Marketplace.system.technology.rating"}}: {{rating}} {{localize "SR5.Marketplace.of"}}
+        {{/if}}
+        {{name}} - {{cost}}¥ {{localize "SR5.Marketplace.each"}}
+      </li>
     {{/each}}
   </ul>
-  <p><strong>Total Cost: {{totalCost}}¥</strong></p>
-  <button id="{{this.id}}" class="review-request-button" data-request-id="{{this.id}}">
+
+  <p><strong>{{localize "SR5.Marketplace.TotalCost"}}: {{totalCost}}¥</strong></p>
+    <button id="{{id}}" class="review-request-button" data-request-id="{{id}}">
       {{localize 'SR5.Marketplace.ReviewAndConfirm'}}
-  </button>
+    </button>
 </div>  

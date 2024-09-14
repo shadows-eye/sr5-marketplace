@@ -161,10 +161,16 @@ export default class ItemData {
         return `${numericAvailability * selectedRating}${availabilityModifier}`;  // Scale availability by rating
     }
     async calculateEssence(item) {
-        const rating = item.selectedRating || 1;
+        // Ensure selectedRating is set to 1 if it is undefined or null
+        const rating = item.selectedRating !== undefined && item.selectedRating !== null ? item.selectedRating : 1;
+    
+        // Get the base essence value, defaulting to 0 if not defined
         const baseEssence = item.system.essence || 0;
+    
+        // Calculate the essence based on the baseEssence and rating
         return baseEssence * rating;
     }
+    
     
     async removeItemFromBasket(basketId) {
         this.basketItems = this.basketItems.filter(item => item.basketId !== basketId);
@@ -350,78 +356,103 @@ export default class ItemData {
      * @returns {Object|null} - The enriched order data or null if not found.
      */
     async getOrderDataFromFlag(flagId) {
-        // Access the 'sr5-marketplace' flag on the current user
-        const userFlags = game.user.flags['sr5-marketplace'];
+        let flagData = null;
     
-        if (userFlags && userFlags[flagId]) {
-            const flagData = userFlags[flagId];
-            const items = flagData.items || [];
-            const reviewPrep = []; // Temp array to hold the enriched game items
+        // Step 1: Search through all users for the flag
+        for (const user of game.users.contents) {
+            const userFlags = user.flags['sr5-marketplace'];
+            if (userFlags && userFlags[flagId]) {
+                flagData = userFlags[flagId];
+                break; // Exit loop once flag is found
+            }
+        }
     
-            // Step 1: Fetch each item by ID and prepare for enrichment (Async for each item)
-            await Promise.all(items.map(async (flagItem) => {
-                const itemId = flagItem.id || flagItem._id || flagItem.id_Item; // Adjust based on how the ID is stored
-                const gameItem = game.items.get(itemId); // Fetch the item from the game world
-    
-                if (gameItem) {
-                    // Create a shallow copy of the gameItem for enrichment
-                    const enrichedItem = JSON.parse(JSON.stringify(gameItem));
-    
-                    // Step 2: Enrich the item with flag data (cost, rating)
-                    enrichedItem.selectedRating = flagItem.rating || enrichedItem.system.technology?.rating || 1;
-    
-                    // Await for all calculations to complete and ensure results are numbers/strings, not objects
-                    let enrichtmentRating = Number(enrichedItem.selectedRating);
-                    enrichedItem.calculatedCost = flagItem.cost || (await this.calculateCostReviewUpdate(enrichedItem, enrichtmentRating));
-                    if (typeof enrichedItem.calculatedCost !== "number") {
-                        console.warn(`calculatedCost is not a number, got:`, enrichedItem.calculatedCost);
-                        enrichedItem.calculatedCost = parseFloat(enrichedItem.calculatedCost) || 0;
-                    }
-    
-                    enrichedItem.calculatedAvailability = await this.calculateOrderReviewAvailability(enrichedItem, enrichedItem.selectedRating);
-                    enrichedItem.calculatedEssence = await this.calculateEssence(enrichedItem);
-    
-                    // Ensure all calculated values are numbers/strings
-                    enrichedItem.calculatedAvailability = String(enrichedItem.calculatedAvailability || '');
-                    enrichedItem.calculatedEssence = parseFloat(enrichedItem.calculatedEssence) || 0;
-    
-                    // Replace the values in the gameItem's system structure to reflect the flag's data
-                    enrichedItem.system.technology.cost = enrichedItem.calculatedCost; // Override with flagged cost
-                    enrichedItem.system.technology.rating = enrichedItem.selectedRating; // Override with flagged rating
-                    enrichedItem.system.technology.availability = enrichedItem.calculatedAvailability; // Override availability
-    
-                    // Store the enriched item in the reviewPrep array
-                    reviewPrep.push(enrichedItem);
-                } else {
-                    console.warn(`Game item with ID ${itemId} not found.`);
+        // Step 2: If no user has the flag, check the GM's flags
+        if (!flagData) {
+            const gmUser = game.users.find(u => u.isGM);
+            if (gmUser) {
+                const gmFlags = gmUser.flags['sr5-marketplace'];
+                if (gmFlags && gmFlags[flagId]) {
+                    flagData = gmFlags[flagId];
                 }
-            }));
+            }
+        }
     
-            // Step 3: After fetching and enriching, calculate total cost and availability
-            const totalCost = reviewPrep.reduce((sum, item) => sum + (item.calculatedCost || 0), 0);
-            const totalAvailability = reviewPrep.reduce((acc, item) => acc + (item.calculatedAvailability || ''), '');
-    
-            // Step 4: Save enriched items and calculated totals into completeItemsArray
-            this.completeItemsArray = reviewPrep.map(item => ({
-                ...item,
-                flags: {
-                    ...item.flags,
-                    'sr5-marketplace': { flagId }
-                }
-            }));
-    
-            // Return the flag data including requester information and the enriched items in completeItemsArray
-            return {
-                id: flagData.id,
-                items: this.completeItemsArray, // The enriched items array
-                totalCost,
-                totalAvailability,
-                requester: flagData.requester
-            };
-        } else {
+        // Step 3: If no flag data was found, return null
+        if (!flagData) {
             console.warn(`No flag found with ID ${flagId}`);
             return null;
         }
+    
+        // Step 4: Enrich the items in the flag data
+        const items = flagData.items || [];
+        const reviewPrep = [];
+    
+        await Promise.all(items.map(async (flagItem) => {
+            const itemId = flagItem.id || flagItem._id || flagItem.id_Item; // Adjust based on how the ID is stored
+            const gameItem = game.items.get(itemId); // Fetch the item from the game world
+    
+            if (gameItem) {
+                const enrichedItem = JSON.parse(JSON.stringify(gameItem));
+    
+                enrichedItem.selectedRating = flagItem.rating || enrichedItem.system.technology?.rating || 1;
+                let enrichmentRating = Number(enrichedItem.selectedRating);
+    
+                enrichedItem.calculatedCost = flagItem.cost || (await this.calculateCostReviewUpdate(enrichedItem, enrichmentRating));
+                if (typeof enrichedItem.calculatedCost !== "number") {
+                    console.warn(`calculatedCost is not a number, got:`, enrichedItem.calculatedCost);
+                    enrichedItem.calculatedCost = parseFloat(enrichedItem.calculatedCost) || 0;
+                }
+    
+                enrichedItem.calculatedAvailability = await this.calculateOrderReviewAvailability(enrichedItem, enrichedItem.selectedRating);
+                enrichedItem.calculatedEssence = await this.calculateEssence(enrichedItem);
+    
+                enrichedItem.calculatedAvailability = String(enrichedItem.calculatedAvailability || '');
+                enrichedItem.calculatedEssence = parseFloat(enrichedItem.calculatedEssence) || 0;
+    
+                enrichedItem.system.technology.cost = enrichedItem.calculatedCost; // Override with flagged cost
+                enrichedItem.system.technology.rating = enrichedItem.selectedRating; // Override with flagged rating
+                enrichedItem.system.technology.availability = enrichedItem.calculatedAvailability; // Override availability
+    
+                reviewPrep.push(enrichedItem);
+            } else {
+                console.warn(`Game item with ID ${itemId} not found.`);
+            }
+        }));
+    
+        // Step 5: Fetch the actor if actorId is present
+        let actor = null;
+        if (flagData.actorId) {
+            actor = game.actors.get(flagData.actorId);
+            if (!actor) {
+                console.warn(`Actor with ID ${flagData.actorId} not found.`);
+            }
+        }
+    
+        // Step 6: Calculate total cost and availability
+        const totalCost = reviewPrep.reduce((sum, item) => sum + (item.calculatedCost || 0), 0);
+        const totalAvailability = reviewPrep.reduce((acc, item) => acc + (item.calculatedAvailability || ''), '');
+    
+        // Step 7: Save enriched items and calculated totals into completeItemsArray
+        this.completeItemsArray = reviewPrep.map(item => ({
+            ...item,
+            flags: {
+                ...item.flags,
+                'sr5-marketplace': { flagId }
+            }
+        }));
+    
+        // Return the enriched data, including actor details
+        return {
+            id: flagData.id,
+            items: this.completeItemsArray,
+            totalCost,
+            totalAvailability,
+            requester: flagData.requester,
+            requesterId: flagData.requesterId || '', // Include requesterId if present
+            actorId: flagData.actorId || '', // Include actorId if present
+            actor // Include the full actor object
+        };
     }
 
     /**

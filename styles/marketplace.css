@@ -311,6 +311,15 @@ button.remove-item {
 .send-request-button{
     max-width: 60px;
 }
+.review-request-button{
+    max-width: 12em;
+    background-color: #25221d;
+    color: #bb4f3d;
+    border-color: #782e22;
+}
+.review-request-button.hide-for-non-gm{
+    display: none;
+}
 .marketplace-tab{
     max-width: 60px;
 }
