@@ -98,49 +98,60 @@ export class PurchaseScreenApp extends Application {
         // Event listener for removing items in the order review
         html.on('click', '.remove-item', async event => {
             event.preventDefault();
-
+        
             // Retrieve the item ID and flag ID from the DOM
             const itemId = $(event.currentTarget).data('itemId');
             const flagId = $(event.currentTarget).closest('#order-review-items').data('flagId');
-
-            // Fetch the flag data associated with the flagId
-            const orderData = game.user.getFlag('sr5-marketplace', flagId);
+        
+            // Search for the flag across all users
+            let orderData;
+            let userWithFlag;
+            
+            for (const user of game.users) {
+                const userFlags = user.getFlag('sr5-marketplace', flagId);
+                if (userFlags) {
+                    orderData = userFlags;
+                    userWithFlag = user;
+                    break;  // Stop the search once we find the flag
+                }
+            }
+        
             if (!orderData) {
                 console.warn(`No order data found for flag ID ${flagId}`);
                 return;
             }
-
+        
             // Find the index of the item in the flag's items array
             const itemIndex = orderData.items.findIndex(item => item._id === itemId || item.id === itemId);
             if (itemIndex === -1) {
                 console.warn(`Item with ID ${itemId} not found in flag data`);
                 return;
             }
-
+        
             // Remove the item from the array
             orderData.items.splice(itemIndex, 1);
-
+        
             // Check if only one item was left before deletion, in which case, remove the chat message
             if (orderData.items.length === 0) {
                 // Find and delete the chat message with the matching button id (flagId)
                 const chatMessage = game.messages.contents.find(msg => {
                     return msg.content.includes(`data-request-id="${flagId}"`);
                 });
-
+        
                 if (chatMessage) {
                     await chatMessage.delete();  // Delete the chat message
                 }
             }
-
-            // Update the flag data without the removed item
-            await game.user.setFlag('sr5-marketplace', flagId, orderData);
-
+        
+            // Update the flag data without the removed item on the correct user
+            await userWithFlag.setFlag('sr5-marketplace', flagId, orderData);
+        
             // Fetch the updated flag data after the deletion
             const updatedOrderData = await this.itemData.getOrderDataFromFlag(flagId);
-
+        
             // Re-render the order review with the updated data
             this._renderOrderReview(html, flagId, updatedOrderData.items);
-
+        
             // Log the updated flag after it’s saved
             console.log(`Updated Flag Data After Deletion (flagId: ${flagId}):`, JSON.stringify(updatedOrderData, null, 2));
         });
@@ -247,9 +258,6 @@ export class PurchaseScreenApp extends Application {
         });
     }
     
-    /**
-     * Handle rating change in the order review
-     */
     async _onRatingChangeOrderReview(event, html) {
         event.preventDefault();
     
@@ -264,15 +272,14 @@ export class PurchaseScreenApp extends Application {
         const newRating = parseInt($(event.currentTarget).val()); // Get the new rating value from the dropdown
     
         // Fetch the current order data from the flag
-        let itemData = this.itemData
-        const orderData = await itemData.getOrderDataFromFlag(flagId);
+        const orderData = await this.itemData.getOrderDataFromFlag(flagId);
         if (!orderData) {
             console.warn(`No order data found for flag ID ${flagId}`);
             return;
         }
     
         // Find the item in the order data
-        const flagItem = orderData.items.find(item => item._id === itemId);
+        const flagItem = orderData.items.find(item => item._id === itemId || item.id === itemId);
         if (!flagItem) {
             console.warn(`Item with ID ${itemId} not found in flag data`);
             return;
@@ -281,17 +288,51 @@ export class PurchaseScreenApp extends Application {
         // Update the item's rating in the flag data
         flagItem.rating = newRating;
     
-        // Update the flag data to reflect the new rating
+        // Get the old flag data to retain original requester/actor info
+        const oldFlagData = await this.itemData.getOrderDataFromFlag(flagId);
+    
+        // Save the updated flag with the new rating
         await game.user.setFlag('sr5-marketplace', flagId, orderData);
     
-        // Re-fetch the updated order data (with new rating) from the flag
-        const updatedOrderData = await itemData.getOrderDataFromFlag(flagId);
-    
-        // Log the updated data for debugging
-        console.log("Updated Order Data:", updatedOrderData);
+        // Fetch the updated order data (with new rating) from the flag
+        const updatedOrderData = await this.itemData.getOrderDataFromFlag(flagId);
     
         // Safeguard: Ensure the completeItemsArray is valid
         const completeItemsArray = updatedOrderData.items || [];
+    
+        // Iterate over the updated items and extract their details
+        const updatedItemDetails = completeItemsArray.map(item => ({
+            id: item.id_Item || item._id, // Use id_Item if available, fallback to _id
+            name: item.name, // Item name
+            image: item.img || "icons/svg/item-bag.svg", // Item image or default icon
+            description: item.system.description?.value || "", // Safely access description text
+            type: item.type, // Item type
+            cost: item.calculatedCost || 0, // Use calculated cost or fallback to 0
+            rating: item.selectedRating || 1, // Use selected rating or fallback to 1
+            essence: item.calculatedEssence || 0 // Use calculated essence or fallback to 0
+        }));
+    
+        // Update the chat message with the latest data
+        const chatMessage = game.messages.contents.find(msg => msg.content.includes(`data-request-id="${flagId}"`));
+        if (chatMessage) {
+            // Prepare the updated message data based on the updatedOrderData
+            const messageData = {
+                id: flagId, // Include the flag ID
+                items: updatedItemDetails, // Updated items with new ratings and costs
+                totalCost: updatedOrderData.totalCost, // Updated total cost
+                totalAvailability: updatedOrderData.totalAvailability, // Updated total availability
+                totalEssenceCost: updatedItemDetails.reduce((sum, item) => sum + (item.essence || 0), 0), // Updated total essence cost
+                requesterName: oldFlagData.requester, // Keep the original requester name
+                actorId: oldFlagData.actorId, // Keep the original actor ID
+                actor: oldFlagData.actor // Keep the original actor
+            };
+    
+            // Re-render the chat message with the updated data
+            const htmlContent = await renderTemplate('modules/sr5-marketplace/templates/chatMessageRequest.hbs', messageData);
+    
+            // Update the chat message with the newly rendered content
+            await chatMessage.update({ content: htmlContent });
+        }
     
         // Re-render the order review with the updated data
         this._renderOrderReview(html, flagId, completeItemsArray);
@@ -335,7 +376,7 @@ export class PurchaseScreenApp extends Application {
             flagId: flagId,
             items: completeItemsArray,  // Pass the enriched item data
             totalCost,
-            totalAvailability
+            totalAvailability,
         };
 
         // Log template data for debugging
@@ -366,15 +407,24 @@ export class PurchaseScreenApp extends Application {
         event.preventDefault();
     
         // Prepare the data for the chat message
-        const basketItems = this.itemData.getBasketItems(); // Get basket items from itemData
+        const basketItems = this.itemData.getBasketItems(); // Assuming itemData is accessible
         const totalCost = this.itemData.calculateTotalCost(); // Use itemData to calculate total cost
         const totalAvailability = this.itemData.calculateTotalAvailability(); // Use itemData to calculate total availability
-        const totalEssenceCost = this.itemData.calculateTotalEssenceCost(); // Calculate total essence cost
+        const totalEssenceCost = this.itemData.calculateEssence(); // Use itemData to calculate total essence cost
     
         const requestingUser = game.user; // The user who clicked the button
         const isGM = requestingUser.isGM;
-        const requestId = foundry.utils.randomID(); // Generate a unique request ID
     
+        // Get the actorId of the requesting user
+        const actor = requestingUser.character;  // This holds the actorId (if any)
+        const actorId = actor ? actor._id : null;  // This holds the actorId (if any)
+        if (!actorId) {
+            console.warn("No actor found for the requesting user.");
+            return;
+        }
+        // Log the actorId for debugging purposes
+        console.log(`Actor ID for the requesting user: ${actorId}`);
+        const requestId = foundry.utils.randomID(); // Generate a unique request ID
         // Get an array of detailed item objects from the basket items
         const itemDetails = basketItems.map(item => ({
             id: item.id_Item || item._id, // Use id_Item if available, otherwise fallback to _id
@@ -384,39 +434,42 @@ export class PurchaseScreenApp extends Application {
             type: item.type, // Item type
             cost: item.calculatedCost || 0, // Use calculated cost or default to 0
             rating: item.selectedRating || 0, // Use selected rating or default to 0
-            essence: this.itemData.calculateEssence(item), // Calculate essence using the selected rating
+            essence: item.calculatedEssence || 0 // Use calculated essence or default to 0
         }));
     
-        // Save the request as a flag on the user with detailed item information
+        // Add the actorId to the flag data
         await requestingUser.setFlag('sr5-marketplace', requestId, {
             id: requestId,
             items: itemDetails, // Store detailed item objects
-            requester: isGM ? "GM" : requestingUser.name // Identify the requester
+            requester: isGM ? "GM" : requestingUser.name, // Identify the requester
+            actor: actor, // Include the actorId
+            actorId: actorId // Include the actorId
         });
     
         const messageData = {
             items: itemDetails, // Use detailed items in the chat message
             totalCost: totalCost,
             totalAvailability: totalAvailability,
-            totalEssenceCost: totalEssenceCost, // Include total essence cost
+            totalEssenceCost: totalEssenceCost,
             requesterName: isGM ? "GM" : requestingUser.name, // Show "GM" if the request is from a GM
-            id: requestId // Include the request ID in the data
+            id: requestId, // Include the request ID in the data
+            actorId: actorId // Pass the actorId into the message data
         };
     
         // Render the message using the chatMessageRequest.hbs template
-        const htmlContent = await renderTemplate('modules/sr5-marketplace/templates/chatMessageRequest.hbs', messageData);
-        ChatMessage.create({
-            user: requestingUser.id, // Use the requesting user's ID
-            content: htmlContent,
-            style: CONST.CHAT_MESSAGE_STYLES.IC, // Corrected from type to style
-            whisper: isGM ? [] : game.users.filter(u => u.isGM).map(u => u.id) // Whisper to GM(s) if not GM
+        renderTemplate('modules/sr5-marketplace/templates/chatMessageRequest.hbs', messageData).then(htmlContent => {
+            ChatMessage.create({
+                user: requestingUser.id, // Use the requesting user's ID
+                content: htmlContent,
+                whisper: isGM ? [] : game.users.filter(u => u.isGM).map(u => u.id) // Whisper to GM(s) if not GM
+            });
+    
+            // Empty the basket
+            this.itemData.basketItems = [];
+    
+            // Render the empty basket
+            this._renderBasket(html); // Update the UI to reflect the empty basket
         });
-    
-        // Empty the basket
-        this.itemData.basketItems = [];
-    
-        // Render the empty basket
-        this._renderBasket(html); // Update the UI to reflect the empty basket
-    }      
+    }     
 }
   

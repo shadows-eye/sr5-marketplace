@@ -1,9 +1,12 @@
 {
     "SR5": {
         "Marketplace": {
+            "of": "of",
+            "each": "each",
             "Image": "Image",
             "Name" : "Name",
             "RemoveItem": "Remove",
+            "ReviewAndConfirm": "Review (GM only)",
             "SelectItemType": "Select Item Type",
             "ShoppingBasket": "Shopping Basket",
             "Marketplace": "Marketplace",
@@ -12,9 +15,13 @@
             "SendRequest": "Buy",
             "CancelRequest": "Cancel",
             "Total": "Total",
+            "TotalCost": "Total Cost",
             "TotalAvailability": "Total Availability",
             "Search": "Search",
             "Search items...": "Search items...",
+            "shoppingListRequest": "Shopping List Request",
+            "requestActor": "From ",
+            "Items": "Items",
             "system": {
                 "avail": "Avail",
                 "essence": "Essence",

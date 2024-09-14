@@ -1,9 +1,12 @@
 {
     "SR5": {
         "Marketplace": {
+            "of": "von",
+            "each": "pro Stück",
             "Image": "Bild",
             "Name" : "Name",
             "RemoveItem": "Entfernen",
+            "ReviewAndConfirm": "Überprüfen (nur GM)",
             "SelectItemType": "Artikeltyp auswählen",
             "ShoppingBasket": "Einkaufskorb",
             "Marketplace": "Marktplatz",
@@ -12,9 +15,13 @@
             "SendRequest": "Kaufen",
             "CancelRequest": "Abbruch",
             "Total": "Gesamt",
+            "TotalCost": "Gesamtkosten",
             "TotalAvailability": "Gesamtverfügbarkeit",
             "Search": "Suche",
             "Search items...": "Item Suche",
+            "shoppingListRequest": "Einkaufslisten Anfrage",
+            "requestActor": "Von ",
+            "Items": "Gegenstände",
             "system": {
                 "avail": "Verfg.",
                 "essence": "Essenz",

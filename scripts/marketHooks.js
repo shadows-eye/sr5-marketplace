@@ -9,7 +9,34 @@ Hooks.once('init', async function() {
 Hooks.once('ready', async function() {
     const itemData = new ItemData();
     await itemData.fetchItems();
+    // Check if the user is not a GM
+    if (!game.user.isGM) {
+        // Select all review-request-button elements and hide them for non-GMs
+        const buttons = document.querySelectorAll('.review-request-button');
+        buttons.forEach(button => {
+            button.classList.add('hide-for-non-gm'); // Add a specific class to hide it
+        });
+    }
+    console.log("Cleaning up unused flags in sr5-marketplace...");
+    // Iterate through all users
+    for (const user of game.users.contents) {
+        const userFlags = user.flags['sr5-marketplace'] || {};
 
+        // For each flag in sr5-marketplace, check if a corresponding chat message exists
+        for (const flagId in userFlags) {
+            const flagData = userFlags[flagId];
+
+            // Check if there's a chat message with the corresponding flag ID in its content
+            const chatMessageExists = game.messages.contents.some(msg => msg.content.includes(`data-request-id="${flagId}"`));
+
+            if (!chatMessageExists) {
+                // If no corresponding chat message is found, remove the flag
+                console.log(`Removing unused flag: ${flagId} for user: ${user.name}`);
+                await user.unsetFlag('sr5-marketplace', flagId);
+            }
+        }
+    }
+    console.log("Flag cleanup complete.");
     // Listen for the review-request-button click
     $(document).on('click', '.review-request-button', async function(event) {
         event.preventDefault();
@@ -36,9 +63,9 @@ Hooks.once('ready', async function() {
             });
             purchaseScreenApp.render(true);
     
-            Hooks.once('renderPurchaseScreenApp', (app, html, data) => {
+            Hooks.once('renderPurchaseScreenApp', (app, html, orderdata) => {
                 console.log('PurchaseScreenApp is now open.');
-
+                orderdata = orderData;
                 const orderReviewButton = html.find("#id-orderReview");
     
                 if (orderReviewButton.length) {

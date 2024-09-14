@@ -99,4 +99,7 @@ export const registerBasicHelpers = () => {
     Handlebars.registerHelper('eq', function(a, b) {
         return a === b;
     });
+    Handlebars.registerHelper('neq', function(a, b) {
+        return a !== b;
+      });
 };
