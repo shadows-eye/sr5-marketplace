@@ -6,20 +6,40 @@ import { registerBasicHelpers } from './lib/helpers.js';
 registerBasicHelpers();
 Hooks.once('init', async function() {
 });
+Hooks.on('renderChatMessage', (message, html, data) => {
+    // Check if the current user is a GM
+    if (game.user.isGM) {
+        // Select the button with the 'hide-for-non-gm' class
+        const button = html.find('.review-request-button.hide-for-non-gm');
+        
+        // If the button exists, remove the 'hide-for-non-gm' class
+        if (button.length) {
+            button.removeClass('hide-for-non-gm');
+        }
+    }
+});
 Hooks.once('ready', async function() {
     const itemData = new ItemData();
     await itemData.fetchItems();
     // Check if the user is not a GM
     if (!game.user.isGM) {
-        // Select all review-request-button elements and hide them for non-GMs
+        // Select all review-request-button elements
         const buttons = document.querySelectorAll('.review-request-button');
+        
         buttons.forEach(button => {
-            button.classList.add('hide-for-non-gm'); // Add a specific class to hide it
+            // Check if the button already has the 'hide-for-non-gm' class
+            if (!button.classList.contains('hide-for-non-gm')) {
+                // Add the class if it's not already present
+                button.classList.add('hide-for-non-gm');
+            }
         });
     }
     console.log("Cleaning up unused flags in sr5-marketplace...");
-    // Iterate through all users
-    for (const user of game.users.contents) {
+    const currentUser = game.user;  // Get the current user
+    const isGM = currentUser.isGM;  // Check if the current user is a GM
+
+    // Define the function to clean flags for a user
+    async function cleanFlagsForUser(user) {
         const userFlags = user.flags['sr5-marketplace'] || {};
 
         // For each flag in sr5-marketplace, check if a corresponding chat message exists
@@ -35,6 +55,18 @@ Hooks.once('ready', async function() {
                 await user.unsetFlag('sr5-marketplace', flagId);
             }
         }
+    }
+
+    // If the current user is a GM, clean flags for all users
+    if (isGM) {
+        console.log("GM detected, cleaning flags for all users.");
+        for (const user of game.users.contents) {
+            await cleanFlagsForUser(user);  // Clean flags for each user
+        }
+    } else {
+        // If the user is not a GM, only clean flags for the current user
+        console.log(`Cleaning flags for current user: ${currentUser.name}`);
+        await cleanFlagsForUser(currentUser);  // Clean flags for the current user only
     }
     console.log("Flag cleanup complete.");
     // Listen for the review-request-button click

@@ -151,9 +151,6 @@ export class PurchaseScreenApp extends Application {
         
             // Re-render the order review with the updated data
             this._renderOrderReview(html, flagId, updatedOrderData.items);
-        
-            // Log the updated flag after it’s saved
-            console.log(`Updated Flag Data After Deletion (flagId: ${flagId}):`, JSON.stringify(updatedOrderData, null, 2));
         });
 
     }
@@ -410,21 +407,22 @@ export class PurchaseScreenApp extends Application {
         const basketItems = this.itemData.getBasketItems(); // Assuming itemData is accessible
         const totalCost = this.itemData.calculateTotalCost(); // Use itemData to calculate total cost
         const totalAvailability = this.itemData.calculateTotalAvailability(); // Use itemData to calculate total availability
-        const totalEssenceCost = this.itemData.calculateEssence(); // Use itemData to calculate total essence cost
+        const totalEssenceCost = this.itemData.calculateTotalEssenceCost(); // Use itemData to calculate total essence cost
     
         const requestingUser = game.user; // The user who clicked the button
         const isGM = requestingUser.isGM;
     
-        // Get the actorId of the requesting user
-        const actor = requestingUser.character;  // This holds the actorId (if any)
-        const actorId = actor ? actor._id : null;  // This holds the actorId (if any)
-        if (!actorId) {
-            console.warn("No actor found for the requesting user.");
-            return;
+        // Get the actorId of the requesting user (can be null if GM has no actor)
+        const actor = requestingUser.character || null; // Get actor if it exists
+        const actorId = actor ? actor._id : null; // Extract actor ID if actor exists
+    
+        // If the requesting user is a GM without an actor, log a warning, but continue without actor linkage
+        if (isGM && !actorId) {
+            console.warn("GM has no actor assigned. Proceeding without actor linkage.");
         }
-        // Log the actorId for debugging purposes
-        console.log(`Actor ID for the requesting user: ${actorId}`);
+    
         const requestId = foundry.utils.randomID(); // Generate a unique request ID
+    
         // Get an array of detailed item objects from the basket items
         const itemDetails = basketItems.map(item => ({
             id: item.id_Item || item._id, // Use id_Item if available, otherwise fallback to _id
@@ -432,20 +430,28 @@ export class PurchaseScreenApp extends Application {
             image: item.img || "icons/svg/item-bag.svg", // Use the item image or default icon
             description: item.system.description?.value || "", // Safely access description text
             type: item.type, // Item type
-            cost: item.calculatedCost || 0, // Use calculated cost or default to 0
-            rating: item.selectedRating || 0, // Use selected rating or default to 0
-            essence: item.calculatedEssence || 0 // Use calculated essence or default to 0
+            cost: item.calculatedCost || 0, // Use calculated cost or fallback to 0
+            rating: item.selectedRating || 1, // Use selected rating or default to 1
+            essence: item.calculatedEssence || 0 // Use calculated essence or fallback to 0
         }));
     
-        // Add the actorId to the flag data
-        await requestingUser.setFlag('sr5-marketplace', requestId, {
+        // Prepare the flag data
+        const flagData = {
             id: requestId,
             items: itemDetails, // Store detailed item objects
             requester: isGM ? "GM" : requestingUser.name, // Identify the requester
-            actor: actor, // Include the actorId
-            actorId: actorId // Include the actorId
-        });
+        };
     
+        // Include actor data only if actorId exists
+        if (actorId) {
+            flagData.actor = actor; // Include the full actor object
+            flagData.actorId = actorId; // Include the actorId
+        }
+    
+        // Add the flag data to the requesting user (GM or player)
+        await requestingUser.setFlag('sr5-marketplace', requestId, flagData);
+    
+        // Prepare the message data to display in chat
         const messageData = {
             items: itemDetails, // Use detailed items in the chat message
             totalCost: totalCost,
@@ -453,7 +459,8 @@ export class PurchaseScreenApp extends Application {
             totalEssenceCost: totalEssenceCost,
             requesterName: isGM ? "GM" : requestingUser.name, // Show "GM" if the request is from a GM
             id: requestId, // Include the request ID in the data
-            actorId: actorId // Pass the actorId into the message data
+            actorId: actorId, // Include actorId (if present)
+            isGM: isGM
         };
     
         // Render the message using the chatMessageRequest.hbs template

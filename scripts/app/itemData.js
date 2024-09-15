@@ -66,7 +66,7 @@ export default class ItemData {
         const item = this.items.find(item => item._id === itemId);
         if (item) {
             // Ensure all async calculations are awaited before adding to the basket
-            const selectedRating = item.system.technology.rating || 1; // Default rating
+            const selectedRating = item.selectedRating !== undefined && item.selectedRating !== null ? item.selectedRating : 1;
     
             const calculatedCost = await this.calculateCost(item, selectedRating);
             const calculatedAvailability = await this.calculateAvailability(item, selectedRating);
@@ -160,15 +160,20 @@ export default class ItemData {
     
         return `${numericAvailability * selectedRating}${availabilityModifier}`;  // Scale availability by rating
     }
-    async calculateEssence(item) {
+    calculateEssence(item) {
         // Ensure selectedRating is set to 1 if it is undefined or null
         const rating = item.selectedRating !== undefined && item.selectedRating !== null ? item.selectedRating : 1;
     
-        // Get the base essence value, defaulting to 0 if not defined
-        const baseEssence = item.system.essence || 0;
+        // Check if the essence value exists in the item's system, if not, default to 0
+        const baseEssence = item.system?.essence !== undefined ? item.system.essence : 0;
     
-        // Calculate the essence based on the baseEssence and rating
-        return baseEssence * rating;
+        // Only apply rating multiplier if baseEssence is greater than 0
+        if (baseEssence > 0) {
+            return baseEssence * rating;
+        }
+    
+        // If baseEssence is 0 or essence doesn't exist, return 0
+        return 0;
     }
     
     

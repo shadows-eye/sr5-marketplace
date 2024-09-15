@@ -14,6 +14,7 @@
             "OrderReview": "Order Review",
             "SendRequest": "Buy",
             "CancelRequest": "Cancel",
+            "RequestFor": "Request from",
             "Total": "Total",
             "TotalCost": "Total Cost",
             "TotalAvailability": "Total Availability",

@@ -2,7 +2,9 @@
   <h2>{{localize "SR5.Marketplace.shoppingListRequest"}}</h2>
   
   <!-- Link to the actor this request is for -->
-  <p>{{localize "SR5.Marketplace.requestActor"}}: @Actor[{{actorId}}]</p>
+  {{#if actorId}}
+    <p>{{localize "SR5.Marketplace.RequestFor"}}: @Actor[{{actorId}}]</p>
+  {{/if}}
   
   <h3>{{localize "SR5.Marketplace.Items"}}</h3>
   <ul>
@@ -17,7 +19,7 @@
   </ul>
 
   <p><strong>{{localize "SR5.Marketplace.TotalCost"}}: {{totalCost}}¥</strong></p>
-    <button id="{{id}}" class="review-request-button" data-request-id="{{id}}">
+    <button id="{{id}}" class="review-request-button {{#unless (game.user.isGM)}}hide-for-non-gm{{/unless}}" data-request-id="{{id}}">
       {{localize 'SR5.Marketplace.ReviewAndConfirm'}}
     </button>
 </div>  

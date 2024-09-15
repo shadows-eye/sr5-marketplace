@@ -14,11 +14,12 @@
             "OrderReview": "Order Überprüfung",
             "SendRequest": "Kaufen",
             "CancelRequest": "Abbruch",
+            "RequestFor": "Anfrage von",
             "Total": "Gesamt",
             "TotalCost": "Gesamtkosten",
             "TotalAvailability": "Gesamtverfügbarkeit",
             "Search": "Suche",
-            "Search items...": "Item Suche",
+            "Search items...": "Gegenstand Suche",
             "shoppingListRequest": "Einkaufslisten Anfrage",
             "requestActor": "Von ",
             "Items": "Gegenstände",
@@ -26,10 +27,10 @@
                 "avail": "Verfg.",
                 "essence": "Essenz",
                 "technology": {
-                    "rating": "Rating",
-                    "availability": "Availability",
+                    "rating": "Stufe",
+                    "availability": "Verfügbarkeit",
                     "Cost": "Kosten",
-                    "quantity": "Quantity"
+                    "quantity": "Menge"
                 }
             },
             "Tab": {
