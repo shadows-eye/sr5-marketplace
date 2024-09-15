@@ -249,6 +249,9 @@ input#item-search {
     gap: 10px; /* Adjust the gap between elements as needed */
     align-items: center; /* Aligns the content vertically */
 }
+.hidden{
+    display: none;
+}
 .item-rating-section,
 .item-cost-section,
 .item-availability-section,

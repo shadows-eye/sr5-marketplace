@@ -1,6 +1,7 @@
 {
     "SR5": {
         "Marketplace": {
+            "OrderReviewItems": "Artikel Liste für die Überprüfung",
             "of": "von",
             "each": "pro Stück",
             "Image": "Bild",
@@ -24,7 +25,12 @@
             "requestActor": "Von ",
             "Items": "Gegenstände",
             "system": {
-                "avail": "Verfg.",
+                "avail":{
+                    "avail": "Verfg.",
+                    "R": "E",
+                    "F": "V"
+                }
+                ,
                 "essence": "Essenz",
                 "technology": {
                     "rating": "Stufe",

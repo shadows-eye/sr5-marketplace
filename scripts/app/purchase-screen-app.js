@@ -358,20 +358,45 @@ export class PurchaseScreenApp extends Application {
         // Render the shopping basket summary template with the updated data
         return await renderTemplate('modules/sr5-marketplace/templates/chatMessageRequest.hbs', templateData);
     }
+    async enrichItems(completeItemsArray) {
+        // Use Promise.all to ensure asynchronous processing of all items
+        return await Promise.all(completeItemsArray.map(async item => {
+            // Check if the item comes from a compendium
+            let enrichedName;
+            if (item.flags?.core?.sourceId) {
+                // This item is from a compendium, extract compendium and item ID
+                const [compendiumName, itemId] = item.flags.core.sourceId.split('.');
+                enrichedName = await TextEditor.enrichHTML(`@Compendium[${compendiumName}.${itemId}]{${item.name}}`);
+            } else {
+                // The item is from the world
+                enrichedName = await TextEditor.enrichHTML(`@Item[${item._id}]{${item.name}}`);
+            }
+    
+            // Enrich actor name if available
+            const enrichedActor = item.actorId ? await TextEditor.enrichHTML(`@Actor[${item.actorId}]{${item.actor.name}}`) : "";
+    
+            return {
+                ...item,
+                enrichedName, // Enriched item name
+                enrichedActor // Enriched actor if available
+            };
+        }));
+    }
     /**
      * Render the order review tab with the updated data
      */
-    _renderOrderReview(html, flagId, completeItemsArray) {
+    async _renderOrderReview(html, flagId, completeItemsArray) {
         // Ensure the items are passed to itemData for further calculations
         this.itemData.orderReviewItems = completeItemsArray;  // Assign the array to itemData
 
         // Use itemData methods to calculate totals
         const totalCost = this.itemData.calculateOrderReviewTotalCost();
         const totalAvailability = this.itemData.calculateOrderReviewTotalAvailability();
-
-        const templateData = {
+        // Enrich the item and actor names using TextEditor.enrichHTML
+        const ItemsLinks = await this.enrichItems(completeItemsArray);
+         const templateData = {
             flagId: flagId,
-            items: completeItemsArray,  // Pass the enriched item data
+            items: ItemsLinks,  // Pass the enriched item data
             totalCost,
             totalAvailability,
         };

@@ -66,7 +66,13 @@ export default class ItemData {
         const item = this.items.find(item => item._id === itemId);
         if (item) {
             // Ensure all async calculations are awaited before adding to the basket
-            const selectedRating = item.selectedRating !== undefined && item.selectedRating !== null ? item.selectedRating : 1;
+            // Get the base rating of the item (if available), otherwise default to 1
+            const baseRating = item.system.technology?.rating || 1;
+            
+            // Ensure that selectedRating is at least the base rating of the item, or default to the base rating
+            const selectedRating = item.selectedRating !== undefined && item.selectedRating !== null
+                ? Math.max(item.selectedRating, baseRating) // Ensure the rating is not lower than the baseRating
+                : baseRating;
     
             const calculatedCost = await this.calculateCost(item, selectedRating);
             const calculatedAvailability = await this.calculateAvailability(item, selectedRating);
@@ -211,11 +217,56 @@ export default class ItemData {
     }
 
     /**
-     * Calculate total availability for the order review.
+     * Calculate total availability for the order review. and Provide Localization for the highest priority text part
      */
     calculateOrderReviewTotalAvailability() {
-        return this.orderReviewItems.reduce((sum, item) => sum + (item.calculatedAvailability || ""), "");
-    }
+        // Initialize variables to store the total availability and the highest priority text part
+        let totalAvailability = 0;
+        let highestPriorityText = "";
+    
+        // Define a priority map for the availability text parts
+        const priorityMap = {
+            "": 0,   // No text has the lowest priority
+            "R": 1,  // Restricted
+            "F": 2,  // Forbidden
+            "E": 3   // Extreme (highest priority)
+        };
+    
+        // Define a mapping for text parts to normalize values (e.g., "E" or "V" to "R" and "F")
+        const textMapping = {
+            "E": "R",  // German for Restricted
+            "V": "F",  // German for Forbidden
+            "R": "R",  // English Restricted
+            "F": "F",  // English Forbidden
+            "": ""     // No text
+        };
+    
+        // Iterate over all order review items
+        this.orderReviewItems.forEach(item => {
+            const availability = item.calculatedAvailability || "";
+    
+            // Extract the numeric part of availability using regex
+            const numericPart = parseInt(availability.match(/\d+/), 10) || 0;
+            totalAvailability += numericPart;
+    
+            // Extract the text part (e.g., "E", "F", "R") from the availability string
+            let textPart = availability.replace(/\d+/g, '').trim();
+    
+            // Normalize the text part based on the textMapping (e.g., "E" becomes "R", "V" becomes "F")
+            textPart = textMapping[textPart.toUpperCase()] || "";  // Convert to uppercase for case-insensitive matching
+    
+            // Compare the current text part's priority to the highestPriorityText
+            if (priorityMap[textPart] > priorityMap[highestPriorityText]) {
+                highestPriorityText = textPart;  // Update to the highest-priority text part
+            }
+        });
+    
+        // Localize the highest priority text part (using the localization keys)
+        const localizedText = highestPriorityText ? game.i18n.localize(`SR5.Marketplace.system.avail.${highestPriorityText}`) : "";
+    
+        // Combine the total availability number and the localized text part
+        return `${totalAvailability} ${localizedText}`;
+    }    
     addItemToOrderReview(itemId) {
         const item = this.items.find(item => item._id === itemId);
         if (item) {
@@ -392,11 +443,26 @@ export default class ItemData {
         // Step 4: Enrich the items in the flag data
         const items = flagData.items || [];
         const reviewPrep = [];
-    
+        /*
+        const baseItems = [];
         await Promise.all(items.map(async (flagItem) => {
             const itemId = flagItem.id || flagItem._id || flagItem.id_Item; // Adjust based on how the ID is stored
+            const baseItemUuid = `Item.${itemId}`; // Construct UUID for the base item
+            try {
+                // Fetch the base item using its UUID
+                const baseItem = await fromUuid(baseItemUuid);
+                if (baseItem) {
+                    console.log(`Base item fetched with UUID: ${baseItemUuid}`, baseItem);
+                    baseItems.push(baseItem); // Store the base item in the array
+                } else {
+                    console.warn(`Base item with UUID ${baseItemUuid} not found.`);
+                }
+            } catch (error) {
+                console.error(`Error fetching base item with UUID ${baseItemUuid}:`, error);
+            }*/
+            await Promise.all(items.map(async (flagItem) => {
+            const itemId = flagItem.id || flagItem._id || flagItem.id_Item; 
             const gameItem = game.items.get(itemId); // Fetch the item from the game world
-    
             if (gameItem) {
                 const enrichedItem = JSON.parse(JSON.stringify(gameItem));
     
@@ -456,7 +522,7 @@ export default class ItemData {
             requester: flagData.requester,
             requesterId: flagData.requesterId || '', // Include requesterId if present
             actorId: flagData.actorId || '', // Include actorId if present
-            actor // Include the full actor object
+            actor, // Include the full actor object
         };
     }
 

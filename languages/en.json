@@ -1,6 +1,7 @@
 {
     "SR5": {
         "Marketplace": {
+            "OrderReviewItems": "Items List for the Review",
             "of": "of",
             "each": "each",
             "Image": "Image",
@@ -24,7 +25,11 @@
             "requestActor": "From ",
             "Items": "Items",
             "system": {
-                "avail": "Avail",
+                "avail":{
+                    "avail": "Verfg.",
+                    "R": "E",
+                    "F": "V"
+                },
                 "essence": "Essence",
                 "technology": {
                     "rating": "Rating",
