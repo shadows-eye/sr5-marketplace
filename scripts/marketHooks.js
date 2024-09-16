@@ -1,4 +1,5 @@
 import ItemData from './app/itemData.js';
+import { ActorItemData } from './app/actorItemData.js';
 import { PurchaseScreenApp } from './app/purchase-screen-app.js';
 import { registerBasicHelpers } from './lib/helpers.js';
 

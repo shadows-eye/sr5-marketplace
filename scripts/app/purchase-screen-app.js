@@ -1,5 +1,5 @@
 import ItemData from './itemData.js';
-
+import {ActorItemData} from './actorItemData.js';
 export class PurchaseScreenApp extends Application {
     constructor(options = {}) {
         super(options);
@@ -152,7 +152,8 @@ export class PurchaseScreenApp extends Application {
             // Re-render the order review with the updated data
             this._renderOrderReview(html, flagId, updatedOrderData.items);
         });
-
+        // Handle the "Buy Items Conformation" button click, will add the items to the actor's inventory and pay the total cost in nuyen, add flag to actor (history)
+        html.on('click', '.send-request-button.confirm', event => this._onBuyItems(event, html));
     }
     _onSearchInput(event, html) {
         const searchText = event.target.value.toLowerCase();
@@ -477,6 +478,180 @@ export class PurchaseScreenApp extends Application {
             // Render the empty basket
             this._renderBasket(html); // Update the UI to reflect the empty basket
         });
-    }     
+    }
+    /**
+     * 
+     * @param {*} event 
+     * @param {*} html 
+     * @returns 
+     */
+    async _onBuyItems(event, html) {
+        event.preventDefault();
+    
+        // Retrieve the flag ID from the button's data attribute
+        const flagId = $(event.currentTarget).data('flag-id');
+        if (!flagId) {
+            console.warn('No flag ID found for the clicked button.');
+            return;
+        }
+    
+        const orderData = await this.itemData.getOrderDataFromFlag(flagId);
+    
+        // Check if actorId is available in flag data
+        let actorId = orderData.actorId || null;
+        if (!actorId && canvas.tokens.controlled.length > 0) {
+            const selectedToken = canvas.tokens.controlled[0];
+            actorId = selectedToken.actor?._id || null;
+        }
+    
+        if (!actorId) {
+            ui.notifications.warn("No actor selected. Please select an actor to confirm the order.");
+            $(event.currentTarget).find('i').addClass('fa-exclamation-circle');
+            return;
+        }
+    
+        const actor = game.actors.get(actorId);
+    
+        // Retrieve actor's current nuyen amount
+        let currentNuyen = actor.system.nuyen || 0;  // Default to 0 if no nuyen found
+    
+        // Calculate the total cost of the items in the order
+        const totalCost = orderData.items.reduce((total, item) => total + (item.calculatedCost || 0), 0);
+    
+        // Check if the actor has enough nuyen for the purchase
+        if (currentNuyen < totalCost) {
+            ui.notifications.error(`Not enough nuyen. You need ${totalCost}¥ but only have ${currentNuyen}¥.`);
+            return;
+        }
+    
+        // Subtract the total cost from the actor's nuyen
+        currentNuyen -= totalCost;
+    
+        // Update the actor's nuyen amount
+        await actor.update({ "system.nuyen": currentNuyen });
+    
+        // Retrieve base items and create new items on the actor
+        const actorItemData = new ActorItemData(actor);
+        await actorItemData.initWithFlag(flagId);
+        actorItemData.logItems();
+    
+        const creationItems = await actorItemData.createItemsWithInjectedData();
+        await actorItemData.createItemsOnActor(actor, creationItems);
+    
+        // Check if the actor already has a history flag for the provided flagId
+        let historyFlag = actor.getFlag('sr5-marketplace', 'history') || [];
+    
+        // Ensure historyFlag is an array
+        if (!Array.isArray(historyFlag)) {
+            historyFlag = [];
+        }
+    
+        const existingHistory = historyFlag.find(entry => entry.flagId === flagId);
+    
+        if (!existingHistory) {
+            // Add new history entry if the flagId doesn't exist
+            const newHistoryEntry = {
+                flagId: flagId,
+                items: creationItems.map(item => ({
+                    id: {
+                        baseId: item._id,  // base item ID
+                        actorItemId: item._id,  // the ID after creation on the actor
+                        creationItemId: item._id  // used for creation as well
+                    },
+                    name: item.name,
+                    calculatedCost: item.system.technology.cost,
+                    selectedRating: item.system.technology.rating,
+                    calculatedAvailability: item.system.technology.availability,
+                    calculatedEssence: item.system.technology.essence
+                })),
+                timestamp: SimpleCalendar.api ? await SimpleCalendar.api.formatTimestamp(SimpleCalendar.api.currentDateTimeDisplay(), 'DD/MM/YYYY HH:mm') : new Date().toLocaleString()
+            };
+    
+            historyFlag.push(newHistoryEntry);
+    
+            // Update the history flag on the actor
+            await actor.setFlag('sr5-marketplace', 'history', historyFlag);
+            ui.notifications.info("History flag updated for the actor.");
+        } else {
+            ui.notifications.info(`A history flag already exists for flagId: ${flagId}. Skipping flag creation.`);
+        }
+    
+        // Retrieve the current date from SimpleCalendar (if installed and active)
+        let timestamp;
+        if (typeof SimpleCalendar !== "undefined" && SimpleCalendar.api) {
+            const currentDate = await SimpleCalendar.api.currentDateTimeDisplay();
+            timestamp = SimpleCalendar.api.currentDateTimeDisplay();
+        } else {
+            timestamp = new Date().toLocaleString();
+        }
+    
+        // Pull the actual items from the actor after the items have been created
+        const createdActorItems = creationItems.map(item => ({
+            _id: item._id,
+            name: item.name
+        }));
+    
+        // Prepare the message data for the chat
+        const messageData = {
+            items: createdActorItems,
+            totalCost: totalCost,
+            actorId: actor._id,
+            actorName: actor.name,
+            timestamp: timestamp
+        };
+    
+        // Render the message using the orderConfirmation.hbs template
+        const chatContent = await renderTemplate('modules/sr5-marketplace/templates/orderConfirmation.hbs', messageData);
+
+        // Try to find the user by their ID first
+        let playerUser;
+
+        // If there is a requesterId, try to find the player user by ID or name
+        if (orderData.requesterId) {
+            playerUser = game.users.get(orderData.requesterId) || game.users.find(u => u.name === orderData.requesterId);
+        } 
+
+        // If no player made the request or the requester is the GM, default to using the current GM's name
+        if (!playerUser) {
+            playerUser = game.user; // Use the current GM as the player
+        }
+
+        // After sending the new chat message to the player
+        ChatMessage.create({
+            user: playerUser.id,  // Use the found user (GM or player)
+            content: chatContent,
+            whisper: [playerUser.id]  // Whisper to the player or GM only
+        }).then(async (newMessage) => {
+            // After sending the new message, find the old message by the flagId
+            const oldChatMessage = game.messages.contents.find(msg => msg.content.includes(`data-request-id="${flagId}"`));
+            
+            if (oldChatMessage) {
+                // Delete the old chat message associated with the flagId
+                await oldChatMessage.delete();  // Delete the old chat message
+
+                // Notify the GM
+                ui.notifications.info(`Old chat message for flag ID ${flagId} has been deleted.`);
+
+                // Close the Purchase-Screen-App after deleting the message
+                const purchaseApp = Object.values(ui.windows).find(app => app instanceof PurchaseScreenApp);
+                if (purchaseApp) {
+                    purchaseApp.close();
+                    ui.notifications.info("Purchase Screen App closed.");
+                }
+            } else {
+                console.warn(`No old chat message found for flag ID ${flagId}.`);
+            }
+
+            // Remove the flag data associated with the completed order from the GM user
+            const gmUser = game.users.find(u => u.isGM);  // Find the GM user
+            if (gmUser) {
+                await gmUser.unsetFlag('sr5-marketplace', flagId);  // Remove the flag from the GM user
+                ui.notifications.info(`Order data cleared from GM user flags.`);
+            }
+
+            // Notify the GM that the purchase has been confirmed
+            ui.notifications.info(`Purchase confirmed for ${actor.name}. ${totalCost}¥ has been deducted.`);
+        });
+    }                                       
 }
   

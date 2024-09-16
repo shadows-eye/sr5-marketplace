@@ -31,7 +31,8 @@
     "styles/marketplace.css"
   ],
   "esmodules": [
-    "scripts/marketHooks.js"
+    "scripts/marketHooks.js",
+    "scripts/app/actorItemData.js"
   ],
   "includes": [
     "./assets/**",
