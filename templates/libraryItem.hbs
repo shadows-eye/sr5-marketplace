@@ -9,11 +9,11 @@
                 <i class="fa-solid fa-basket-shopping-plus"></i>
             </button>
         </div>
-        <div class="item">{{this.system.technology.cost}} <i class="fa-duotone fa-solid fa-circle-yen"></i></div>
+        <div class="item">{{this.system.technology.cost}} <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen"></i></div>
     </order>
     <div class="item-details">
         <h4>{{this.name}}</h4>
-        <div class="item-all">{{localize "SR5.Marketplace.system.avail"}}: {{this.system.technology.availability}}</div>
+        <div class="item-all">{{localize "SR5.Marketplace.system.avail.avail"}}: {{this.system.technology.availability}}</div>
         <div class="item-right rating">{{localize "SR5.Marketplace.system.technology.rating"}}: {{this.system.technology.rating}}</div>
         {{#if (eq this.type "bioware")}}
         <div class="item-essence">{{localize "SR5.Marketplace.system.essence"}}: {{this.system.essence}}</div>
