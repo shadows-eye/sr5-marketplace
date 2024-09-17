@@ -1,6 +1,7 @@
 import ItemData from './itemData.js';
 import {getFormattedTimestamp} from './itemData.js';
 import {ActorItemData} from './actorItemData.js';
+import { logActorHistory } from './actorHistoryLog.js';
 export class PurchaseScreenApp extends Application {
     constructor(options = {}) {
         super(options);
@@ -593,6 +594,7 @@ export class PurchaseScreenApp extends Application {
                     calculatedEssence: item.system.technology.essence
                 })),
                 karma: 0,  // Default karma value
+                gain: true,  // Default gain value
                 surgicalDamage: 0,  // Default surgical damage
                 delete: false,  // By default, not marked for deletion
                 timestamp: flagTimestamp  // Timestamp for the flag
@@ -671,6 +673,7 @@ export class PurchaseScreenApp extends Application {
         if (purchaseApp) {
             purchaseApp.close();
         }
+        await logActorHistory();
     }                                       
 }
   

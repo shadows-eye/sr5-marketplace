@@ -133,7 +133,6 @@ export class ActorItemData extends ItemData {
      * @param {Array} creationItems - The items to create on the actor.
      */
     async createItemsOnActor(actor, creationItems) {
-        // Check if actor is valid
         if (!actor) {
             console.error("No valid actor provided.");
             return;
@@ -142,11 +141,28 @@ export class ActorItemData extends ItemData {
         // Iterate over the creationItems and create each item on the actor
         for (let itemData of creationItems) {
             try {
-                await actor.createEmbeddedDocuments("Item", [itemData]);
-                console.log(`Created item: ${itemData.name} on actor: ${actor.name}`);
+                // Create the item on the actor and retrieve the created item to get the actorItemId
+                const [createdItem] = await actor.createEmbeddedDocuments("Item", [itemData]);
+                console.log(`Created item: ${createdItem.name} on actor: ${actor.name}`);
+    
+                // Create the mapping of IDs
+                createdItems.push({
+                    baseId: itemData._id,  // The ID from the base item
+                    actorItemId: createdItem.id,  // The ID of the item created on the actor
+                    creationItemId: itemData._id,  // This can be the same as the base item for now
+                    name: createdItem.name,
+                    calculatedCost: createdItem.system.technology.cost,
+                    selectedRating: createdItem.system.technology.rating,
+                    calculatedAvailability: createdItem.system.technology.availability,
+                    calculatedEssence: createdItem.system.technology.essence,
+                    calculatedKarma: createdItem.system.technology.karma,
+                });
+    
             } catch (error) {
                 console.error(`Error creating item: ${itemData.name}`, error);
             }
         }
+    
+        return createdItems;  // Return the array with updated IDs
     }
 }
