@@ -1,7 +1,10 @@
 {
     "SR5": {
         "Marketplace": {
+            "YourOrderHasArrived": "Deine Bestellung ist angekommen!",
             "OrderReviewItems": "Artikel Liste für die Überprüfung",
+            "YourItems": "Deine Artikel",
+            "ConfirmTime": "Datum",
             "of": "von",
             "each": "pro Stück",
             "Image": "Bild",

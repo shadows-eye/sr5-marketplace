@@ -1,11 +1,13 @@
 <div class="order-confirmation">
     <h2>{{localize "SR5.Marketplace.YourOrderHasArrived"}}: @Actor[{{actorId}}]</h2>
-    <p>{{localize "SR5.Marketplace.YourItems "}}:</p>
+    <p>{{localize "SR5.Marketplace.YourItems"}}:</p>
     <ul>
       {{#each items}}
         <li>@Item[{{this._id}}]</li>
       {{/each}}
     </ul>
     <p><strong>{{localize "SR5.Marketplace.TotalCost"}}:</strong> {{totalCost}}<i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen"></i></p>
+    <p><strong>{{localize "SR5.Marketplace.TotalAvailability"}}:</strong> {{totalAvailability}}</p>
+    <p><strong>{{localize "SR5.Marketplace.TotalEssece"}}:</strong> {{totalEssenceCost}}</p>
     <p><strong>{{localize 'SR5.Marketplace.ConfirmTime'}}:</strong> {{timestamp}}</p>
   </div>  

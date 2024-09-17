@@ -101,5 +101,5 @@ export const registerBasicHelpers = () => {
     });
     Handlebars.registerHelper('neq', function(a, b) {
         return a !== b;
-      });
+      }); 
 };

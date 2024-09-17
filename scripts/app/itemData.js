@@ -394,6 +394,7 @@ export default class ItemData {
                     name: item.name,
                     cost: item.system.technology.cost,
                     availability: item.system.technology.availability,
+                    essence: item.system.technology.essence,
                     image: item.img,
                     type: item.type,                    
                     // Add other relevant properties as needed
@@ -1097,4 +1098,30 @@ export default class ItemData {
             console.warn("Item is not a program or item was not found.");
         }
     }
+}
+
+/**
+     * 
+     * @returns {Promise} - A promise that resolves with the formatted timestamps.
+     */
+export async function getFormattedTimestamp() {
+    let chatTimestamp= "";
+    let flagTimestamp= "";
+
+    if (typeof SimpleCalendar !== "undefined" && SimpleCalendar.api) {
+        const currentDate = SimpleCalendar.api.currentDateTime();
+        
+        // Ensure the date exists and is formatted correctly
+        if (currentDate) {
+            const formattedDate = `${currentDate.day}/${currentDate.month + 1}/${currentDate.year}`;  // month + 1 since months start at 0
+            chatTimestamp = flagTimestamp = formattedDate;  // Use the same format for both chat and flag if needed
+        } else {
+            chatTimestamp = flagTimestamp = new Date().toLocaleString();  // Fallback to default JS date
+        }
+    } else {
+        // Fallback if SimpleCalendar isn't available
+        chatTimestamp = flagTimestamp = new Date().toLocaleString();
+    }
+
+    return { chatTimestamp, flagTimestamp };
 }

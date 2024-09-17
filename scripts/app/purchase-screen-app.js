@@ -1,4 +1,5 @@
 import ItemData from './itemData.js';
+import {getFormattedTimestamp} from './itemData.js';
 import {ActorItemData} from './actorItemData.js';
 export class PurchaseScreenApp extends Application {
     constructor(options = {}) {
@@ -565,23 +566,25 @@ export class PurchaseScreenApp extends Application {
     
         // Check if the actor already has a history flag for the provided flagId
         let historyFlag = actor.getFlag('sr5-marketplace', 'history') || [];
-    
+
         // Ensure historyFlag is an array
         if (!Array.isArray(historyFlag)) {
             historyFlag = [];
         }
     
+        // Check if the flag already exists in the history
         const existingHistory = historyFlag.find(entry => entry.flagId === flagId);
-    
+        const { chatTimestamp, flagTimestamp } = await getFormattedTimestamp(); // Get formatted timestamps from itemData.js
+
+        // If no history entry exists for the flag, create a new one
         if (!existingHistory) {
-            // Add new history entry if the flagId doesn't exist
             const newHistoryEntry = {
                 flagId: flagId,
                 items: creationItems.map(item => ({
                     id: {
-                        baseId: item._id,  // base item ID
-                        actorItemId: item._id,  // the ID after creation on the actor
-                        creationItemId: item._id  // used for creation as well
+                        baseId: item._id,  // Base Item ID
+                        actorItemId: item._id,  // Actor Item ID
+                        creationItemId: item._id // Creation Item ID (you can customize if needed)
                     },
                     name: item.name,
                     calculatedCost: item.system.technology.cost,
@@ -589,94 +592,85 @@ export class PurchaseScreenApp extends Application {
                     calculatedAvailability: item.system.technology.availability,
                     calculatedEssence: item.system.technology.essence
                 })),
-                timestamp: SimpleCalendar.api ? await SimpleCalendar.api.formatTimestamp(SimpleCalendar.api.currentDateTimeDisplay(), 'DD/MM/YYYY HH:mm') : new Date().toLocaleString()
+                karma: 0,  // Default karma value
+                surgicalDamage: 0,  // Default surgical damage
+                delete: false,  // By default, not marked for deletion
+                timestamp: flagTimestamp  // Timestamp for the flag
             };
-    
+
             historyFlag.push(newHistoryEntry);
     
             // Update the history flag on the actor
             await actor.setFlag('sr5-marketplace', 'history', historyFlag);
             ui.notifications.info("History flag updated for the actor.");
         } else {
+            // If the history flag already exists, skip creation and move to the chat message
             ui.notifications.info(`A history flag already exists for flagId: ${flagId}. Skipping flag creation.`);
         }
-    
-        // Retrieve the current date from SimpleCalendar (if installed and active)
-        let timestamp;
-        if (typeof SimpleCalendar !== "undefined" && SimpleCalendar.api) {
-            const currentDate = await SimpleCalendar.api.currentDateTimeDisplay();
-            timestamp = SimpleCalendar.api.currentDateTimeDisplay();
-        } else {
-            timestamp = new Date().toLocaleString();
-        }
-    
-        // Pull the actual items from the actor after the items have been created
-        const createdActorItems = creationItems.map(item => ({
-            _id: item._id,
-            name: item.name
-        }));
-    
+        
         // Prepare the message data for the chat
         const messageData = {
-            items: createdActorItems,
+            items: creationItems.map(item => ({
+                _id: item._id,
+                name: item.name
+            })),
             totalCost: totalCost,
+            totalAvailability: orderData.totalAvailability,
+            totalEssenceCost: orderData.totalEssenceCost,
             actorId: actor._id,
             actorName: actor.name,
-            timestamp: timestamp
+            timestamp: chatTimestamp  // Use chat-specific timestamp
         };
-    
+
         // Render the message using the orderConfirmation.hbs template
         const chatContent = await renderTemplate('modules/sr5-marketplace/templates/orderConfirmation.hbs', messageData);
 
-        // Try to find the user by their ID first
-        let playerUser;
+        // Get the actor's ownership details and find a valid user
+        let recipientUser;
+        let actorOwners = Object.keys(actor._source.ownership || {});
 
-        // If there is a requesterId, try to find the player user by ID or name
-        if (orderData.requesterId) {
-            playerUser = game.users.get(orderData.requesterId) || game.users.find(u => u.name === orderData.requesterId);
-        } 
+        // Filter out invalid or inactive users
+        actorOwners = actorOwners.filter(ownerId => {
+            const user = game.users.get(ownerId);
+            return user && user.active;  // Ensure the user exists and is active
+        });
 
-        // If no player made the request or the requester is the GM, default to using the current GM's name
-        if (!playerUser) {
-            playerUser = game.user; // Use the current GM as the player
+        // Select the first valid recipient or fallback to the requester
+        if (actorOwners.length > 0) {
+            recipientUser = game.users.get(actorOwners[0]);  // Choose the first active owner
+        } else {
+            recipientUser = game.users.get(orderData.requesterId) || game.user;  // Use the requester or fallback to current user
         }
 
-        // After sending the new chat message to the player
-        ChatMessage.create({
-            user: playerUser.id,  // Use the found user (GM or player)
-            content: chatContent,
-            whisper: [playerUser.id]  // Whisper to the player or GM only
-        }).then(async (newMessage) => {
-            // After sending the new message, find the old message by the flagId
-            const oldChatMessage = game.messages.contents.find(msg => msg.content.includes(`data-request-id="${flagId}"`));
-            
-            if (oldChatMessage) {
-                // Delete the old chat message associated with the flagId
-                await oldChatMessage.delete();  // Delete the old chat message
+        // Prepare the data for ChatMessage.create
+        const chatMessageData = {
+            user: recipientUser.id,  // Send the message to the recipient
+            content: chatContent
+        };
 
-                // Notify the GM
-                ui.notifications.info(`Old chat message for flag ID ${flagId} has been deleted.`);
+        // Whisper only if the recipient is not a GM
+        if (!recipientUser.isGM) {
+            chatMessageData.whisper = [recipientUser.id];  // Whisper to the recipient if not a GM
+        }
 
-                // Close the Purchase-Screen-App after deleting the message
-                const purchaseApp = Object.values(ui.windows).find(app => app instanceof PurchaseScreenApp);
-                if (purchaseApp) {
-                    purchaseApp.close();
-                    ui.notifications.info("Purchase Screen App closed.");
-                }
-            } else {
-                console.warn(`No old chat message found for flag ID ${flagId}.`);
-            }
-
-            // Remove the flag data associated with the completed order from the GM user
-            const gmUser = game.users.find(u => u.isGM);  // Find the GM user
-            if (gmUser) {
-                await gmUser.unsetFlag('sr5-marketplace', flagId);  // Remove the flag from the GM user
-                ui.notifications.info(`Order data cleared from GM user flags.`);
-            }
-
-            // Notify the GM that the purchase has been confirmed
-            ui.notifications.info(`Purchase confirmed for ${actor.name}. ${totalCost}¥ has been deducted.`);
-        });
+        // Create the chat message
+        ChatMessage.create(chatMessageData);
+        // Now, delete the flag on the GM user (order processed)
+        const gmUser = game.users.find(u => u.isGM);  // Find the GM user
+        if (gmUser) {
+            await gmUser.unsetFlag('sr5-marketplace', flagId);  // Remove the flag from the GM user
+            ui.notifications.info(`Order data cleared from GM user flags.`);
+        }
+        // Delete the old chat message associated with the flag
+        const oldChatMessage = game.messages.contents.find(msg => msg.content.includes(`data-request-id="${flagId}"`));
+        if (oldChatMessage) {
+            await oldChatMessage.delete();
+        }
+        // Close the Purchase-Screen-App after the transaction is complete
+        const purchaseApp = Object.values(ui.windows).find(app => app instanceof PurchaseScreenApp);
+        if (purchaseApp) {
+            purchaseApp.close();
+        }
     }                                       
 }
   

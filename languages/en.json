@@ -1,7 +1,10 @@
 {
     "SR5": {
         "Marketplace": {
+            "YourOrderHasArrived": "Your order has arrived!",
             "OrderReviewItems": "Items List for the Review",
+            "YourItems": "Your Items",
+            "ConfirmTime": "Date",
             "of": "of",
             "each": "each",
             "Image": "Image",
