@@ -1,5 +1,5 @@
 import ItemData from './itemData.js';  // Assuming itemData.js contains getOrderDataFromFlag
-
+import { logActorHistory } from './actorHistoryLog.js';
 export class ActorItemData extends ItemData {
     constructor(actor = null) {
         super();
@@ -23,7 +23,7 @@ export class ActorItemData extends ItemData {
             // Process flag items and get the base items using fromUuid
             const baseItemPromises = this.flagItemsArray.map(async (flagItem) => {
                 try {
-                    // Check if the item has a uuid field, otherwise fallback to using _id
+                    // Use `uuid` instead of `Uuid`, and fallback to `_id`
                     const itemUuid = flagItem.uuid || `Item.${flagItem._id}`;
                     
                     // Retrieve the base item using fromUuid
@@ -44,11 +44,13 @@ export class ActorItemData extends ItemData {
     
             if (this.baseItemsArray.length === 0) {
                 console.warn('No base items could be loaded from UUIDs.');
+            } else {
+                console.log('Base items loaded:', this.baseItemsArray);
             }
         } catch (error) {
             console.error(`Error processing flag data for flag ID ${flagId}:`, error);
         }
-    }
+    }    
     /**
      * 
      * @returns {Array} - The items with injected data.
@@ -62,7 +64,7 @@ export class ActorItemData extends ItemData {
     
         // Array to hold the final items with injected data
         const creationItems = [];
-    
+        const allowedTypes = ["quality", "adept_power", "spell", "complex_form"];  // Allowed Item types for karma flag on the item
         // Iterate over flagItemsArray and match with baseItemsArray by _id or uuid
         this.flagItemsArray.forEach(flagItem => {
             // Find the corresponding base item by _id or uuid
@@ -77,7 +79,18 @@ export class ActorItemData extends ItemData {
                 enrichedItem.system.technology.rating = flagItem.system.technology.rating || flagItem.selectedRating || baseItem.system.technology.rating;
                 enrichedItem.system.technology.availability = flagItem.system.technology.availability || flagItem.calculatedAvailability || baseItem.system.technology.availability;
                 enrichedItem.system.technology.essence = flagItem.system.technology.essence || flagItem.calculatedEssence || baseItem.system.technology.essence;
-    
+                // Inject the karma flag into the enriched item if necessary
+                // Only enrich with the karma flag if the item type is one of the allowed types
+                if (allowedTypes.includes(enrichedItem.type)) {
+                    if (!enrichedItem.flags?.['sr5-marketplace']?.karma) {
+                        enrichedItem.flags = enrichedItem.flags || {};
+                        enrichedItem.flags['sr5-marketplace'] = enrichedItem.flags['sr5-marketplace'] || {};
+                        enrichedItem.flags['sr5-marketplace'].karma = flagItem.karma || 0;  // Set karma from flag or default to 0
+                    } else {
+                        // Keep the existing karma value if it already exists
+                        enrichedItem.flags['sr5-marketplace'].karma = enrichedItem.flags['sr5-marketplace'].karma;
+                    }
+                }
                 // Handle the effects array safely
                 enrichedItem.effects = (baseItem.effects || []).map((baseEffect, index) => {
                     const effect = { ...baseEffect }; // Deep copy the effect
@@ -132,21 +145,53 @@ export class ActorItemData extends ItemData {
      * @param {Actor} actor - The actor to create the items on.
      * @param {Array} creationItems - The items to create on the actor.
      */
-    async createItemsOnActor(actor, creationItems) {
-        // Check if actor is valid
+    async createItemsOnActor(actor, creationItems, orderData) {
         if (!actor) {
             console.error("No valid actor provided.");
             return;
         }
-    
+        // Initialize the createdItems array to store the new item mappings
+        const createdItems = [];
+        const createdItemsUuid = [];
         // Iterate over the creationItems and create each item on the actor
-        for (let itemData of creationItems) {
-            try {
-                await actor.createEmbeddedDocuments("Item", [itemData]);
-                console.log(`Created item: ${itemData.name} on actor: ${actor.name}`);
-            } catch (error) {
-                console.error(`Error creating item: ${itemData.name}`, error);
+    for (let i = 0; i < creationItems.length; i++) {
+        const itemData = creationItems[i];
+        const flagItem = orderData.items[i];  // Corresponding flag item from the orderData
+
+        try {
+            // Create the item on the actor and retrieve the created item
+            const [createdItem] = await actor.createEmbeddedDocuments("Item", [itemData]);
+            console.log(`Created item: ${createdItem.name} on actor: ${actor.name}`);
+            createdItemsUuid.push([createdItem.uuid]);
+
+            // Retrieve karma value from the sr5-marketplace flag if it exists
+            const itemKarmaFlag = createdItem.getFlag('sr5-marketplace', 'karma') || 0;
+
+            // Retrieve the most recently modified item by name on the actor
+            const recentItem = actor.items
+                .filter(i => i.name === createdItem.name)  // Filter by name
+                .sort((a, b) => b._stats.modifiedTime - a._stats.modifiedTime)[0];  // Sort by modifiedTime and get the most recent one
+
+            if (!recentItem) {
+                console.warn(`Could not find the recently created item on actor: ${actor.name} for item ${createdItem.name}`);
             }
+
+            // Create the mapping of IDs
+            createdItems.push({
+                baseId: flagItem._id,  // The ID from the base item (compendium or world)
+                creationItemId: recentItem.uuid,  // The ID of the most recently modified item on the actor
+                name: createdItem.name,
+                calculatedCost: createdItem.system.technology.cost,
+                selectedRating: createdItem.system.technology.rating,
+                calculatedAvailability: createdItem.system.technology.availability,
+                calculatedEssence: createdItem.system.technology.essence,
+                calculatedKarma: itemKarmaFlag,
+            });
+        } catch (error) {
+            console.error(`Error creating item: ${itemData.name}`, error);
         }
+    }   
+    console.log(actor, createdItems);
+        return createdItems;  // Return the array with updated IDs
     }
 }

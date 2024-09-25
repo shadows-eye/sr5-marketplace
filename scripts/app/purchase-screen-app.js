@@ -1,6 +1,7 @@
 import ItemData from './itemData.js';
 import {getFormattedTimestamp} from './itemData.js';
 import {ActorItemData} from './actorItemData.js';
+import { logActorHistory } from './actorHistoryLog.js';
 export class PurchaseScreenApp extends Application {
     constructor(options = {}) {
         super(options);
@@ -435,7 +436,7 @@ export class PurchaseScreenApp extends Application {
         const totalCost = this.itemData.calculateTotalCost(); // Use itemData to calculate total cost
         const totalAvailability = this.itemData.calculateTotalAvailability(); // Use itemData to calculate total availability
         const totalEssenceCost = this.itemData.calculateTotalEssenceCost(); // Use itemData to calculate total essence cost
-    
+        const totalKarmaCost = this.itemData.calculateTotalKarmaCost(); // Use itemData to calculate total karma cost
         const requestingUser = game.user; // The user who clicked the button
         const isGM = requestingUser.isGM;
     
@@ -459,7 +460,8 @@ export class PurchaseScreenApp extends Application {
             type: item.type, // Item type
             cost: item.calculatedCost || 0, // Use calculated cost or fallback to 0
             rating: item.selectedRating || 1, // Use selected rating or default to 1
-            essence: item.calculatedEssence || 0 // Use calculated essence or fallback to 0
+            essence: item.calculatedEssence || 0, // Use calculated essence or fallback to 0
+            karma: item.calculatedKarma || 0 // Use calculated karma or fallback to 0
         }));
     
         // Prepare the flag data
@@ -484,6 +486,7 @@ export class PurchaseScreenApp extends Application {
             totalCost: totalCost,
             totalAvailability: totalAvailability,
             totalEssenceCost: totalEssenceCost,
+            totalKarmaCost: totalKarmaCost, // Default karma cost
             requesterName: isGM ? "GM" : requestingUser.name, // Show "GM" if the request is from a GM
             id: requestId, // Include the request ID in the data
             actorId: actorId, // Include actorId (if present)
@@ -562,47 +565,50 @@ export class PurchaseScreenApp extends Application {
         actorItemData.logItems();
     
         const creationItems = await actorItemData.createItemsWithInjectedData();
-        await actorItemData.createItemsOnActor(actor, creationItems);
-    
+        const createdItems = await actorItemData.createItemsOnActor(actor, creationItems, orderData);
         // Check if the actor already has a history flag for the provided flagId
         let historyFlag = actor.getFlag('sr5-marketplace', 'history') || [];
-
-        // Ensure historyFlag is an array
+            
+        // Check if the history flag is still an object and needs conversion to an array
         if (!Array.isArray(historyFlag)) {
-            historyFlag = [];
+            console.warn("History flag is not an array. Converting...");
+            
+            // Convert object history (old structure) into an array format
+            historyFlag = Object.keys(historyFlag).map(key => historyFlag[key]);
         }
-    
-        // Check if the flag already exists in the history
-        const existingHistory = historyFlag.find(entry => entry.flagId === flagId);
+        
+    // Now `historyFlag` is guaranteed to be an array
+    // Check if the flagId already exists in the actor's history
+    const existingHistoryEntry = historyFlag.find(entry => entry.flagId === flagId);
         const { chatTimestamp, flagTimestamp } = await getFormattedTimestamp(); // Get formatted timestamps from itemData.js
-
         // If no history entry exists for the flag, create a new one
-        if (!existingHistory) {
-            const newHistoryEntry = {
-                flagId: flagId,
-                items: creationItems.map(item => ({
-                    id: {
-                        baseId: item._id,  // Base Item ID
-                        actorItemId: item._id,  // Actor Item ID
-                        creationItemId: item._id // Creation Item ID (you can customize if needed)
-                    },
-                    name: item.name,
-                    calculatedCost: item.system.technology.cost,
-                    selectedRating: item.system.technology.rating,
-                    calculatedAvailability: item.system.technology.availability,
-                    calculatedEssence: item.system.technology.essence
-                })),
-                karma: 0,  // Default karma value
-                surgicalDamage: 0,  // Default surgical damage
-                delete: false,  // By default, not marked for deletion
-                timestamp: flagTimestamp  // Timestamp for the flag
-            };
-
+        if (!existingHistoryEntry) {
+        console.log(createdItems);
+        const newHistoryEntry = {
+            actorflagId: flagId,
+            items: createdItems.map(item => ({
+                id: {
+                    baseId: item.baseId,  // Base Item ID
+                    creationItemId: item.creationItemId // Creation Item ID
+                },
+                name: item.name,
+                calculatedCost: item.calculatedCost,
+                selectedRating: item.selectedRating,
+                calculatedAvailability: item.calculatedAvailability,
+                calculatedEssence: item.calculatedEssence,
+                calculatedKarma: item.calculatedKarma  // Karma value
+            })),
+            karma: createdItems.reduce((total, item) => total + (item.calculatedKarma || 0), 0),
+            gain: true,
+            surgicalDamage: createdItems.reduce((total, item) => total + (item.calculatedEssence || 0) * 5, 0),
+            delete: false,
+            timestamp: flagTimestamp  // Timestamp for the flag
+        };
+    
             historyFlag.push(newHistoryEntry);
     
             // Update the history flag on the actor
             await actor.setFlag('sr5-marketplace', 'history', historyFlag);
-            ui.notifications.info("History flag updated for the actor.");
         } else {
             // If the history flag already exists, skip creation and move to the chat message
             ui.notifications.info(`A history flag already exists for flagId: ${flagId}. Skipping flag creation.`);
@@ -617,6 +623,7 @@ export class PurchaseScreenApp extends Application {
             totalCost: totalCost,
             totalAvailability: orderData.totalAvailability,
             totalEssenceCost: orderData.totalEssenceCost,
+            totalKarmaCost: orderData.totalKarmaCost,
             actorId: actor._id,
             actorName: actor.name,
             timestamp: chatTimestamp  // Use chat-specific timestamp
@@ -671,6 +678,8 @@ export class PurchaseScreenApp extends Application {
         if (purchaseApp) {
             purchaseApp.close();
         }
+        // Call logActorHistory after purchase to update the journal
+        await logActorHistory(actor);
     }                                       
 }
   

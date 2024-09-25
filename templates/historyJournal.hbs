@@ -1,0 +1,27 @@
+{{#each historyEntries}}
+    <h2>{{localize "SR5.Marketplace.OrderHistory"}} {{timestamp}}</h2>
+    <ul>
+        {{#each items}}
+            <li>
+                <strong>
+                    {{#if id.creationItemId}}
+                        @UUID[{{id.creationItemId}}]
+                    {{else}}
+                        @UUID[item.{{id.baseId}}]
+                    {{/if}}
+                </strong>
+                <ul>
+                    <li>Cost: {{calculatedCost}} ¥</li>
+                    <li>Rating: {{selectedRating}}</li>
+                    <li>Availability: {{calculatedAvailability}}</li>
+                    {{#if calculatedKarma}}
+                        <li>Karma: {{calculatedKarma}}</li>
+                    {{/if}}
+                    {{#if calculatedEssence}}
+                        <li>Essence: {{calculatedEssence}}</li>
+                    {{/if}}
+                </ul>
+            </li>
+        {{/each}}
+    </ul>
+{{/each}}
