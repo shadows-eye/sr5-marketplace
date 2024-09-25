@@ -181,8 +181,16 @@ export default class ItemData {
         // If baseEssence is 0 or essence doesn't exist, return 0
         return 0;
     }
+    calculatedKarmaCost(item) {
+        // Check if the item has the sr5-marketplace flag and a karma value
+        const marketplaceFlag = item.flags['sr5-marketplace'] || {};
+        return marketplaceFlag.karma || 0;
+    }
     
-    
+    // Function to calculate the total karma cost for all items in the basket
+    calculateTotalKarmaCost() {
+        return this.basketItems.reduce((total, item) => total + this.calculatedKarmaCost(item), 0);
+    }
     async removeItemFromBasket(basketId) {
         this.basketItems = this.basketItems.filter(item => item.basketId !== basketId);
     }
@@ -481,6 +489,9 @@ export default class ItemData {
     
                 enrichedItem.calculatedAvailability = String(enrichedItem.calculatedAvailability || '');
                 enrichedItem.calculatedEssence = parseFloat(enrichedItem.calculatedEssence) || 0;
+
+                // Calculate karma cost from the flag, with a fallback to 0
+                enrichedItem.calculatedKarma = flagItem.karma || 0;
     
                 enrichedItem.system.technology.cost = enrichedItem.calculatedCost; // Override with flagged cost
                 enrichedItem.system.technology.rating = enrichedItem.selectedRating; // Override with flagged rating
@@ -517,13 +528,14 @@ export default class ItemData {
         // Return the enriched data, including actor details
         return {
             id: flagData.id,
-            items: this.completeItemsArray,
+            items: this.completeItemsArray, // The enriched items array with cost, availability, karma, and essence
             totalCost,
             totalAvailability,
+            totalEssenceCost: this.completeItemsArray.reduce((sum, item) => sum + (item.calculatedEssence || 0), 0), // Total essence
+            totalKarmaCost: this.completeItemsArray.reduce((sum, item) => sum + (item.calculatedKarma || 0), 0), // Total karma
             requester: flagData.requester,
-            requesterId: flagData.requesterId || '', // Include requesterId if present
-            actorId: flagData.actorId || '', // Include actorId if present
-            actor, // Include the full actor object
+            requesterId: flagData.requesterId, // Include requesterId if present
+            actorId: flagData.actorId // Include actorId if present
         };
     }
 
@@ -539,7 +551,7 @@ export default class ItemData {
             return null;
         }
 
-        const flagItems = userFlags.items || [];
+        const flagItems = userFlags.items || []; //These are the items that are saved in the flag of the user!
         const completeItemsArray = [];
 
         for (const flagItem of flagItems) {
@@ -557,6 +569,7 @@ export default class ItemData {
                 calculatedCost: flagItem.cost || (gameItem.system.technology?.cost || 0),
                 calculatedAvailability: flagItem.availability || (gameItem.system.technology?.availability || 0),
                 calculatedEssence: flagItem.essence || (gameItem.system.essence * flagItem.rating || 0),
+                Karma: gameItem.getFlag('sr5-marketplace', 'karma') || 0,
                 gameItem: gameItem // Keep the full game item for further functions
             };
 
@@ -573,6 +586,7 @@ export default class ItemData {
             items: completeItemsArray,  // Pass the enriched complete items array
             totalCost: totalCost,
             totalAvailability: totalAvailability,
+            Karma: completeItemsArray.Karma,
             requester: userFlags.requester // Include requester information if needed
         };
     }

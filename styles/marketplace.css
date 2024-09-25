@@ -359,7 +359,26 @@ input[type="text"]#search-box.marketplace-search{
     border-color: rgb(138, 20, 4);
     border-width: 1px;
 }
-
+/* Style for the karma field */
+.sr5.item .item-header .source .karma-field {
+    flex: 0.3;  /* Make the karma field take up the remaining space */
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-left: 0.2em;
+}
+.sr5.item .item-header .source .karma-field label {
+    margin-right: 0.1em;
+    font-weight: bold;
+}
+.sr5.item .item-header .source .karma-field .karma-input {
+    width: 2.2em;
+    padding: 0.1em;
+    border: 1px solid #000;
+    color: #fff;
+    margin-right: 0.1em;
+    text-align: right;
+}
 @container (max-width: 900px) {
     .grid-container {
         grid-template-columns: repeat(3, minmax(150px, 1fr)) minmax(150px, 1fr);

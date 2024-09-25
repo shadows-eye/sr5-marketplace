@@ -109,12 +109,57 @@ Hooks.once('ready', async function() {
                 }
 
                 // Render the review tab with the enriched item data
-                app._renderOrderReview(html, flagId, completeItemsArray);  // Pass flagId and completeItemsArray
+                app._renderOrderReview(html, flagId, completeItemsArray);  // Pass flagId and completeItemsArray that contains the lightweight items
             });
         } else {
             console.log(`No order review data found for flag ID ${flagId}`);
         }
     });
+    console.log("Initializing sr5-marketplace Karma flag for specified item types...");
+
+    // Specify the item types you want to apply the flag to
+    const itemTypesToFlag = ["quality", "adept_power", "spell", "complex_form"];
+
+    // Function to update items
+    async function updateItemWithKarmaFlag(item) {
+        // Check if the item already has the sr5-marketplace.Karma flag
+        const karmaFlag = item.getFlag('sr5-marketplace', 'Karma');
+        if (karmaFlag === undefined) {
+            console.log(`Setting Karma flag for item: ${item.name} (ID: ${item.id})`);
+            // If the Karma flag doesn't exist, set it to 0
+            await item.setFlag('sr5-marketplace', 'Karma', 0);
+        } else {
+            console.log(`Item ${item.name} (ID: ${item.id}) already has a Karma flag.`);
+        }
+    }
+
+    // Function to update all items in the world and compendiums
+    async function initializeKarmaFlags() {
+        // Loop through all world items
+        for (let item of game.items.contents) {
+            if (itemTypesToFlag.includes(item.type)) {
+                await updateItemWithKarmaFlag(item);
+            }
+        }
+
+        // Loop through all compendiums
+        for (let pack of game.packs) {
+            // Only check compendiums of type "Item"
+            if (pack.documentName === "Item") {
+                const items = await pack.getDocuments();
+                for (let item of items) {
+                    if (itemTypesToFlag.includes(item.type)) {
+                        await updateItemWithKarmaFlag(item);
+                    }
+                }
+            }
+        }
+    }
+
+    // Call the function to initialize the Karma flags
+    await initializeKarmaFlags();
+    
+    console.log("sr5-marketplace Karma flag initialization completed.");
 });
 
 Hooks.on('getSceneControlButtons', (controls) => {
@@ -128,4 +173,45 @@ Hooks.on('getSceneControlButtons', (controls) => {
         },
         button: true
     });
+});
+Hooks.on("renderItemSheet", (app, html, data) => {
+    const item = app.document;  // Access the item document from the app
+
+    // Define the allowed types that should have a karma field
+    const allowedTypes = ["quality", "adept_power", "spell", "complex_form"];
+
+    // Ensure the item type is one of the allowed types
+    if (!allowedTypes.includes(item.type)) return;
+
+    // Ensure the source div is available after render
+    setTimeout(() => {
+        const sourceDiv = html.find('.source');
+        if (!sourceDiv.length) return;
+
+        // Retrieve the existing karma value from the item's flag
+        const itemKarmaFlag = item.getFlag('sr5-marketplace', 'karma') || 0;
+
+        // Create the karma input field HTML
+        const karmaInputHtml = `
+            <div class="karma-field">
+                <label>Karma:</label>
+                <input type="number" class="karma-input" value="${itemKarmaFlag}" min="0" />
+            </div>
+        `;
+
+        // Append the karma input to the source div
+        sourceDiv.append(karmaInputHtml);
+
+        // Set up an event listener to update the karma flag when the input changes
+        html.find('.karma-input').on('change', async function() {
+            const newKarmaValue = parseInt($(this).val()) || 0;
+
+            // Update the item flag with the new karma value
+            await item.setFlag('sr5-marketplace', 'karma', newKarmaValue);
+
+            // Log the change or display a notification
+            console.log(`Updated karma value for ${item.name} to ${newKarmaValue}`);
+            //ui.notifications.info(`Karma value for ${item.name} updated to ${newKarmaValue}`);
+        });
+    }, 100);  // Delay injection slightly to ensure full render
 });

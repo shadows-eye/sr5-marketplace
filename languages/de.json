@@ -19,6 +19,8 @@
             "SendRequest": "Kaufen",
             "CancelRequest": "Abbruch",
             "RequestFor": "Anfrage von",
+            "OrderHistory": "Bestell Historie",
+            "history": "Historie",
             "Total": "Gesamt",
             "TotalCost": "Gesamtkosten",
             "TotalAvailability": "Gesamtverfügbarkeit",
