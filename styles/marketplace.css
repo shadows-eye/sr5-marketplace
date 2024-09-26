@@ -379,6 +379,26 @@ input[type="text"]#search-box.marketplace-search{
     margin-right: 0.1em;
     text-align: right;
 }
+.sr5-marketplace.description-container {
+    margin-bottom: 1em;
+}
+
+.sr5-marketplace.description-text {
+    padding: 0.5em;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    min-height: 3em;
+}
+
+.sr5-marketplace.description-edit {
+    width: 100%;
+    height: 6em;
+    padding: 0.5em;
+}
+
+.sr5-marketplace.edit-description, .sr5-marketplace.save-description {
+    margin-top: 0.5em;
+}
 @container (max-width: 900px) {
     .grid-container {
         grid-template-columns: repeat(3, minmax(150px, 1fr)) minmax(150px, 1fr);

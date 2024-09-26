@@ -1,6 +1,9 @@
 {
     "SR5": {
         "Marketplace": {
+            "Tests": {
+                "CustomTest": "Custom Test"
+            },
             "YourOrderHasArrived": "Deine Bestellung ist angekommen!",
             "OrderReviewItems": "Artikel Liste für die Überprüfung",
             "YourItems": "Deine Artikel",

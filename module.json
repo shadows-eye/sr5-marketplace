@@ -32,7 +32,8 @@
   ],
   "esmodules": [
     "scripts/marketHooks.js",
-    "scripts/app/actorItemData.js"
+    "scripts/app/actorItemData.js",
+    "main.mjs"
   ],
   "includes": [
     "./assets/**",
@@ -56,6 +57,14 @@
       "path": "languages/de.json"
     }
   ],
+  "documentTypes": {
+        "Actor": {
+            "mapShop": {}
+        },
+        "Item": {
+            "shop": {}
+        }
+    },
   "url": "#{URL}#",
   "manifest": "#{MANIFEST}#",
   "download": "#{DOWNLOAD}#",

@@ -1,0 +1,64 @@
+<form>
+    <header>
+      <input type="text" name="name" value="{{actorName}}" placeholder="Enter shop name">
+    </header>
+    <figure>
+      <img src="{{img}}" data-edit="img">
+    </figure>
+    <!-- Description Section -->
+  <div class="description-container">
+    <label for="sr5-marketplace description">Description:</label>
+    <div class="sr5-marketplace description-text">{{description.long}}</div>
+    <button type="button" class="sr5-marketplace edit-description">Edit</button>
+  </div>
+  <div class="form-group">
+    <div class="form-group">
+      <label for="charisma">Charisma</label>
+      <input type="number" name="system.charisma" value="{{system.charisma}}" min="0" max="12" step="1">
+    </div>
+  
+    <div class="form-group">
+      <label for="negotiation">Negotiation</label>
+      <input type="number" name="system.negotiation" value="{{system.negotiation}}" min="0" max="12" step="1">
+    </div>
+  
+    <div class="form-group">
+      <label for="connection">Connection</label>
+      <input type="number" name="system.connection" value="{{system.connection}}" min="0" max="6" step="1">
+    </div>
+  
+    <div class="form-group">
+      <label for="loyalty">Loyalty</label>
+      <input type="number" name="system.loyalty" value="{{system.loyalty}}" min="0" max="6" step="1">
+    </div>
+  
+    <div class="form-group">
+      <label>Group</label>
+      <input type="checkbox" name="system.group" {{#if system.group}}checked{{/if}}>
+    </div>
+  
+    <div class="form-group">
+      <label>Family</label>
+      <input type="checkbox" name="system.family" {{#if system.family}}checked{{/if}}>
+    </div>
+  
+    <div class="form-group">
+      <label>Blackmail</label>
+      <input type="checkbox" name="system.blackmail" {{#if system.blackmail}}checked{{/if}}>
+    </div>
+  
+    <!-- Items for sale -->
+    <h3>Items for Sale</h3>
+    <div id="items-for-sale">
+      {{#each items}}
+      <div class="item">
+        <strong>{{name}}</strong> - Cost: {{system.technology.cost}} ¥
+        <button type="button" class="remove-item" data-item-id="{{_id}}">Remove</button>
+      </div>
+      {{else}}
+      <p>No items for sale</p>
+      {{/each}}
+    </div>
+  
+    <button type="button" class="add-item">Add Item</button>
+  </form>  

@@ -2,7 +2,7 @@ import ItemData from './app/itemData.js';
 import { ActorItemData } from './app/actorItemData.js';
 import { PurchaseScreenApp } from './app/purchase-screen-app.js';
 import { registerBasicHelpers } from './lib/helpers.js';
-
+import { MarketplaceActorSheet } from '../sheets/ShopActorSheet.mjs';
 // Call the function to register helpers
 registerBasicHelpers();
 Hooks.once('init', async function() {
@@ -125,11 +125,11 @@ Hooks.once('ready', async function() {
         // Check if the item already has the sr5-marketplace.Karma flag
         const karmaFlag = item.getFlag('sr5-marketplace', 'Karma');
         if (karmaFlag === undefined) {
-            console.log(`Setting Karma flag for item: ${item.name} (ID: ${item.id})`);
+            //console.log(`Setting Karma flag for item: ${item.name} (ID: ${item.id})`);
             // If the Karma flag doesn't exist, set it to 0
             await item.setFlag('sr5-marketplace', 'Karma', 0);
         } else {
-            console.log(`Item ${item.name} (ID: ${item.id}) already has a Karma flag.`);
+            //console.log(`Item ${item.name} (ID: ${item.id}) already has a Karma flag.`);
         }
     }
 
