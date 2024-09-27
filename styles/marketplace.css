@@ -379,10 +379,45 @@ input[type="text"]#search-box.marketplace-search{
     margin-right: 0.1em;
     text-align: right;
 }
+.sr5-marketplace.actor-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;  /* Two equal columns for the second row */
+    grid-template-rows: auto auto auto;  /* Three rows: header, content (desc and image), and form fields */
+    gap: 20px;  /* Spacing between the grid items */
+    padding: 20px;
+}
+/* Header occupies the full width in the first row */
+.sr5-marketplace.header {
+    grid-column: 1 / span 5;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+/* Form groups in the third row should each be in their own grid cell */
+.sr5-marketplace.form-group {
+    grid-column: span 1;
+    grid-row-start: 3;
+}
 .sr5-marketplace.description-container {
     margin-bottom: 1em;
+    grid-column: 1 / span 6;
+    grid-row-start: 2;
+    textarea.sr5-marketplace.description-edit{
+        min-height: 300px;
+    }
 }
-
+.sr5-marketplace.actor-image {
+    grid-column: 7/ span 8;
+    grid-row-start: 2;
+    img {
+            max-width: 160px;
+            object-fit: contain;
+            border: none;
+    }
+}
+.sr5-marketplace.item-catalog{
+    min-width: 300px;
+}
 .sr5-marketplace.description-text {
     padding: 0.5em;
     background-color: #f0f0f0;
@@ -395,9 +430,73 @@ input[type="text"]#search-box.marketplace-search{
     height: 6em;
     padding: 0.5em;
 }
+.sr5-marketplace.items-grid{
+    grid-row: 4;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1em;
+}
 
 .sr5-marketplace.edit-description, .sr5-marketplace.save-description {
     margin-top: 0.5em;
+}
+/* Hide the default checkbox */
+.sr5-marketplace.toggle-switch {
+    display: none;
+}
+
+/* Container for the toggle switch */
+.sr5-marketplace.toggle-container {
+    display: flex;
+    align-items: center;
+}
+
+/* Styling the label to create the toggle background */
+.sr5-marketplace.toggle-label {
+    cursor: pointer;
+    width: 50px;
+    height: 26px;
+    background-color: grey;
+    border-radius: 15px;
+    position: relative;
+    transition: background-color 0.3s;
+}
+
+/* Set blue background when checked */
+.sr5-marketplace.toggle-switch:checked + .sr5-marketplace.toggle-label {
+    background-color: rgb(255, 0, 179);
+}
+
+/* Add the round slider (handle) inside the toggle */
+.sr5-marketplace.toggle-handle {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s;
+}
+
+/* Move handle to the right when checked */
+.sr5-marketplace.toggle-switch:checked + .sr5-marketplace.toggle-label .sr5-marketplace.toggle-handle {
+    transform: translateX(24px);
+}
+
+/* Spanner Icon inside the handle */
+.sr5-marketplace.spanner-icon {
+    font-size: 16px;
+    color: grey;
+    transition: color 0.3s;
+}
+
+/* Change spanner color based on toggle state */
+.sr5-marketplace.toggle-switch:checked + .sr5-marketplace.toggle-label .sr5-marketplace.toggle-handle .sr5-marketplace.spanner-icon {
+    color: red;
 }
 @container (max-width: 900px) {
     .grid-container {
