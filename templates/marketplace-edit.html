@@ -1,73 +1,134 @@
 <form class="sr5-marketplace actor-grid">
-  <!-- Header Section -->
-  <header class="sr5-marketplace header">
-      <div class="sr5-marketplace toggle-container">
-          <input class="sr5-marketplace toggle-switch" type="checkbox" id="toggle-edit" name="toggle-edit">
-          <label for="toggle-edit" class="sr5-marketplace toggle-label">
-              <span class="sr5-marketplace toggle-handle">
-                  <span class="sr5-marketplace spanner-icon fas fa-wrench"></span>
-              </span>
-          </label>
-      </div>
-      <input type="text" name="name" value="{{actorName}}" placeholder="Enter shop name">
-  </header>
-  <figure class="sr5-marketplace actor-image">
-    <img src="{{img}}" data-edit="img">
-  </figure>
-  <!-- Second Row: Description and Image -->
-  <div class="sr5-marketplace description-container">
-      <label for="sr5-marketplace description">Description:</label>
-      <textarea name="system.description.long" class="sr5-marketplace description-edit" disabled>{{description.long}}</textarea>
-  </div>
-
-  <!-- Third Row: Form Groups for Numeric Fields -->
-  <div class="sr5-marketplace form-group">
-      <label for="charisma">Charisma</label>
-      <input class="sr5-marketplace input" type="number" name="system.charisma" value="{{system.charisma}}" min="0" max="12" step="1">
-  </div>
-
-  <div class="sr5-marketplace form-group">
-      <label for="negotiation">Negotiation</label>
-      <input class="sr5-marketplace input" type="number" name="system.negotiation" value="{{system.negotiation}}" min="0" max="12" step="1">
-  </div>
-
-  <div class="sr5-marketplace form-group">
-      <label for="connection">Connection</label>
-      <input class="sr5-marketplace input" type="number" name="system.connection" value="{{system.connection}}" min="0" max="6" step="1">
-  </div>
-
-  <div class="sr5-marketplace form-group">
-      <label for="loyalty">Loyalty</label>
-      <input class="sr5-marketplace input" type="number" name="system.loyalty" value="{{system.loyalty}}" min="0" max="6" step="1">
-  </div>
-
-  <div class="sr5-marketplace form-group">
-      <label>Group</label>
-      <input class="sr5-marketplace selector" type="checkbox" name="system.group" {{#if system.group}}checked{{/if}}>
-  </div>
-
-  <div class="sr5-marketplace form-group">
-      <label>Family</label>
-      <input class="sr5-marketplace selector" type="checkbox" name="system.family" {{#if system.family}}checked{{/if}}>
-  </div>
-
-  <div class="sr5-marketplace form-group">
-      <label>Blackmail</label>
-      <input class="sr5-marketplace selector" type="checkbox" name="system.blackmail" {{#if system.blackmail}}checked{{/if}}>
-  </div>
-
-  <!-- Items Grid for Sale -->
-  <div class="sr5-marketplace items-grid">
-      <h3>Items for Sale</h3>
-      <div class = "sr5-marketplace item-catalog" id="items-for-sale">
-          {{#each items}}
-          <div class="item">
-              <strong>{{name}}</strong> - Cost: {{system.technology.cost}} ¥
-              <button type="button" class="remove-item" data-item-id="{{_id}}">Remove</button>
-          </div>
-          {{else}}
-          <p>No items for sale</p>
-          {{/each}}
-      </div>
-  </div>
-</form>
+    <!-- Header Section -->
+    <header class="sr5-marketplace header">
+        <div class="sr5-marketplace toggle-container">
+            <input class="sr5-marketplace toggle-switch" type="checkbox" id="toggle-edit" name="toggle-edit">
+            <label for="toggle-edit" class="sr5-marketplace toggle-label">
+                <span class="sr5-marketplace toggle-handle">
+                    <span class="sr5-marketplace spanner-icon fas fa-wrench"></span>
+                </span>
+            </label>
+        </div>
+        <input type="text" name="name" value="{{name}}" placeholder="Enter shop name">
+        <!-- Linked Connection Field -->
+        <div class="sr5-marketplace form-group linkedConnection">
+            <input class="sr5-marketplace input linked-connection-dropzone" type="text"
+            name="system.connectionLink"
+            value="{{displayConnectionLink system.connectionLink}}"
+            placeholder="Drag and drop a connection here"
+            readonly>
+        </div>
+    
+        <!-- Linked Shop Item Field -->
+        <div class="sr5-marketplace linkedShopItem">
+            <label for="system.shopItemLink">Shop Item Link:</label>
+            <input class="sr5-marketplace input" type="text" name="system.shopItemLink" value="{{system.shopItemLink}}">
+        </div>
+    </header>
+    
+    <figure class="sr5-marketplace actor-image">
+      <img src="{{img}}" data-edit="img">
+    </figure>
+  
+    <!-- Second Row: Description and Image -->
+    <div class="sr5-marketplace description-container">
+        <label for="sr5-marketplace description">Description:</label>
+        <textarea name="system.description.long" class="sr5-marketplace description-edit" disabled>{{system.description.long}}</textarea>
+    </div>
+  
+    <!-- Attributes Grid -->
+    <div class="sr5-marketplace attributes-grid">
+        <!-- Physical Attributes -->
+        <div class="sr5-marketplace form-group attributes physical">
+            <label for="body">Body</label>
+            <input class="sr5-marketplace input" type="number" name="system.attributes.body" value="{{system.attributes.body}}" min="0" max="12" step="1">
+        </div>
+        <div class="sr5-marketplace form-group attributes physical">
+            <label for="agility">Agility</label>
+            <input class="sr5-marketplace input" type="number" name="system.attributes.agility" value="{{system.attributes.agility}}" min="0" max="12" step="1">
+        </div>
+        <div class="sr5-marketplace form-group attributes physical">
+            <label for="reaction">Reaction</label>
+            <input class="sr5-marketplace input" type="number" name="system.attributes.reaction" value="{{system.attributes.reaction}}" min="0" max="12" step="1">
+        </div>
+        <div class="sr5-marketplace form-group attributes physical">
+            <label for="strength">Strength</label>
+            <input class="sr5-marketplace input" type="number" name="system.attributes.strength" value="{{system.attributes.strength}}" min="0" max="12" step="1">
+        </div>
+        
+        <!-- Mental Attributes -->
+        <div class="sr5-marketplace form-group attributes mental">
+            <label for="willpower">Willpower</label>
+            <input class="sr5-marketplace input" type="number" name="system.attributes.willpower" value="{{system.attributes.willpower}}" min="0" max="12" step="1">
+        </div>
+        <div class="sr5-marketplace form-group attributes mental">
+            <label for="logic">Logic</label>
+            <input class="sr5-marketplace input" type="number" name="system.attributes.logic" value="{{system.attributes.logic}}" min="0" max="12" step="1">
+        </div>
+        <div class="sr5-marketplace form-group attributes mental">
+            <label for="intuition">Intuition</label>
+            <input class="sr5-marketplace input" type="number" name="system.attributes.intuition" value="{{system.attributes.intuition}}" min="0" max="12" step="1">
+        </div>
+        <div class="sr5-marketplace form-group attributes mental">
+            <label for="charisma">Charisma</label>
+            <input class="sr5-marketplace input" type="number" name="system.attributes.charisma" value="{{system.attributes.charisma}}" min="0" max="12" step="1">
+        </div>
+    </div>
+  
+    <!-- Skill Fields -->
+    <div class="sr5-marketplace form-group">
+        <label for="negotiation">Negotiation</label>
+        <input class="sr5-marketplace input" type="number" name="system.skills.negotiation" value="{{system.skills.negotiation}}" min="0" max="12" step="1">
+    </div>
+  
+    <div class="sr5-marketplace form-group">
+        <label for="connection">Connection</label>
+        <input class="sr5-marketplace input" type="number" name="system.shopActor.connection" value="{{system.shopActor.connection}}" min="0" max="6" step="1">
+    </div>
+  
+    <div class="sr5-marketplace form-group">
+        <label for="loyalty">Loyalty</label>
+        <input class="sr5-marketplace input" type="number" name="system.shopActor.loyalty" value="{{system.shopActor.loyalty}}" min="0" max="6" step="1">
+    </div>
+  
+    <div class="sr5-marketplace form-group">
+        <label>Group</label>
+        <input class="sr5-marketplace selector" type="checkbox" name="system.shopActor.group" {{#if system.shopActor.group}}checked{{/if}}>
+    </div>
+  
+    <div class="sr5-marketplace form-group">
+        <label>Family</label>
+        <input class="sr5-marketplace selector" type="checkbox" name="system.shopActor.family" {{#if system.shopActor.family}}checked{{/if}}>
+    </div>
+  
+    <div class="sr5-marketplace form-group">
+        <label>Blackmail</label>
+        <input class="sr5-marketplace selector" type="checkbox" name="system.shopActor.blackmail" {{#if system.shopActor.blackmail}}checked{{/if}}>
+    </div>
+  
+    <!-- Items Grid for Sale -->
+    <div class="sr5-marketplace items-grid actor">
+        <div class="sr5-marketplace item-catalog" id="items-for-sale-dropzone">
+            <!-- This is where the items will be displayed -->
+            {{#each itemsForSale}}
+            <div class="marketplace-item grid-item">
+                <div class="item-image">
+                    <img src="{{this.img}}" alt="{{this.name}}">
+                </div>
+                <div class="item-action">
+                    <button id="{{this._id}}" class="add-to-cart" data-item-id="{{this._id}}">
+                        <i class="fa-solid fa-basket-shopping-plus"></i>
+                    </button>
+                </div>
+                <div class="item-details">
+                    <h4>{{this.name}}</h4>
+                    <div class="item-all">{{localize "SR5.Marketplace.system.avail.avail"}}: {{this.system.technology.availability}}</div>
+                    <div class="item-right rating">{{localize "SR5.Marketplace.system.technology.rating"}}: {{this.system.technology.rating}}</div>
+                </div>
+            </div>
+            {{else}}
+            <p>No items for sale</p>
+            {{/each}}
+        </div>
+    </div>
+  </form>  

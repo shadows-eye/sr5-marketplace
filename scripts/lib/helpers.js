@@ -101,5 +101,12 @@ export const registerBasicHelpers = () => {
     });
     Handlebars.registerHelper('neq', function(a, b) {
         return a !== b;
-      }); 
+      });
+    Handlebars.registerHelper('displayConnectionLink', function(connectionLink) {
+        if (connectionLink) {
+            return `Linked Item: @UUID[${connectionLink}]`;
+        } else {
+            return 'No Link Set';
+        }
+    });
 };

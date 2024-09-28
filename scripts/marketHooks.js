@@ -20,6 +20,7 @@ Hooks.on('renderChatMessage', (message, html, data) => {
     }
 });
 Hooks.once('ready', async function() {
+
     const itemData = new ItemData();
     await itemData.fetchItems();
     // Check if the user is not a GM
@@ -114,6 +115,33 @@ Hooks.once('ready', async function() {
         } else {
             console.log(`No order review data found for flag ID ${flagId}`);
         }
+        console.log("SR5-Marketplace | Initializing actor updates.");
+
+    // Loop through all actors and update if needed
+    for (let actor of game.actors.contents) {
+        // Only process actors of type relevant to SR5 Marketplace
+        if (actor.type === 'sr5-marketplace') {
+            let updateData = {};
+
+            _prepareActorData(actor);
+
+            // Prepare update data based on the prepared data
+            if (actor.system.attributes) updateData['system.attributes'] = actor.system.attributes;
+            if (actor.system.skills) updateData['system.skills'] = actor.system.skills;
+            if (actor.system.shopActor) updateData['system.shopActor'] = actor.system.shopActor;
+            if (actor.system.socialLimit !== undefined) updateData['system.socialLimit'] = actor.system.socialLimit;
+            if (actor.system.connectionLink !== undefined) updateData['system.connectionLink'] = actor.system.connectionLink;
+            if (actor.system.shopItemLink !== undefined) updateData['system.shopItemLink'] = actor.system.shopItemLink;
+            if (actor.system.itemsForSale) updateData['system.itemsForSale'] = actor.system.itemsForSale;
+
+            // If there is any data to update, call update on the actor
+            if (Object.keys(updateData).length > 0) {
+                console.log(`SR5-Marketplace | Updating actor: ${actor.name}`);
+                await actor.update(updateData);
+            }
+        }
+    }
+    console.log("SR5-Marketplace | Actor update complete.");
     });
     console.log("Initializing sr5-marketplace Karma flag for specified item types...");
 

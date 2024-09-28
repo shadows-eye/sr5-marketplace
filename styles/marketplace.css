@@ -382,13 +382,13 @@ input[type="text"]#search-box.marketplace-search{
 .sr5-marketplace.actor-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;  /* Two equal columns for the second row */
-    grid-template-rows: auto auto auto;  /* Three rows: header, content (desc and image), and form fields */
-    gap: 20px;  /* Spacing between the grid items */
-    padding: 20px;
+    grid-template-rows: auto 175px auto;  /* Three rows: header, content (desc and image), and form fields */
+    gap: 8px;  /* Spacing between the grid items */
+    padding: 8px;
 }
 /* Header occupies the full width in the first row */
 .sr5-marketplace.header {
-    grid-column: 1 / span 5;
+    grid-column: 1 / span 7;
     display: flex;
     align-items: center;
     gap: 20px;
@@ -396,21 +396,30 @@ input[type="text"]#search-box.marketplace-search{
 /* Form groups in the third row should each be in their own grid cell */
 .sr5-marketplace.form-group {
     grid-column: span 1;
-    grid-row-start: 3;
+    grid-row-start: 4;
+}
+.sr5-marketplace.form-group.attributes {
+    grid-column: span 1;
+    grid-row-start: 2;
+}
+.sr5-marketplace.form-group.attributes.physical {
+    grid-row-start: 1;
 }
 .sr5-marketplace.description-container {
     margin-bottom: 1em;
-    grid-column: 1 / span 6;
+    grid-column: 1 / span 5;
     grid-row-start: 2;
     textarea.sr5-marketplace.description-edit{
-        min-height: 300px;
+        min-height: 150px;
     }
 }
 .sr5-marketplace.actor-image {
-    grid-column: 7/ span 8;
+    grid-column-start: 7;
     grid-row-start: 2;
+    grid-row-end: 2;
     img {
-            max-width: 160px;
+            max-width: 100px;
+            max-height: 100px;
             object-fit: contain;
             border: none;
     }
@@ -430,13 +439,22 @@ input[type="text"]#search-box.marketplace-search{
     height: 6em;
     padding: 0.5em;
 }
+.sr5-marketplace.item-box{
+    grid-row: 5;
+    grid-column-start: 1;
+    grid-column-end: 8;
+    border: 1px solid var(--color-border-dark);
+}
 .sr5-marketplace.items-grid{
-    grid-row: 4;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1em;
 }
-
+.sr5-marketplace.items-grid.actor{
+    grid-row: 5;
+    grid-column-start: 1;
+    grid-column-end: 8;
+}
 .sr5-marketplace.edit-description, .sr5-marketplace.save-description {
     margin-top: 0.5em;
 }
@@ -497,6 +515,38 @@ input[type="text"]#search-box.marketplace-search{
 /* Change spanner color based on toggle state */
 .sr5-marketplace.toggle-switch:checked + .sr5-marketplace.toggle-label .sr5-marketplace.toggle-handle .sr5-marketplace.spanner-icon {
     color: red;
+}
+.sr5-marketplace.attributes-grid{
+    grid-row: 3;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1em;
+}
+/* Styles for linked connection display */
+.linked-connection-display {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.linked-connection-display .remove-linked-connection {
+    background: none;
+    border: none;
+    color: red;
+    cursor: pointer;
+}
+button.sr5-marketplace.remove-connection-button {
+    box-shadow: none;
+}
+
+button.sr5-marketplace.remove-connection-button {
+    background: none;
+    border: none;
+    width: 0.1em;
+    margin-left: -0.5em;
+}
+.linked-connection-display .remove-linked-connection i {
+    font-size: 1em;
 }
 @container (max-width: 900px) {
     .grid-container {
