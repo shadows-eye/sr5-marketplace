@@ -379,6 +379,193 @@ input[type="text"]#search-box.marketplace-search{
     margin-right: 0.1em;
     text-align: right;
 }
+.sr5-marketplace.actor-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;  /* Two equal columns for the second row */
+    grid-template-rows: auto 175px auto;  /* Three rows: header, content (desc and image), and form fields */
+    gap: 8px;  /* Spacing between the grid items */
+    padding: 8px;
+}
+/* Header occupies the full width in the first row */
+.sr5-marketplace.header {
+    grid-column: 1 / span 7;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+/* Form groups in the third row should each be in their own grid cell */
+.sr5-marketplace.form-group {
+    grid-column: span 1;
+    grid-row-start: 4;
+}
+.sr5-marketplace.form-group.attributes {
+    grid-column: span 1;
+    grid-row-start: 2;
+}
+.sr5-marketplace.form-group.attributes.physical {
+    grid-row-start: 1;
+}
+.sr5-marketplace.description-container {
+    margin-bottom: 1em;
+    grid-column: 1 / span 5;
+    grid-row-start: 2;
+    textarea.sr5-marketplace.description-edit{
+        min-height: 150px;
+    }
+}
+.sr5-marketplace.actor-image {
+    grid-column-start: 7;
+    grid-row-start: 2;
+    grid-row-end: 2;
+    img {
+            max-width: 100px;
+            max-height: 100px;
+            object-fit: contain;
+            border: none;
+    }
+}
+.sr5-marketplace.item-catalog{
+    min-width: 300px;
+}
+.sr5-marketplace.description-text {
+    padding: 0.5em;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    min-height: 3em;
+}
+
+.sr5-marketplace.description-edit {
+    width: 100%;
+    height: 6em;
+    padding: 0.5em;
+}
+.sr5-marketplace.item-box{
+    grid-row: 5;
+    grid-column-start: 1;
+    grid-column-end: 8;
+    border: 1px solid var(--color-border-dark);
+}
+.sr5-marketplace.items-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1em;
+}
+.sr5-marketplace.items-grid.actor{
+    grid-row: 5;
+    grid-column-start: 1;
+    grid-column-end: 8;
+}
+.sr5-marketplace.edit-description, .sr5-marketplace.save-description {
+    margin-top: 0.5em;
+}
+/* Hide the default checkbox */
+.sr5-marketplace.toggle-switch {
+    display: none;
+}
+
+/* Container for the toggle switch */
+.sr5-marketplace.toggle-container {
+    display: flex;
+    align-items: center;
+}
+
+/* Styling the label to create the toggle background */
+.sr5-marketplace.toggle-label {
+    cursor: pointer;
+    width: 50px;
+    height: 26px;
+    background-color: grey;
+    border-radius: 15px;
+    position: relative;
+    transition: background-color 0.3s;
+}
+
+/* Set blue background when checked */
+.sr5-marketplace.toggle-switch:checked + .sr5-marketplace.toggle-label {
+    background-color: rgb(255, 0, 179);
+}
+
+/* Add the round slider (handle) inside the toggle */
+.sr5-marketplace.toggle-handle {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s;
+}
+
+/* Move handle to the right when checked */
+.sr5-marketplace.toggle-switch:checked + .sr5-marketplace.toggle-label .sr5-marketplace.toggle-handle {
+    transform: translateX(24px);
+}
+
+/* Spanner Icon inside the handle */
+.sr5-marketplace.spanner-icon {
+    font-size: 16px;
+    color: grey;
+    transition: color 0.3s;
+}
+
+/* Change spanner color based on toggle state */
+.sr5-marketplace.toggle-switch:checked + .sr5-marketplace.toggle-label .sr5-marketplace.toggle-handle .sr5-marketplace.spanner-icon {
+    color: red;
+}
+.sr5-marketplace.attributes-grid{
+    grid-row: 3;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1em;
+}
+/* Styles for linked connection display */
+.linked-connection-display {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.linked-connection-display .remove-linked-connection {
+    background: none;
+    border: none;
+    color: red;
+    cursor: pointer;
+}
+button.sr5-marketplace.remove-connection-button {
+    box-shadow: none;
+}
+
+button.sr5-marketplace.remove-connection-button {
+    background: none;
+    border: none;
+    width: 0.1em;
+    margin-left: -0.5em;
+}
+.linked-connection-display .remove-linked-connection i {
+    font-size: 1em;
+}
+plus {
+    display: inline-block;   /* Make it an inline element, similar to an icon */
+    cursor: pointer;         /* Pointer cursor on hover */
+    color: green;            /* Green color for the plus symbol */
+    font-size: 1em;          /* Standard size */
+    font-family: FontAwesome; /* Use FontAwesome to show the plus icon */
+    font-weight: 900;        /* Make the plus symbol bold */
+}
+
+/* Minus Element Styling */
+minus {
+    display: inline-block;   /* Make it an inline element, similar to an icon */
+    cursor: pointer;         /* Pointer cursor on hover */
+    color: red;              /* Red color for the minus symbol */
+    font-size: 1em;          /* Standard size */
+    font-family: FontAwesome; /* Use FontAwesome to show the minus icon */
+    font-weight: 900;        /* Make the minus symbol bold */
+}
 @container (max-width: 900px) {
     .grid-container {
         grid-template-columns: repeat(3, minmax(150px, 1fr)) minmax(150px, 1fr);
