@@ -1,27 +1,41 @@
 {{#each historyEntries}}
     <h2>{{localize "SR5.Marketplace.OrderHistory"}} {{timestamp}}</h2>
     <ul>
-        {{#each items}}
+        {{#if items}}
+            {{#each items}}
+                <li>
+                    <strong>
+                        {{#if id.creationItemId}}
+                            @UUID[{{id.creationItemId}}]
+                        {{else}}
+                            @UUID[item.{{id.baseId}}]
+                        {{/if}}
+                    </strong>
+                    <ul>
+                        <li>Cost: {{calculatedCost}} ¥</li>
+                        <li>Rating: {{selectedRating}}</li>
+                        <li>Availability: {{calculatedAvailability}}</li>
+                        {{#if calculatedKarma}}
+                            <li>Karma: {{calculatedKarma}}</li>
+                        {{/if}}
+                        {{#if calculatedEssence}}
+                            <li>Essence: {{calculatedEssence}}</li>
+                        {{/if}}
+                    </ul>
+                </li>
+            {{/each}}
+        {{/if}}
+        
+        {{#if skillChange}}
             <li>
-                <strong>
-                    {{#if id.creationItemId}}
-                        @UUID[{{id.creationItemId}}]
-                    {{else}}
-                        @UUID[item.{{id.baseId}}]
-                    {{/if}}
-                </strong>
+                <strong>{{capitalizeFirst (localize skillChange.skillKey)}}</strong>
                 <ul>
-                    <li>Cost: {{calculatedCost}} ¥</li>
-                    <li>Rating: {{selectedRating}}</li>
-                    <li>Availability: {{calculatedAvailability}}</li>
-                    {{#if calculatedKarma}}
-                        <li>Karma: {{calculatedKarma}}</li>
-                    {{/if}}
-                    {{#if calculatedEssence}}
-                        <li>Essence: {{calculatedEssence}}</li>
-                    {{/if}}
+                    <li>Old Value: {{skillChange.oldValue}}</li>
+                    <li>New Value: {{skillChange.newValue}}</li>
+                    <li>Karma Spent: {{skillChange.karmaSpent}}</li>
+                    <li>Change Type: {{#if gain}}Increased{{else}}Decreased{{/if}}</li>
                 </ul>
             </li>
-        {{/each}}
+        {{/if}}
     </ul>
 {{/each}}
