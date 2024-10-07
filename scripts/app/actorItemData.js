@@ -319,23 +319,27 @@ export class ActorItemData extends ItemData {
     /**
      * Injects karma adjust buttons into all skill items on the actor sheet.
      * @param {JQuery} html - The HTML element of the actor sheet to inject buttons into.
+     * @param {Actor} actor - The actor whose sheet is being modified.
      */
     injectKarmaAdjustButtonsForAllSkills(html, actor) {
         console.log(`Injecting karma adjust buttons for all skills on actor sheet for actor: ${actor.name}`);
-    
+
         // Locate the skill list items, which represent each skill on the actor sheet
         const skillItems = html.find('.list-item[data-item-type="skill"]');
-    
+
         // Iterate over each skill item to inject the +/- buttons
         skillItems.each((index, skillElement) => {
             const $skillElement = $(skillElement);
-    
+
             // Locate the .item-right div inside the skill element
             const itemRight = $skillElement.find('.item-right');
-    
+
+            // Locate the .item-text.rtg element where we want to place the karma-adjust-buttons right behind
+            const rtgElement = itemRight.find('.item-text.rtg');
+
             // Check if buttons already exist to avoid duplication
-            if (itemRight.find('.karma-adjust-buttons').length > 0) return;
-    
+            if (rtgElement.next('.karma-adjust-buttons').length > 0) return;
+
             // Create the HTML for the plus and minus buttons using FontAwesome icons
             const buttonsHtml = `
                 <div class="karma-adjust-buttons" style="display: inline-block; margin-left: 10px;">
@@ -343,31 +347,32 @@ export class ActorItemData extends ItemData {
                     <minus class="karma-minus-button"><i class="fas fa-minus"></i></minus>
                 </div>
             `;
-    
-            // Append the buttons to the .item-right div
-            itemRight.append(buttonsHtml);
-    
+
+            // Insert the buttons directly after the `.item-text.rtg` element
+            $(buttonsHtml).insertAfter(rtgElement);
+
             // Set up an event listener for the plus button to increase the skill value
             itemRight.find('.karma-plus-button').on('click', async (event) => {
                 event.preventDefault();
                 console.log(`Increase button clicked for skill: ${$skillElement.data('item-id')}`);
-    
+
                 const skillKey = $skillElement.data('item-id');
                 await this.increaseSkill(actor, skillKey);
             });
-    
+
             // Set up an event listener for the minus button to decrease the skill value
             itemRight.find('.karma-minus-button').on('click', async (event) => {
                 event.preventDefault();
                 console.log(`Decrease button clicked for skill: ${$skillElement.data('item-id')}`);
-    
+
                 const skillKey = $skillElement.data('item-id');
                 await this.decreaseSkill(actor, skillKey);
             });
         });
-    
+
         console.log(`Injected karma adjust buttons for all skills on the actor sheet.`);
     }
+
 
     /**
      * Logs the skill change (increase or decrease) in the actor's history flag.

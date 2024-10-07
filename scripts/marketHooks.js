@@ -247,8 +247,6 @@ Hooks.on("renderActorSheet", (app, html, data) => {
     // Ensure we're dealing with the SR5 actor sheet
     if (!html.hasClass("sr5")) return;
 
-    console.log(`Rendering actor sheet for ${app.document.name}`);
-
     // Delay injection slightly to ensure the sheet is fully rendered
     setTimeout(() => {
         // Locate the character sheet by its specific window container
@@ -274,7 +272,12 @@ Hooks.on("renderActorSheet", (app, html, data) => {
             // Check if buttons already exist to avoid duplication
             if (itemRight.find('.karma-adjust-buttons').length > 0) return;
 
-            console.log(`Inserting karma adjust buttons for skill: ${skillElement.data('item-id')}`);
+            // Locate the `.item-text.rtg` element
+            const rtgElement = itemRight.find('.item-text.rtg');
+            if (!rtgElement.length) {
+                console.warn(`Rating element not found in item-right for skill: ${skillElement.data('item-id')}`);
+                return;
+            }
 
             // Create the HTML for the plus and minus buttons using FontAwesome icons
             const buttonsHtml = `
@@ -284,10 +287,10 @@ Hooks.on("renderActorSheet", (app, html, data) => {
                 </div>
             `;
 
-            // Append the buttons to the .item-right div
-            itemRight.append(buttonsHtml);
+            // Insert the buttons right after the `.item-text.rtg` element
+            $(buttonsHtml).insertAfter(rtgElement);
 
-            // Set up event listener for the plus button to increase the skill value
+            // Set up an event listener for the plus button to increase the skill value
             itemRight.find('.karma-plus-button').on('click', async function (event) {
                 event.preventDefault();
 
@@ -295,11 +298,10 @@ Hooks.on("renderActorSheet", (app, html, data) => {
                 const skillKey = skillElement.data('item-id');
 
                 // Call the increaseSkill function
-                const actorItemData = new ActorItemData(app.document);
-                await actorItemData.increaseSkill(app.document, skillKey);
+                await ActorItemData.prototype.increaseSkill(app.document, skillKey);
             });
 
-            // Set up event listener for the minus button to decrease the skill value
+            // Set up an event listener for the minus button to decrease the skill value
             itemRight.find('.karma-minus-button').on('click', async function (event) {
                 event.preventDefault();
 
@@ -307,8 +309,7 @@ Hooks.on("renderActorSheet", (app, html, data) => {
                 const skillKey = skillElement.data('item-id');
 
                 // Call the decreaseSkill function
-                const actorItemData = new ActorItemData(app.document);
-                await actorItemData.decreaseSkill(app.document, skillKey);
+                await ActorItemData.prototype.decreaseSkill(app.document, skillKey);
             });
         });
     }, 100);  // Delay injection to ensure full render
