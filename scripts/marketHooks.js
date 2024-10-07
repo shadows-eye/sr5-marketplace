@@ -281,7 +281,7 @@ Hooks.on("renderActorSheet", (app, html, data) => {
 
             // Create the HTML for the plus and minus buttons using FontAwesome icons
             const buttonsHtml = `
-                <div class="karma-adjust-buttons" style="display: inline-block; margin-left: 10px;">
+                <div class="karma-adjust-buttons" style="display: inline-block; margin-left: -20px;">
                     <plus class="karma-plus-button"><i class="fas fa-plus"></i></plus>
                     <minus class="karma-minus-button"><i class="fas fa-minus"></i></minus>
                 </div>

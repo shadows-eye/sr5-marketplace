@@ -412,7 +412,7 @@ export class ActorItemData extends ItemData {
 
             // Create the HTML for the plus and minus buttons using FontAwesome icons
             const buttonsHtml = `
-                <div class="karma-adjust-buttons" style="display: inline-block; margin-left: 10px;">
+                <div class="karma-adjust-buttons" style="display: inline-block; margin-left: -20px;">
                     <plus class="karma-plus-button"><i class="fas fa-plus"></i></plus>
                     <minus class="karma-minus-button"><i class="fas fa-minus"></i></minus>
                 </div>
@@ -503,14 +503,15 @@ export class ActorItemData extends ItemData {
 
         // Construct the new history entry for the skill change
         const newHistoryEntry = {
-            actorFlagId: actor.id,
+            actorFlagId: actor.id, // 
             items: null,  // No items involved in skill adjustment
             karma: karmaSpent, // Karma spent for the skill change (positive or negative)
             gain: gain,  // True if increased, false if decreased
-            surgicalDamage: 0,
+            surgicalDamage: 0, //Not needed for skill changes
             timestamp: flagTimestamp,
             skillChange: {
                 skillKey: skillKey,
+                skillLabel: skillKeyLocalized,
                 oldValue: oldSkillValue,
                 newValue: newSkillValue,
                 karmaSpent: karmaSpent

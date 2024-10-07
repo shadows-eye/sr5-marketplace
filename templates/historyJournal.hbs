@@ -6,9 +6,9 @@
                 <li>
                     <strong>
                         {{#if id.creationItemId}}
-                            @UUID[{{id.creationItemId}}]
+                            @UUID[{{id.creationItemId}}] <i class="fa-duotone fa-solid fa-clipboard-list green"></i>
                         {{else}}
-                            @UUID[item.{{id.baseId}}]
+                            @UUID[item.{{id.baseId}}] <i class="fa-duotone fa-solid fa-clipboard-list green"></i>
                         {{/if}}
                     </strong>
                     <ul>
@@ -28,12 +28,14 @@
         
         {{#if skillChange}}
             <li>
-                <strong>{{capitalizeFirst (localize skillChange.skillKey)}}</strong>
+                <strong>{{capitalizeFirst (localize skillChange.skillLabel)}}</strong> 
+                {{#if gain}} <i class="fa-duotone fa-solid fa-book green"></i> <i class="fa-regular fa-arrow-up green"></i>
+                {{else}} <i class="fa-duotone fa-solid fa-book red"></i><i class="fa-sharp fa-solid fa-arrow-down red"></i>{{/if}}
                 <ul>
                     <li>Old Value: {{skillChange.oldValue}}</li>
                     <li>New Value: {{skillChange.newValue}}</li>
                     <li>Karma Spent: {{skillChange.karmaSpent}}</li>
-                    <li>Change Type: {{#if gain}}Increased{{else}}Decreased{{/if}}</li>
+                    
                 </ul>
             </li>
         {{/if}}

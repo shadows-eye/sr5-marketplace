@@ -552,7 +552,7 @@ plus {
     display: inline-block;   /* Make it an inline element, similar to an icon */
     cursor: pointer;         /* Pointer cursor on hover */
     color: green;            /* Green color for the plus symbol */
-    font-size: 1em;          /* Standard size */
+    font-size: 0.8em;          /* Standard size */
     font-family: FontAwesome; /* Use FontAwesome to show the plus icon */
     font-weight: 900;        /* Make the plus symbol bold */
 }
@@ -562,9 +562,15 @@ minus {
     display: inline-block;   /* Make it an inline element, similar to an icon */
     cursor: pointer;         /* Pointer cursor on hover */
     color: red;              /* Red color for the minus symbol */
-    font-size: 1em;          /* Standard size */
+    font-size: 0.8em;          /* Standard size */
     font-family: FontAwesome; /* Use FontAwesome to show the minus icon */
     font-weight: 900;        /* Make the minus symbol bold */
+}
+.green {
+    color: green;
+}
+.red{
+    color: red;
 }
 @container (max-width: 900px) {
     .grid-container {
