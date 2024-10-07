@@ -18,7 +18,7 @@ export class PurchaseScreenApp extends Application {
             id: "purchase-screen",
             title: "Purchase Screen",
             template: "modules/sr5-marketplace/templates/purchase.hbs",
-            width: 900,
+            width: 1000,
             height: 700,
             resizable: true,
             classes: ["sr5-market"]
