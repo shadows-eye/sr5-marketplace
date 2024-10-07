@@ -261,21 +261,52 @@ export class ActorItemData extends ItemData {
      */
     async updateSkillValue(actor, skillKey, increment) {
         let updated = false;
+        const karmaCostPerIncrement = 4; // Cost for 'active' skills
+        const karmaCostForKnowledge = 2; // Cost for 'knowledge' and 'language' skills
+
+        // Helper function to check if the actor has enough karma
+        const hasEnoughKarma = (cost) => {
+            return (actor.system.karma.value) >= cost;
+        };
+
+        // Helper function to update the actor's karma
+        const updateKarma = async (karmaChange) => {
+            const currentKarma = actor.system.karma.value ;
+            await actor.update({ "system.karma.value": currentKarma + karmaChange });
+        };
 
         // Check if skill is in 'active' skills
         if (actor.system.skills.active[skillKey]) {
             const currentBaseValue = actor.system.skills.active[skillKey].base || 0;
             const newBaseValue = currentBaseValue + increment;
+            const karmaCost = karmaCostPerIncrement * Math.abs(increment);
 
             console.log(`Updating active skill: ${skillKey}, currentBaseValue: ${currentBaseValue}, newBaseValue: ${newBaseValue}`);
 
-            if (newBaseValue >= 0) {
-                // Update the 'base' value, which is what the normal edit mode changes
-                await actor.update({ [`system.skills.active.${skillKey}.base`]: newBaseValue });
-                updated = true;
-
-                console.log(`Active skill '${skillKey}' updated to base value ${newBaseValue}`);
+            if (increment > 0 && !hasEnoughKarma(karmaCost)) {
+                // Not enough karma to increase the skill
+                ui.notifications.warn(`Not enough karma to increase ${skillKey}.`);
+                return;
             }
+
+            if (newBaseValue < 0) {
+                // Prevent decreasing below zero
+                ui.notifications.warn(`${skillKey} cannot be decreased below zero.`);
+                return;
+            }
+
+            // Update the 'base' value, which is what the normal edit mode changes
+            await actor.update({ [`system.skills.active.${skillKey}.base`]: newBaseValue });
+            updated = true;
+
+            // Update karma accordingly
+            if (increment > 0) {
+                await updateKarma(-karmaCost); // Deduct karma for increase
+            } else if (increment < 0 && currentBaseValue > 0) {
+                await updateKarma(karmaCost); // Refund karma for decrease
+            }
+
+            console.log(`Active skill '${skillKey}' updated to base value ${newBaseValue}`);
         }
 
         // Check if skill is in 'knowledge' skills
@@ -283,15 +314,34 @@ export class ActorItemData extends ItemData {
             if (knowledgeData.value && knowledgeData.value[skillKey]) {
                 const currentBaseValue = knowledgeData.value[skillKey].base || 0;
                 const newBaseValue = currentBaseValue + increment;
+                const karmaCost = karmaCostForKnowledge * Math.abs(increment);
 
                 console.log(`Updating knowledge skill: ${skillKey}, currentBaseValue: ${currentBaseValue}, newBaseValue: ${newBaseValue}`);
 
-                if (newBaseValue >= 0) {
-                    await actor.update({ [`system.skills.knowledge.${knowledgeType}.value.${skillKey}.base`]: newBaseValue });
-                    updated = true;
-
-                    console.log(`Knowledge skill '${skillKey}' updated to base value ${newBaseValue}`);
+                if (increment > 0 && !hasEnoughKarma(karmaCost)) {
+                    // Not enough karma to increase the skill
+                    ui.notifications.warn(`Not enough karma to increase ${skillKey}.`);
+                    return;
                 }
+
+                if (newBaseValue < 0) {
+                    // Prevent decreasing below zero
+                    ui.notifications.warn(`${skillKey} cannot be decreased below zero.`);
+                    return;
+                }
+
+                // Update the 'base' value
+                await actor.update({ [`system.skills.knowledge.${knowledgeType}.value.${skillKey}.base`]: newBaseValue });
+                updated = true;
+
+                // Update karma accordingly
+                if (increment > 0) {
+                    await updateKarma(-karmaCost); // Deduct karma for increase
+                } else if (increment < 0 && currentBaseValue > 0) {
+                    await updateKarma(karmaCost); // Refund karma for decrease
+                }
+
+                console.log(`Knowledge skill '${skillKey}' updated to base value ${newBaseValue}`);
             }
         }
 
@@ -299,15 +349,34 @@ export class ActorItemData extends ItemData {
         if (actor.system.skills.language.value[skillKey]) {
             const currentBaseValue = actor.system.skills.language.value[skillKey].base || 0;
             const newBaseValue = currentBaseValue + increment;
+            const karmaCost = karmaCostForKnowledge * Math.abs(increment);
 
             console.log(`Updating language skill: ${skillKey}, currentBaseValue: ${currentBaseValue}, newBaseValue: ${newBaseValue}`);
 
-            if (newBaseValue >= 0) {
-                await actor.update({ [`system.skills.language.value.${skillKey}.base`]: newBaseValue });
-                updated = true;
-
-                console.log(`Language skill '${skillKey}' updated to base value ${newBaseValue}`);
+            if (increment > 0 && !hasEnoughKarma(karmaCost)) {
+                // Not enough karma to increase the skill
+                ui.notifications.warn(`Not enough karma to increase ${skillKey}.`);
+                return;
             }
+
+            if (newBaseValue < 0) {
+                // Prevent decreasing below zero
+                ui.notifications.warn(`${skillKey} cannot be decreased below zero.`);
+                return;
+            }
+
+            // Update the 'base' value
+            await actor.update({ [`system.skills.language.value.${skillKey}.base`]: newBaseValue });
+            updated = true;
+
+            // Update karma accordingly
+            if (increment > 0) {
+                await updateKarma(-karmaCost); // Deduct karma for increase
+            } else if (increment < 0 && currentBaseValue > 0) {
+                await updateKarma(karmaCost); // Refund karma for decrease
+            }
+
+            console.log(`Language skill '${skillKey}' updated to base value ${newBaseValue}`);
         }
 
         if (updated) {
@@ -316,6 +385,7 @@ export class ActorItemData extends ItemData {
             console.warn(`Skill with key '${skillKey}' not found in any category or invalid update.`);
         }
     }
+
     /**
      * Injects karma adjust buttons into all skill items on the actor sheet.
      * @param {JQuery} html - The HTML element of the actor sheet to inject buttons into.
@@ -435,7 +505,7 @@ export class ActorItemData extends ItemData {
         const newHistoryEntry = {
             actorFlagId: actor.id,
             items: null,  // No items involved in skill adjustment
-            karma: karmaSpent,
+            karma: karmaSpent, // Karma spent for the skill change (positive or negative)
             gain: gain,  // True if increased, false if decreased
             surgicalDamage: 0,
             timestamp: flagTimestamp,
