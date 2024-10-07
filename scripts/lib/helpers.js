@@ -101,5 +101,10 @@ export const registerBasicHelpers = () => {
     });
     Handlebars.registerHelper('neq', function(a, b) {
         return a !== b;
-      }); 
+      });
+    // Register a Handlebars helper called 'capitalizeFirst'
+    Handlebars.registerHelper('capitalizeFirst', function (string) {
+        if (typeof string !== 'string' || !string) return '';
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    });
 };
