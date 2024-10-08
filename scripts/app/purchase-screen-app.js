@@ -281,8 +281,8 @@ export class PurchaseScreenApp extends Application {
      * @param {HTMLElement} html - The HTML content of the marketplace.
      */
     _updateBasketCount(html) {
-        // Find all elements with class 'basket-item' within '#basket-items'
-        const basketItems = html.find('#basket-items .basket-item');
+        // Find all elements with class 'remove-item' within the grid basket-grid
+        const basketItems = html.find('.basket-grid .remove-item');
         const itemCount = basketItems.length;
 
         // Find the basket count element
@@ -306,6 +306,7 @@ export class PurchaseScreenApp extends Application {
             basketCountElement.addClass('hidden');
         }
     }
+
     _onRatingChange(event, html) {
         const basketId = $(event.currentTarget).data('basketId');
         const selectedRating = parseInt(event.currentTarget.value);
