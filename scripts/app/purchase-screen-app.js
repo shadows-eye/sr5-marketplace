@@ -19,7 +19,7 @@ export class PurchaseScreenApp extends Application {
             title: "Purchase Screen",
             template: "modules/sr5-marketplace/templates/purchase.hbs",
             width: 1000,
-            height: 700,
+            height: 850,
             resizable: true,
             classes: ["sr5-market"]
         });
@@ -96,6 +96,9 @@ export class PurchaseScreenApp extends Application {
     
         // Handle the "Review and Confirm" button click
         html.on('click', '.review-request-button', event => this._onReviewRequest(event, html));
+        
+        // Handle basket toggle click
+        html.find('.basket-toggle-bar').on('click', event => this._toggleBasket(html));
 
         // Event listener for removing items in the order review
         html.on('click', '.remove-item', async event => {
@@ -179,7 +182,20 @@ export class PurchaseScreenApp extends Application {
     _getItemsByType(type) {
         return this.itemData.itemsByType[type] || [];
     }
-
+    /**
+     * Toggles the visibility of the basket by adding or removing the "basket-expanded" class.
+     * @param {HTMLElement} html - The HTML content of the marketplace.
+     */
+    _toggleBasket(html) {
+        const gridContainer = html.find('.grid-container');
+        const basketContent = html.find('.basket-content');
+    
+        // Toggle the hidden class on the basket content
+        basketContent.toggleClass('hidden');
+    
+        // Toggle the expanded class on the grid container
+        gridContainer.toggleClass('expanded');
+    }
     async _renderItemList(items, html) {
         const itemListContainer = html.find("#marketplace-items");
         itemListContainer.empty();
