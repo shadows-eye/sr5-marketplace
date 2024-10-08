@@ -196,6 +196,16 @@ input#item-search {
 .basket-content {
     grid-column: 3 / span 4; /* Basket content occupies 4 columns */
     width: auto; /* Use the available width based on the columns */
+    position: relative;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+}
+.basket-content h3 {
+    font-weight: bold;
+    padding: 2em 1.6em;
+    border-bottom: none
 }
 .basket-toggle-bar:hover {
     background-image: radial-gradient(circle, #c7a40673, #a1051f42, #c7a40673);
@@ -216,6 +226,54 @@ input#item-search {
     align-items: center;
     justify-content: center;
     z-index: 2;
+}
+.basket-grid {
+    display: grid;
+    grid-template-columns: 4fr 0.8fr 0.8fr 0.2fr; /* Adjust based on your needs */
+    gap: 10px;
+    align-items: center;
+}
+.basket-frame {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Prevent frame from interfering with interactions */
+    background-image: url('/modules/sr5-marketplace/assets/frames/SR5-Frame.svg');
+    background-size: 100% 100%; /* Scale the SVG to fit the size of the basket-content */
+    background-repeat: no-repeat; /* Ensure the frame only appears once */
+    background-position: center; /* Center the SVG frame */
+    z-index: 2; /* Frame sits above the basket content */
+}
+.basket-grid .header {
+    font-weight: bold;
+    padding: 0 1.6em;
+}
+.basket-summary{
+    grid-row: 2;
+    padding: 0 1.6em;
+}
+.end-row {
+    grid-column: 1 / -1;
+    padding: 0 0.5em;
+    align-self: end;
+}
+.basket-item.item-name{
+    padding: 0 1.6em;
+    grid-column: 1;
+}
+.basket-item.item-rating{
+    padding: 0 1.6em;
+    grid-column: 2;
+}
+.basket-item.item-cost{
+    padding: 0 1.6em;
+    grid-column: 3;
+}
+.basket-item.remove-item{
+    padding: 0 1.6em;
+    grid-column: 4;
 }
 /* Hidden class */
 .hidden {
@@ -326,16 +384,19 @@ input#item-search {
 }
 .order-review-grid > .marketplace.item-header:nth-child(6){
     background-color: transparent; /* Remove the background from individual elements */
-    margin-left: 0.3em;
     color: #303030;
     font-weight: bold;
     text-align: center;
     text-size-adjust: 1.5em;
     z-index: 2;
+    padding-right: 0.1em;
 }
 .order-review-grid > .marketplace.item-header:hover {
     /*text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3);*/
     box-shadow: 0 0 10px rgba(245, 245, 245, 0.897), 0 0 5px rgba(255, 255, 255, 0.897);  /* Glow effect */
+    padding: 0 0 0 0;
+    border-radius: 3px;
+    padding-inline: 2px;
 }
 
 /* Glow effect on hover */
@@ -417,6 +478,7 @@ button.remove-item {
     max-width: fit-content;
     margin: 0.1em;
     border: 0px;
+    padding: 0 1.6em;
 }
 .send-request-button{
     max-width: 60px;
