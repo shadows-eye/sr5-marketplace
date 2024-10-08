@@ -61,7 +61,10 @@
             {{> 'modules/sr5-marketplace/templates/libraryItem.hbs' }}
         </div>
         <div class="basket-toggle-bar">
-            <i id="show-basket" class="fas fa-shopping-basket"></i> <!-- Shopping Basket Icon -->
+            <div class="circle">
+                <i class="fas fa-shopping-basket"></i>
+                <div class="basket-count hidden">0</div>
+            </div>
         </div>
         <div class="basket-content hidden">
             <h3>{{localize "SR5.Marketplace.ShoppingBasket"}}</h3>

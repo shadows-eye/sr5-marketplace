@@ -125,6 +125,53 @@ input#item-search {
     transition: all 0.3s ease;
     z-index: 1000;
 }
+/* Container for the animated gradient */
+.circle {
+    position: relative;
+    width: 13px; /* Restrict the size of the circle */
+    height: 13px; /* Match the circle size with the icon */
+    border-radius: 50%; /* Ensures it's round */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Shopping cart icon */
+.circle i {
+    font-size: 12px; /* Size the icon smaller to fit inside the circle */
+    color: white;
+    z-index: 1; /* Ensure the icon is above the gradient */
+}
+
+/* Gradient animation around the icon */
+.circle::before,
+.circle::after {
+    position: absolute;
+    z-index: -1;
+    content: "";
+    inset: -5px; /* Creates a small ring around the icon */
+    border-radius: inherit;
+    background-image: conic-gradient(#c7a406, #a1051f, #c7a406);
+    animation: rotate 8s linear infinite;
+}
+
+.circle::after {
+    filter: blur(4px); /* Adds a blur effect to the gradient */
+    opacity: 0.7;
+}
+
+/* Pause animation on hover */
+.circle:hover::before,
+.circle:hover::after {
+    animation-play-state: paused;
+}
+
+/* Keyframes for rotating gradient */
+@keyframes rotate {
+    to {
+        rotate: 360deg;
+    }
+}
 .basket-content {
     grid-column: 8;
     width: auto;
@@ -139,9 +186,6 @@ input#item-search {
     text-align: left;
     overflow-y: auto;
 }
-.basket-content.hidden {
-    display: none;
-}
 .basket-expanded .marketplace-items {
     grid-column: 1 / span 1; /* Only one column for marketplace items */
     grid-template-columns: 1fr; /* Single column layout */
@@ -154,7 +198,28 @@ input#item-search {
     width: auto; /* Use the available width based on the columns */
 }
 .basket-toggle-bar:hover {
-    background-color: #3d3d3d;
+    background-image: radial-gradient(circle, #c7a40673, #a1051f42, #c7a40673);
+    background-color: #2b2b2b;
+}
+/* Style for the basket count number */
+.basket-count {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background-color: rgb(109, 2, 2);
+    color: rgb(207, 171, 7);
+    font-size: 12px;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
+/* Hidden class */
+.hidden {
+    display: none;
 }
 .grid-container.expanded .marketplace-items {
     grid-column: 1 / span 1; /* Collapse to one column */

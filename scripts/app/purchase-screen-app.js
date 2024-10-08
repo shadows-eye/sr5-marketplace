@@ -80,8 +80,24 @@ export class PurchaseScreenApp extends Application {
             this._renderBasket(html);
         }
         html.on('change', '.item-rating', event => this._onRatingChange(event, html));
-        html.on('click', '.add-to-cart', event => this._onAddToBasket(event, html));
-        html.on('click', '.remove-item', event => this._onRemoveFromBasket(event, html));
+        html.on('click', '.add-to-cart', event => {
+            // Call the existing function to add the item to the basket
+            this._onAddToBasket(event, html);
+        
+            // Use setTimeout to ensure the DOM is fully updated before updating the basket count
+            setTimeout(() => {
+                this._updateBasketCount(html);
+            }, 100); // Small delay of 100ms to ensure the basket DOM is updated
+        });
+        html.on('click', '.remove-item', event => {
+            // Call the existing function to remove the item from the basket
+            this._onRemoveFromBasket(event, html);
+        
+            // Use setTimeout to ensure the DOM is fully updated before updating the basket count
+            setTimeout(() => {
+                this._updateBasketCount(html);
+            }, 100); // Small delay of 100ms to ensure the basket DOM is updated
+        });
         //Order Review Change
         html.on('change', '.order-review-rating', event => this._onRatingChangeOrderReview(event, html));
         // Tab Switching Logic
@@ -183,19 +199,35 @@ export class PurchaseScreenApp extends Application {
         return this.itemData.itemsByType[type] || [];
     }
     /**
-     * Toggles the visibility of the basket by adding or removing the "basket-expanded" class.
+     * Toggles the visibility of the basket and the basket count.
      * @param {HTMLElement} html - The HTML content of the marketplace.
      */
     _toggleBasket(html) {
         const gridContainer = html.find('.grid-container');
         const basketContent = html.find('.basket-content');
-    
-        // Toggle the hidden class on the basket content
+        const basketCountElement = html.find('.basket-count');
+
+        // Check if the basket is currently hidden (collapsed)
+        const isHidden = basketContent.hasClass('hidden');
+
+        // Toggle the hidden class on the basket content (expands/collapses basket)
         basketContent.toggleClass('hidden');
-    
-        // Toggle the expanded class on the grid container
+
+        // Toggle the expanded class on the grid container (adjusts grid layout)
         gridContainer.toggleClass('expanded');
+
+        // If the basket is currently hidden and is being expanded, hide the count
+        if (isHidden) {
+            basketCountElement.addClass('hidden'); // Hide the count when the basket is expanded
+        } else {
+            // When collapsing, show the count if there are items
+            const itemCount = html.find('#basket-items .basket-item').length;
+            if (itemCount > 0) {
+                basketCountElement.removeClass('hidden'); // Show the count when the basket is collapsed
+            }
+        }
     }
+
     async _renderItemList(items, html) {
         const itemListContainer = html.find("#marketplace-items");
         itemListContainer.empty();
@@ -244,7 +276,36 @@ export class PurchaseScreenApp extends Application {
 
         this._saveBasketState(); // Save the updated basket state
     }
+    /**
+     * Updates the basket count displayed on the shopping cart icon.
+     * @param {HTMLElement} html - The HTML content of the marketplace.
+     */
+    _updateBasketCount(html) {
+        // Find all elements with class 'basket-item' within '#basket-items'
+        const basketItems = html.find('#basket-items .basket-item');
+        const itemCount = basketItems.length;
 
+        // Find the basket count element
+        const basketCountElement = html.find('.basket-count');
+
+        // Find the basket content to check if it's expanded or collapsed
+        const basketContent = html.find('.basket-content');
+
+        // Update the count text
+        basketCountElement.text(itemCount);
+
+        // If the basket is collapsed (hidden), show the count if there are items
+        if (basketContent.hasClass('hidden')) {
+            if (itemCount > 0) {
+                basketCountElement.removeClass('hidden');
+            } else {
+                basketCountElement.addClass('hidden');
+            }
+        } else {
+            // If the basket is expanded, always hide the count
+            basketCountElement.addClass('hidden');
+        }
+    }
     _onRatingChange(event, html) {
         const basketId = $(event.currentTarget).data('basketId');
         const selectedRating = parseInt(event.currentTarget.value);
