@@ -20,7 +20,7 @@ export class PurchaseScreenApp extends Application {
             template: "modules/sr5-marketplace/templates/purchase.hbs",
             width: 1000,
             height: 850,
-            resizable: true,
+            resizable: false,
             classes: ["sr5-market"]
         });
     }
