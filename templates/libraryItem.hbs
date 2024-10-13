@@ -14,7 +14,7 @@
     <div class="item-details">
         <h4>{{this.name}}</h4>
         <div class="item-all">{{localize "SR5.Marketplace.system.avail.avail"}}: {{this.system.technology.availability}}</div>
-        <div class="item-right rating">{{localize "SR5.Marketplace.system.technology.rating"}}: {{this.system.technology.rating}}</div>
+        <div class="item rating">{{localize "SR5.Marketplace.system.technology.rating"}}: {{this.system.technology.rating}}</div>
         {{#if (eq this.type "bioware")}}
         <div class="item-essence">{{localize "SR5.Marketplace.system.essence"}}: {{this.system.essence}}</div>
         {{else if (eq this.type "cyberware")}}
