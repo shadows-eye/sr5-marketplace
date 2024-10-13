@@ -1,5 +1,6 @@
 import ItemData from './itemData.js';
 import {getFormattedTimestamp} from './itemData.js';
+import {fetchAndSelectLanguage} from './itemData.js';
 import {ActorItemData} from './actorItemData.js';
 import { logActorHistory } from './actorHistoryLog.js';
 export class PurchaseScreenApp extends Application {
@@ -12,6 +13,7 @@ export class PurchaseScreenApp extends Application {
         this.orderData = options.orderData || {};
         this.completeItemsArray = Array.isArray(options.completeItemsArray) ? options.completeItemsArray : [];
         this.itemData = new ItemData();  // Instantiate ItemData here to use its methods
+        this.hasEnhancedItems = game.user.getFlag('sr5-marketplace', 'enhancedItemsFlag') || false;
       }
     static get defaultOptions() {
         return foundry.utils.mergeObject(super.defaultOptions, {
@@ -32,7 +34,8 @@ export class PurchaseScreenApp extends Application {
     
         // Initialize the completeItemsArray if not already set (may come from passed options)
         this.completeItemsArray = this.completeItemsArray || [];
-    
+        // Check if the enhancement flag is set on the GM user
+        this.hasEnhancedItems = game.user.getFlag('sr5-marketplace', 'enhancedItemsFlag') || false;
         // Restore basket items from flags (if needed)
         const savedBasket = game.user.getFlag('sr5-marketplace', 'basket') || [];
         this.itemData.basketItems = savedBasket;
@@ -61,6 +64,7 @@ export class PurchaseScreenApp extends Application {
             basketItems: this.itemData.basketItems, // Pass basket items to be rendered
             isGM: this.isGM,
             reviewData: reviewData,
+            hasEnhancedItems: this.hasEnhancedItems, // Pass the flag to the template
             completeItemsArray: this.completeItemsArray // Ensure the array is available in the template context
         };
     }
@@ -156,6 +160,36 @@ export class PurchaseScreenApp extends Application {
         });
         // Handle the "Buy Items Conformation" button click, will add the items to the actor's inventory and pay the total cost in nuyen, add flag to actor (history)
         html.on('click', '.send-request-button.confirm', event => this._onBuyItems(event, html));
+
+        // Handle "Enhance Items" button click for GMs
+        if (this.isGM) {
+            html.on('click', '#enhance-items-button', async (event) => {
+                event.preventDefault();
+    
+                if (this.hasEnhancedItems) {
+                    const confirmed = await Dialog.confirm({
+                        title: "Overwrite Enhancements",
+                        content: "Items have already been enhanced. Do you want to overwrite the changes?",
+                    });
+                    if (!confirmed) return;  // Exit if not confirmed
+                }
+    
+                // Call the fetchAndSelectLanguage function to trigger the selection and enhancement process
+                const enhancedItems = await fetchAndSelectLanguage();
+    
+                if (enhancedItems && enhancedItems.length > 0) {
+                    // Set a flag to indicate that items have been enhanced
+                    await game.user.setFlag('sr5-marketplace', 'enhancedItemsFlag', true);
+                    this.hasEnhancedItems = true;
+    
+                    // Notify the user that items were successfully enhanced
+                    ui.notifications.info(`${enhancedItems.length} items successfully enhanced.`);
+    
+                    // Reload the screen to reflect the new data
+                    this.render(true);
+                }
+            });
+        }
     }
     _onSearchInput(event, html) {
         const searchText = event.target.value.toLowerCase();
@@ -680,6 +714,31 @@ export class PurchaseScreenApp extends Application {
         }
         // Call logActorHistory after purchase to update the journal
         await logActorHistory(actor);
-    }                                       
+    }
+    async _onEnhanceItems() {
+        const selectedLanguageUrl = await fetchAndSelectLanguage();  // Let the user select a language
+    
+        if (!selectedLanguageUrl) {
+            ui.notifications.warn("No language selected. Enhancement cancelled.");
+            return;
+        }
+    
+        try {
+            // Call the function to fetch data from GitHub and enhance the items
+            const enhancedItems = await EnhanceItemData(selectedLanguageUrl);
+    
+            if (enhancedItems.length > 0) {
+                ui.notifications.info(`${enhancedItems.length} items were successfully enhanced.`);
+            } else {
+                ui.notifications.warn("No items were enhanced.");
+            }
+    
+            console.log("Enhanced items:", enhancedItems);
+    
+        } catch (error) {
+            console.error("Error during the enhancement process:", error);
+            ui.notifications.error("An error occurred during the enhancement process.");
+        }
+    }                                           
 }
   

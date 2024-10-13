@@ -2,6 +2,7 @@ import ItemData from './app/itemData.js';
 import { ActorItemData } from './app/actorItemData.js';
 import { PurchaseScreenApp } from './app/purchase-screen-app.js';
 import { registerBasicHelpers } from './lib/helpers.js';
+import { fetchAndSelectLanguage } from './app/itemData.js';
 
 // Call the function to register helpers
 registerBasicHelpers();
@@ -168,7 +169,21 @@ Hooks.once('ready', async function() {
 
     console.log("sr5-marketplace Karma flag initialization completed.");
 });
+// Add a new button to the left toolbar
+Hooks.on('getSceneControlButtons', (controls) => {
+    const mainControl = controls.find(c => c.name === 'token'); // Use the main control
 
+    // Add a new button to call fetchAndSelectLanguage
+    mainControl.tools.push({
+        name: 'enhance-item-data',
+        title: 'Enhance Item Data',
+        icon: 'fas fa-language', // You can choose a different FontAwesome icon if you like
+        onClick: () => {
+            fetchAndSelectLanguage();
+        },
+        button: true
+    });
+});
 Hooks.on('getSceneControlButtons', (controls) => {
     const mainControl = controls.find(c => c.name === 'token'); // Use main control or any existing control
     mainControl.tools.push({
