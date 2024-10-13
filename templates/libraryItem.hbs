@@ -9,12 +9,43 @@
                 <i class="fa-solid fa-basket-shopping-plus"></i>
             </button>
         </div>
-        <div class="item">{{this.system.technology.cost}} <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen"></i></div>
+
+        <!-- Show Karma instead of cost if the item has a Karma value -->
+        {{#if (or (eq this.type "quality") (eq this.type "adept_power") (eq this.type "spell") (eq this.type "complex_form"))}}
+            <div class="item">
+                {{#if (eq this.type "quality")}}
+                    {{this.system.karma}} Karma
+                {{else}}
+                    {{this.flags.sr5-marketplace.Karma}} Karma
+                {{/if}}
+                <i class="fa-duotone fa-solid fa-circle-star sr5-marketplace-karma"></i>
+            </div>
+        {{else}}
+            <!-- Otherwise, show the cost -->
+            <div class="item">{{this.system.technology.cost}} 
+                <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen"></i>
+            </div>
+        {{/if}}
     </order>
+
     <div class="item-details">
         <h4>{{this.name}}</h4>
-        <div class="item-all">{{localize "SR5.Marketplace.system.avail.avail"}}: {{this.system.technology.availability}}</div>
-        <div class="item rating">{{localize "SR5.Marketplace.system.technology.rating"}}: {{this.system.technology.rating}}</div>
+
+        <!-- Spell-specific logic: show drain instead of rating or availability -->
+        {{#if (eq this.type "spell")}}
+            <div class="item-drain">{{localize "SR5.Marketplace.system.spell.drain"}}: {{this.system.drain}}</div>
+
+        <!-- For qualities, adept powers, and complex forms, show Karma and skip availability -->
+        {{else if (or (eq this.type "quality") (eq this.type "adept_power") (eq this.type "complex_form"))}}
+            <!-- Skip showing availability or rating for these types -->
+
+        <!-- For other types, show availability and rating -->
+        {{else}}
+            <div class="item-all">{{localize "SR5.Marketplace.system.avail.avail"}}: {{this.system.technology.availability}}</div>
+            <div class="item rating">{{localize "SR5.Marketplace.system.technology.rating"}}: {{this.system.technology.rating}}</div>
+        {{/if}}
+
+        <!-- Show essence for bioware and cyberware -->
         {{#if (eq this.type "bioware")}}
         <div class="item-essence">{{localize "SR5.Marketplace.system.essence"}}: {{this.system.essence}}</div>
         {{else if (eq this.type "cyberware")}}
@@ -23,3 +54,4 @@
     </div>
 </div>
 {{/each}}
+

@@ -21,13 +21,13 @@ export default class ItemData {
 
         this.items = [...worldItems, ...compendiumItems]
             .filter(item => item.type !== "contact");
-
+            //console.log(this.getItemsByType("quality")); // Debug to see if qualities are present
         this.excludedItems = this.items.filter(item =>
-            ["adept_power", "call_in_action", "complex_form", "critter_power", "echo", "host", "metamagic", "quality", "sprite_power"]
+            ["adept_power", "call_in_action", "critter_power", "echo", "host", "metamagic", "sprite_power"]
             .includes(item.type)
         );
         this.items = this.items.filter(item =>
-            !["adept_power", "call_in_action", "complex_form", "critter_power", "echo", "host", "metamagic", "quality", "sprite_power"]
+            !["adept_power", "call_in_action", "critter_power", "echo", "host", "metamagic", "sprite_power"]
             .includes(item.type)
         );
         this.filteredItems = this.items; // Initialize filteredItems with all items
@@ -50,10 +50,13 @@ export default class ItemData {
             sins: this.getItemsByType("sin"),
             spells: this.getItemsByType("spell"),
             actions: this.getItemsByType("action"),
+            qualitys: this.getItemsByType("quality"),
+            complexForms: this.getItemsByType("complex_form"),
         };
     }
     getItemsByType(type) {
         return this.items.filter(item => item.type === type);
+
     }
 
     getWeaponsByCategory(itemCategory) {
@@ -1138,4 +1141,205 @@ export async function getFormattedTimestamp() {
     }
 
     return { chatTimestamp, flagTimestamp };
+}
+
+export async function fetchAndSelectLanguage() {
+    const languageRepoUrl = 'https://api.github.com/repos/chummer5a/chummer5a/contents/Chummer/lang';
+
+    try {
+        const response = await fetch(languageRepoUrl);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const languages = await response.json();
+        const languageFiles = languages.filter(file => file.name.endsWith('_data.xml'));
+
+        // Generate options for the selection window
+        const languageOptions = languageFiles.map(file => ({
+            name: file.name.replace('_data.xml', ''), // Strip the "_data.xml" from the filename
+            url: file.download_url
+        }));
+
+        // Create and show a selection dialog
+        const selectedLanguageUrl = await new Promise(resolve => {
+            const dialogOptions = languageOptions.map(option => `<option value="${option.url}">${option.name}</option>`).join('');
+            const dialogHtml = `<label>Select a language:</label><select id="language-select">${dialogOptions}</select>`;
+
+            new Dialog({
+                title: 'Language Selection',
+                content: dialogHtml,
+                buttons: {
+                    ok: {
+                        label: 'OK',
+                        callback: html => {
+                            const selectedUrl = html.find('#language-select').val();
+                            resolve(selectedUrl);
+                        }
+                    }
+                }
+            }).render(true);
+        });
+
+        if (selectedLanguageUrl) {
+            const enhancedItems = await EnhanceItemData(selectedLanguageUrl);
+            return enhancedItems;  // Return the enhanced items for further processing
+        }
+    } catch (error) {
+        console.error("Failed to fetch languages from GitHub:", error);
+    }
+}
+async function findItemName(githubQualities, worldItems) {
+    const enhancedItems = [];
+
+    for (const quality of githubQualities) {
+        // Start by filtering world items that contain the first part of the localized name
+        let matchedItems = worldItems.filter(item => item.name.toLowerCase().includes(quality.localizedName.split(' ')[0].toLowerCase()));
+
+        const nameParts = quality.localizedName.split(' ');
+
+        // Continue refining the matchedItems array by progressively including more parts of the localized name
+        for (let i = 1; i < nameParts.length && matchedItems.length > 1; i++) {
+            const searchPart = nameParts.slice(0, i + 1).join(' ').toLowerCase();
+            matchedItems = matchedItems.filter(item => item.name.toLowerCase().includes(searchPart));
+        }
+
+        // If there are still multiple matches, we will now use parts of the world item name to narrow it down
+        if (matchedItems.length > 1) {
+            console.warn(`Multiple matches found for quality: ${quality.localizedName}. Attempting to refine using world item names.`);
+
+            // Split the world item names into parts and try to progressively match
+            const worldItemNameParts = matchedItems.map(item => item.name.split(' '));
+
+            for (let j = 0; j < worldItemNameParts[0].length && matchedItems.length > 1; j++) {
+                const searchTerm = worldItemNameParts[0].slice(0, j + 1).join(' ').toLowerCase();
+
+                matchedItems = matchedItems.filter(item => item.name.toLowerCase().includes(searchTerm));
+            }
+        }
+
+        // If there are one or more matched items, assign the sourceAndPage and karma to all of them
+        if (matchedItems.length > 0) {
+            for (const matchedItem of matchedItems) {
+                // Update the matched item with the sourceAndPage and karma from the GitHub quality
+                matchedItem.system.description.source = quality.sourceAndPage;
+                matchedItem.system.karma = parseInt(quality.karma, 10);
+
+                // Update the item in the world or compendium
+                await matchedItem.update({
+                    'system.description.source': quality.sourceAndPage,
+                    'system.karma': quality.karma
+                });
+
+                enhancedItems.push({
+                    name: matchedItem.name,
+                    originalName: quality.name,
+                    localizedName: quality.localizedName,
+                    sourceAndPage: quality.sourceAndPage,
+                    karma: quality.karma
+                });
+
+                console.log(`Updated world item: ${matchedItem.name} with source and karma.`);
+            }
+        } else {
+            console.warn(`No match found for quality: ${quality.localizedName}`);
+        }
+    }
+
+    return enhancedItems;
+}
+
+export async function EnhanceItemData(languageUrl) {
+    const url = 'https://api.github.com/repos/chummer5a/chummer5a/contents/Chummer/data/qualities.xml?ref=master';
+
+    try {
+        const response = await fetch(url, {
+            headers: {
+                Accept: 'application/vnd.github.v3.raw', // Get raw file content
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const xmlText = await response.text();
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+        // Find all qualities in the XML
+        const qualities = xmlDoc.getElementsByTagName("quality");
+
+        const qualitiesArray = [];
+
+        // Fetch localized data
+        if (languageUrl) {
+            const langResponse = await fetch(languageUrl, {
+                headers: {
+                    Accept: 'application/vnd.github.v3.raw',
+                }
+            });
+
+            if (!langResponse.ok) {
+                throw new Error(`Failed to fetch language data from ${languageUrl}, status: ${langResponse.status}`);
+            }
+
+            const langXmlText = await langResponse.text();
+            const langXmlDoc = parser.parseFromString(langXmlText, "text/xml");
+
+            const langQualities = langXmlDoc.getElementsByTagName("quality");
+
+            // Match qualities and localized qualities
+            for (let i = 0; i < qualities.length; i++) {
+                const quality = qualities[i];
+                const qualityId = quality.getElementsByTagName("id")[0]?.textContent;
+                const qualityName = quality.getElementsByTagName("name")[0]?.textContent;
+                const qualitySource = quality.getElementsByTagName("source")[0]?.textContent || "Unknown";
+
+                const localizedQuality = Array.from(langQualities).find(
+                    lq => lq.getElementsByTagName("id")[0]?.textContent === qualityId
+                );
+
+                if (localizedQuality) {
+                    const localizedName = localizedQuality.getElementsByTagName("translate")[0]?.textContent || qualityName;
+                    const altPage = localizedQuality.getElementsByTagName("altpage")[0]?.textContent || "Unknown";
+                    const sourceAndPage = `${qualitySource} ${altPage}`;
+
+                    qualitiesArray.push({
+                        id: qualityId,
+                        name: qualityName,
+                        localizedName: localizedName,
+                        sourceAndPage: sourceAndPage,
+                        karma: quality.getElementsByTagName("karma")[0]?.textContent || 0
+                    });
+                }
+            }
+
+            console.log("GitHub Qualities Array:", qualitiesArray);
+
+            const worldItems = await fetchWorldAndCompendiumItems();
+            const enhancedItems = await findItemName(qualitiesArray, worldItems);
+
+            // Log the enhanced items that were updated
+            console.log("Enhanced World Items with updated karma and source:", enhancedItems);
+            return enhancedItems;
+        }
+    } catch (error) {
+        console.error("Failed to fetch XML from GitHub:", error);
+    }
+}
+async function fetchWorldAndCompendiumItems() {
+    const worldItems = game.items.filter(i => i.type === 'quality');
+    const compendiumItems = [];
+
+    for (const pack of game.packs) {
+        if (pack.documentName === 'Item') {
+            const items = await pack.getDocuments();
+            compendiumItems.push(...items.filter(i => i.type === 'quality'));
+        }
+    }
+
+    // Combine world and compendium items into one array
+    return [...worldItems, ...compendiumItems];
 }

@@ -3,8 +3,10 @@ export const registerBasicHelpers = () => {
     Handlebars.registerHelper('hasItemType', function(type, options) {
         const itemData = new ItemData();
         if (itemData.itemsByType[type] && itemData.itemsByType[type].length > 0) {
+            console.log(`Type found: ${type}`);
             return options.fn(this);
         }
+        console.log(`Type not found: ${type}`);
         return options.inverse(this);
     });
 

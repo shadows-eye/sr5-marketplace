@@ -62,7 +62,9 @@
                 "Rituals": "Rituals",
                 "SINs": "SINs",
                 "Spells": "Spells",
-                "Actions": "Actions"
+                "Actions": "Actions",
+                "Qualitys": "Qualities",
+                "ComplexForms": "Complex Forms"
             }
         }
     }

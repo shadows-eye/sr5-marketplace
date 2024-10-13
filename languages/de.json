@@ -63,7 +63,9 @@
                 "Rituals": "Rituale",
                 "SINs": "SINs",
                 "Spells": "Zauber",
-                "Actions": "Aktionen"
+                "Actions": "Aktionen",
+                "Qualitys": "Vor/Nachteile",
+                "ComplexForms": "Komplexe Formen"
             }
         }
     }

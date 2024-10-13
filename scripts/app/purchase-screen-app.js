@@ -1,5 +1,6 @@
 import ItemData from './itemData.js';
 import {getFormattedTimestamp} from './itemData.js';
+import {fetchAndSelectLanguage} from './itemData.js';
 import {ActorItemData} from './actorItemData.js';
 import { logActorHistory } from './actorHistoryLog.js';
 export class PurchaseScreenApp extends Application {
@@ -12,6 +13,7 @@ export class PurchaseScreenApp extends Application {
         this.orderData = options.orderData || {};
         this.completeItemsArray = Array.isArray(options.completeItemsArray) ? options.completeItemsArray : [];
         this.itemData = new ItemData();  // Instantiate ItemData here to use its methods
+        this.hasEnhancedItems = game.user.getFlag('sr5-marketplace', 'enhancedItemsFlag') || false;
       }
     static get defaultOptions() {
         return foundry.utils.mergeObject(super.defaultOptions, {
@@ -61,6 +63,7 @@ export class PurchaseScreenApp extends Application {
             basketItems: this.itemData.basketItems, // Pass basket items to be rendered
             isGM: this.isGM,
             reviewData: reviewData,
+            hasEnhancedItems: this.hasEnhancedItems,
             completeItemsArray: this.completeItemsArray // Ensure the array is available in the template context
         };
     }
@@ -79,6 +82,33 @@ export class PurchaseScreenApp extends Application {
         if (this.itemData.basketItems.length > 0) {
             this._renderBasket(html);
         }
+        // Add the listener for the Enhance Items button
+        html.on('click', '#enhance-items-button', async (event) => {
+            event.preventDefault();
+
+            if (this.hasEnhancedItems) {
+                const confirmed = await Dialog.confirm({
+                    title: "Overwrite Enhancements",
+                    content: "Items have already been enhanced. Do you want to overwrite the changes?",
+                });
+                if (!confirmed) return;  // Exit if not confirmed
+            }
+
+            // Call the fetchAndSelectLanguage function to trigger the selection and enhancement process
+            const enhancedItems = await fetchAndSelectLanguage();
+
+            if (enhancedItems && enhancedItems.length > 0) {
+                // Set a flag to indicate that items have been enhanced
+                await game.user.setFlag('sr5-marketplace', 'enhancedItemsFlag', true);
+                this.hasEnhancedItems = true;
+
+                // Notify the user that items were successfully enhanced
+                ui.notifications.info(`${enhancedItems.length} items successfully enhanced.`);
+
+                // Reload the screen to reflect the new data
+                this.render(true);
+            }
+        });
         html.on('change', '.item-rating', event => this._onRatingChange(event, html));
         html.on('click', '.add-to-cart', event => {
             // Call the existing function to add the item to the basket
