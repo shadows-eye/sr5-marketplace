@@ -33,9 +33,10 @@
                 "avail":{
                     "avail": "Verfg.",
                     "R": "E",
-                    "F": "V"
-                }
-                ,
+                    "F": "V",
+                    "" : ""
+                },
+                "karma": "Karma",
                 "essence": "Essenz",
                 "technology": {
                     "rating": "Stufe",

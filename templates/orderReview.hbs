@@ -24,6 +24,21 @@
                 <div class="marketplace item-header">
                     {{localize "SR5.Marketplace.system.technology.Cost"}}
                 </div>
+                {{#if (eq this.calculatedKarma true)}}
+                <div class="marketplace item-header">
+                    {{localize "SR5.Marketplace.system.karma"}}
+                </div>
+                {{/if}}
+                {{#if (eq this.flags.karma true)}}
+                <div class="marketplace item-header">
+                    {{localize "SR5.Marketplace.system.karma"}}
+                </div>
+                {{/if}}
+                {{#if (eq this.system.karma true)}}
+                <div class="marketplace item-header">
+                    {{localize "SR5.Marketplace.system.karma"}}
+                </div>
+                {{/if}}
                 {{#if (eq this.system.technology.essence true)}}
                 <div class="marketplace item-header"></div>
                     {{localize "SR5.Marketplace.system.technology.Essence"}}
@@ -34,10 +49,8 @@
                 </div>
                 <div class="marketplace item-header">
                     <i class="fas fa-trash" aria-label='{{localize "SR5.Marketplace.RemoveItem"}}'></i>
-                </div>
-                
+                </div>    
             {{#each items}}
-
                     <img class="item-image" src="{{this.img}}" alt="{{this.name}}">
                     <div class="item-name">{{{this.enrichedName}}}</div>
                     <!-- Render the rating dropdown if the item has a rating -->
@@ -55,14 +68,21 @@
                     <!-- Show the cost of the item using the helper -->
                 <div class="item-cost-section">
                     <div class="item-cost">{{this.calculatedCost}} <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen"></i></div>
+                    {{#if (eq this.system.technology.essence)}}
+                    <div class="item-essence">
+                        {{this.system.technology.essence}}
+                    </div>
+                    {{/if}}
+                    {{#if (eq this.calculatedKarma true)}}
+                    <div class="item-karma">
+                        {{this.calculatedKarma}}
+                    </div>
+                    {{/if}}
                 </div>
 
                     <!-- Show the availability of the item using the helper -->
                 <div class="item-availability-section">
-                    <div class="item-availability">{{this.system.technology.availability}}</div>
-                    
-                    <div class="item-essence">{{this.system.technology.essence}}</div>
-                    
+                    <div class="item-availability">{{this.calculatedAvailability}}</div>                    
                 </div>
 
                     <!-- Remove button for each item -->

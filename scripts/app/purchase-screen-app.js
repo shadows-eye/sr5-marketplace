@@ -417,7 +417,8 @@ export class PurchaseScreenApp extends Application {
             type: item.type, // Item type
             cost: item.calculatedCost || 0, // Use calculated cost or fallback to 0
             rating: item.selectedRating || 1, // Use selected rating or fallback to 1
-            essence: item.calculatedEssence || 0 // Use calculated essence or fallback to 0
+            essence: item.calculatedEssence || 0, // Use calculated essence or fallback to 0
+            karma: item.flags.sr5-marketplace.Karma
         }));
     
         // Update the chat message with the latest data
@@ -432,7 +433,8 @@ export class PurchaseScreenApp extends Application {
                 totalEssenceCost: updatedItemDetails.reduce((sum, item) => sum + (item.essence || 0), 0), // Updated total essence cost
                 requesterName: oldFlagData.requester, // Keep the original requester name
                 actorId: oldFlagData.actorId, // Keep the original actor ID
-                actor: oldFlagData.actor // Keep the original actor
+                actor: oldFlagData.actor, // Keep the original actor
+                karma: updatedOrderData.totalKarmaCost
             };
     
             // Re-render the chat message with the updated data
@@ -486,13 +488,34 @@ export class PurchaseScreenApp extends Application {
             // Enrich actor name if available
             const enrichedActor = item.actorId ? await TextEditor.enrichHTML(`@Actor[${item.actorId}]{${item.actor.name}}`) : "";
     
+            // Localize the availability text part
+            const textMapping = {
+                "E": "E",  // German for Restricted
+                "V": "V",  // German for Forbidden
+                "R": "R",  // English Restricted
+                "F": "F",  // English Forbidden
+                "": ""     // No text
+            };
+            
+            // Extract the numeric and text parts of availability
+            const baseAvailability = parseInt(item.calculatedAvailability) || 0;
+            const textPart = item.calculatedAvailability.replace(/^\d+/, '').trim();
+            
+            // Normalize the text part and localize it
+            const normalizedText = textMapping[textPart.toUpperCase()] || '';
+            const localizedText = normalizedText ? game.i18n.localize(`SR5.Marketplace.system.avail.${normalizedText}`) : '';
+    
+            // Combine the numeric and localized text parts
+            const availabilityCalculation = `${baseAvailability}${localizedText}`.trim();
+    
             return {
                 ...item,
-                enrichedName, // Enriched item name
-                enrichedActor // Enriched actor if available
+                enrichedName,         // Enriched item name
+                enrichedActor,        // Enriched actor if available
+                calculatedAvailability: availabilityCalculation // Localized availability
             };
         }));
-    }
+    }    
     /**
      * Render the order review tab with the updated data
      */
@@ -503,6 +526,8 @@ export class PurchaseScreenApp extends Application {
         // Use itemData methods to calculate totals
         const totalCost = this.itemData.calculateOrderReviewTotalCost();
         const totalAvailability = this.itemData.calculateOrderReviewTotalAvailability();
+        const totalEssenceCost = this.itemData.calculateOrderReviewTotalEssenceCost();
+        const totalKarmaCost = this.itemData.calculateOrderReviewTotalKarmaCost();
         // Enrich the item and actor names using TextEditor.enrichHTML
         const ItemsLinks = await this.enrichItems(completeItemsArray);
          const templateData = {
@@ -510,6 +535,8 @@ export class PurchaseScreenApp extends Application {
             items: ItemsLinks,  // Pass the enriched item data
             totalCost,
             totalAvailability,
+            totalEssenceCost,
+            totalKarmaCost,
         };
 
         // Log template data for debugging

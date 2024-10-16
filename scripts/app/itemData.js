@@ -80,7 +80,7 @@ export default class ItemData {
             const calculatedCost = await this.calculateCost(item, selectedRating);
             const calculatedAvailability = await this.calculateAvailability(item, selectedRating);
             const calculatedEssence = await this.calculateEssence(item, selectedRating);
-    
+            const calculatedKarma = await this.calculatedKarmaCost(item);
             const basketItem = {
                 ...item,
                 id_Item: item._id,
@@ -92,7 +92,8 @@ export default class ItemData {
                 selectedRating, // Default or selected rating
                 calculatedCost, // Use the awaited calculated cost
                 calculatedAvailability, // Use the awaited availability
-                calculatedEssence // Use the awaited essence
+                calculatedEssence, // Use the awaited essence
+                calculatedKarma: calculatedKarma
             };
     
             this.basketItems.push(basketItem);
@@ -154,21 +155,52 @@ export default class ItemData {
         return item.system.essence ? item.system.essence * (item.selectedRating || 1) : 0;
     }
     calculateAvailability(item) {
+        // Check if the item type is one of the types with zero availability
+        if (["quality", "complex_form", "action", "ritual", "spell"].includes(item.type)) {
+            return 0; // Return availability as 0 for these types
+        }
+    
+        // Define a mapping for availability text parts (for localization)
+        const textMapping = {
+            "E": "E",  // German for Restricted
+            "V": "V",  // German for Forbidden
+            "R": "R",  // English Restricted
+            "F": "F",  // English Forbidden
+            "": ""     // No text
+        };
+    
+        // Extract rating, defaulting to 1 if not available
         const rating = item.selectedRating || 1;
-        const baseAvailability = parseInt(item.system.technology.availability) || 0;
-        const text = item.system.technology.availability.replace(/^\d+/, ''); // Extract text after the number
-        return (baseAvailability * rating) + text;
-    }
+        
+        // Extract the base availability number
+        const baseAvailability = parseInt(item.system.technology?.availability) || 0;
+        
+        // Extract the text part (e.g., "R", "F") and map it to normalized values
+        let textPart = item.system.technology?.availability?.replace(/^\d+/, '').trim();
+        textPart = textMapping[textPart.toUpperCase()] || "";  // Normalize the text
+    
+        // Localize the text part using game localization
+        const localizedText = textPart ? game.i18n.localize(`SR5.Marketplace.system.avail.${textPart}`) : "";
+    
+        // Return the calculated availability with the localized text part
+        return (baseAvailability * rating) + (localizedText ? ` ${localizedText}` : "");
+    }      
     calculateTotalEssenceCost() {
         return this.basketItems.reduce((total, item) => total + this.calculateEssence(item), 0);
     }
     calculateOrderReviewAvailability(item, selectedRating) {
+        // Check if the item type is any Karma related ones
+        if (item.type === "quality" || item.type === "complex_form" || item.type === "action" || item.type === "ritual" || item.type === "spell") {
+            // Return availability as '0' for these item types
+            return '0';
+        }
+    
         const baseAvailability = item.system.technology.availability || '0';
         const numericAvailability = parseInt(baseAvailability) || 0;
         const availabilityModifier = baseAvailability.replace(/^\d+/, '');  // Extract any non-numeric part (like "R" or "F")
     
         return `${numericAvailability * selectedRating}${availabilityModifier}`;  // Scale availability by rating
-    }
+    }    
     calculateEssence(item) {
         // Ensure selectedRating is set to 1 if it is undefined or null
         const rating = item.selectedRating !== undefined && item.selectedRating !== null ? item.selectedRating : 1;
@@ -184,15 +216,22 @@ export default class ItemData {
         // If baseEssence is 0 or essence doesn't exist, return 0
         return 0;
     }
-    calculatedKarmaCost(item) {
-        // Check if the item has the sr5-marketplace flag and a karma value
+    async calculatedKarmaCost(item) {
+        // First, check if the item has system.karma defined
+        if (item.system?.karma !== undefined) {
+            return item.system.karma;
+        }
+    
+        // If system.karma is not defined, check the sr5-marketplace flag
         const marketplaceFlag = item.flags['sr5-marketplace'] || {};
+        console.log(`Marketplace flag for item ${item.name}:`, marketplaceFlag);
         return marketplaceFlag.karma || 0;
     }
     
     // Function to calculate the total karma cost for all items in the basket
-    calculateTotalKarmaCost() {
-        return this.basketItems.reduce((total, item) => total + this.calculatedKarmaCost(item), 0);
+    async calculateTotalKarmaCost() {
+        const calculatedKarmaCosts = this.basketItems.map(async item => await this.calculatedKarmaCost(item));
+        return this.basketItems.reduce((total, item) => total + calculatedKarmaCosts,0);
     }
     async removeItemFromBasket(basketId) {
         this.basketItems = this.basketItems.filter(item => item.basketId !== basketId);
@@ -211,6 +250,18 @@ export default class ItemData {
      */
     calculateOrderReviewTotalCost() {
         return this.orderReviewItems.reduce((sum, item) => sum + (item.calculatedCost || 0), 0);
+    }
+    /**
+     * Calculate total cost for the order review.
+     */
+    calculateOrderReviewTotalEssenceCost() {
+        return this.orderReviewItems.reduce((sum, item) => sum + (item.calculatedEssence || 0), 0);
+    }
+    /**
+     * Calculate total cost for the order review.
+     */
+    calculateOrderReviewTotalKarmaCost() {
+        return this.orderReviewItems.reduce((sum, item) => sum + (item.calculatedKarma || 0), 0);
     }
     /**
      * Calculate total cost for the order review.
@@ -246,7 +297,7 @@ export default class ItemData {
         // Define a mapping for text parts to normalize values (e.g., "E" or "V" to "R" and "F")
         const textMapping = {
             "E": "R",  // German for Restricted
-            "V": "F",  // German for Forbidden
+            "V": "V",  // German for Forbidden
             "R": "R",  // English Restricted
             "F": "F",  // English Forbidden
             "": ""     // No text
@@ -276,7 +327,7 @@ export default class ItemData {
         const localizedText = highestPriorityText ? game.i18n.localize(`SR5.Marketplace.system.avail.${highestPriorityText}`) : "";
     
         // Combine the total availability number and the localized text part
-        return `${totalAvailability} ${localizedText}`;
+        return `${totalAvailability}${localizedText}`;
     }    
     addItemToOrderReview(itemId) {
         const item = this.items.find(item => item._id === itemId);
@@ -291,7 +342,8 @@ export default class ItemData {
                 selectedRating: item.system.technology.rating || 1, // Default rating
                 calculatedCost: this.calculateCost(item),
                 calculatedAvailability: this.calculateAvailability(item),
-                calculatedEssence: this.calculateEssence(item)
+                calculatedEssence: this.calculateEssence(item),
+                calculatedKarma: this.calculatedKarmaCost(item) || 0
             };
             this.orderReviewItems.push(reviewItem);
         }
@@ -332,28 +384,54 @@ export default class ItemData {
 
     calculateTotalCost() {
         return this.basketItems.reduce((total, item) => {
+            // Check if the item type is 'quality' or 'complex_form'
+            if (item.type === "quality" || item.type === "complex_form" || item.type === "action" || item.type === "ritual" || item.type === "spell") {
+                // Skip the calculation or handle differently, e.g., add a fixed cost or 0
+                return total;  // Skip these items for cost calculation
+            }
+    
             // Use the selectedRating to calculate the total cost dynamically
             const rating = item.selectedRating || 1;  // Default to 1 if no rating is selected
             const cost = item.system.technology.cost || 0;  // Ensure cost is present
-    
             return total + (cost * rating);  // Calculate cost based on rating and add to total
         }, 0);
     }
     calculateTotalAvailability() {
         const availabilityData = this.basketItems.reduce((acc, item) => {
+            // Check if the item type is 'quality', 'complex_form', 'action', 'ritual', or 'spell'
+            if (item.type === "quality" || item.type === "complex_form" || item.type === "action" || item.type === "ritual" || item.type === "spell") {
+                // Skip these items for availability calculation
+                return acc;
+            }
+    
             const baseAvailability = parseInt(item.system.technology.availability) || 0;
-            const text = item.system.technology.availability.replace(/^\d+/, ''); // Extract text like 'F' or 'R'
+            const textPart = item.system.technology.availability.replace(/^\d+/, '').trim(); // Extract text like 'F' or 'R'
     
             acc.total += baseAvailability * (item.selectedRating || 1);
-            // Ensure we use the highest restriction (e.g., 'F' > 'R') if different types exist
-            if (acc.text === '' || text > acc.text) {
-                acc.text = text;
+    
+            // Normalize the text part and use the text mapping for localization
+            const textMapping = {
+                "E": "E",  // German for Restricted
+                "V": "V",  // German for Forbidden
+                "R": "R",  // English Restricted
+                "F": "F",  // English Forbidden
+                "": ""     // No text
+            };
+            
+            // Normalize and localize the text part
+            const normalizedText = textMapping[textPart.toUpperCase()] || "";
+            const localizedText = normalizedText ? game.i18n.localize(`SR5.Marketplace.system.avail.${normalizedText}`) : "";
+    
+            // Ensure we use the highest restriction (e.g., 'F' > 'R')
+            if (!acc.text || textMapping[normalizedText] > textMapping[acc.text]) {
+                acc.text = localizedText;
             }
+    
             return acc;
         }, { total: 0, text: '' });
     
-        return `${availabilityData.total}${availabilityData.text}`;
-    }
+        return `${availabilityData.total}${availabilityData.text}`.trim(); // Return the total availability with localized text
+    }    
     calculateTotalCostUpdate() {
         return this.basketItems.reduce((total, item) => total + item.system.technology.cost, 0);
     }
@@ -381,7 +459,8 @@ export default class ItemData {
                 name: item.name,
                 quantity: item.selectedRating || 1,
                 price: item.calculatedCost,
-                description: item.data?.description || item.system?.description
+                description: item.data?.description || item.system?.description,
+                karma: item.calculatedKarma
             })),
             totalCost: totalCost
         };
@@ -396,18 +475,39 @@ export default class ItemData {
         });
     }
     getItemsFromIds(itemIds) {
+        // Define a text mapping for availability localization
+        const textMapping = {
+            "E": "E",  // German for Restricted
+            "V": "V",  // German for Forbidden
+            "R": "R",  // English Restricted
+            "F": "F",  // English Forbidden
+            "": ""     // No text
+        };
+    
         // Retrieve detailed item data from an array of item IDs
         const items = itemIds.map(id => {
             const item = game.items.get(id);
             if (item) {
+                // Extract and localize availability
+                let availability = item.system.technology?.availability || '';
+                const numericPart = parseInt(availability.match(/\d+/), 10) || 0; // Extract the numeric part
+                let textPart = availability.replace(/\d+/g, '').trim(); // Extract the text part
+    
+                // Normalize and localize the text part
+                textPart = textMapping[textPart.toUpperCase()] || "";
+                const localizedText = textPart ? game.i18n.localize(`SR5.Marketplace.system.avail.${textPart}`) : "";
+    
+                // Combine the numeric part and localized text part for the final availability
+                const localizedAvailability = `${numericPart} ${localizedText}`.trim();
+    
                 return {
                     id: item.id,
                     name: item.name,
-                    cost: item.system.technology.cost,
-                    availability: item.system.technology.availability,
-                    essence: item.system.technology.essence,
+                    cost: item.system.technology?.cost || 0, // Ensure cost is present
+                    availability: localizedAvailability, // Use localized availability
+                    essence: item.system.technology?.essence || 0, // Fallback to 0 if not present
                     image: item.img,
-                    type: item.type,                    
+                    type: item.type,
                     // Add other relevant properties as needed
                 };
             } else {
@@ -417,7 +517,7 @@ export default class ItemData {
         }).filter(item => item !== null); // Filter out null items
     
         return items;
-    }
+    }    
     /**
      * Retrieve order data from a flag, enrich it with item data, and store it in the completeItemsArray.
      * @param {string} flagId - The ID of the flag to retrieve data from.
@@ -455,50 +555,52 @@ export default class ItemData {
         // Step 4: Enrich the items in the flag data
         const items = flagData.items || [];
         const reviewPrep = [];
-        /*
-        const baseItems = [];
+    
         await Promise.all(items.map(async (flagItem) => {
-            const itemId = flagItem.id || flagItem._id || flagItem.id_Item; // Adjust based on how the ID is stored
-            const baseItemUuid = `Item.${itemId}`; // Construct UUID for the base item
-            try {
-                // Fetch the base item using its UUID
-                const baseItem = await fromUuid(baseItemUuid);
-                if (baseItem) {
-                    console.log(`Base item fetched with UUID: ${baseItemUuid}`, baseItem);
-                    baseItems.push(baseItem); // Store the base item in the array
-                } else {
-                    console.warn(`Base item with UUID ${baseItemUuid} not found.`);
-                }
-            } catch (error) {
-                console.error(`Error fetching base item with UUID ${baseItemUuid}:`, error);
-            }*/
-            await Promise.all(items.map(async (flagItem) => {
             const itemId = flagItem.id || flagItem._id || flagItem.id_Item; 
             const gameItem = game.items.get(itemId); // Fetch the item from the game world
+    
             if (gameItem) {
                 const enrichedItem = JSON.parse(JSON.stringify(gameItem));
     
-                enrichedItem.selectedRating = flagItem.rating || enrichedItem.system.technology?.rating || 1;
+                enrichedItem.selectedRating = flagItem.rating || enrichedItem.system?.technology?.rating || 1;
                 let enrichmentRating = Number(enrichedItem.selectedRating);
     
-                enrichedItem.calculatedCost = flagItem.cost || (await this.calculateCostReviewUpdate(enrichedItem, enrichmentRating));
-                if (typeof enrichedItem.calculatedCost !== "number") {
-                    console.warn(`calculatedCost is not a number, got:`, enrichedItem.calculatedCost);
-                    enrichedItem.calculatedCost = parseFloat(enrichedItem.calculatedCost) || 0;
+                // Check if item type is one of the types that don't have system.technology
+                if (["quality", "complex_form", "action", "ritual", "spell"].includes(enrichedItem.type)) {
+                    // Karma-based item, no system.technology, so skip availability and cost calculations related to technology
+                    enrichedItem.calculatedAvailability = '0';  // Set availability to 0
+                    enrichedItem.calculatedCost =  0;  // Use karma as the cost for these items
+                    enrichedItem.calculatedKarma = enrichedItem.system.karma || flagData.karma || flagData.Karma || 0;  // Use system.karma or 0
+                    enrichedItem.calculatedEssence = 0;  // No essence for these types
+                    if(typeof enrichedItem.calculatedKarma !== "number") {
+                        console.warn(`calculatedKarma is not a number, got:`, enrichedItem.calculatedKarma);
+                        enrichedItem.calculatedKarma = parseFloat(enrichedItem.calculatedKarma) || 0;
+                    }
+                } else {
+                    // Handle items that do have system.technology
+                    enrichedItem.calculatedCost = flagItem.cost || (await this.calculateCostReviewUpdate(enrichedItem, enrichmentRating));
+                    if (typeof enrichedItem.calculatedCost !== "number") {
+                        console.warn(`calculatedCost is not a number, got:`, enrichedItem.calculatedCost);
+                        enrichedItem.calculatedCost = parseFloat(enrichedItem.calculatedCost) || 0;
+                    }
+    
+                    enrichedItem.calculatedAvailability = await this.calculateOrderReviewAvailability(enrichedItem, enrichedItem.selectedRating);
+                    enrichedItem.calculatedEssence = await this.calculateEssence(enrichedItem);
+    
+                    enrichedItem.calculatedAvailability = String(enrichedItem.calculatedAvailability || '');
+                    enrichedItem.calculatedEssence = parseFloat(enrichedItem.calculatedEssence) || 0;
                 }
     
-                enrichedItem.calculatedAvailability = await this.calculateOrderReviewAvailability(enrichedItem, enrichedItem.selectedRating);
-                enrichedItem.calculatedEssence = await this.calculateEssence(enrichedItem);
-    
-                enrichedItem.calculatedAvailability = String(enrichedItem.calculatedAvailability || '');
-                enrichedItem.calculatedEssence = parseFloat(enrichedItem.calculatedEssence) || 0;
-
                 // Calculate karma cost from the flag, with a fallback to 0
-                enrichedItem.calculatedKarma = flagItem.karma || 0;
+                enrichedItem.calculatedKarma = await this.calculatedKarmaCost(enrichedItem) || 0;
     
-                enrichedItem.system.technology.cost = enrichedItem.calculatedCost; // Override with flagged cost
-                enrichedItem.system.technology.rating = enrichedItem.selectedRating; // Override with flagged rating
-                enrichedItem.system.technology.availability = enrichedItem.calculatedAvailability; // Override availability
+                // Ensure system.technology is only updated if it exists
+                if (enrichedItem.system.technology) {
+                    enrichedItem.system.technology.cost = enrichedItem.calculatedCost; // Override with flagged cost
+                    enrichedItem.system.technology.rating = enrichedItem.selectedRating; // Override with flagged rating
+                    enrichedItem.system.technology.availability = enrichedItem.calculatedAvailability; // Override availability
+                }
     
                 reviewPrep.push(enrichedItem);
             } else {
@@ -517,8 +619,36 @@ export default class ItemData {
     
         // Step 6: Calculate total cost and availability
         const totalCost = reviewPrep.reduce((sum, item) => sum + (item.calculatedCost || 0), 0);
-        const totalAvailability = reviewPrep.reduce((acc, item) => acc + (item.calculatedAvailability || ''), '');
-    
+        // Calculate total availability with localization for the text part
+        const totalAvailability = reviewPrep.reduce((acc, item) => {
+            const availability = item.calculatedAvailability || '';
+
+            // Extract the numeric part of the availability
+            const numericPart = parseInt(availability.match(/\d+/), 10) || 0;
+            acc.total += numericPart; // Accumulate numeric availability
+
+            // Extract the text part (e.g., "R", "F", "E") and normalize it
+            let textPart = availability.replace(/\d+/g, '').trim();
+            const textMapping = {
+                "E": "E",  // German for Restricted
+                "V": "V",  // German for Forbidden
+                "R": "R",  // English Restricted
+                "F": "F",  // English Forbidden
+                "": ""     // No text
+            };
+            
+            textPart = textMapping[textPart.toUpperCase()] || "";
+            const localizedText = textPart ? game.i18n.localize(`SR5.Marketplace.system.avail.${textPart}`) : "";
+
+            // Keep the highest priority localized text
+            if (localizedText && (!acc.text || textMapping[localizedText] > textMapping[acc.text])) {
+                acc.text = localizedText;
+            }
+            
+            return acc;
+        }, { total: 0, text: '' });
+        const totalEssenceCost = reviewPrep.reduce((sum, item) => sum + (item.calculatedEssence || 0), 0);
+        const totalKarmaCost = reviewPrep.reduce((sum, item) => sum + (item.calculatedKarma || 0), 0);
         // Step 7: Save enriched items and calculated totals into completeItemsArray
         this.completeItemsArray = reviewPrep.map(item => ({
             ...item,
@@ -534,13 +664,13 @@ export default class ItemData {
             items: this.completeItemsArray, // The enriched items array with cost, availability, karma, and essence
             totalCost,
             totalAvailability,
-            totalEssenceCost: this.completeItemsArray.reduce((sum, item) => sum + (item.calculatedEssence || 0), 0), // Total essence
-            totalKarmaCost: this.completeItemsArray.reduce((sum, item) => sum + (item.calculatedKarma || 0), 0), // Total karma
+            totalEssenceCost,
+            totalKarmaCost,
             requester: flagData.requester,
             requesterId: flagData.requesterId, // Include requesterId if present
-            actorId: flagData.actorId // Include actorId if present
+            actorId: flagData.actorId, // Include actorId if present
         };
-    }
+    }        
 
     /**
      * Retrieve order data from a flag using the provided flag ID and enrich it with game item data.
@@ -572,11 +702,12 @@ export default class ItemData {
                 calculatedCost: flagItem.cost || (gameItem.system.technology?.cost || 0),
                 calculatedAvailability: flagItem.availability || (gameItem.system.technology?.availability || 0),
                 calculatedEssence: flagItem.essence || (gameItem.system.essence * flagItem.rating || 0),
-                Karma: gameItem.getFlag('sr5-marketplace', 'karma') || 0,
+                Karma: gameItem.system.karma || gameItem.getFlag('sr5-marketplace', 'Karma') || 0,
                 gameItem: gameItem // Keep the full game item for further functions
             };
 
             completeItemsArray.push(enrichedItem);
+            //console.log(`Enriched item with ID ${itemId}:`, enrichedItem);
         }
 
         // Calculate total cost and availability based on the modified flag data

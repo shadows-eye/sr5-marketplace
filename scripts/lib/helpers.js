@@ -22,6 +22,9 @@ export const registerBasicHelpers = () => {
     Handlebars.registerHelper('getTechnologyCost', function(item) {
         return item?.system?.technology?.cost || 0;  // Fallback to 0 if not found
     });
+    Handlebars.registerHelper('getKarma', function(item) {
+        return item?.system?.karma || item?.flags?.sr5-marketplace?.karma ||0;  // Fallback to 0 if not found
+    });
     
     Handlebars.registerHelper('getAvailability', function(item) {
         return item?.system?.technology?.availability || "Unknown";
