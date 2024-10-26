@@ -6,7 +6,24 @@ import { registerBasicHelpers } from './lib/helpers.js';
 
 // Call the function to register helpers
 registerBasicHelpers();
-Hooks.once('init', async function() {
+Hooks.once('init', () => {
+    console.log("Initializing SR5 Marketplace Module...");
+
+    game.settings.register("sr5-marketplace", "resetItemLoad", {
+        name: "Reset Item Load",
+        hint: "This will allow the karma values and cost/availability of world and compendium items to get their flags reinitialized. Setting this setting to true will undo any changes you made to Karma, cost, or Availability of the items.",
+        scope: "world",
+        config: true,
+        type: Boolean,
+        default: false,
+        onChange: value => {
+            if (value) {
+                console.log("Reset Item Load is enabled; item flags will be reset on load.");
+            } else {
+                console.log("Reset Item Load is disabled; item flags will not be reset on load.");
+            }
+        }
+    });
 });
 Hooks.on('renderChatMessage', (message, html, data) => {
     // Check if the current user is a GM
@@ -116,59 +133,51 @@ Hooks.once('ready', async function() {
             console.log(`No order review data found for flag ID ${flagId}`);
         }
     });
-    console.log("Initializing sr5-marketplace Karma flag for specified item types...");
+    // Check the "Reset Item Load" setting
+    const resetItemLoad = game.settings.get("sr5-marketplace", "resetItemLoad");
+    if (!resetItemLoad) {
+        console.log("Reset Item Load is disabled; skipping Karma flag reinitialization.");
+        return; // Exit if resetItemLoad is false
+    }
 
-    // Specify the item types you want to apply the flag to
+    console.log("Initializing sr5-marketplace Karma flag for specified item types...");
     const itemTypesToFlag = ["quality", "adept_power", "spell", "complex_form"];
 
-    /**
-     * Function to update items with Karma, Availability, and Cost flags.
-     * Handles different item types and applies specific logic for each type.
-     * @param {Item} item - The item to update with flags.
-     */
     async function updateItemWithKarmaFlag(item) {
-        // Define availability and cost values for spell and power categories
         const spellPowerAvailabilityCost = {
             "health": { karma: 5, availability: "4R", cost: 500 },
             "illusion": { karma: 5, availability: "8R", cost: 1000 },
             "combat": { karma: 5, availability: "8R", cost: 2000 },
-            "manipulation": {karma: 5, availability: "8R", cost: 1500 },
+            "manipulation": { karma: 5, availability: "8R", cost: 1500 },
             "detection": { karma: 5, availability: "4R", cost: 500 }
         };
-    
-        // Handle "quality" type items
+
+        const marketplaceHistory = item.flags?.['sr5-marketplace-history'] || null;
+        await item.update({ 'flags.sr5-marketplace': {} });
+
+        let newFlags = {};
         if (item.type === "quality" && item.system.karma !== undefined) {
-            await item.setFlag('sr5-marketplace', 'karma', item.system.karma);
-        }
-        // Handle "spell" and "complex_form" items
-        else if (["spell", "complex_form"].includes(item.type)) {
-            // Set default Karma to 5 for spells and complex forms
-            await item.setFlag('sr5-marketplace', 'karma', 5);
-    
-            // Assign availability and cost based on the category (e.g., health, illusion)
+            newFlags.karma = item.system.karma;
+        } else if (["spell", "complex_form"].includes(item.type)) {
+            newFlags.karma = 5;
             const category = item.system.category;
             if (spellPowerAvailabilityCost[category]) {
                 const { availability, cost } = spellPowerAvailabilityCost[category];
-                await item.setFlag('sr5-marketplace', 'Availability', availability);
-                await item.setFlag('sr5-marketplace', 'Cost', cost);
+                newFlags.Availability = availability;
+                newFlags.Cost = cost;
             }
+        } else if (!newFlags.karma) {
+            newFlags.karma = 0;
         }
-        // For other item types, initialize Karma flag to 0 if not set
-        else {
-            const karmaFlag = item.getFlag('sr5-marketplace', 'karma');
-            if (karmaFlag === undefined) {
-                await item.setFlag('sr5-marketplace', 'karma', 0);
-            }
+
+        await item.update({ 'flags.sr5-marketplace': newFlags });
+        if (marketplaceHistory) {
+            await item.update({ 'flags.sr5-marketplace-history': marketplaceHistory });
         }
     }
 
-    /**
-     * Function to initialize Karma flags for all items in the world and compendiums.
-     */
     async function initializeKarmaFlags() {
         console.log("Initializing Karma flags for world items...");
-
-        // Loop through all world items
         for (let item of game.items.contents) {
             if (itemTypesToFlag.includes(item.type)) {
                 await updateItemWithKarmaFlag(item);
@@ -176,10 +185,7 @@ Hooks.once('ready', async function() {
         }
 
         console.log("Initializing Karma flags for compendium items...");
-
-        // Loop through all compendiums
         for (let pack of game.packs) {
-            // Only check compendiums of type "Item"
             if (pack.documentName === "Item") {
                 const items = await pack.getDocuments();
                 for (let item of items) {
@@ -191,7 +197,7 @@ Hooks.once('ready', async function() {
         }
     }
 
-    // Call the function to initialize the Karma flags after the world is ready
+    // Call the function to initialize the Karma flags if the setting is true
     await initializeKarmaFlags();
     console.log("sr5-marketplace Karma flag initialization completed.");
 });

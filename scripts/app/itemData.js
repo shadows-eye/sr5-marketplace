@@ -238,9 +238,21 @@ export default class ItemData {
     }
     
     // Function to calculate the total karma cost for all items in the basket
+    // Function to calculate the total karma cost for all items in the basket
     async calculateTotalKarmaCost() {
-        const calculatedKarmaCosts = this.basketItems.map(async item => await this.calculatedKarmaCost(item));
-        return this.basketItems.reduce((total, item) => total + calculatedKarmaCosts,0);
+        return this.basketItems.reduce((total, item) => {
+            // Check if the item has a karma value in its system data
+            if (item.system?.karma !== undefined) {
+                return total + item.system.karma;
+            }
+
+            // Otherwise, check the sr5-marketplace flag for karma
+            const marketplaceFlag = item.flags['sr5-marketplace'] || {};
+            const karma = marketplaceFlag.karma || 0;
+            console.log(`Marketplace flag for item ${item.name}:`, marketplaceFlag);
+            
+            return total + karma;
+        }, 0);
     }
     async removeItemFromBasket(basketId) {
         this.basketItems = this.basketItems.filter(item => item.basketId !== basketId);

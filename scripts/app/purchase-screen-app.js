@@ -566,50 +566,81 @@ export class PurchaseScreenApp extends Application {
     async _onSendRequest(event, html) {
         event.preventDefault();
     
-        // Prepare the data for the chat message
-        const basketItems = this.itemData.getBasketItems(); // Assuming itemData is accessible
-        const totalCost = this.itemData.calculateTotalCost(); // Use itemData to calculate total cost
-        const totalAvailability = this.itemData.calculateTotalAvailability(); // Use itemData to calculate total availability
-        const totalEssenceCost = this.itemData.calculateTotalEssenceCost(); // Use itemData to calculate total essence cost
-        const totalKarmaCost = this.itemData.calculateTotalKarmaCost(); // Use itemData to calculate total karma cost
-        const requestingUser = game.user; // The user who clicked the button
+        // Prepare data for the chat message
+        const basketItems = this.itemData.getBasketItems();
+        const totalCost = this.itemData.calculateTotalCost();
+        const totalAvailability = this.itemData.calculateTotalAvailability();
+        const totalEssenceCost = this.itemData.calculateTotalEssenceCost();
+        const totalKarmaCost = await this.itemData.calculateTotalKarmaCost();
+        const requestingUser = game.user;
         const isGM = requestingUser.isGM;
     
         // Get the actorId of the requesting user (can be null if GM has no actor)
-        const actor = requestingUser.character || null; // Get actor if it exists
-        const actorId = actor ? actor._id : null; // Extract actor ID if actor exists
+        const actor = requestingUser.character || null;
+        const actorId = actor ? actor._id : null;
     
-        // If the requesting user is a GM without an actor, log a warning, but continue without actor linkage
         if (isGM && !actorId) {
             console.warn("GM has no actor assigned. Proceeding without actor linkage.");
         }
     
         const requestId = foundry.utils.randomID(); // Generate a unique request ID
     
-        // Get an array of detailed item objects from the basket items
-        const itemDetails = basketItems.map(item => ({
-            id: item.id_Item || item._id, // Use id_Item if available, otherwise fallback to _id
-            name: item.name, // Item name
-            image: item.img || "icons/svg/item-bag.svg", // Use the item image or default icon
-            description: item.system.description?.value || "", // Safely access description text
-            type: item.type, // Item type
-            cost: item.calculatedCost || 0, // Use calculated cost or fallback to 0
-            rating: item.selectedRating || 1, // Use selected rating or default to 1
-            essence: item.calculatedEssence || 0, // Use calculated essence or fallback to 0
-            karma: item.calculatedKarma || 0 // Use calculated karma or fallback to 0
+        // Clean up unnecessary flags on each item in the world
+        await Promise.all(basketItems.map(async (itemData) => {
+            const item = game.items.get(itemData.id_Item || itemData._id);
+    
+            if (item) {
+                const existingMarketplaceFlags = item.flags?.['sr5-marketplace'] || {};
+    
+                // Clean up flags by retaining only "Availability", "Cost", and "karma" if they exist
+                const cleanedFlags = {
+                    ...(existingMarketplaceFlags.Availability && { Availability: existingMarketplaceFlags.Availability }),
+                    ...(existingMarketplaceFlags.Cost && { Cost: existingMarketplaceFlags.Cost }),
+                    ...(existingMarketplaceFlags.karma && { karma: existingMarketplaceFlags.karma }) // Only lowercase "karma" retained
+                };
+    
+                // Update the item's flags in the world to contain only cleaned flags
+                await item.update({ 'flags.sr5-marketplace': cleanedFlags });
+    
+                console.log(`Cleaned flags for item ${item.name}:`, cleanedFlags);
+            }
         }));
     
-        // Prepare the flag data
+        // Prepare item details for chat message, including only the cleaned flags
+        const itemDetails = basketItems.map(itemData => ({
+            id: itemData.id_Item || itemData._id,
+            name: itemData.name,
+            image: itemData.img || "icons/svg/item-bag.svg",
+            description: itemData.system.description?.value || "",
+            type: itemData.type,
+            cost: itemData.calculatedCost || 0,
+            rating: itemData.selectedRating || 1,
+            essence: itemData.calculatedEssence || 0,
+            karma: itemData.calculatedKarma || 0,
+            flags: {
+                ...(itemData.flags?.['sr5-marketplace'].Availability && { Availability: itemData.flags['sr5-marketplace'].Availability }),
+                ...(itemData.flags?.['sr5-marketplace'].Cost && { Cost: itemData.flags['sr5-marketplace'].Cost }),
+                ...(itemData.flags?.['sr5-marketplace'].karma && { karma: itemData.flags['sr5-marketplace'].karma })
+            }
+        }));
+    
+        // Log final item details and total values for verification
+        console.log("Final itemDetails to be sent in chat:", itemDetails);
+        console.log("Total Cost:", totalCost);
+        console.log("Total Availability:", totalAvailability);
+        console.log("Total Essence Cost:", totalEssenceCost);
+        console.log("Total Karma Cost:", totalKarmaCost);
+    
+        // Prepare the flag data for the user request
         const flagData = {
             id: requestId,
-            items: itemDetails, // Store detailed item objects
-            requester: isGM ? "GM" : requestingUser.name, // Identify the requester
+            items: itemDetails,
+            requester: isGM ? "GM" : requestingUser.name,
         };
     
-        // Include actor data only if actorId exists
         if (actorId) {
-            flagData.actor = actor; // Include the full actor object
-            flagData.actorId = actorId; // Include the actorId
+            flagData.actor = actor;
+            flagData.actorId = actorId;
         }
     
         // Add the flag data to the requesting user (GM or player)
@@ -617,30 +648,30 @@ export class PurchaseScreenApp extends Application {
     
         // Prepare the message data to display in chat
         const messageData = {
-            items: itemDetails, // Use detailed items in the chat message
+            items: itemDetails,
             totalCost: totalCost,
             totalAvailability: totalAvailability,
             totalEssenceCost: totalEssenceCost,
-            totalKarmaCost: totalKarmaCost, // Default karma cost
-            requesterName: isGM ? "GM" : requestingUser.name, // Show "GM" if the request is from a GM
-            id: requestId, // Include the request ID in the data
-            actorId: actorId, // Include actorId (if present)
+            totalKarmaCost: totalKarmaCost,
+            requesterName: isGM ? "GM" : requestingUser.name,
+            id: requestId,
+            actorId: actorId,
             isGM: isGM
         };
     
         // Render the message using the chatMessageRequest.hbs template
         renderTemplate('modules/sr5-marketplace/templates/chatMessageRequest.hbs', messageData).then(htmlContent => {
             ChatMessage.create({
-                user: requestingUser.id, // Use the requesting user's ID
+                user: requestingUser.id,
                 content: htmlContent,
-                whisper: isGM ? [] : game.users.filter(u => u.isGM).map(u => u.id) // Whisper to GM(s) if not GM
+                whisper: isGM ? [] : game.users.filter(u => u.isGM).map(u => u.id)
             });
     
             // Empty the basket
             this.itemData.basketItems = [];
     
             // Render the empty basket
-            this._renderBasket(html); // Update the UI to reflect the empty basket
+            this._renderBasket(html);
         });
     }
     /**
