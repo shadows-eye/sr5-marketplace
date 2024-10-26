@@ -122,31 +122,42 @@ Hooks.once('ready', async function() {
     const itemTypesToFlag = ["quality", "adept_power", "spell", "complex_form"];
 
     /**
-     * Function to update items with Karma flags.
-     * Handles different item types and applies specific Karma logic for each type.
-     * @param {Item} item - The item to update with a Karma flag.
+     * Function to update items with Karma, Availability, and Cost flags.
+     * Handles different item types and applies specific logic for each type.
+     * @param {Item} item - The item to update with flags.
      */
     async function updateItemWithKarmaFlag(item) {
+        // Define availability and cost values for spell and power categories
+        const spellPowerAvailabilityCost = {
+            "health": { karma: 5, availability: "4R", cost: 500 },
+            "illusion": { karma: 5, availability: "8R", cost: 1000 },
+            "combat": { karma: 5, availability: "8R", cost: 2000 },
+            "manipulation": {karma: 5, availability: "8R", cost: 1500 },
+            "detection": { karma: 5, availability: "4R", cost: 500 }
+        };
+    
         // Handle "quality" type items
         if (item.type === "quality" && item.system.karma !== undefined) {
-            // Synchronize system.karma to the Karma flag for qualities
-            await item.setFlag('sr5-marketplace', 'Karma', item.system.karma);
+            await item.setFlag('sr5-marketplace', 'karma', item.system.karma);
         }
-        // Handle "adept_power", "spell", and "complex_form" items
-        else if (["adept_power", "spell", "complex_form"].includes(item.type)) {
-            const karmaFlag = item.getFlag('sr5-marketplace', 'Karma');
-            
-            // Set Karma to 5 if the flag doesn't exist or has not been set before
-            if (karmaFlag === undefined) {
-                await item.setFlag('sr5-marketplace', 'Karma', 5);
+        // Handle "spell" and "complex_form" items
+        else if (["spell", "complex_form"].includes(item.type)) {
+            // Set default Karma to 5 for spells and complex forms
+            await item.setFlag('sr5-marketplace', 'karma', 5);
+    
+            // Assign availability and cost based on the category (e.g., health, illusion)
+            const category = item.system.category;
+            if (spellPowerAvailabilityCost[category]) {
+                const { availability, cost } = spellPowerAvailabilityCost[category];
+                await item.setFlag('sr5-marketplace', 'Availability', availability);
+                await item.setFlag('sr5-marketplace', 'Cost', cost);
             }
-        } 
-        // If the item type is none of the above, initialize Karma flag to 0
+        }
+        // For other item types, initialize Karma flag to 0 if not set
         else {
-            const karmaFlag = item.getFlag('sr5-marketplace', 'Karma');
-            
+            const karmaFlag = item.getFlag('sr5-marketplace', 'karma');
             if (karmaFlag === undefined) {
-                await item.setFlag('sr5-marketplace', 'Karma', 0);
+                await item.setFlag('sr5-marketplace', 'karma', 0);
             }
         }
     }
