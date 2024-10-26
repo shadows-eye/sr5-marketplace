@@ -1,33 +1,42 @@
-{{#each items}}
-<div class="basket-item">
-    <span>{{this.name}}</span>
-    {{#if this.system.technology.rating}}
-    <select class="item-rating" data-basket-id="{{this.basketId}}">
-        {{#range 1 13}}
-        <option value="{{this}}" {{#ifeq this ../selectedRating}}selected{{/ifeq}}>{{this}}</option>
-        {{/range}}
-    </select>
-    {{/if}}
-    <span class="item-cost">{{this.calculatedCost}} <i class="fa-duotone fa-solid fa-circle-yen"></i></span>
-    
-    <button class="remove-item" data-basket-id="{{this.basketId}}">
-        <i class="fas fa-trash"></i>
-    </button>
-</div>
-{{/each}}
 
-<div id="total-cost" style="margin-top: 10px;">
-    {{localize 'SR5.Marketplace.Total'}}: 0 <i class="fa-duotone fa-solid fa-circle-yen"></i>
-</div>
-<div id="total-availability" style="margin-top: 10px;">
-    {{localize 'SR5.Marketplace.TotalAvailability'}}: 0
-</div>
-<!-- Button to send a request to GM -->
-<div>
-    <button id="send-request-button" class="send-request-button">
-        <span>{{localize 'SR5.Marketplace.SendRequest'}}</span>
-    </button>
-    <button id="cancel-request-button" class="send-request-button cancel">
-        <span>{{localize 'SR5.Marketplace.CancelRequest'}}</span>
-    </button>
-</div>
+<!-- Separate headers from basket items -->
+
+    <!-- Actual basket items start here -->
+    <div class="grid basket-grid">
+        <div class="grid-item header">{{localize "SR5.Marketplace.Name"}}</div>
+        <div class="grid-item header">{{localize "SR5.Marketplace.system.technology.rating"}}</div>
+        <div class="grid-item header">{{localize "SR5.Marketplace.system.technology.Cost"}}</div>
+        <div class="grid-item header">{{localize "SR5.Marketplace.system.karma"}}</div>
+        <i class="fas fa-trash grid-item header" aria-label='{{localize "SR5.Marketplace.RemoveItem"}}'></i>
+        {{#each items}}
+
+                    <div class="basket-item item-name">{{this.name}}</div>
+                    {{#if this.system.technology.rating}}
+                <select class="item-rating" data-basket-id="{{this.basketId}}">
+                        {{#range 1 13}}
+                        <option value="{{this}}" {{#ifeq this ../selectedRating}}selected{{/ifeq}}>{{this}}</option>
+                        {{/range}}
+                </select>
+                    {{/if}}
+                <div class="basket-item item-cost">{{this.calculatedCost}} <i class="fa-duotone fa-solid fa-circle-yen"></i></div>
+                <div class="basket-item item-karma">{{this.calculatedKarma}} <i class="fa-duotone fa-solid fa-circle-star"></i></div>
+                <button class="remove-item" data-basket-id="{{this.basketId}}">
+                        <i class="fas fa-trash"></i>
+                </button>
+        {{/each}}
+    </div>
+
+        <!-- Summary for Cost and Availability -->
+    <div class="basket-summary">
+        <div id="total-cost" class="sr5-marketplaceTotalCost">Total: {{totalCost}} <i class="fa-duotone fa-solid fa-circle-yen"></i></div>
+        <div id="total-availability" class="sr5-marketplaceTotalAvail">Total Availability: {{totalAvailability}}</div>
+        <div id="total-karma" class="sr5-marketplaceTotalKarma">{{totalKarma}} </div>
+    </div>
+
+        <!-- Buttons to send or cancel the request -->
+    <div class="basket-actions end-row">
+        <button id="send-request-button" class="send-request-button">{{localize 'SR5.Marketplace.SendRequest'}}</button>
+        <button id="cancel-request-button" class="send-request-button cancel">{{localize 'SR5.Marketplace.CancelRequest'}}</button>
+    </div>
+
+<!--<div class="basket-frame"></div>-->

@@ -1,8 +1,8 @@
-    <div class="marketplace-filter">
-        <h1 class="Shopping">{{localize "SR5.Marketplace.ShoppingBasket"}}</h1>
-        <label for="item-type-selector">{{localize "SR5.Marketplace.SelectItemType"}}:</label>
-        <select id="item-type-selector" class="item-type-selector">
-            {{#each itemsByType as |items type|}}
+<div class="marketplace-filter">
+    <h1 class="Shopping">{{localize "SR5.Marketplace.ShoppingBasket"}}</h1>
+    <label for="item-type-selector">{{localize "SR5.Marketplace.SelectItemType"}}:</label>
+    <select id="item-type-selector" class="item-type-selector">
+        {{#each itemsByType as |items type|}}
             {{#if items.length}}
                 {{#ifeq type "rangedWeapons"}}
                     <option value="rangedWeapons">{{localize "SR5.Marketplace.ItemTypes.RangedWeapons"}}</option>
@@ -49,23 +49,33 @@
                 {{#ifeq type "actions"}}
                     <option value="actions">{{localize "SR5.Marketplace.ItemTypes.Actions"}}</option>
                 {{/ifeq}}
+                {{#ifeq type "qualitys"}}
+                    <option value="qualitys">{{localize "SR5.Marketplace.ItemTypes.Qualitys"}}</option>
+                {{/ifeq}}
+                {{#ifeq type "complexForms"}}
+                    <option value="complexForms">{{localize "SR5.Marketplace.ItemTypes.ComplexForms"}}</option>
+                {{/ifeq}}
             {{/if}}
-            {{/each}}
-        </select>
-        <label for="search-box">{{localize "SR5.Marketplace.Search"}}:</label>
-        <input type="text" id="search-box" placeholder='{{localize "SR5.Marketplace.Search items..."}}' class="marketplace-search">
-    </div>
+        {{/each}}
+    </select>
+    <label for="search-box">{{localize "SR5.Marketplace.Search"}}:</label>
+    <input type="text" id="search-box" placeholder='{{localize "SR5.Marketplace.Search items..."}}' class="marketplace-search">
+</div>
 
-    <div class="grid-container">
-        <div id="marketplace-items" class="marketplace-items">
-            {{> 'modules/sr5-marketplace/templates/libraryItem.hbs' }}
+<div class="grid-container">
+    <div id="marketplace-items" class="marketplace-items">
+        {{> 'modules/sr5-marketplace/templates/libraryItem.hbs' }}
+    </div>
+    <div class="basket-toggle-bar">
+        <div class="circle">
+            <i class="fas fa-shopping-basket"></i>
+            <div class="basket-count hidden">0</div>
         </div>
-
-        <div class="basket-content">
-            <h3>{{localize "SR5.Marketplace.ShoppingBasket"}}</h3>
-            <div id="basket-items">
-                {{> 'modules/sr5-marketplace/templates/basket.hbs' }}
-            </div>
-        </div>        
     </div>
-</div>    
+    <div class="basket-content hidden">
+        <h3>{{localize "SR5.Marketplace.ShoppingBasket"}}</h3>
+        <div id="basket-items" class="SR5-marketplace grid-basket">
+            {{> 'modules/sr5-marketplace/templates/basket.hbs' }}
+        </div>
+    </div>   
+</div>

@@ -33,9 +33,10 @@
                 "avail":{
                     "avail": "Verfg.",
                     "R": "E",
-                    "F": "V"
-                }
-                ,
+                    "F": "V",
+                    "" : ""
+                },
+                "karma": "Karma",
                 "essence": "Essenz",
                 "technology": {
                     "rating": "Stufe",
@@ -63,7 +64,9 @@
                 "Rituals": "Rituale",
                 "SINs": "SINs",
                 "Spells": "Zauber",
-                "Actions": "Aktionen"
+                "Actions": "Aktionen",
+                "Qualitys": "Vor/Nachteile",
+                "ComplexForms": "Komplexe Formen"
             }
         }
     }

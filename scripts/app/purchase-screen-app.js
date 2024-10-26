@@ -1,5 +1,6 @@
 import ItemData from './itemData.js';
 import {getFormattedTimestamp} from './itemData.js';
+import {fetchAndSelectLanguage} from './itemData.js';
 import {ActorItemData} from './actorItemData.js';
 import { logActorHistory } from './actorHistoryLog.js';
 export class PurchaseScreenApp extends Application {
@@ -12,15 +13,16 @@ export class PurchaseScreenApp extends Application {
         this.orderData = options.orderData || {};
         this.completeItemsArray = Array.isArray(options.completeItemsArray) ? options.completeItemsArray : [];
         this.itemData = new ItemData();  // Instantiate ItemData here to use its methods
+        this.hasEnhancedItems = game.user.getFlag('sr5-marketplace', 'enhancedItemsFlag') || false;
       }
     static get defaultOptions() {
         return foundry.utils.mergeObject(super.defaultOptions, {
             id: "purchase-screen",
             title: "Purchase Screen",
             template: "modules/sr5-marketplace/templates/purchase.hbs",
-            width: 900,
-            height: 700,
-            resizable: true,
+            width: 1000,
+            height: 850,
+            resizable: false,
             classes: ["sr5-market"]
         });
     }
@@ -61,6 +63,7 @@ export class PurchaseScreenApp extends Application {
             basketItems: this.itemData.basketItems, // Pass basket items to be rendered
             isGM: this.isGM,
             reviewData: reviewData,
+            hasEnhancedItems: this.hasEnhancedItems,
             completeItemsArray: this.completeItemsArray // Ensure the array is available in the template context
         };
     }
@@ -79,9 +82,52 @@ export class PurchaseScreenApp extends Application {
         if (this.itemData.basketItems.length > 0) {
             this._renderBasket(html);
         }
+        // Add the listener for the Enhance Items button
+        html.on('click', '#enhance-items-button', async (event) => {
+            event.preventDefault();
+
+            if (this.hasEnhancedItems) {
+                const confirmed = await Dialog.confirm({
+                    title: "Overwrite Enhancements",
+                    content: "Items have already been enhanced. Do you want to overwrite the changes?",
+                });
+                if (!confirmed) return;  // Exit if not confirmed
+            }
+
+            // Call the fetchAndSelectLanguage function to trigger the selection and enhancement process
+            const enhancedItems = await fetchAndSelectLanguage();
+
+            if (enhancedItems && enhancedItems.length > 0) {
+                // Set a flag to indicate that items have been enhanced
+                await game.user.setFlag('sr5-marketplace', 'enhancedItemsFlag', true);
+                this.hasEnhancedItems = true;
+
+                // Notify the user that items were successfully enhanced
+                ui.notifications.info(`${enhancedItems.length} items successfully enhanced.`);
+
+                // Reload the screen to reflect the new data
+                this.render(true);
+            }
+        });
         html.on('change', '.item-rating', event => this._onRatingChange(event, html));
-        html.on('click', '.add-to-cart', event => this._onAddToBasket(event, html));
-        html.on('click', '.remove-item', event => this._onRemoveFromBasket(event, html));
+        html.on('click', '.add-to-cart', event => {
+            // Call the existing function to add the item to the basket
+            this._onAddToBasket(event, html);
+        
+            // Use setTimeout to ensure the DOM is fully updated before updating the basket count
+            setTimeout(() => {
+                this._updateBasketCount(html);
+            }, 100); // Small delay of 100ms to ensure the basket DOM is updated
+        });
+        html.on('click', '.remove-item', event => {
+            // Call the existing function to remove the item from the basket
+            this._onRemoveFromBasket(event, html);
+        
+            // Use setTimeout to ensure the DOM is fully updated before updating the basket count
+            setTimeout(() => {
+                this._updateBasketCount(html);
+            }, 100); // Small delay of 100ms to ensure the basket DOM is updated
+        });
         //Order Review Change
         html.on('change', '.order-review-rating', event => this._onRatingChangeOrderReview(event, html));
         // Tab Switching Logic
@@ -96,6 +142,9 @@ export class PurchaseScreenApp extends Application {
     
         // Handle the "Review and Confirm" button click
         html.on('click', '.review-request-button', event => this._onReviewRequest(event, html));
+        
+        // Handle basket toggle click
+        html.find('.basket-toggle-bar').on('click', event => this._toggleBasket(html));
 
         // Event listener for removing items in the order review
         html.on('click', '.remove-item', async event => {
@@ -179,6 +228,35 @@ export class PurchaseScreenApp extends Application {
     _getItemsByType(type) {
         return this.itemData.itemsByType[type] || [];
     }
+    /**
+     * Toggles the visibility of the basket and the basket count.
+     * @param {HTMLElement} html - The HTML content of the marketplace.
+     */
+    _toggleBasket(html) {
+        const gridContainer = html.find('.grid-container');
+        const basketContent = html.find('.basket-content');
+        const basketCountElement = html.find('.basket-count');
+
+        // Check if the basket is currently hidden (collapsed)
+        const isHidden = basketContent.hasClass('hidden');
+
+        // Toggle the hidden class on the basket content (expands/collapses basket)
+        basketContent.toggleClass('hidden');
+
+        // Toggle the expanded class on the grid container (adjusts grid layout)
+        gridContainer.toggleClass('expanded');
+
+        // If the basket is currently hidden and is being expanded, hide the count
+        if (isHidden) {
+            basketCountElement.addClass('hidden'); // Hide the count when the basket is expanded
+        } else {
+            // When collapsing, show the count if there are items
+            const itemCount = html.find('#basket-items .basket-item').length;
+            if (itemCount > 0) {
+                basketCountElement.removeClass('hidden'); // Show the count when the basket is collapsed
+            }
+        }
+    }
 
     async _renderItemList(items, html) {
         const itemListContainer = html.find("#marketplace-items");
@@ -227,6 +305,36 @@ export class PurchaseScreenApp extends Application {
         this._renderBasket(html); // Re-render the basket with updated items
 
         this._saveBasketState(); // Save the updated basket state
+    }
+    /**
+     * Updates the basket count displayed on the shopping cart icon.
+     * @param {HTMLElement} html - The HTML content of the marketplace.
+     */
+    _updateBasketCount(html) {
+        // Find all elements with class 'remove-item' within the grid basket-grid
+        const basketItems = html.find('.basket-grid .remove-item');
+        const itemCount = basketItems.length;
+
+        // Find the basket count element
+        const basketCountElement = html.find('.basket-count');
+
+        // Find the basket content to check if it's expanded or collapsed
+        const basketContent = html.find('.basket-content');
+
+        // Update the count text
+        basketCountElement.text(itemCount);
+
+        // If the basket is collapsed (hidden), show the count if there are items
+        if (basketContent.hasClass('hidden')) {
+            if (itemCount > 0) {
+                basketCountElement.removeClass('hidden');
+            } else {
+                basketCountElement.addClass('hidden');
+            }
+        } else {
+            // If the basket is expanded, always hide the count
+            basketCountElement.addClass('hidden');
+        }
     }
 
     _onRatingChange(event, html) {
@@ -309,7 +417,8 @@ export class PurchaseScreenApp extends Application {
             type: item.type, // Item type
             cost: item.calculatedCost || 0, // Use calculated cost or fallback to 0
             rating: item.selectedRating || 1, // Use selected rating or fallback to 1
-            essence: item.calculatedEssence || 0 // Use calculated essence or fallback to 0
+            essence: item.calculatedEssence || 0, // Use calculated essence or fallback to 0
+            karma: item.flags.sr5-marketplace.Karma
         }));
     
         // Update the chat message with the latest data
@@ -324,7 +433,8 @@ export class PurchaseScreenApp extends Application {
                 totalEssenceCost: updatedItemDetails.reduce((sum, item) => sum + (item.essence || 0), 0), // Updated total essence cost
                 requesterName: oldFlagData.requester, // Keep the original requester name
                 actorId: oldFlagData.actorId, // Keep the original actor ID
-                actor: oldFlagData.actor // Keep the original actor
+                actor: oldFlagData.actor, // Keep the original actor
+                karma: updatedOrderData.totalKarmaCost
             };
     
             // Re-render the chat message with the updated data
@@ -378,13 +488,34 @@ export class PurchaseScreenApp extends Application {
             // Enrich actor name if available
             const enrichedActor = item.actorId ? await TextEditor.enrichHTML(`@Actor[${item.actorId}]{${item.actor.name}}`) : "";
     
+            // Localize the availability text part
+            const textMapping = {
+                "E": "E",  // German for Restricted
+                "V": "V",  // German for Forbidden
+                "R": "R",  // English Restricted
+                "F": "F",  // English Forbidden
+                "": ""     // No text
+            };
+            
+            // Extract the numeric and text parts of availability
+            const baseAvailability = parseInt(item.calculatedAvailability) || 0;
+            const textPart = item.calculatedAvailability.replace(/^\d+/, '').trim();
+            
+            // Normalize the text part and localize it
+            const normalizedText = textMapping[textPart.toUpperCase()] || '';
+            const localizedText = normalizedText ? game.i18n.localize(`SR5.Marketplace.system.avail.${normalizedText}`) : '';
+    
+            // Combine the numeric and localized text parts
+            const availabilityCalculation = `${baseAvailability}${localizedText}`.trim();
+    
             return {
                 ...item,
-                enrichedName, // Enriched item name
-                enrichedActor // Enriched actor if available
+                enrichedName,         // Enriched item name
+                enrichedActor,        // Enriched actor if available
+                calculatedAvailability: availabilityCalculation // Localized availability
             };
         }));
-    }
+    }    
     /**
      * Render the order review tab with the updated data
      */
@@ -395,6 +526,8 @@ export class PurchaseScreenApp extends Application {
         // Use itemData methods to calculate totals
         const totalCost = this.itemData.calculateOrderReviewTotalCost();
         const totalAvailability = this.itemData.calculateOrderReviewTotalAvailability();
+        const totalEssenceCost = this.itemData.calculateOrderReviewTotalEssenceCost();
+        const totalKarmaCost = this.itemData.calculateOrderReviewTotalKarmaCost();
         // Enrich the item and actor names using TextEditor.enrichHTML
         const ItemsLinks = await this.enrichItems(completeItemsArray);
          const templateData = {
@@ -402,6 +535,8 @@ export class PurchaseScreenApp extends Application {
             items: ItemsLinks,  // Pass the enriched item data
             totalCost,
             totalAvailability,
+            totalEssenceCost,
+            totalKarmaCost,
         };
 
         // Log template data for debugging

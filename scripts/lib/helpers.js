@@ -3,8 +3,10 @@ export const registerBasicHelpers = () => {
     Handlebars.registerHelper('hasItemType', function(type, options) {
         const itemData = new ItemData();
         if (itemData.itemsByType[type] && itemData.itemsByType[type].length > 0) {
+            console.log(`Type found: ${type}`);
             return options.fn(this);
         }
+        console.log(`Type not found: ${type}`);
         return options.inverse(this);
     });
 
@@ -19,6 +21,9 @@ export const registerBasicHelpers = () => {
     }); 
     Handlebars.registerHelper('getTechnologyCost', function(item) {
         return item?.system?.technology?.cost || 0;  // Fallback to 0 if not found
+    });
+    Handlebars.registerHelper('getKarma', function(item) {
+        return item?.system?.karma || item?.flags?.sr5-marketplace?.karma ||0;  // Fallback to 0 if not found
     });
     
     Handlebars.registerHelper('getAvailability', function(item) {

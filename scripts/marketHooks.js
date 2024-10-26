@@ -1,4 +1,5 @@
 import ItemData from './app/itemData.js';
+import {fetchAndSelectLanguage} from './app/itemData.js';
 import { ActorItemData } from './app/actorItemData.js';
 import { PurchaseScreenApp } from './app/purchase-screen-app.js';
 import { registerBasicHelpers } from './lib/helpers.js';
@@ -120,23 +121,39 @@ Hooks.once('ready', async function() {
     // Specify the item types you want to apply the flag to
     const itemTypesToFlag = ["quality", "adept_power", "spell", "complex_form"];
 
-    // Function to update items
+    /**
+     * Function to update items with Karma flags.
+     * Handles different item types and applies specific Karma logic for each type.
+     * @param {Item} item - The item to update with a Karma flag.
+     */
     async function updateItemWithKarmaFlag(item) {
-        // For "quality" type items, always synchronize system.karma to the Karma flag
+        // Handle "quality" type items
         if (item.type === "quality" && item.system.karma !== undefined) {
-            //console.log(`Synchronizing Karma flag for quality: ${item.name} with system.karma value of ${item.system.karma}`);
+            // Synchronize system.karma to the Karma flag for qualities
             await item.setFlag('sr5-marketplace', 'Karma', item.system.karma);
-        } else {
-            // For other item types, set the karma flag to 0 if it doesn't exist
+        }
+        // Handle "adept_power", "spell", and "complex_form" items
+        else if (["adept_power", "spell", "complex_form"].includes(item.type)) {
             const karmaFlag = item.getFlag('sr5-marketplace', 'Karma');
+            
+            // Set Karma to 5 if the flag doesn't exist or has not been set before
             if (karmaFlag === undefined) {
-                //console.log(`Setting Karma flag to 0 for item: ${item.name} (Type: ${item.type})`);
+                await item.setFlag('sr5-marketplace', 'Karma', 5);
+            }
+        } 
+        // If the item type is none of the above, initialize Karma flag to 0
+        else {
+            const karmaFlag = item.getFlag('sr5-marketplace', 'Karma');
+            
+            if (karmaFlag === undefined) {
                 await item.setFlag('sr5-marketplace', 'Karma', 0);
             }
         }
     }
 
-    // Function to update all items in the world and compendiums
+    /**
+     * Function to initialize Karma flags for all items in the world and compendiums.
+     */
     async function initializeKarmaFlags() {
         console.log("Initializing Karma flags for world items...");
 
@@ -165,10 +182,24 @@ Hooks.once('ready', async function() {
 
     // Call the function to initialize the Karma flags after the world is ready
     await initializeKarmaFlags();
-
     console.log("sr5-marketplace Karma flag initialization completed.");
 });
+Hooks.on('getSceneControlButtons', (controls) => {
+    const mainControl = controls.find(c => c.name === 'token'); // Use the main control
 
+    // Add a new button to call fetchAndSelectLanguage
+    if (game.user.isGM) { 
+        mainControl.tools.push({
+        name: 'enhance-item-data',
+        title: 'Enhance Item Data',
+        icon: 'fas fa-language', // You can choose a different FontAwesome icon if you like
+        onClick: () => {
+            fetchAndSelectLanguage();
+        },
+        button: true
+    });
+    }
+});
 Hooks.on('getSceneControlButtons', (controls) => {
     const mainControl = controls.find(c => c.name === 'token'); // Use main control or any existing control
     mainControl.tools.push({
