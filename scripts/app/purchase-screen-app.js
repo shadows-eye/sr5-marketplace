@@ -520,19 +520,31 @@ export class PurchaseScreenApp extends Application {
      * Render the order review tab with the updated data
      */
     async _renderOrderReview(html, flagId, completeItemsArray) {
-        // Ensure the items are passed to itemData for further calculations
-        this.itemData.orderReviewItems = completeItemsArray;  // Assign the array to itemData
+        // Enrich each item with fallback data from flags if `calculated` properties are missing
+        const enrichedItems = completeItemsArray.map(item => ({
+            ...item,
+            flags: {
+                Availability: item.calculatedAvailability || item.flags?.['sr5-marketplace']?.Availability || "0",
+                Cost: item.calculatedCost || item.flags?.['sr5-marketplace']?.Cost || 0,
+                karma: item.calculatedKarma || item.flags?.['sr5-marketplace']?.karma || 0,
+            }
+        }));
 
-        // Use itemData methods to calculate totals
-        const totalCost = this.itemData.calculateOrderReviewTotalCost();
-        const totalAvailability = this.itemData.calculateOrderReviewTotalAvailability();
-        const totalEssenceCost = this.itemData.calculateOrderReviewTotalEssenceCost();
-        const totalKarmaCost = this.itemData.calculateOrderReviewTotalKarmaCost();
-        // Enrich the item and actor names using TextEditor.enrichHTML
-        const ItemsLinks = await this.enrichItems(completeItemsArray);
-         const templateData = {
-            flagId: flagId,
-            items: ItemsLinks,  // Pass the enriched item data
+        // Assign enriched items to itemData for further calculations
+        this.itemData.orderReviewItems = enrichedItems;
+
+        // Calculate totals using enriched items
+        const totalCost =  this.itemData.calculateOrderReviewTotalCost();
+        const totalAvailability =  this.itemData.calculateOrderReviewTotalAvailability();
+        const totalEssenceCost =  this.itemData.calculateOrderReviewTotalEssenceCost();
+        const totalKarmaCost =  this.itemData.calculateOrderReviewTotalKarmaCost();
+
+        // Enrich the item names and any additional info using TextEditor.enrichHTML
+        const ItemsLinks = await this.enrichItems(enrichedItems);
+
+        const templateData = {
+            flagId,
+            items: ItemsLinks,
             totalCost,
             totalAvailability,
             totalEssenceCost,
@@ -568,9 +580,9 @@ export class PurchaseScreenApp extends Application {
     
         // Prepare data for the chat message
         const basketItems = this.itemData.getBasketItems();
-        const totalCost = this.itemData.calculateTotalCost();
-        const totalAvailability = this.itemData.calculateTotalAvailability();
-        const totalEssenceCost = this.itemData.calculateTotalEssenceCost();
+        const totalCost = await this.itemData.calculateTotalCost();
+        const totalAvailability = await this.itemData.calculateTotalAvailability();
+        const totalEssenceCost = await this.itemData.calculateTotalEssenceCost();
         const totalKarmaCost = await this.itemData.calculateTotalKarmaCost();
         const requestingUser = game.user;
         const isGM = requestingUser.isGM;
@@ -606,23 +618,30 @@ export class PurchaseScreenApp extends Application {
             }
         }));
     
-        // Prepare item details for chat message, including only the cleaned flags
-        const itemDetails = basketItems.map(itemData => ({
-            id: itemData.id_Item || itemData._id,
-            name: itemData.name,
-            image: itemData.img || "icons/svg/item-bag.svg",
-            description: itemData.system.description?.value || "",
-            type: itemData.type,
-            cost: itemData.calculatedCost || 0,
-            rating: itemData.selectedRating || 1,
-            essence: itemData.calculatedEssence || 0,
-            karma: itemData.calculatedKarma || 0,
-            flags: {
-                ...(itemData.flags?.['sr5-marketplace'].Availability && { Availability: itemData.flags['sr5-marketplace'].Availability }),
-                ...(itemData.flags?.['sr5-marketplace'].Cost && { Cost: itemData.flags['sr5-marketplace'].Cost }),
-                ...(itemData.flags?.['sr5-marketplace'].karma && { karma: itemData.flags['sr5-marketplace'].karma })
-            }
-        }));
+        // Prepare item details for chat message, with compatibility for system.technology
+        const itemDetails = basketItems.map(itemData => {
+            // Retrieve values from either system.technology or sr5-marketplace flags
+            const availability = itemData.system?.technology?.availability || itemData.flags?.['sr5-marketplace']?.Availability || "0";
+            const cost = itemData.system?.technology?.cost || itemData.flags?.['sr5-marketplace']?.Cost || 0;
+            const rating = itemData.system?.technology?.rating || itemData.selectedRating || 1;
+    
+            return {
+                id: itemData.id_Item || itemData._id,
+                name: itemData.name,
+                image: itemData.img || "icons/svg/item-bag.svg",
+                description: itemData.system.description?.value || "",
+                type: itemData.type,
+                cost: cost,
+                rating: rating,
+                essence: itemData.calculatedEssence || 0,
+                karma: itemData.calculatedKarma || itemData.flags?.['sr5-marketplace']?.karma || 0,
+                flags: {
+                    ...(availability && { Availability: availability }),
+                    ...(cost && { Cost: cost }),
+                    ...(itemData.flags?.['sr5-marketplace']?.karma && { karma: itemData.flags['sr5-marketplace'].karma })
+                }
+            };
+        });
     
         // Log final item details and total values for verification
         console.log("Final itemDetails to be sent in chat:", itemDetails);
@@ -658,7 +677,7 @@ export class PurchaseScreenApp extends Application {
             actorId: actorId,
             isGM: isGM
         };
-    
+        
         // Render the message using the chatMessageRequest.hbs template
         renderTemplate('modules/sr5-marketplace/templates/chatMessageRequest.hbs', messageData).then(htmlContent => {
             ChatMessage.create({
