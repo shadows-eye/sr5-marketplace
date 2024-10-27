@@ -101,6 +101,14 @@ export default class ItemData {
     }
     calculateCost(item) {
         const rating = item.selectedRating || 1; // Default rating
+    
+        // Check if the item is a spell or complex form and retrieve cost from flag if so
+        if (["spell", "complex_form"].includes(item.type)) {
+            const flagCost = item.getFlag('sr5-marketplace', 'Cost');
+            return flagCost ? flagCost * rating : 0; // Default to 0 if no flag cost is set
+        }
+    
+        // For other item types, calculate cost based on system data
         const baseCost = item.system.technology?.cost || 0; // Get base cost from item data
         return baseCost * rating; // Calculate the cost based on the rating
     }
@@ -155,11 +163,13 @@ export default class ItemData {
         return item.system.essence ? item.system.essence * (item.selectedRating || 1) : 0;
     }
     calculateAvailability(item) {
-        // Check if the item type is one of the types with zero availability
-        if (["quality", "complex_form", "action", "ritual", "spell"].includes(item.type)) {
-            return 0; // Return availability as 0 for these types
+        // Check if the item is a spell or complex form and retrieve availability from flag if so
+        if (["spell", "complex_form"].includes(item.type)) {
+            const flagAvailability = item.getFlag('sr5-marketplace', 'Availability');
+            if (flagAvailability) return flagAvailability; // Return the flagged availability if present
         }
     
+        // For other item types, proceed with standard availability calculation
         // Define a mapping for availability text parts (for localization)
         const textMapping = {
             "E": "E",  // German for Restricted
@@ -169,17 +179,16 @@ export default class ItemData {
             "": ""     // No text
         };
     
-        // Extract rating, defaulting to 1 if not available
-        const rating = item.selectedRating || 1;
-        
-        // Extract the base availability number
-        const baseAvailability = parseInt(item.system.technology?.availability) || 0;
-        
-        // Extract the text part (e.g., "R", "F") and map it to normalized values
-        let textPart = item.system.technology?.availability?.replace(/^\d+/, '').trim();
-        textPart = textMapping[textPart.toUpperCase()] || "";  // Normalize the text
+        const rating = item.selectedRating || 1; // Default rating
+        const baseAvailability = parseInt(item.system.technology?.availability) || 0; // Get base availability
     
-        // Localize the text part using game localization
+        // Check if availability has a text part and if so, normalize it
+        let textPart = item.system.technology?.availability?.replace(/^\d+/, '').trim() || "";
+        if (textPart) {
+            textPart = textMapping[textPart.toUpperCase()] || "";  // Normalize the text
+        }
+    
+        // Localize the text part using game localization if it exists
         const localizedText = textPart ? game.i18n.localize(`SR5.Marketplace.system.avail.${textPart}`) : "";
     
         // Return the calculated availability with the localized text part
@@ -227,11 +236,21 @@ export default class ItemData {
         console.log(`Marketplace flag for item ${item.name}:`, marketplaceFlag);
         return marketplaceFlag.karma || 0;
     }
-    
     // Function to calculate the total karma cost for all items in the basket
     async calculateTotalKarmaCost() {
-        const calculatedKarmaCosts = this.basketItems.map(async item => await this.calculatedKarmaCost(item));
-        return this.basketItems.reduce((total, item) => total + calculatedKarmaCosts,0);
+        return this.basketItems.reduce((total, item) => {
+            // Check if the item has a karma value in its system data
+            if (item.system?.karma !== undefined) {
+                return total + item.system.karma;
+            }
+
+            // Otherwise, check the sr5-marketplace flag for karma
+            const marketplaceFlag = item.flags['sr5-marketplace'] || {};
+            const karma = marketplaceFlag.karma || 0;
+            console.log(`Marketplace flag for item ${item.name}:`, marketplaceFlag);
+            
+            return total + karma;
+        }, 0);
     }
     async removeItemFromBasket(basketId) {
         this.basketItems = this.basketItems.filter(item => item.basketId !== basketId);
@@ -249,7 +268,10 @@ export default class ItemData {
      * Calculate total cost for the order review.
      */
     calculateOrderReviewTotalCost() {
-        return this.orderReviewItems.reduce((sum, item) => sum + (item.calculatedCost || 0), 0);
+        return this.orderReviewItems.reduce((sum, item) => {
+            const cost = item.calculatedCost || item.flags?.['sr5-marketplace']?.Cost || 0;
+            return sum + cost;
+        }, 0);
     }
     /**
      * Calculate total cost for the order review.
@@ -261,7 +283,10 @@ export default class ItemData {
      * Calculate total cost for the order review.
      */
     calculateOrderReviewTotalKarmaCost() {
-        return this.orderReviewItems.reduce((sum, item) => sum + (item.calculatedKarma || 0), 0);
+        return this.orderReviewItems.reduce((sum, item) => {
+            const karma = item.calculatedKarma || item.flags?.['sr5-marketplace']?.karma || 0;
+            return sum + karma;
+        }, 0);
     }
     /**
      * Calculate total cost for the order review.
@@ -282,51 +307,28 @@ export default class ItemData {
      * Calculate total availability for the order review. and Provide Localization for the highest priority text part
      */
     calculateOrderReviewTotalAvailability() {
-        // Initialize variables to store the total availability and the highest priority text part
         let totalAvailability = 0;
         let highestPriorityText = "";
     
-        // Define a priority map for the availability text parts
-        const priorityMap = {
-            "": 0,   // No text has the lowest priority
-            "R": 1,  // Restricted
-            "F": 2,  // Forbidden
-            "E": 3   // Extreme (highest priority)
-        };
+        const priorityMap = { "": 0, "R": 1, "F": 2, "E": 3 };
+        const textMapping = { "E": "R", "V": "F", "R": "R", "F": "F", "": "" };
     
-        // Define a mapping for text parts to normalize values (e.g., "E" or "V" to "R" and "F")
-        const textMapping = {
-            "E": "R",  // German for Restricted
-            "V": "V",  // German for Forbidden
-            "R": "R",  // English Restricted
-            "F": "F",  // English Forbidden
-            "": ""     // No text
-        };
-    
-        // Iterate over all order review items
         this.orderReviewItems.forEach(item => {
-            const availability = item.calculatedAvailability || "";
+            const availability = item.calculatedAvailability || item.flags?.['sr5-marketplace']?.Availability || "";
     
-            // Extract the numeric part of availability using regex
+            // Extract numeric and text parts
             const numericPart = parseInt(availability.match(/\d+/), 10) || 0;
             totalAvailability += numericPart;
     
-            // Extract the text part (e.g., "E", "F", "R") from the availability string
             let textPart = availability.replace(/\d+/g, '').trim();
+            textPart = textMapping[textPart.toUpperCase()] || "";
     
-            // Normalize the text part based on the textMapping (e.g., "E" becomes "R", "V" becomes "F")
-            textPart = textMapping[textPart.toUpperCase()] || "";  // Convert to uppercase for case-insensitive matching
-    
-            // Compare the current text part's priority to the highestPriorityText
             if (priorityMap[textPart] > priorityMap[highestPriorityText]) {
-                highestPriorityText = textPart;  // Update to the highest-priority text part
+                highestPriorityText = textPart;
             }
         });
     
-        // Localize the highest priority text part (using the localization keys)
         const localizedText = highestPriorityText ? game.i18n.localize(`SR5.Marketplace.system.avail.${highestPriorityText}`) : "";
-    
-        // Combine the total availability number and the localized text part
         return `${totalAvailability}${localizedText}`;
     }    
     addItemToOrderReview(itemId) {
@@ -381,35 +383,52 @@ export default class ItemData {
     getFilteredItemsByType(type) {
         return this.filteredItems.filter(item => item.type === type);
     }
-
     calculateTotalCost() {
         return this.basketItems.reduce((total, item) => {
-            // Check if the item type is 'quality' or 'complex_form'
-            if (item.type === "quality" || item.type === "complex_form" || item.type === "action" || item.type === "ritual" || item.type === "spell") {
-                // Skip the calculation or handle differently, e.g., add a fixed cost or 0
-                return total;  // Skip these items for cost calculation
+            // Skip items that should not be included in the cost calculation
+            if (["quality", "action", "ritual"].includes(item.type)) {
+                return total;
             }
     
-            // Use the selectedRating to calculate the total cost dynamically
-            const rating = item.selectedRating || 1;  // Default to 1 if no rating is selected
-            const cost = item.system.technology.cost || 0;  // Ensure cost is present
-            return total + (cost * rating);  // Calculate cost based on rating and add to total
+            // Use flag-based cost for spell and complex_form items
+            const rating = item.selectedRating || 1; // Default to 1 if no rating is selected
+            let cost = 0;
+    
+            if (["spell", "complex_form"].includes(item.type)) {
+                // Check if getFlag exists; if not, access the flags property directly
+                cost = item.getFlag ? item.getFlag('sr5-marketplace', 'Cost') : (item.flags?.['sr5-marketplace']?.Cost || 0);
+            } else {
+                cost = item.system.technology?.cost || 0; // Use system data for other items
+            }
+    
+            return total + (cost * rating); // Calculate total cost based on rating
         }, 0);
     }
     calculateTotalAvailability() {
         const availabilityData = this.basketItems.reduce((acc, item) => {
-            // Check if the item type is 'quality', 'complex_form', 'action', 'ritual', or 'spell'
-            if (item.type === "quality" || item.type === "complex_form" || item.type === "action" || item.type === "ritual" || item.type === "spell") {
-                // Skip these items for availability calculation
+            // Skip items that should not be included in the availability calculation
+            if (["quality", "action", "ritual"].includes(item.type)) {
                 return acc;
             }
     
-            const baseAvailability = parseInt(item.system.technology.availability) || 0;
-            const textPart = item.system.technology.availability.replace(/^\d+/, '').trim(); // Extract text like 'F' or 'R'
+            const rating = item.selectedRating || 1; // Default rating
+            let baseAvailability = 0;
+            let textPart = "";
     
-            acc.total += baseAvailability * (item.selectedRating || 1);
+            if (["spell", "complex_form"].includes(item.type)) {
+                // Check if getFlag exists; if not, access the flags property directly
+                const flagAvailability = item.getFlag ? item.getFlag('sr5-marketplace', 'Availability') : (item.flags?.['sr5-marketplace']?.Availability || "0");
+                baseAvailability = parseInt(flagAvailability) || 0;
+                textPart = flagAvailability.replace(/^\d+/, '').trim();
+            } else {
+                // Use system data for other items
+                baseAvailability = parseInt(item.system.technology?.availability) || 0;
+                textPart = item.system.technology?.availability?.replace(/^\d+/, '').trim();
+            }
     
-            // Normalize the text part and use the text mapping for localization
+            acc.total += baseAvailability * rating;
+    
+            // Normalize and localize the text part
             const textMapping = {
                 "E": "E",  // German for Restricted
                 "V": "V",  // German for Forbidden
@@ -417,12 +436,11 @@ export default class ItemData {
                 "F": "F",  // English Forbidden
                 "": ""     // No text
             };
-            
-            // Normalize and localize the text part
-            const normalizedText = textMapping[textPart.toUpperCase()] || "";
+    
+            const normalizedText = textMapping[textPart?.toUpperCase()] || "";
             const localizedText = normalizedText ? game.i18n.localize(`SR5.Marketplace.system.avail.${normalizedText}`) : "";
     
-            // Ensure we use the highest restriction (e.g., 'F' > 'R')
+            // Ensure we keep the highest restriction level
             if (!acc.text || textMapping[normalizedText] > textMapping[acc.text]) {
                 acc.text = localizedText;
             }
@@ -430,8 +448,8 @@ export default class ItemData {
             return acc;
         }, { total: 0, text: '' });
     
-        return `${availabilityData.total}${availabilityData.text}`.trim(); // Return the total availability with localized text
-    }    
+        return `${availabilityData.total}${availabilityData.text}`.trim(); // Return total availability with localized text
+    }   
     calculateTotalCostUpdate() {
         return this.basketItems.reduce((total, item) => total + item.system.technology.cost, 0);
     }
@@ -526,16 +544,16 @@ export default class ItemData {
     async getOrderDataFromFlag(flagId) {
         let flagData = null;
     
-        // Step 1: Search through all users for the flag
+        // Step 1: Find the flag data across all users
         for (const user of game.users.contents) {
             const userFlags = user.flags['sr5-marketplace'];
             if (userFlags && userFlags[flagId]) {
                 flagData = userFlags[flagId];
-                break; // Exit loop once flag is found
+                break;
             }
         }
     
-        // Step 2: If no user has the flag, check the GM's flags
+        // If no user has the flag, check the GM's flags
         if (!flagData) {
             const gmUser = game.users.find(u => u.isGM);
             if (gmUser) {
@@ -546,60 +564,35 @@ export default class ItemData {
             }
         }
     
-        // Step 3: If no flag data was found, return null
+        // If no flag data was found, return null
         if (!flagData) {
             console.warn(`No flag found with ID ${flagId}`);
             return null;
         }
     
-        // Step 4: Enrich the items in the flag data
         const items = flagData.items || [];
         const reviewPrep = [];
     
         await Promise.all(items.map(async (flagItem) => {
-            const itemId = flagItem.id || flagItem._id || flagItem.id_Item; 
-            const gameItem = game.items.get(itemId); // Fetch the item from the game world
+            const itemId = flagItem.id || flagItem._id || flagItem.id_Item;
+            const gameItem = game.items.get(itemId);
     
             if (gameItem) {
+                // Clone the game item for manipulation
                 const enrichedItem = JSON.parse(JSON.stringify(gameItem));
     
                 enrichedItem.selectedRating = flagItem.rating || enrichedItem.system?.technology?.rating || 1;
-                let enrichmentRating = Number(enrichedItem.selectedRating);
     
-                // Check if item type is one of the types that don't have system.technology
+                // Check if item has system.technology
                 if (["quality", "complex_form", "action", "ritual", "spell"].includes(enrichedItem.type)) {
-                    // Karma-based item, no system.technology, so skip availability and cost calculations related to technology
-                    enrichedItem.calculatedAvailability = '0';  // Set availability to 0
-                    enrichedItem.calculatedCost =  0;  // Use karma as the cost for these items
-                    enrichedItem.calculatedKarma = enrichedItem.system.karma || flagData.karma || flagData.Karma || 0;  // Use system.karma or 0
-                    enrichedItem.calculatedEssence = 0;  // No essence for these types
-                    if(typeof enrichedItem.calculatedKarma !== "number") {
-                        console.warn(`calculatedKarma is not a number, got:`, enrichedItem.calculatedKarma);
-                        enrichedItem.calculatedKarma = parseFloat(enrichedItem.calculatedKarma) || 0;
-                    }
+                    enrichedItem.calculatedAvailability = enrichedItem.flags?.['sr5-marketplace']?.Availability || '0';
+                    enrichedItem.calculatedCost = enrichedItem.flags?.['sr5-marketplace']?.Cost || 0;
+                    enrichedItem.calculatedKarma = enrichedItem.system.karma || enrichedItem.flags?.['sr5-marketplace']?.karma || 0;
+                    enrichedItem.calculatedEssence = 0;
                 } else {
-                    // Handle items that do have system.technology
-                    enrichedItem.calculatedCost = flagItem.cost || (await this.calculateCostReviewUpdate(enrichedItem, enrichmentRating));
-                    if (typeof enrichedItem.calculatedCost !== "number") {
-                        console.warn(`calculatedCost is not a number, got:`, enrichedItem.calculatedCost);
-                        enrichedItem.calculatedCost = parseFloat(enrichedItem.calculatedCost) || 0;
-                    }
-    
+                    enrichedItem.calculatedCost = await this.calculateCostReviewUpdate(enrichedItem, enrichedItem.selectedRating) || 0;
                     enrichedItem.calculatedAvailability = await this.calculateOrderReviewAvailability(enrichedItem, enrichedItem.selectedRating);
                     enrichedItem.calculatedEssence = await this.calculateEssence(enrichedItem);
-    
-                    enrichedItem.calculatedAvailability = String(enrichedItem.calculatedAvailability || '');
-                    enrichedItem.calculatedEssence = parseFloat(enrichedItem.calculatedEssence) || 0;
-                }
-    
-                // Calculate karma cost from the flag, with a fallback to 0
-                enrichedItem.calculatedKarma = await this.calculatedKarmaCost(enrichedItem) || 0;
-    
-                // Ensure system.technology is only updated if it exists
-                if (enrichedItem.system.technology) {
-                    enrichedItem.system.technology.cost = enrichedItem.calculatedCost; // Override with flagged cost
-                    enrichedItem.system.technology.rating = enrichedItem.selectedRating; // Override with flagged rating
-                    enrichedItem.system.technology.availability = enrichedItem.calculatedAvailability; // Override availability
                 }
     
                 reviewPrep.push(enrichedItem);
@@ -608,68 +601,45 @@ export default class ItemData {
             }
         }));
     
-        // Step 5: Fetch the actor if actorId is present
-        let actor = null;
-        if (flagData.actorId) {
-            actor = game.actors.get(flagData.actorId);
-            if (!actor) {
-                console.warn(`Actor with ID ${flagData.actorId} not found.`);
-            }
-        }
+        console.log("Enriched items with correct calculated properties:", reviewPrep);
     
-        // Step 6: Calculate total cost and availability
+        // Calculate total values using enriched items
         const totalCost = reviewPrep.reduce((sum, item) => sum + (item.calculatedCost || 0), 0);
-        // Calculate total availability with localization for the text part
         const totalAvailability = reviewPrep.reduce((acc, item) => {
             const availability = item.calculatedAvailability || '';
-
-            // Extract the numeric part of the availability
             const numericPart = parseInt(availability.match(/\d+/), 10) || 0;
-            acc.total += numericPart; // Accumulate numeric availability
-
-            // Extract the text part (e.g., "R", "F", "E") and normalize it
+            acc.total += numericPart;
+    
             let textPart = availability.replace(/\d+/g, '').trim();
-            const textMapping = {
-                "E": "E",  // German for Restricted
-                "V": "V",  // German for Forbidden
-                "R": "R",  // English Restricted
-                "F": "F",  // English Forbidden
-                "": ""     // No text
-            };
-            
+            const textMapping = { "E": "E", "V": "F", "R": "R", "F": "F", "": "" };
             textPart = textMapping[textPart.toUpperCase()] || "";
             const localizedText = textPart ? game.i18n.localize(`SR5.Marketplace.system.avail.${textPart}`) : "";
-
-            // Keep the highest priority localized text
+    
             if (localizedText && (!acc.text || textMapping[localizedText] > textMapping[acc.text])) {
                 acc.text = localizedText;
             }
-            
+    
             return acc;
         }, { total: 0, text: '' });
+    
         const totalEssenceCost = reviewPrep.reduce((sum, item) => sum + (item.calculatedEssence || 0), 0);
         const totalKarmaCost = reviewPrep.reduce((sum, item) => sum + (item.calculatedKarma || 0), 0);
-        // Step 7: Save enriched items and calculated totals into completeItemsArray
-        this.completeItemsArray = reviewPrep.map(item => ({
-            ...item,
-            flags: {
-                ...item.flags,
-                'sr5-marketplace': { flagId }
-            }
-        }));
     
-        // Return the enriched data, including actor details
-        return {
+        // Final enriched order data
+        const orderData = {
             id: flagData.id,
-            items: this.completeItemsArray, // The enriched items array with cost, availability, karma, and essence
+            items: reviewPrep,
             totalCost,
             totalAvailability,
             totalEssenceCost,
             totalKarmaCost,
             requester: flagData.requester,
-            requesterId: flagData.requesterId, // Include requesterId if present
-            actorId: flagData.actorId, // Include actorId if present
+            requesterId: flagData.requesterId,
+            actorId: flagData.actorId,
         };
+    
+        console.log("Final order data with correct totals:", orderData);
+        return orderData;
     }        
 
     /**
@@ -1278,25 +1248,21 @@ export async function fetchAndSelectLanguage() {
     const languageRepoUrl = 'https://api.github.com/repos/chummer5a/chummer5a/contents/Chummer/lang';
 
     try {
+        // Step 1: Fetch language files and get the user's language selection
         const response = await fetch(languageRepoUrl);
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         const languages = await response.json();
-        const languageFiles = languages.filter(file => file.name.endsWith('_data.xml'));
+        const languageOptions = languages
+            .filter(file => file.name.endsWith('_data.xml'))
+            .map(file => ({
+                name: file.name.replace('_data.xml', ''),
+                url: file.download_url
+            }));
 
-        // Generate options for the selection window
-        const languageOptions = languageFiles.map(file => ({
-            name: file.name.replace('_data.xml', ''), // Strip the "_data.xml" from the filename
-            url: file.download_url
-        }));
-
-        // Create and show a selection dialog
         const selectedLanguageUrl = await new Promise(resolve => {
-            const dialogOptions = languageOptions.map(option => `<option value="${option.url}">${option.name}</option>`).join('');
-            const dialogHtml = `<label>Select a language:</label><select id="language-select">${dialogOptions}</select>`;
+            const optionsHtml = languageOptions.map(option => `<option value="${option.url}">${option.name}</option>`).join('');
+            const dialogHtml = `<label>Select a language:</label><select id="language-select">${optionsHtml}</select>`;
 
             new Dialog({
                 title: 'Language Selection',
@@ -1304,80 +1270,113 @@ export async function fetchAndSelectLanguage() {
                 buttons: {
                     ok: {
                         label: 'OK',
-                        callback: html => {
-                            const selectedUrl = html.find('#language-select').val();
-                            resolve(selectedUrl);
-                        }
+                        callback: html => resolve(html.find('#language-select').val())
                     }
                 }
             }).render(true);
         });
 
-        if (selectedLanguageUrl) {
-            const enhancedItems = await EnhanceItemData(selectedLanguageUrl);
-            return enhancedItems;  // Return the enhanced items for further processing
+        // Step 1: Enhance qualities independently
+        const enhancedQualities = await EnhanceItemData(selectedLanguageUrl);
+
+        // Step 2: Fetch and enhance each additional item type
+        const itemTypesWithUrls = {
+            "complexform": "https://api.github.com/repos/chummer5a/chummer5a/contents/Chummer/data/complexforms.xml?ref=master",
+            "spell": "https://api.github.com/repos/chummer5a/chummer5a/contents/Chummer/data/spells.xml?ref=master",
+            "weapon": "https://api.github.com/repos/chummer5a/chummer5a/contents/Chummer/data/weapons.xml?ref=master",
+            "metamagic": "https://api.github.com/repos/chummer5a/chummer5a/contents/Chummer/data/metamagic.xml?ref=master",
+            "echo": "https://api.github.com/repos/chummer5a/chummer5a/contents/Chummer/data/echoes.xml?ref=master",
+            "adept_power": "https://api.github.com/repos/chummer5a/chummer5a/contents/Chummer/data/powers.xml?ref=master"
+        };
+
+        for (const [itemType, itemUrl] of Object.entries(itemTypesWithUrls)) {
+            await fetchAndEnhanceItemType(itemUrl, selectedLanguageUrl, itemType);
         }
+
+        // Step 3: Notify user that the process is complete
+        ui.notifications.info("Item enhancement completed successfully.");
+        return enhancedQualities;
     } catch (error) {
         console.error("Failed to fetch languages from GitHub:", error);
     }
 }
-async function findItemName(githubQualities, worldItems) {
+// Fetch and enhance a specific item type by mapping GitHub and world data
+async function fetchAndEnhanceItemType(url, languageUrl, itemType) {
+    try {
+        const response = await fetch(url, { headers: { Accept: 'application/vnd.github.v3.raw' } });
+        if (!response.ok) throw new Error(`Failed to fetch ${itemType} data. HTTP status: ${response.status}`);
+
+        const xmlText = await response.text();
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+        const items = xmlDoc.getElementsByTagName(itemType);
+
+        const languageResponse = await fetch(languageUrl, { headers: { Accept: 'application/vnd.github.v3.raw' } });
+        if (!languageResponse.ok) throw new Error(`Failed to fetch language data. HTTP status: ${languageResponse.status}`);
+
+        const langXmlText = await languageResponse.text();
+        const langXmlDoc = parser.parseFromString(langXmlText, "text/xml");
+
+        const languageItems = langXmlDoc.getElementsByTagName(itemType);
+        const itemsArray = mapItemsWithLanguage(items, languageItems, itemType);
+
+        const worldItems = await fetchWorldAndCompendiumItems(itemType);
+        await findItemName(itemsArray, worldItems);
+    } catch (error) {
+        console.error(`Failed to fetch and enhance ${itemType} items:`, error);
+    }
+}
+// Map item data with its language translation
+function mapItemsWithLanguage(items, languageItems, itemType) {
+    const mappedItems = [];
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        const itemId = item.getElementsByTagName("id")[0]?.textContent;
+        const itemName = item.getElementsByTagName("name")[0]?.textContent || itemType;
+        const itemSource = item.getElementsByTagName("source")[0]?.textContent || "Unknown";
+
+        const langItem = Array.from(languageItems).find(li => li.getElementsByTagName("id")[0]?.textContent === itemId);
+        if (langItem) {
+            const localizedName = langItem.getElementsByTagName("translate")[0]?.textContent || itemName;
+            const pageInfo = langItem.getElementsByTagName("altpage")[0]?.textContent || "Unknown";
+            const sourceAndPage = `${itemSource} ${pageInfo}`;
+
+            mappedItems.push({ id: itemId, name: itemName, localizedName, sourceAndPage, karma: item.getElementsByTagName("karma")[0]?.textContent || 0 });
+        }
+    }
+    return mappedItems;
+}
+// Define the item mapping and updating process for specific items in the world
+async function findItemName(mappedItems, worldItems) {
     const enhancedItems = [];
+    for (const mappedItem of mappedItems) {
+        let matchedItems = worldItems.filter(item => item.name.toLowerCase().includes(mappedItem.localizedName.split(' ')[0].toLowerCase()));
+        const nameParts = mappedItem.localizedName.split(' ');
 
-    for (const quality of githubQualities) {
-        // Start by filtering world items that contain the first part of the localized name
-        let matchedItems = worldItems.filter(item => item.name.toLowerCase().includes(quality.localizedName.split(' ')[0].toLowerCase()));
-
-        const nameParts = quality.localizedName.split(' ');
-
-        // Continue refining the matchedItems array by progressively including more parts of the localized name
         for (let i = 1; i < nameParts.length && matchedItems.length > 1; i++) {
             const searchPart = nameParts.slice(0, i + 1).join(' ').toLowerCase();
             matchedItems = matchedItems.filter(item => item.name.toLowerCase().includes(searchPart));
         }
 
-        // If there are still multiple matches, we will now use parts of the world item name to narrow it down
-        if (matchedItems.length > 1) {
-            console.warn(`Multiple matches found for quality: ${quality.localizedName}. Attempting to refine using world item names.`);
-
-            // Split the world item names into parts and try to progressively match
-            const worldItemNameParts = matchedItems.map(item => item.name.split(' '));
-
-            for (let j = 0; j < worldItemNameParts[0].length && matchedItems.length > 1; j++) {
-                const searchTerm = worldItemNameParts[0].slice(0, j + 1).join(' ').toLowerCase();
-
-                matchedItems = matchedItems.filter(item => item.name.toLowerCase().includes(searchTerm));
-            }
-        }
-
-        // If there are one or more matched items, assign the sourceAndPage and karma to all of them
         if (matchedItems.length > 0) {
             for (const matchedItem of matchedItems) {
-                // Update the matched item with the sourceAndPage and karma from the GitHub quality
-                matchedItem.system.description.source = quality.sourceAndPage;
-                matchedItem.system.karma = parseInt(quality.karma, 10);
-
-                // Update the item in the world or compendium
                 await matchedItem.update({
-                    'system.description.source': quality.sourceAndPage,
-                    'system.karma': quality.karma
+                    'system.description.source': mappedItem.sourceAndPage,
+                    'system.karma': mappedItem.karma
                 });
-
                 enhancedItems.push({
                     name: matchedItem.name,
-                    originalName: quality.name,
-                    localizedName: quality.localizedName,
-                    sourceAndPage: quality.sourceAndPage,
-                    karma: quality.karma
+                    originalName: mappedItem.name,
+                    localizedName: mappedItem.localizedName,
+                    sourceAndPage: mappedItem.sourceAndPage,
+                    karma: mappedItem.karma
                 });
-
                 console.log(`Updated world item: ${matchedItem.name} with source and karma.`);
             }
         } else {
-            console.warn(`No match found for quality: ${quality.localizedName}`);
+            console.warn(`No match found for item: ${mappedItem.localizedName}`);
         }
     }
-
     return enhancedItems;
 }
 
@@ -1460,17 +1459,15 @@ export async function EnhanceItemData(languageUrl) {
         console.error("Failed to fetch XML from GitHub:", error);
     }
 }
-async function fetchWorldAndCompendiumItems() {
-    const worldItems = game.items.filter(i => i.type === 'quality');
+// Fetch all items for a given item type from both the world and compendium
+async function fetchWorldAndCompendiumItems(itemType = 'quality') {
+    const worldItems = game.items.filter(i => i.type === itemType);
     const compendiumItems = [];
-
     for (const pack of game.packs) {
         if (pack.documentName === 'Item') {
             const items = await pack.getDocuments();
-            compendiumItems.push(...items.filter(i => i.type === 'quality'));
+            compendiumItems.push(...items.filter(i => i.type === itemType));
         }
     }
-
-    // Combine world and compendium items into one array
     return [...worldItems, ...compendiumItems];
 }
