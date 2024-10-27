@@ -27,6 +27,7 @@
             "Search": "Search",
             "Search items...": "Search items...",
             "shoppingListRequest": "Shopping List Request",
+            "OrderRejected": "Sorry but the following items can not be confirmed",
             "requestActor": "From ",
             "Items": "Items",
             "system": {

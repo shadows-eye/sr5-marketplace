@@ -205,6 +205,69 @@ export class PurchaseScreenApp extends Application {
         });
         // Handle the "Buy Items Conformation" button click, will add the items to the actor's inventory and pay the total cost in nuyen, add flag to actor (history)
         html.on('click', '.send-request-button.confirm', event => this._onBuyItems(event, html));
+
+        // Handle the "Reject Request" button click
+        html.on('click', '.send-request-button.cancel', event => this._onCancelOrder(event, html));
+    }
+    /**
+     * Handle the cancel order button, sends a rejection message, and removes the flag and associated data.
+     * @param {*} event 
+     * @param {*} html 
+     */
+    async _onCancelOrder(event, html) {
+        event.preventDefault();
+
+        // Retrieve the flag ID from the button's data attribute
+        const flagId = $(event.currentTarget).data('flag-id');
+        if (!flagId) {
+            console.warn('No flag ID found for the cancel button.');
+            return;
+        }
+
+        // Get order data from the flag
+        const orderData = await this.itemData.getOrderDataFromFlag(flagId);
+        if (!orderData) {
+            console.warn(`No order data found for flag ID: ${flagId}`);
+            return;
+        }
+
+        // Extract information for the rejection message
+        const requesterId = orderData.requesterId;
+        const requesterUser = game.users.get(requesterId) || game.user;  // Fallback to current user if requester not found
+
+        // Create the rejection message data
+        const messageData = {
+            requesterName: requesterUser.name,
+            items: orderData.items.map(item => item.name),  // List item names in the rejection message
+            rejectionMessage: game.i18n.localize('SR5.Marketplace.OrderRejected')  // Localized rejection text
+        };
+
+        // Send a rejection message to the requester
+        const chatContent = await renderTemplate('modules/sr5-marketplace/templates/orderRejection.hbs', messageData);
+        ChatMessage.create({
+            user: requesterUser.id,
+            content: chatContent,
+            whisper: [requesterUser.id],  // Send as a private message to the requester
+        });
+
+        // Remove the order flag from the GM
+        const gmUser = game.users.find(u => u.isGM);  // Find the GM user
+        if (gmUser) {
+            await gmUser.unsetFlag('sr5-marketplace', flagId);
+            ui.notifications.info(`Order data for flag ${flagId} removed from GM user flags.`);
+        }
+
+        // Delete the associated chat message for the order
+        const oldChatMessage = game.messages.contents.find(msg => msg.content.includes(`data-request-id="${flagId}"`));
+        if (oldChatMessage) {
+            await oldChatMessage.delete();
+        }
+
+        // Close the Purchase-Screen-App after the cancellation
+        const purchaseApp = Object.values(ui.windows).find(app => app instanceof PurchaseScreenApp);
+        if (purchaseApp) {
+            purchaseApp.close();
+        }
     }
     _onSearchInput(event, html) {
         const searchText = event.target.value.toLowerCase();
@@ -677,7 +740,7 @@ export class PurchaseScreenApp extends Application {
             actorId: actorId,
             isGM: isGM
         };
-        
+
         // Render the message using the chatMessageRequest.hbs template
         renderTemplate('modules/sr5-marketplace/templates/chatMessageRequest.hbs', messageData).then(htmlContent => {
             ChatMessage.create({

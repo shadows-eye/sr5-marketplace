@@ -27,6 +27,7 @@
             "Search": "Suche",
             "Search items...": "Gegenstand Suche",
             "shoppingListRequest": "Einkaufslisten Anfrage",
+            "OrderRejected": "Entschuldigung, aber die folgenden Artikel können nicht bestätigt werden",
             "requestActor": "Von ",
             "Items": "Gegenstände",
             "system": {
