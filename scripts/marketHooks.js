@@ -346,7 +346,7 @@ Hooks.on("renderActorSheet", (app, html, data) => {
                 const skillKey = skillElement.data('item-id');
 
                 // Call the increaseSkill function
-                await ActorItemData.prototype.increaseSkill(app.document, skillKey);
+                await ActorItemData.prototype.increaseSkill(app.document, skillKey, true);
             });
 
             // Set up an event listener for the minus button to decrease the skill value
@@ -357,7 +357,7 @@ Hooks.on("renderActorSheet", (app, html, data) => {
                 const skillKey = skillElement.data('item-id');
 
                 // Call the decreaseSkill function
-                await ActorItemData.prototype.decreaseSkill(app.document, skillKey);
+                await ActorItemData.prototype.decreaseSkill(app.document, skillKey, false);
             });
         });
     }, 100);  // Delay injection to ensure full render

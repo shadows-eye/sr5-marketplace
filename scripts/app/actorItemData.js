@@ -206,23 +206,20 @@ export class ActorItemData extends ItemData {
     
         console.log(`Attempting to increase skill '${skillKey}' for actor: ${actor.name}`);
     
-        // Use the utility function to increase the skill value by 1
+        // Call updateSkillValue with increment of +1
         await this.updateSkillValue(actor, skillKey, 1);
     
         console.log(`Successfully increased skill '${skillKey}'`);
+        
+        // Delay injection to ensure the sheet is fully rendered before we inject karma buttons
+        setTimeout(() => {
+            Hooks.on("renderActorSheet", async (app, html) => {
+                if (app.document.id !== actor.id) return;
     
-        // Set up a hook to re-inject karma buttons for all skills after re-render
-        Hooks.on("renderActorSheet", async (app, html) => {
-            if (app.document.id !== actor.id) return;
-    
-            console.log(`Re-render detected for actor: ${actor.name}. Injecting karma adjust buttons for all skills.`);
-
-            // Inject buttons for all skills
-            this.injectKarmaAdjustButtonsForAllSkills(html, actor);
-
-        });
-        // Add the increase action to the actor's history log
-        await this.logSkillChangeHistory(actor, skillKey, true);  // `true` indicates skill was increased
+                console.log(`Re-render detected for actor: ${actor.name}. Injecting karma adjust buttons for all skills.`);
+                this.injectKarmaAdjustButtonsForAllSkills(html, actor);
+            });
+        }, 100);  // Adjust delay if needed based on rendering time
     }
     /**
      * 
@@ -235,23 +232,22 @@ export class ActorItemData extends ItemData {
     
         console.log(`Attempting to decrease skill '${skillKey}' for actor: ${actor.name}`);
     
-        // Use the utility function to decrease the skill value by 1
+        // Call updateSkillValue with increment of -1
         await this.updateSkillValue(actor, skillKey, -1);
     
         console.log(`Successfully decreased skill '${skillKey}'`);
-    
-        // Set up a hook to re-inject karma buttons for all skills after re-render
-        Hooks.on("renderActorSheet", async (app, html) => {
-            if (app.document.id !== actor.id) return;
-    
-            console.log(`Re-render detected for actor: ${actor.name}. Injecting karma adjust buttons for all skills.`);
-            // Inject buttons for all skills
-            this.injectKarmaAdjustButtonsForAllSkills(html, actor);
         
-        });
-        // Add the increase action to the actor's history log
-        await this.logSkillChangeHistory(actor, skillKey, true);  // `true` indicates skill was increased
+        // Delay injection to ensure the sheet is fully rendered before we inject karma buttons
+        setTimeout(() => {
+            Hooks.on("renderActorSheet", async (app, html) => {
+                if (app.document.id !== actor.id) return;
+    
+                console.log(`Re-render detected for actor: ${actor.name}. Injecting karma adjust buttons for all skills.`);
+                this.injectKarmaAdjustButtonsForAllSkills(html, actor);
+            });
+        }, 100);  // Adjust delay if needed based on rendering time
     }
+    
     /**
      * Utility function to get the current value of a skill and update it.
      * It checks if the skill exists within active, knowledge, or language categories.
@@ -260,132 +256,83 @@ export class ActorItemData extends ItemData {
      * @param {number} increment - The value to increase/decrease the skill by.
      */
     async updateSkillValue(actor, skillKey, increment) {
-        let updated = false;
         const karmaCostPerIncrement = 4; // Cost for 'active' skills
         const karmaCostForKnowledge = 2; // Cost for 'knowledge' and 'language' skills
-
-        // Helper function to check if the actor has enough karma
-        const hasEnoughKarma = (cost) => {
-            return (actor.system.karma.value) >= cost;
-        };
-
-        // Helper function to update the actor's karma
+    
+        const hasEnoughKarma = (cost) => actor.system.karma.value >= cost;
         const updateKarma = async (karmaChange) => {
-            const currentKarma = actor.system.karma.value ;
+            const currentKarma = actor.system.karma.value;
             await actor.update({ "system.karma.value": currentKarma + karmaChange });
         };
-
+    
+        let oldValue, newValue, karmaSpent;
+        const skillLabel = game.i18n.localize(skillKey);
+        const gain = increment > 0;
+    
         // Check if skill is in 'active' skills
-        if (actor.system.skills.active[skillKey]) {
-            const currentBaseValue = actor.system.skills.active[skillKey].base || 0;
-            const newBaseValue = currentBaseValue + increment;
-            const karmaCost = karmaCostPerIncrement * Math.abs(increment);
-
-            console.log(`Updating active skill: ${skillKey}, currentBaseValue: ${currentBaseValue}, newBaseValue: ${newBaseValue}`);
-
-            if (increment > 0 && !hasEnoughKarma(karmaCost)) {
-                // Not enough karma to increase the skill
-                ui.notifications.warn(`Not enough karma to increase ${skillKey}.`);
-                return;
-            }
-
-            if (newBaseValue < 0) {
-                // Prevent decreasing below zero
-                ui.notifications.warn(`${skillKey} cannot be decreased below zero.`);
-                return;
-            }
-
-            // Update the 'base' value, which is what the normal edit mode changes
-            await actor.update({ [`system.skills.active.${skillKey}.base`]: newBaseValue });
-            updated = true;
-
-            // Update karma accordingly
-            if (increment > 0) {
-                await updateKarma(-karmaCost); // Deduct karma for increase
-            } else if (increment < 0 && currentBaseValue > 0) {
-                await updateKarma(karmaCost); // Refund karma for decrease
-            }
-
-            console.log(`Active skill '${skillKey}' updated to base value ${newBaseValue}`);
+        if (actor.system.skills.active?.[skillKey]) {
+            oldValue = actor.system.skills.active[skillKey].base;
+            newValue = oldValue + increment;
+            karmaSpent = Math.abs(increment) * karmaCostPerIncrement;
+    
+            if (gain && !hasEnoughKarma(karmaSpent)) return;
+            if (newValue < 0) return;
+    
+            await actor.update({ [`system.skills.active.${skillKey}.base`]: newValue });
+            await updateKarma(gain ? -karmaSpent : karmaSpent);
         }
-
+    
         // Check if skill is in 'knowledge' skills
         for (const [knowledgeType, knowledgeData] of Object.entries(actor.system.skills.knowledge)) {
-            if (knowledgeData.value && knowledgeData.value[skillKey]) {
-                const currentBaseValue = knowledgeData.value[skillKey].base || 0;
-                const newBaseValue = currentBaseValue + increment;
-                const karmaCost = karmaCostForKnowledge * Math.abs(increment);
-
-                console.log(`Updating knowledge skill: ${skillKey}, currentBaseValue: ${currentBaseValue}, newBaseValue: ${newBaseValue}`);
-
-                if (increment > 0 && !hasEnoughKarma(karmaCost)) {
-                    // Not enough karma to increase the skill
-                    ui.notifications.warn(`Not enough karma to increase ${skillKey}.`);
-                    return;
-                }
-
-                if (newBaseValue < 0) {
-                    // Prevent decreasing below zero
-                    ui.notifications.warn(`${skillKey} cannot be decreased below zero.`);
-                    return;
-                }
-
-                // Update the 'base' value
-                await actor.update({ [`system.skills.knowledge.${knowledgeType}.value.${skillKey}.base`]: newBaseValue });
-                updated = true;
-
-                // Update karma accordingly
-                if (increment > 0) {
-                    await updateKarma(-karmaCost); // Deduct karma for increase
-                } else if (increment < 0 && currentBaseValue > 0) {
-                    await updateKarma(karmaCost); // Refund karma for decrease
-                }
-
-                console.log(`Knowledge skill '${skillKey}' updated to base value ${newBaseValue}`);
+            if (knowledgeData.value?.[skillKey]) {
+                oldValue = knowledgeData.value[skillKey].base;
+                newValue = oldValue + increment;
+                karmaSpent = Math.abs(increment) * karmaCostForKnowledge;
+    
+                if (gain && !hasEnoughKarma(karmaSpent)) return;
+                if (newValue < 0) return;
+    
+                await actor.update({ [`system.skills.knowledge.${knowledgeType}.value.${skillKey}.base`]: newValue });
+                await updateKarma(gain ? -karmaSpent : karmaSpent);
             }
         }
-
+    
         // Check if skill is in 'language' skills
-        if (actor.system.skills.language.value[skillKey]) {
-            const currentBaseValue = actor.system.skills.language.value[skillKey].base || 0;
-            const newBaseValue = currentBaseValue + increment;
-            const karmaCost = karmaCostForKnowledge * Math.abs(increment);
-
-            console.log(`Updating language skill: ${skillKey}, currentBaseValue: ${currentBaseValue}, newBaseValue: ${newBaseValue}`);
-
-            if (increment > 0 && !hasEnoughKarma(karmaCost)) {
-                // Not enough karma to increase the skill
-                ui.notifications.warn(`Not enough karma to increase ${skillKey}.`);
-                return;
-            }
-
-            if (newBaseValue < 0) {
-                // Prevent decreasing below zero
-                ui.notifications.warn(`${skillKey} cannot be decreased below zero.`);
-                return;
-            }
-
-            // Update the 'base' value
-            await actor.update({ [`system.skills.language.value.${skillKey}.base`]: newBaseValue });
-            updated = true;
-
-            // Update karma accordingly
-            if (increment > 0) {
-                await updateKarma(-karmaCost); // Deduct karma for increase
-            } else if (increment < 0 && currentBaseValue > 0) {
-                await updateKarma(karmaCost); // Refund karma for decrease
-            }
-
-            console.log(`Language skill '${skillKey}' updated to base value ${newBaseValue}`);
+        if (actor.system.skills.language.value?.[skillKey]) {
+            oldValue = actor.system.skills.language.value[skillKey].base;
+            newValue = oldValue + increment;
+            karmaSpent = Math.abs(increment) * karmaCostForKnowledge;
+    
+            if (gain && !hasEnoughKarma(karmaSpent)) return;
+            if (newValue < 0) return;
+    
+            await actor.update({ [`system.skills.language.value.${skillKey}.base`]: newValue });
+            await updateKarma(gain ? -karmaSpent : karmaSpent);
         }
-
-        if (updated) {
-            console.log(`Successfully updated skill '${skillKey}' with increment: ${increment}`);
-        } else {
-            console.warn(`Skill with key '${skillKey}' not found in any category or invalid update.`);
+    
+        // Prepare `changeData` with all necessary data
+        const changeData = {
+            skillKey,
+            skillLabel,
+            oldValue,
+            newValue,
+            karmaSpent,
+            gain
+        };
+    
+        // Log the change in history
+        await this.logSkillChangeHistory(actor, changeData);
+        // Close and reopen the actor sheet for re-rendering
+        if (actor.sheet) {
+            actor.sheet.render(true, {focus: true});
+            
+            // Delay button injection to ensure the sheet is fully re-rendered
+            setTimeout(() => {
+                this.injectKarmaAdjustButtonsForAllSkills(actor.sheet.element, actor);
+            }, 100);
         }
     }
-
+    
     /**
      * Injects karma adjust buttons into all skill items on the actor sheet.
      * @param {JQuery} html - The HTML element of the actor sheet to inject buttons into.
@@ -450,83 +397,41 @@ export class ActorItemData extends ItemData {
      * @param {string} skillKey - The key identifying the skill in actor data.
      * @param {boolean} gain - Whether the skill was increased (true) or decreased (false).
      */
-    async logSkillChangeHistory(actor, skillKey, gain) {
-        if (!actor || !skillKey) return;
-
-        // Retrieve the actor's current history flag
+    async logSkillChangeHistory(actor, changeData) {
+        if (!actor || !changeData) return;
+    
+        // Verify all required fields in `changeData`
+        const { skillKey, skillLabel, oldValue, newValue, karmaSpent, gain } = changeData;
+    
         let historyFlag = actor.getFlag('sr5-marketplace', 'history') || [];
-
-        // Ensure the history flag is an array (conversion if needed)
         if (!Array.isArray(historyFlag)) {
             console.warn("History flag is not an array. Converting...");
-            if (typeof historyFlag === 'object' && historyFlag !== null) {
-                historyFlag = Object.keys(historyFlag).map(key => historyFlag[key]);
-            } else {
-                historyFlag = [];
-            }
+            historyFlag = Array.isArray(historyFlag) ? historyFlag : Object.values(historyFlag);
         }
-
-        // Get formatted timestamps for the log entry
+    
         const { flagTimestamp } = await getFormattedTimestamp();
-
-        // Retrieve the old and new karma spent for the skill, as well as the skill name
-        let oldKarmaSpent = 0;
-        let newKarmaSpent = 0;
-        let skillKeyLocalized = '';
-        let oldSkillValue = 0;
-        let newSkillValue = 0;
-        let karmaCostPerLevel = 4; // Default for active skills
-        
-        // Determine if the skill is active, knowledge, or language and calculate old and new karma costs accordingly
-        if (actor.system.skills.active[skillKey]) {
-            // Active skills (karma cost 4 per level)
-        skillKeyLocalized = game.i18n.localize(skillKeyLocalized);
-            oldSkillValue = actor.system.skills.active[skillKey].value || 0;
-            newSkillValue = oldSkillValue + (gain ? 1 : -1);
-            oldKarmaSpent = oldSkillValue * karmaCostPerLevel;
-            newKarmaSpent = newSkillValue * karmaCostPerLevel;
-        } else if (Object.keys(actor.system.skills.knowledge).some(type => actor.system.skills.knowledge[type].value[skillKey])) {
-            // For knowledge skills, karma cost is 2 per level
-            const type = Object.keys(actor.system.skills.knowledge).find(t => actor.system.skills.knowledge[t].value[skillKey]);
-            const currentValue = actor.system.skills.knowledge[type].value[skillKey].value || 0;
-            oldKarmaSpent = currentValue * 2;
-            newKarmaSpent = (currentValue + (gain ? 1 : -1)) * 2;
-        } else if (actor.system.skills.language.value[skillKey]) {
-            // For language skills, karma cost is 2 per level
-            const currentValue = actor.system.skills.language.value[skillKey].value || 0;
-            oldKarmaSpent = currentValue * 2;
-            newKarmaSpent = (currentValue + (gain ? 1 : -1)) * 2;
-        }
-
-        // Calculate the difference in karma cost
-        const karmaSpent = newKarmaSpent - oldKarmaSpent;
-
-        // Construct the new history entry for the skill change
+    
         const newHistoryEntry = {
-            actorFlagId: actor.id, // 
-            items: null,  // No items involved in skill adjustment
-            karma: karmaSpent, // Karma spent for the skill change (positive or negative)
-            gain: gain,  // True if increased, false if decreased
-            surgicalDamage: 0, //Not needed for skill changes
+            actorFlagId: actor.id,
+            items: null,
+            karma: karmaSpent,
+            gain,
+            surgicalDamage: 0,
             timestamp: flagTimestamp,
             skillChange: {
-                skillKey: skillKey,
-                skillLabel: skillKeyLocalized,
-                oldValue: oldSkillValue,
-                newValue: newSkillValue,
-                karmaSpent: karmaSpent
+                skillKey,
+                skillLabel,
+                oldValue,
+                newValue,
+                karmaSpent
             }
         };
-
-        // Add the new history entry to the history flag
+    
         historyFlag.push(newHistoryEntry);
-
-        // Update the history flag on the actor
         await actor.setFlag('sr5-marketplace', 'history', historyFlag);
-
-        console.log(`Logged history for skillKey '${skillKey}' for actor: ${actor.name}`);
-        // Log the change in the actor's journal
+    
+        console.log(`Logged history for skillKey '${skillKey}' for actor: ${actor.name} - OldValue: ${oldValue}, NewValue: ${newValue}`);
         await logActorHistory(actor);
-    }
+    }                
 }
 // End of ActorItemData class
