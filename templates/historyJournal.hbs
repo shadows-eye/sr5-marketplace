@@ -1,5 +1,5 @@
 {{#each historyEntries}}
-    <h2>{{localize "SR5.Marketplace.OrderHistory"}} {{timestamp}}</h2>
+    <h2>{{localize "SR5.Marketplace.OrderHistory"}} - {{timestamp}}</h2>
     <ul>
         {{#if items}}
             {{#each items}}
@@ -25,19 +25,35 @@
                 </li>
             {{/each}}
         {{/if}}
-        
+
         {{#if skillChange}}
-            <li>
-                <strong>{{capitalizeFirst (localize skillChange.skillLabel)}}</strong> 
-                {{#if gain}} <i class="fa-duotone fa-solid fa-book green"></i> <i class="fa-regular fa-arrow-up green"></i>
-                {{else}} <i class="fa-duotone fa-solid fa-book red"></i><i class="fa-sharp fa-solid fa-arrow-down red"></i>{{/if}}
-                <ul>
-                    <li>Old Value: {{skillChange.oldValue}}</li>
-                    <li>New Value: {{skillChange.newValue}}</li>
-                    <li>Karma Spent: {{skillChange.karmaSpent}}</li>
-                    
-                </ul>
-            </li>
+            <!-- Section for Skill Increases -->
+            {{#if (eq gain true)}}
+                <li>
+                    <strong>{{capitalizeFirst (localize skillChange.skillKey)}}</strong> 
+                    <i class="fa-duotone fa-solid fa-book green"></i> 
+                    <i class="fa-regular fa-arrow-up green"></i>
+                    <ul>
+                        <li>Old Value: {{skillChange.oldValue}}</li>
+                        <li>New Value: {{skillChange.newValue}}</li>
+                        <li>Karma Spent: {{skillChange.karmaSpent}}</li>
+                    </ul>
+                </li>
+            {{/if}}
+
+            <!-- Section for Skill Decreases -->
+            {{#if (eq gain false)}}
+                <li>
+                    <strong>{{capitalizeFirst (localize skillChange.skillKey)}}</strong> 
+                    <i class="fa-duotone fa-solid fa-book red"></i>
+                    <i class="fa-sharp fa-solid fa-arrow-down red"></i>
+                    <ul>
+                        <li>Old Value: {{skillChange.oldValue}}</li>
+                        <li>New Value: {{skillChange.newValue}}</li>
+                        <li>Karma Refunded: {{skillChange.karmaSpent}}</li>
+                    </ul>
+                </li>
+            {{/if}}
         {{/if}}
     </ul>
 {{/each}}

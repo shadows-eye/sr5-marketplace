@@ -74,6 +74,7 @@ export class ActorHistoryLog {
             const rawContent = await renderTemplate('modules/sr5-marketplace/templates/historyJournal.hbs', historyData);
             console.log(historyData)
             // Use TextEditor.enrichHTML to enrich @UUID links and make them clickable
+            //console.log(rawContent)
             const enrichedContent = await TextEditor.enrichHTML(rawContent, { 
                 secrets: false, 
                 entities: true, 
