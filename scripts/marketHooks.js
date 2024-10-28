@@ -3,7 +3,7 @@ import {fetchAndSelectLanguage} from './app/itemData.js';
 import { ActorItemData } from './app/actorItemData.js';
 import { PurchaseScreenApp } from './app/purchase-screen-app.js';
 import { registerBasicHelpers } from './lib/helpers.js';
-
+import GlobalHelper from './app/global.js';
 // Call the function to register helpers
 registerBasicHelpers();
 Hooks.once('init', () => {
@@ -24,6 +24,16 @@ Hooks.once('init', () => {
             }
         }
     });
+    // New hidden setting for review requests
+    game.settings.register("sr5-marketplace", "reviewRequests", {
+        name: "Hidden Review Requests",
+        scope: "world",
+        config: false,  // Hidden from UI
+        type: Object,   // Store as an object with multiple requests
+        default: {}     // Initialize as an empty object
+    });
+    const globalHelper = new GlobalHelper();
+    globalHelper.initializeGlobalSetting();
 });
 Hooks.on('renderChatMessage', (message, html, data) => {
     // Check if the current user is a GM

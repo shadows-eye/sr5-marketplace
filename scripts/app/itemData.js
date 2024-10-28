@@ -8,7 +8,12 @@ export default class ItemData {
         this.filteredItems = [];
         this.orderReviewItems = [];
     }
-
+    /**
+     * Initialize the global settings for the module.
+     */
+    async initializeSettings() {
+        await this.globalHelper.initializeGlobalSetting();
+    }
     async fetchItems() {
         const worldItems = game.items.contents.filter(item => !item.name.includes('#[CF_tempEntity]'));
         const compendiumItems = [];

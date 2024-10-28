@@ -3,6 +3,7 @@ import {getFormattedTimestamp} from './itemData.js';
 import {fetchAndSelectLanguage} from './itemData.js';
 import {ActorItemData} from './actorItemData.js';
 import { logActorHistory } from './actorHistoryLog.js';
+import GlobalHelper from './global.js';
 export class PurchaseScreenApp extends Application {
     constructor(options = {}) {
         super(options);
@@ -13,6 +14,7 @@ export class PurchaseScreenApp extends Application {
         this.orderData = options.orderData || {};
         this.completeItemsArray = Array.isArray(options.completeItemsArray) ? options.completeItemsArray : [];
         this.itemData = new ItemData();  // Instantiate ItemData here to use its methods
+        this.globalHelper = new GlobalHelper();  // Instantiate GlobalHelper for global operations
         this.hasEnhancedItems = game.user.getFlag('sr5-marketplace', 'enhancedItemsFlag') || false;
       }
     static get defaultOptions() {
@@ -724,7 +726,8 @@ export class PurchaseScreenApp extends Application {
             flagData.actor = actor;
             flagData.actorId = actorId;
         }
-    
+        // Add or update the global review request with the same data
+        await this.globalHelper.addOrUpdateReviewRequest(requestId, flagData);
         // Add the flag data to the requesting user (GM or player)
         await requestingUser.setFlag('sr5-marketplace', requestId, flagData);
     
