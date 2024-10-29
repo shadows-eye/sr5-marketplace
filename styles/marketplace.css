@@ -70,6 +70,36 @@
     position: relative; /* Important for pseudo-elements positioning */
     z-index: 2; /* Set above the diagonal stripes */
 }
+/* Styling for the new actor and item placeholder boxes */
+.SR5ActorSelected-box,
+.SR5ShopActor-box,
+.SR5ConnectionLink-box {
+    width: 50px;
+    height: 40px;
+    background-color: #bdbdbd;
+    border: 1px solid #d5d5d5;
+    border-radius: 5px;
+    display: inline-block;
+    vertical-align: top;
+    text-align: left;
+    padding: 5px;
+    margin-left: 10px;
+}
+
+.actor-icon, .item-icon{
+    max-width: 45px;
+    max-height: 30px;
+    border-radius: 3px;
+}
+
+.SR5-marketplaceActor-box img,
+.SR5ShopActor-box img,
+.SR5ActorSelected-box img{
+    max-width: 45px;
+    max-height: 30px;
+    border-radius: 3px;
+    border: none;
+}
 
 /* Red border with white break around window-content */
 .sr5-market > section.window-content::before {
