@@ -24,7 +24,6 @@ Hooks.once('init', () => {
             }
         }
     });
-    // New hidden setting for review requests
     game.settings.register("sr5-marketplace", "reviewRequests", {
         name: "Hidden Review Requests",
         scope: "world",
@@ -32,8 +31,14 @@ Hooks.once('init', () => {
         type: Object,   // Store as an object with multiple requests
         default: {}     // Initialize as an empty object
     });
-    const globalHelper = new GlobalHelper();
-    globalHelper.initializeGlobalSetting();
+    
+    game.settings.register("sr5-marketplace", "baskets", {
+        name: "Hidden Baskets",
+        scope: "world",
+        config: false,  // Hidden from UI
+        type: Object,   // Store as an object with multiple baskets
+        default: {}     // Initialize as an empty object
+    });
 });
 Hooks.on('renderChatMessage', (message, html, data) => {
     // Check if the current user is a GM

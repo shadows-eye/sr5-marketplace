@@ -93,7 +93,7 @@ export default class ItemData {
                 name: item.name,
                 description: item.system.description ? item.system.description.value : "", // Safely access description
                 type: item.type,
-                basketId: foundry.utils.randomID(),
+                basketId: 'basket.' + item._id, // Unique basket ID
                 selectedRating, // Default or selected rating
                 calculatedCost, // Use the awaited calculated cost
                 calculatedAvailability, // Use the awaited availability

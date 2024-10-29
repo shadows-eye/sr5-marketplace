@@ -4,17 +4,22 @@ import {fetchAndSelectLanguage} from './itemData.js';
 import {ActorItemData} from './actorItemData.js';
 import { logActorHistory } from './actorHistoryLog.js';
 import GlobalHelper from './global.js';
+import {BasketHelper} from './global.js';
 export class PurchaseScreenApp extends Application {
     constructor(options = {}) {
         super(options);
     
         // Determine if the current user is a GM
         this.isGM = game.user.isGM;
+        this.currentUser = game.user;
+        this.userActor = game.user.character;
+        this.selectedActor = game.canvas.tokens.controlled[0]?.actor || game.user.character;
         this.tab = options.tab || "shop"; // Default to "shop" tab
         this.orderData = options.orderData || {};
         this.completeItemsArray = Array.isArray(options.completeItemsArray) ? options.completeItemsArray : [];
         this.itemData = new ItemData();  // Instantiate ItemData here to use its methods
         this.globalHelper = new GlobalHelper();  // Instantiate GlobalHelper for global operations
+        this.basketHelper = new BasketHelper();  // Instantiate BasketHelper for basket operations
         this.hasEnhancedItems = game.user.getFlag('sr5-marketplace', 'enhancedItemsFlag') || false;
       }
     static get defaultOptions() {
@@ -33,7 +38,6 @@ export class PurchaseScreenApp extends Application {
         // Ensure itemData is properly instantiated and fetch items
         this.itemData = new ItemData();
         await this.itemData.fetchItems(); // Fetch all items in your system
-    
         // Initialize the completeItemsArray if not already set (may come from passed options)
         this.completeItemsArray = this.completeItemsArray || [];
     
@@ -114,7 +118,11 @@ export class PurchaseScreenApp extends Application {
         html.on('change', '.item-rating', event => this._onRatingChange(event, html));
         html.on('click', '.add-to-cart', event => {
             // Call the existing function to add the item to the basket
-            this._onAddToBasket(event, html);
+            console.log("Event userActor:", this.selectedActor);
+
+            let passSelectedActor = this.selectedActor;
+            
+            this._onAddToBasket(event, html, this.currentUser, passSelectedActor);
         
             // Use setTimeout to ensure the DOM is fully updated before updating the basket count
             setTimeout(() => {
@@ -122,8 +130,9 @@ export class PurchaseScreenApp extends Application {
             }, 100); // Small delay of 100ms to ensure the basket DOM is updated
         });
         html.on('click', '.remove-item', event => {
+            let passSelectedActor = this.selectedActor;
             // Call the existing function to remove the item from the basket
-            this._onRemoveFromBasket(event, html);
+            this._onRemoveFromBasket(event, html, this.currentUser, passSelectedActor);
         
             // Use setTimeout to ensure the DOM is fully updated before updating the basket count
             setTimeout(() => {
@@ -140,7 +149,7 @@ export class PurchaseScreenApp extends Application {
         this._handleTabSwitch(html, "shop");
     
         // Handle the "Send Request to GM" button click
-        html.on('click', '#send-request-button', event => this._onSendRequest(event, html));
+        html.on('click', '#send-request-button', event => this._onSendRequest(event, html, this.selectedActor));
     
         // Handle the "Review and Confirm" button click
         html.on('click', '.review-request-button', event => this._onReviewRequest(event, html));
@@ -337,11 +346,21 @@ export class PurchaseScreenApp extends Application {
         await game.user.setFlag('sr5-marketplace', 'basket', this.itemData.getBasketItems());
     }
 
-    async _onAddToBasket(event, html) {
+    async _onAddToBasket(event, html, currentUser, userActor) {
         event.preventDefault();
-
+        console.log("Event data:", event);
+        let currentUserId = currentUser.id;
+        let basketActor = userActor;
+        this.basketHelper = new BasketHelper();  // Instantiate BasketHelper for basket operations
+        await this.basketHelper.initializeBasketsSetting(); // Initialize the basket setting if not already set
+        // Get the current user's ID
         const itemId = $(event.currentTarget).data('itemId');
+        
         await this.itemData.addItemToBasket(itemId); // Add item to the basket
+
+
+        // Retrieve the item from the basket to pass its details to BasketHelper
+        await this.basketHelper.saveItemToGlobalBasket(itemId, currentUserId, basketActor);
 
         this._renderBasket(html); // Re-render the basket with updated items
     }
@@ -361,12 +380,13 @@ export class PurchaseScreenApp extends Application {
         return super.close(options);
     }
 
-    async _onRemoveFromBasket(event, html) {
+    async _onRemoveFromBasket(event, html, currentUser, userActor) {
         event.preventDefault();
-
-        const basketId = $(event.currentTarget).data('basketId');
+        let currentUserId = currentUser.id;
+        let removeBasketActor = userActor;
+        const basketId = $(event.currentTarget).data('basketId'); //item of the basket not the basket itself
+        await this.basketHelper.removeItemFromGlobalBasket(basketId, currentUserId, removeBasketActor); // Global basket removal of item
         this.itemData.removeItemFromBasket(basketId); // Remove item using the unique basketId
-
         this._renderBasket(html); // Re-render the basket with updated items
 
         this._saveBasketState(); // Save the updated basket state
@@ -640,9 +660,9 @@ export class PurchaseScreenApp extends Application {
         html.find(`#id-${selectedTab}`).addClass("active");
     }
     /// send basket to GM
-    async _onSendRequest(event, html) {
+    async _onSendRequest(event, html, userActor) {
         event.preventDefault();
-    
+        let orderReviewActorRequester = userActor;
         // Prepare data for the chat message
         const basketItems = this.itemData.getBasketItems();
         const totalCost = await this.itemData.calculateTotalCost();
@@ -654,7 +674,7 @@ export class PurchaseScreenApp extends Application {
     
         // Get the actorId of the requesting user (can be null if GM has no actor)
         const actor = requestingUser.character || null;
-        const actorId = actor ? actor._id : null;
+        const actorId = actor ? actor._id : orderReviewActorRequester.id;
     
         if (isGM && !actorId) {
             console.warn("GM has no actor assigned. Proceeding without actor linkage.");
