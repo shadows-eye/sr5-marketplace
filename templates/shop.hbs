@@ -61,18 +61,32 @@
     <label for="search-box">{{localize "SR5.Marketplace.Search"}}:</label>
     <input type="text" id="search-box" placeholder='{{localize "SR5.Marketplace.Search items..."}}' class="marketplace-search">
     <!-- New actor selection and connection boxes -->
-    <div class="sr5-marketplace SR5ShopActor-box" id="{{actor.id}}">
-        <!--<img src="" alt="Actor Icon" class="actor-icon" hint="<p>Secondary Actor</p>"> Will be placed when actor is draged here-->
+    <div class="sr5-marketplace SR5ShopActor-box" id="{{shopActorBox.id}}">
+        {{#if shopActorBox}}
+            <img src="{{shopActorBox.img}}" alt="{{shopActorBox.name}}" class="actor-icon">
+            <p>{{{shopActorBox.enrichedName}}}</p>
+        {{/if}}
+    </div>
+    
+    <div class="sr5-marketplace SR5ConnectionLink-box" id="{{connectionBox.id}}">
+        {{#if connectionBox}}
+            <img src="{{connectionBox.img}}" alt="{{connectionBox.name}}" class="item-icon">
+            <p>{{{connectionBox.enrichedName}}}</p>
+        {{/if}}
     </div>
 
-    <div class="sr5-marketplace SR5ConnectionLink-box" id="{{this.item._id}}">
-        <!-- <img src="" alt="Connection Icon" class="item-icon" hint="<p>Connection Item</p>"> Will be placed when connection is draged here or selected once actor is selected -->
-    </div>
-
-    <div class="sr5-marketplace SR5ActorSelected-box hidden" id="{{selectedOrUserActor._Id}}">
-
-        <img src="" alt="Actor Icon" class="actor-icon" hint="<p>Selected Actor</p>">
-    </div>
+    {{!-- Display `SR5ActorSelected-box` only if selectedActorBox is present --}}
+    {{#if selectedActorBox}}
+        <div class="sr5-marketplace SR5ActorSelected-box" id="{{selectedActorBox.id}}">
+            <img src="{{selectedActorBox.img}}" alt="{{selectedActorBox.name}}" class="actor-icon">
+            <p>
+                <span class="actor-link" data-entity-link data-uuid="{{selectedActorBox.uuid}}">
+                    {{selectedActorBox.name}}
+                </span>
+                <span class="remove-link" title="Remove Actor" data-user-id="{{selectedActorBox.userId}}">&times;</span>
+            </p>
+        </div>
+    {{/if}}
 </div>
 
 <div class="grid-container">

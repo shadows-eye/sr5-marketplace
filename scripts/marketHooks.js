@@ -39,16 +39,16 @@ Hooks.once('init', () => {
         type: Object,   // Store as an object with multiple baskets
         default: {}     // Initialize as an empty object
     });
-    game.settings.register("sr5-marketplace", "Purchase-Screen", {
-        name: "Purchase Screen Settings",
-        scope: "client",
+    game.settings.register("sr5-marketplace", "purchase-Screen-App", {
+        name: "Hidden Purchase Screen Settings",
+        scope: "world",
         config: false,
         type: Object,
         default: {
             selectedActor: null,          // Actor chosen upon opening the screen
             shopActor: null,              // Actor dragged onto SR5ShopActor-box
             connectionItem: null,         // Item dragged or selected as connection
-            hasSelection: false           // Boolean indicator if actor/item is set
+            hasShopActor: false           // Boolean indicator if actor/item is set
         }
     });
 });

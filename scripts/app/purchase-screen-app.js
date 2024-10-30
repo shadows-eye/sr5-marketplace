@@ -5,6 +5,7 @@ import {ActorItemData} from './actorItemData.js';
 import { logActorHistory } from './actorHistoryLog.js';
 import GlobalHelper from './global.js';
 import {BasketHelper} from './global.js';
+import { MarketplaceHelper } from './global.js';
 export class PurchaseScreenApp extends Application {
     constructor(options = {}) {
         super(options);
@@ -20,6 +21,7 @@ export class PurchaseScreenApp extends Application {
         this.itemData = new ItemData();  // Instantiate ItemData here to use its methods
         this.globalHelper = new GlobalHelper();  // Instantiate GlobalHelper for global operations
         this.basketHelper = new BasketHelper();  // Instantiate BasketHelper for basket operations
+        this.marketplaceHelper = new MarketplaceHelper(); // Instantiate MarketplaceHelper for PurchaseScreen setting
         this.hasEnhancedItems = game.user.getFlag('sr5-marketplace', 'enhancedItemsFlag') || false;
       }
     static get defaultOptions() {
@@ -40,11 +42,29 @@ export class PurchaseScreenApp extends Application {
         await this.itemData.fetchItems(); // Fetch all items in your system
         // Initialize the completeItemsArray if not already set (may come from passed options)
         this.completeItemsArray = this.completeItemsArray || [];
-    
+        this.marketplaceHelper = new MarketplaceHelper(); // Instantiate MarketplaceHelper for PurchaseScreen setting
+        await this.marketplaceHelper.initializePurchaseScreenSetting(); // Initialize the PurchaseScreen setting if not already set
         // Restore basket items from flags (if needed)
         const savedBasket = game.user.getFlag('sr5-marketplace', 'basket') || [];
         this.itemData.basketItems = savedBasket;
-    
+        // Retrieve current PurchaseScreen data (including selected actor) for use in the template
+        const purchaseScreenData = await this.marketplaceHelper.getPurchaseScreenData(this.currentUser,this.selectedActor);
+        // Enrich HTML for actor and item names to enable Foundry-style links
+        if (purchaseScreenData.selectedActorBox) {
+            purchaseScreenData.selectedActorBox.enrichedName = TextEditor.enrichHTML(purchaseScreenData.selectedActorBox.name, { 
+                entities: true 
+            });
+        }
+        if (purchaseScreenData.shopActorBox) {
+            purchaseScreenData.shopActorBox.enrichedName = TextEditor.enrichHTML(purchaseScreenData.shopActorBox.name, { 
+                entities: true 
+            });
+        }
+        if (purchaseScreenData.connectionBox) {
+            purchaseScreenData.connectionBox.enrichedName = TextEditor.enrichHTML(purchaseScreenData.connectionBox.name, { 
+                entities: true 
+            });
+        }
         // Preload the partial templates
         await loadTemplates([
             "modules/sr5-marketplace/templates/libraryItem.hbs",
@@ -56,7 +76,7 @@ export class PurchaseScreenApp extends Application {
             Handlebars.registerPartial('shop', 'modules/sr5-marketplace/templates/shop.hbs');
             Handlebars.registerPartial('orderReview', 'modules/sr5-marketplace/templates/orderReview.hbs');
         });
-    
+        
         console.log("User role:", game.user.role);
         console.log("Is the current user a GM?", this.isGM);
     
@@ -65,12 +85,13 @@ export class PurchaseScreenApp extends Application {
     
         // Return the data to the template for rendering
         return {
+            ...purchaseScreenData, // Pass the PurchaseScreen data to the template
             itemsByType: this.itemData.itemsByType, // Pass item types with items
             basketItems: this.itemData.basketItems, // Pass basket items to be rendered
             isGM: this.isGM,
             reviewData: reviewData,
             hasEnhancedItems: this.hasEnhancedItems,
-            completeItemsArray: this.completeItemsArray // Ensure the array is available in the template context
+            completeItemsArray: this.completeItemsArray, // Ensure the array is available in the template context
         };
     }
 
