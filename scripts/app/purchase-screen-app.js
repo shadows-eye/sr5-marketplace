@@ -51,20 +51,31 @@ export class PurchaseScreenApp extends Application {
         let purchaseScreenActor = foundry.utils.deepClone(this.selectedActor);
         let returnHasEnhancedData = foundry.utils.deepClone(this.hasEnhancedItems);
         // Retrieve current PurchaseScreen data (including selected actor) for use in the template
-        const purchaseScreenData = await this.marketplaceHelper.getPurchaseScreenData(purchaseScreenUser,purchaseScreenActor);
-        // Ensure UUID creation for actor objects before enrichment
+        const purchaseScreenData = await this.marketplaceHelper.getPurchaseScreenData(purchaseScreenUser, purchaseScreenActor);
+
+        // Ensure UUID creation and enrich HTML for actor objects
         if (purchaseScreenData.selectedActorBox) {
             purchaseScreenData.selectedActorBox.uuid = `Actor.${purchaseScreenData.selectedActorBox.id}`;
-            console.log("Enriching HTML for connectionBox:", purchaseScreenData.selectedActorBox);
-            purchaseScreenData.selectedActorBox.enrichedName = TextEditor.enrichHTML(purchaseScreenData.selectedActorBox.name, { entities: true });
+            purchaseScreenData.selectedActorBox.enrichedName = await TextEditor.enrichHTML(
+                `<a data-entity-link data-uuid="${purchaseScreenData.selectedActorBox.uuid}">${purchaseScreenData.selectedActorBox.name}</a>`,
+                { entities: true }
+            );
         }
+
         if (purchaseScreenData.shopActorBox) {
             purchaseScreenData.shopActorBox.uuid = `Actor.${purchaseScreenData.shopActorBox.id}`;
-            purchaseScreenData.shopActorBox.enrichedName = TextEditor.enrichHTML(purchaseScreenData.shopActorBox.name, { entities: true });
+            purchaseScreenData.shopActorBox.enrichedName = await TextEditor.enrichHTML(
+                `<a data-entity-link data-uuid="${purchaseScreenData.shopActorBox.uuid}">${purchaseScreenData.shopActorBox.name}</a>`,
+                { entities: true }
+            );
         }
+
         if (purchaseScreenData.connectionBox) {
             purchaseScreenData.connectionBox.uuid = `Actor.${purchaseScreenData.connectionBox.id}`;
-            purchaseScreenData.connectionBox.enrichedName = TextEditor.enrichHTML(purchaseScreenData.connectionBox.name, { entities: true });
+            purchaseScreenData.connectionBox.enrichedName = await TextEditor.enrichHTML(
+                `<a data-entity-link data-uuid="${purchaseScreenData.connectionBox.uuid}">${purchaseScreenData.connectionBox.name}</a>`,
+                { entities: true }
+            );
         }
         // Preload the partial templates
         await loadTemplates([
@@ -98,7 +109,19 @@ export class PurchaseScreenApp extends Application {
 
     activateListeners(html) {
         super.activateListeners(html);
-
+        html.on('click', '[data-entity-link]', async (event) => {
+            event.preventDefault();
+            const uuid = event.currentTarget.getAttribute('data-uuid');
+            if (uuid) {
+                // Retrieve the document based on the UUID and open its sheet
+                const doc = await fromUuid(uuid);
+                if (doc && doc.sheet) {
+                    doc.sheet.render(true);
+                } else {
+                    console.warn(`No document found for UUID: ${uuid}`);
+                }
+            }
+        });
         // Existing listeners for search, selection, basket, etc.
         html.find(".item-type-selector").change(event => this._onFilterChange(event, html));
         const firstType = html.find(".item-type-selector option:first").val();

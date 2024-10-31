@@ -63,28 +63,27 @@
     <!-- New actor selection and connection boxes -->
     <div class="sr5-marketplace SR5ShopActor-box" id="{{shopActorBox.id}}">
         {{#if shopActorBox}}
-            <img src="{{shopActorBox.img}}" alt="{{shopActorBox.name}}" class="actor-icon">
-            <p>{{{shopActorBox.enrichedName}}}</p>
+            <a data-entity-link="Actor" data-uuid="{{shopActorBox.uuid}}">
+                <img src="{{shopActorBox.img}}" alt="{{shopActorBox.name}}" class="actor-icon">
+            </a>
         {{/if}}
     </div>
-    
+
     <div class="sr5-marketplace SR5ConnectionLink-box" id="{{connectionBox.id}}">
         {{#if connectionBox}}
-            <img src="{{connectionBox.img}}" alt="{{connectionBox.name}}" class="item-icon">
-            <p>{{{connectionBox.enrichedName}}}</p>
+            <a data-entity-link="Item" data-uuid="{{connectionBox.uuid}}">
+                <img src="{{connectionBox.img}}" alt="{{connectionBox.name}}" class="item-icon">
+            </a>
         {{/if}}
     </div>
 
     {{!-- Display `SR5ActorSelected-box` only if selectedActorBox is present --}}
     {{#if selectedActorBox}}
         <div class="sr5-marketplace SR5ActorSelected-box" id="{{selectedActorBox.id}}">
-            <img src="{{selectedActorBox.img}}" alt="{{selectedActorBox.name}}" class="actor-icon">
-            <p>
-                <span class="actor-link" data-entity-link data-uuid="{{selectedActorBox.uuid}}">
-                    {{selectedActorBox.name}}
-                </span>
-                <span class="remove-link" title="Remove Actor" data-user-id="{{selectedActorBox.userId}}">&times;</span>
-            </p>
+            <a data-entity-link="Actor" data-uuid="{{selectedActorBox.uuid}}">
+                <img src="{{selectedActorBox.img}}" alt="{{selectedActorBox.name}}" class="actor-icon">
+            </a>
+            <span class="remove-link" title="Remove Actor" data-user-id="{{selectedActorBox.userId}}">&times;</span>
         </div>
     {{/if}}
 </div>
