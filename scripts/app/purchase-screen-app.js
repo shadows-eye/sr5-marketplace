@@ -132,6 +132,7 @@ export class PurchaseScreenApp extends Application {
                 }
             }
         });
+        
         // Existing listeners for search, selection, basket, etc.
         html.find(".item-type-selector").change(event => this._onFilterChange(event, html));
         const firstType = html.find(".item-type-selector option:first").val();
@@ -276,6 +277,24 @@ export class PurchaseScreenApp extends Application {
 
         // Handle the "Reject Request" button click
         html.on('click', '.send-request-button.cancel', event => this._onCancelOrder(event, html));
+        this._initializeDragAndDropListeners();
+    }
+    // Define _initializeDragAndDropListeners with clear logging
+    _initializeDragAndDropListeners() {
+        const shopActorDropzone = document.getElementById("shopActorDropzone");
+        const connectionItemDropzone = document.getElementById("connectionItemDropzone");
+
+        if (shopActorDropzone && connectionItemDropzone) {
+            shopActorDropzone.addEventListener("dragenter", (event) => this._onDragEnter(event, this.currentUser));
+            shopActorDropzone.addEventListener("dragover", (event) => this._onDragOver(event, this.currentUser));
+            shopActorDropzone.addEventListener("drop", (event) => this._onDrop(event, this.currentUser));
+
+            connectionItemDropzone.addEventListener("dragenter", (event) => this._onDragEnter(event, this.currentUser));
+            connectionItemDropzone.addEventListener("dragover", (event) => this._onDragOver(event, this.currentUser));
+            connectionItemDropzone.addEventListener("drop", (event) => this._onDrop(event, this.currentUser));
+        } else {
+            console.warn("Drag-and-drop elements not found for shop actor or connection item setup.");
+        }
     }
     /**
      * 
