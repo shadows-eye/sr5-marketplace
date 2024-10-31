@@ -758,7 +758,6 @@ export class PurchaseScreenApp extends Application {
         console.log("Total Availability:", totalAvailability);
         console.log("Total Essence Cost:", totalEssenceCost);
         console.log("Total Karma Cost:", totalKarmaCost);
-        let availabilityText = totalAvailability.total + totalAvailability.text;
         // Prepare the flag data for the user request
         const flagData = {
             id: requestId,
@@ -779,7 +778,7 @@ export class PurchaseScreenApp extends Application {
         const messageData = {
             items: itemDetails,
             totalCost: totalCost,
-            totalAvailability: availabilityText,
+            totalAvailability: totalAvailability,
             totalEssenceCost: totalEssenceCost,
             totalKarmaCost: totalKarmaCost,
             requesterName: isGM ? "GM" : requestingUser.name,
@@ -811,7 +810,7 @@ export class PurchaseScreenApp extends Application {
      */
     async _onBuyItems(event, html) {
         event.preventDefault();
-    
+        
         // Retrieve the flag ID from the button's data attribute
         const flagId = $(event.currentTarget).data('flag-id');
         if (!flagId) {
@@ -966,6 +965,8 @@ export class PurchaseScreenApp extends Application {
         const gmUser = game.users.find(u => u.isGM);  // Find the GM user
         if (gmUser) {
             await gmUser.unsetFlag('sr5-marketplace', flagId);  // Remove the flag from the GM user
+
+            await this.basketHelper.deleteGlobalUserBasket(buyActorId);
             ui.notifications.info(`Order data cleared from GM user flags.`);
         }
         // Delete the old chat message associated with the flag

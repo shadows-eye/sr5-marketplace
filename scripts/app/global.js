@@ -281,8 +281,28 @@ export class BasketHelper {
 
         console.log(`Removed item with basketId ${basketId} from the global basket for actor or user ${actorOrUserId}.`);
     }
-
-
+    /**
+     * 
+     * @param {*string} actorId the ID of the actor to clear the basket for
+     */
+    async deleteGlobalUserBasket(actorId) {
+        // Retrieve the current global baskets setting
+        const baskets = await this.getAllBaskets();
+    
+        // Check if a basket exists for the given actorId
+        if (baskets[actorId]) {
+            // Clear the basket by setting it to an empty array
+            baskets[actorId] = [];
+    
+            // Update the global basket setting with the cleared basket
+            await game.settings.set(this.moduleNamespace, this.settingKey, baskets);
+    
+            console.log(`Cleared basket for actorId: ${actorId}`);
+        } else {
+            console.warn(`No basket found for actorId: ${actorId}`);
+        }
+    }
+    
     async getAllBaskets() {
         return game.settings.get(this.moduleNamespace, this.settingKey) || {};
     }

@@ -626,16 +626,17 @@ export default class ItemData {
     
             return acc;
         }, { total: 0, text: '' });
-        const totalAvailability = `${availabilitySummary.total}${availabilitySummary.text}`.trim();
+        let conformationTotalAvailability = `${availabilitySummary.total}${availabilitySummary.text}`.trim();
         const totalEssenceCost = reviewPrep.reduce((sum, item) => sum + (item.calculatedEssence || 0), 0);
         const totalKarmaCost = reviewPrep.reduce((sum, item) => sum + (item.calculatedKarma || 0), 0);
-        console.log("Total Availability to chat:", totalAvailability);
+        console.log("Total Availability to chat:", conformationTotalAvailability);
         // Final enriched order data
+        conformationTotalAvailability= conformationTotalAvailability?? availabilitySummary;
         const orderData = {
             id: flagData.id,
             items: reviewPrep,
             totalCost,
-            totalAvailability: totalAvailability,
+            totalAvailability: conformationTotalAvailability,
             totalEssenceCost,
             totalKarmaCost,
             requester: flagData.requester,
