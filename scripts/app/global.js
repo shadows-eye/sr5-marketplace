@@ -313,110 +313,120 @@ export class MarketplaceHelper {
         this.moduleNamespace = "sr5-marketplace";
     }
 
-    // Initialize the PurchaseScreen-App setting if not already set up
+    // Initialize the setting to include user-specific data if not already set
     async initializePurchaseScreenSetting() {
-        const existingData = await game.settings.get(this.moduleNamespace, this.settingKey);
-        if (!existingData || typeof existingData !== 'object') {
-            await game.settings.set(this.moduleNamespace, this.settingKey, {
+        const existingData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
+        const currentUserId = game.user.id;
+
+        if (!existingData[currentUserId]) {
+            existingData[currentUserId] = {
                 selectedActor: null,
                 shopActor: null,
                 connectionItem: null,
                 hasShopActor: false
-            });
+            };
+            await game.settings.set(this.moduleNamespace, this.settingKey, existingData);
         }
     }
+
     /**
-     * Retrieves and processes PurchaseScreen data based on `userActor` and `selectedActor`.
+     * Retrieves Purchase Screen data for the current user.
      * @param {Object} currentUser - The current user.
-     * @param {Object} selectedActor - The actor selected by the GM.
-     * @returns {Object} Processed data to use in Purchase Screen HTML boxes.
-     */    
+     * @param {Object} selectedActor - Actor selected on the screen.
+     * @returns {Object} Processed data for the template display.
+     */
     async getPurchaseScreenData(currentUser, selectedActor) {
-        const currentData = await game.settings.get(this.moduleNamespace, this.settingKey);
-        let ScreenUserActor = currentUser.character;
-        let ScreenIsGm = currentUser.isGM;
-        let ScreenShopActor = null;
-
-        // Determine the actor for selectedActorOrUserActor based on user type and selection
-        const selectedActorOrUserActor = ScreenIsGm ? selectedActor : ScreenUserActor;
-
-        // Process `selectedActorOrUserActor` for display
-        const displayData = {
-            selectedActorBox: null,
-            shopActorBox: null,
-            connectionBox: null,
-            hasShopActor: false
-        };
-
-        // Populate `selectedActorBox` based on GM selection or player only character GM stays null
-        if (selectedActorOrUserActor) {
-            displayData.selectedActorBox = {
-                id: selectedActorOrUserActor.id,
-                name: selectedActorOrUserActor.name,
-                img: selectedActorOrUserActor.img
-            };
-            currentData.selectedActor = displayData.selectedActorBox;
-        } else {
-            currentData.selectedActor = null;
-        }
-
-        // Process `ScreenShopActor` for future use as a "shop" actor (currently stays null)
-        if (ScreenShopActor) {
-            displayData.shopActorBox = {
-                id: ScreenShopActor.id,
-                name: ScreenShopActor.name,
-                img: ScreenShopActor.img
-            };
-            currentData.shopActor = displayData.shopActorBox;
-            currentData.hasShopActor = true;
-        } else {
-            currentData.shopActor = null;
-            currentData.hasShopActor = false;
-        }
-
-        // Placeholder for connection item (stays null until assigned later)
-        displayData.connectionBox = currentData.connectionItem ? {
-            id: currentData.connectionItem.id,
-            name: currentData.connectionItem.name,
-            img: currentData.connectionItem.img
-        } : null;
-
-        // Update the settings with the new structure
-        await game.settings.set(this.moduleNamespace, this.settingKey, currentData);
-
-        // Return displayData to the application for rendering
-        return displayData;
-    }
-
-    // Set the selected actor when the Purchase Screen opens
-    async setSelectedActor(actorData) {
-        const currentData = await this.getPurchaseScreenData();
-        currentData.selectedActor = actorData;
-        await game.settings.set(this.moduleNamespace, this.settingKey, currentData);
-    }
-
-    // Set the actor dragged into the shop box
-    async setShopActor(actorData) {
-        const currentData = await this.getPurchaseScreenData();
-        currentData.shopActor = actorData;
-        currentData.hasSelection = true;
-        await game.settings.set(this.moduleNamespace, this.settingKey, currentData);
-    }
-
-    // Set the connection item for the Purchase Screen
-    async setConnectionItem(itemData) {
-        const currentData = await this.getPurchaseScreenData();
-        currentData.connectionItem = itemData;
-        await game.settings.set(this.moduleNamespace, this.settingKey, currentData);
-    }
-
-    // Clear all settings (optional utility for reset purposes)
-    async clearPurchaseScreenData() {
-        await game.settings.set(this.moduleNamespace, this.settingKey, {
+        const allData = await game.settings.get(this.moduleNamespace, this.settingKey);
+        const currentUserId = currentUser.id;
+        let userData = allData[currentUserId] || {
             selectedActor: null,
             shopActor: null,
             connectionItem: null,
-            hasSelection: false
-        });
+            hasShopActor: false
+        };
+
+        // Determine actor to display based on the user or GM selection
+        const selectedActorOrUserActor = currentUser.isGM ? selectedActor : currentUser.character;
+
+        // Display data to return for rendering in the template
+        const displayData = {
+            selectedActorBox: selectedActorOrUserActor ? {
+                id: selectedActorOrUserActor.id,
+                name: selectedActorOrUserActor.name,
+                img: selectedActorOrUserActor.img
+            } : null,
+            shopActorBox: userData.shopActor ? {
+                id: userData.shopActor.id,
+                name: userData.shopActor.name,
+                img: userData.shopActor.img
+            } : null,
+            connectionBox: userData.connectionItem ? {
+                id: userData.connectionItem.id,
+                name: userData.connectionItem.name,
+                img: userData.connectionItem.img
+            } : null,
+            hasShopActor: !!userData.shopActor
+        };
+        await this.setSelectedActor(currentUserId, displayData.selectedActorBox.id);
+        return displayData;
+    }
+
+    // Set selected actor for the current user
+    async setSelectedActor(currentUserId, actorData) {
+        let userIdInSet = currentUserId
+        const allData = await game.settings.get(this.moduleNamespace, this.settingKey);
+        
+        // Update only the current user's data
+        allData[userIdInSet] = {
+            ...allData[userIdInSet],
+            selectedActor: actorData
+        };
+
+        await game.settings.set(this.moduleNamespace, this.settingKey, allData);
+    }
+
+    // Set shop actor for the current user
+    async setShopActor(currentUserId, shopActorData) {
+        const currentShopUserId = currentUserId;
+        const allData = await game.settings.get(this.moduleNamespace, this.settingKey);
+
+        // Update only the current user's data
+        allData[currentShopUserId] = {
+            ...allData[currentShopUserId],
+            shopActor: shopActorData,
+            hasShopActor: true
+        };
+
+        await game.settings.set(this.moduleNamespace, this.settingKey, allData);
+    }
+
+    // Set connection item for the current user
+    async setConnectionItem(currentUserId, connectionItemData) {
+        const currentConnectionUserId = currentUserId;
+        const allData = await game.settings.get(this.moduleNamespace, this.settingKey);
+
+        // Update only the current user's data
+        allData[currentConnectionUserId] = {
+            ...allData[currentConnectionUserId],
+            connectionItem: connectionItemData
+        };
+
+        await game.settings.set(this.moduleNamespace, this.settingKey, allData);
+    }
+
+    // Clear the Purchase Screen data for the current user
+    async clearPurchaseScreenData(currentUserId) {
+        const clearCurrentUserId = currentUserId;
+        const allData = await game.settings.get(this.moduleNamespace, this.settingKey);
+
+        // Reset only the current user's data
+        allData[clearCurrentUserId] = {
+            selectedActor: null,
+            shopActor: null,
+            connectionItem: null,
+            hasShopActor: false
+        };
+
+        await game.settings.set(this.moduleNamespace, this.settingKey, allData);
     }
 }

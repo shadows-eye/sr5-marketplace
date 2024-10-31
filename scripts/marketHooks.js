@@ -44,12 +44,7 @@ Hooks.once('init', () => {
         scope: "world",
         config: false,
         type: Object,
-        default: {
-            selectedActor: null,          // Actor chosen upon opening the screen
-            shopActor: null,              // Actor dragged onto SR5ShopActor-box
-            connectionItem: null,         // Item dragged or selected as connection
-            hasShopActor: false           // Boolean indicator if actor/item is set
-        }
+        default: {}
     });
 });
 Hooks.on('renderChatMessage', (message, html, data) => {
