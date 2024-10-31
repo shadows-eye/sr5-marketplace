@@ -202,7 +202,7 @@ export default class ItemData {
     calculateTotalEssenceCost() {
         return this.basketItems.reduce((total, item) => total + this.calculateEssence(item), 0);
     }
-    calculateOrderReviewAvailability(item, selectedRating) {
+    _calculateOrderReviewAvailability(item, selectedRating) {
         // Check if the item type is any Karma related ones
         if (item.type === "quality" || item.type === "complex_form" || item.type === "action" || item.type === "ritual" || item.type === "spell") {
             // Return availability as '0' for these item types
@@ -409,7 +409,7 @@ export default class ItemData {
             return total + (cost * rating); // Calculate total cost based on rating
         }, 0);
     }
-    calculateTotalAvailability() {
+    async calculateTotalAvailability() {
         const availabilityData = this.basketItems.reduce((acc, item) => {
             // Skip items that should not be included in the availability calculation
             if (["quality", "action", "ritual"].includes(item.type)) {
@@ -596,8 +596,8 @@ export default class ItemData {
                     enrichedItem.calculatedEssence = 0;
                 } else {
                     enrichedItem.calculatedCost = await this.calculateCostReviewUpdate(enrichedItem, enrichedItem.selectedRating) || 0;
-                    enrichedItem.calculatedAvailability = await this.calculateOrderReviewAvailability(enrichedItem, enrichedItem.selectedRating);
-                    enrichedItem.calculatedEssence = await this.calculateEssence(enrichedItem);
+                    enrichedItem.calculatedAvailability = this._calculateOrderReviewAvailability(enrichedItem, enrichedItem.selectedRating);
+                    enrichedItem.calculatedEssence = this.calculateEssence(enrichedItem);
                 }
     
                 reviewPrep.push(enrichedItem);
@@ -610,7 +610,7 @@ export default class ItemData {
     
         // Calculate total values using enriched items
         const totalCost = reviewPrep.reduce((sum, item) => sum + (item.calculatedCost || 0), 0);
-        const totalAvailability = reviewPrep.reduce((acc, item) => {
+        const availabilitySummary = reviewPrep.reduce((acc, item) => {
             const availability = item.calculatedAvailability || '';
             const numericPart = parseInt(availability.match(/\d+/), 10) || 0;
             acc.total += numericPart;
@@ -626,16 +626,16 @@ export default class ItemData {
     
             return acc;
         }, { total: 0, text: '' });
-    
+        const totalAvailability = `${availabilitySummary.total}${availabilitySummary.text}`.trim();
         const totalEssenceCost = reviewPrep.reduce((sum, item) => sum + (item.calculatedEssence || 0), 0);
         const totalKarmaCost = reviewPrep.reduce((sum, item) => sum + (item.calculatedKarma || 0), 0);
-    
+        console.log("Total Availability to chat:", totalAvailability);
         // Final enriched order data
         const orderData = {
             id: flagData.id,
             items: reviewPrep,
             totalCost,
-            totalAvailability,
+            totalAvailability: totalAvailability,
             totalEssenceCost,
             totalKarmaCost,
             requester: flagData.requester,

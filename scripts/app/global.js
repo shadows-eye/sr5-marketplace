@@ -328,7 +328,7 @@ export class MarketplaceHelper {
             hasShopActor: false
         };
 
-        // Populate `selectedActorBox` based on GM selection or user character
+        // Populate `selectedActorBox` based on GM selection or player only character GM stays null
         if (selectedActorOrUserActor) {
             displayData.selectedActorBox = {
                 id: selectedActorOrUserActor.id,

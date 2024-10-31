@@ -47,23 +47,24 @@ export class PurchaseScreenApp extends Application {
         // Restore basket items from flags (if needed)
         const savedBasket = game.user.getFlag('sr5-marketplace', 'basket') || [];
         this.itemData.basketItems = savedBasket;
+        let purchaseScreenUser = foundry.utils.deepClone(this.currentUser);
+        let purchaseScreenActor = foundry.utils.deepClone(this.selectedActor);
+        let returnHasEnhancedData = foundry.utils.deepClone(this.hasEnhancedItems);
         // Retrieve current PurchaseScreen data (including selected actor) for use in the template
-        const purchaseScreenData = await this.marketplaceHelper.getPurchaseScreenData(this.currentUser,this.selectedActor);
-        // Enrich HTML for actor and item names to enable Foundry-style links
+        const purchaseScreenData = await this.marketplaceHelper.getPurchaseScreenData(purchaseScreenUser,purchaseScreenActor);
+        // Ensure UUID creation for actor objects before enrichment
         if (purchaseScreenData.selectedActorBox) {
-            purchaseScreenData.selectedActorBox.enrichedName = TextEditor.enrichHTML(purchaseScreenData.selectedActorBox.name, { 
-                entities: true 
-            });
+            purchaseScreenData.selectedActorBox.uuid = `Actor.${purchaseScreenData.selectedActorBox.id}`;
+            console.log("Enriching HTML for connectionBox:", purchaseScreenData.selectedActorBox);
+            purchaseScreenData.selectedActorBox.enrichedName = TextEditor.enrichHTML(purchaseScreenData.selectedActorBox.name, { entities: true });
         }
         if (purchaseScreenData.shopActorBox) {
-            purchaseScreenData.shopActorBox.enrichedName = TextEditor.enrichHTML(purchaseScreenData.shopActorBox.name, { 
-                entities: true 
-            });
+            purchaseScreenData.shopActorBox.uuid = `Actor.${purchaseScreenData.shopActorBox.id}`;
+            purchaseScreenData.shopActorBox.enrichedName = TextEditor.enrichHTML(purchaseScreenData.shopActorBox.name, { entities: true });
         }
         if (purchaseScreenData.connectionBox) {
-            purchaseScreenData.connectionBox.enrichedName = TextEditor.enrichHTML(purchaseScreenData.connectionBox.name, { 
-                entities: true 
-            });
+            purchaseScreenData.connectionBox.uuid = `Actor.${purchaseScreenData.connectionBox.id}`;
+            purchaseScreenData.connectionBox.enrichedName = TextEditor.enrichHTML(purchaseScreenData.connectionBox.name, { entities: true });
         }
         // Preload the partial templates
         await loadTemplates([
@@ -79,19 +80,19 @@ export class PurchaseScreenApp extends Application {
         
         console.log("User role:", game.user.role);
         console.log("Is the current user a GM?", this.isGM);
-    
+        
         // Set up review data if needed
         const reviewData = this.reviewData ? this.reviewData : {};
     
         // Return the data to the template for rendering
         return {
-            ...purchaseScreenData, // Pass the PurchaseScreen data to the template
             itemsByType: this.itemData.itemsByType, // Pass item types with items
             basketItems: this.itemData.basketItems, // Pass basket items to be rendered
             isGM: this.isGM,
             reviewData: reviewData,
-            hasEnhancedItems: this.hasEnhancedItems,
+            hasEnhancedItems: returnHasEnhancedData,
             completeItemsArray: this.completeItemsArray, // Ensure the array is available in the template context
+            ...purchaseScreenData, // Pass the PurchaseScreen data to the template
         };
     }
 
@@ -139,11 +140,12 @@ export class PurchaseScreenApp extends Application {
         html.on('change', '.item-rating', event => this._onRatingChange(event, html));
         html.on('click', '.add-to-cart', event => {
             // Call the existing function to add the item to the basket
-            console.log("Event userActor:", this.selectedActor);
+            let basketSelectedActor = foundry.utils.deepClone(this.selectedActor);
+            console.log("Event userActor:", basketSelectedActor);
 
-            let passSelectedActor = this.selectedActor;
-            
-            this._onAddToBasket(event, html, this.currentUser, passSelectedActor);
+            let passSelectedActor = foundry.utils.deepClone(this.selectedActor);
+            let basketItemUser = foundry.utils.deepClone(this.currentUser);
+            this._onAddToBasket(event, html, basketItemUser, passSelectedActor);
         
             // Use setTimeout to ensure the DOM is fully updated before updating the basket count
             setTimeout(() => {
@@ -151,9 +153,10 @@ export class PurchaseScreenApp extends Application {
             }, 100); // Small delay of 100ms to ensure the basket DOM is updated
         });
         html.on('click', '.remove-item', event => {
-            let passSelectedActor = this.selectedActor;
+            let passSelectedActor = foundry.utils.deepClone(this.selectedActor);
+            let basketItemUser = foundry.utils.deepClone(this.currentUser);
             // Call the existing function to remove the item from the basket
-            this._onRemoveFromBasket(event, html, this.currentUser, passSelectedActor);
+            this._onRemoveFromBasket(event, html, basketItemUser, passSelectedActor);
         
             // Use setTimeout to ensure the DOM is fully updated before updating the basket count
             setTimeout(() => {
@@ -367,10 +370,10 @@ export class PurchaseScreenApp extends Application {
         await game.user.setFlag('sr5-marketplace', 'basket', this.itemData.getBasketItems());
     }
 
-    async _onAddToBasket(event, html, currentUser, userActor) {
+    async _onAddToBasket(event, html, currentBasketUser, userActor) {
         event.preventDefault();
         console.log("Event data:", event);
-        let currentUserId = currentUser.id;
+        let currentUserId = currentBasketUser.id;
         let basketActor = userActor;
         this.basketHelper = new BasketHelper();  // Instantiate BasketHelper for basket operations
         await this.basketHelper.initializeBasketsSetting(); // Initialize the basket setting if not already set
@@ -755,7 +758,7 @@ export class PurchaseScreenApp extends Application {
         console.log("Total Availability:", totalAvailability);
         console.log("Total Essence Cost:", totalEssenceCost);
         console.log("Total Karma Cost:", totalKarmaCost);
-    
+        let availabilityText = totalAvailability.total + totalAvailability.text;
         // Prepare the flag data for the user request
         const flagData = {
             id: requestId,
@@ -776,7 +779,7 @@ export class PurchaseScreenApp extends Application {
         const messageData = {
             items: itemDetails,
             totalCost: totalCost,
-            totalAvailability: totalAvailability,
+            totalAvailability: availabilityText,
             totalEssenceCost: totalEssenceCost,
             totalKarmaCost: totalKarmaCost,
             requesterName: isGM ? "GM" : requestingUser.name,
@@ -817,9 +820,12 @@ export class PurchaseScreenApp extends Application {
         }
     
         const orderData = await this.itemData.getOrderDataFromFlag(flagId);
-    
+        let DeapCloneOrderData = foundry.utils.deepClone(orderData);
+        let buyActorId = foundry.utils.deepClone(orderData.actorId);
+        console.log("Buy Actor ID:", buyActorId);
+        console.log("Order Data in _onBuyStart:", DeapCloneOrderData);
         // Check if actorId is available in flag data
-        let actorId = orderData.actorId || null;
+        let actorId = buyActorId || null;
         if (!actorId && canvas.tokens.controlled.length > 0) {
             const selectedToken = canvas.tokens.controlled[0];
             actorId = selectedToken.actor?._id || null;
@@ -830,11 +836,12 @@ export class PurchaseScreenApp extends Application {
             $(event.currentTarget).find('i').addClass('fa-exclamation-circle');
             return;
         }
-    
+
         const actor = game.actors.get(actorId);
     
         // Retrieve actor's current nuyen amount
         let currentNuyen = actor.system.nuyen || 0;  // Default to 0 if no nuyen found
+        console.log("Current Nuyen:", currentNuyen);
     
         // Calculate the total cost of the items in the order
         const totalCost = orderData.items.reduce((total, item) => total + (item.calculatedCost || 0), 0);
@@ -857,7 +864,8 @@ export class PurchaseScreenApp extends Application {
         actorItemData.logItems();
     
         const creationItems = await actorItemData.createItemsWithInjectedData();
-        const createdItems = await actorItemData.createItemsOnActor(actor, creationItems, orderData);
+        let ActorOrderData = foundry.utils.deepClone(orderData);
+        const createdItems = await actorItemData.createItemsOnActor(actor, creationItems, ActorOrderData);
         // Check if the actor already has a history flag for the provided flagId
         let historyFlag = actor.getFlag('sr5-marketplace', 'history') || [];
             
@@ -869,9 +877,9 @@ export class PurchaseScreenApp extends Application {
             historyFlag = Object.keys(historyFlag).map(key => historyFlag[key]);
         }
         
-    // Now `historyFlag` is guaranteed to be an array
-    // Check if the flagId already exists in the actor's history
-    const existingHistoryEntry = historyFlag.find(entry => entry.flagId === flagId);
+        // Now `historyFlag` is guaranteed to be an array
+        // Check if the flagId already exists in the actor's history
+        const existingHistoryEntry = historyFlag.find(entry => entry.flagId === flagId);
         const { chatTimestamp, flagTimestamp } = await getFormattedTimestamp(); // Get formatted timestamps from itemData.js
         // If no history entry exists for the flag, create a new one
         if (!existingHistoryEntry) {
@@ -905,7 +913,7 @@ export class PurchaseScreenApp extends Application {
             // If the history flag already exists, skip creation and move to the chat message
             ui.notifications.info(`A history flag already exists for flagId: ${flagId}. Skipping flag creation.`);
         }
-        
+        // Calculate the total availability for the order confirmation
         // Prepare the message data for the chat
         const messageData = {
             items: creationItems.map(item => ({
