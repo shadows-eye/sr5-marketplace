@@ -14,7 +14,7 @@ export class PurchaseScreenApp extends Application {
         this.isGM = game.user.isGM;
         this.currentUser = game.user;
         this.userActor = game.user.character;
-        this.selectedActor = game.canvas.tokens.controlled[0]?.actor || game.user.character;
+        this.selectedActor = game.canvas.tokens.controlled[0]?.actor || game.user.character || {};
         this.tab = options.tab || "shop"; // Default to "shop" tab
         this.orderData = options.orderData || {};
         this.completeItemsArray = Array.isArray(options.completeItemsArray) ? options.completeItemsArray : [];
@@ -24,7 +24,7 @@ export class PurchaseScreenApp extends Application {
         this.marketplaceHelper = new MarketplaceHelper(); // Instantiate MarketplaceHelper for PurchaseScreen setting
         this.hasEnhancedItems = game.user.getFlag('sr5-marketplace', 'enhancedItemsFlag') || false;
       }
-    static get defaultOptions() {
+      static get defaultOptions() {
         return foundry.utils.mergeObject(super.defaultOptions, {
             id: "purchase-screen",
             title: "Purchase Screen",
@@ -32,7 +32,17 @@ export class PurchaseScreenApp extends Application {
             width: 1000,
             height: 850,
             resizable: false,
-            classes: ["sr5-market"]
+            classes: ["sr5-market"],
+            dragDrop: [
+                {
+                    dragSelector: ".directory-item.entity.actor",  // Selector for draggable actors
+                    dropSelector: "#shopActorDropzone"            // Drop target for actors
+                },
+                {
+                    dragSelector: ".directory-item.entity.item",  // Selector for draggable items
+                    dropSelector: "#connectionItemDropzone"       // Drop target for items
+                }
+            ]
         });
     }
 
@@ -53,8 +63,8 @@ export class PurchaseScreenApp extends Application {
         // Retrieve current PurchaseScreen data (including selected actor) for use in the template
         const purchaseScreenData = await this.marketplaceHelper.getPurchaseScreenData(purchaseScreenUser, purchaseScreenActor);
 
-        // Ensure UUID creation and enrich HTML for actor objects
-        if (purchaseScreenData.selectedActorBox) {
+        // Ensure UUID creation and enrich HTML for actor objects only if fields are non-null
+        if (purchaseScreenData.selectedActorBox && purchaseScreenData.selectedActorBox.id && purchaseScreenData.selectedActorBox.name) {
             purchaseScreenData.selectedActorBox.uuid = `Actor.${purchaseScreenData.selectedActorBox.id}`;
             purchaseScreenData.selectedActorBox.enrichedName = await TextEditor.enrichHTML(
                 `<a data-entity-link data-uuid="${purchaseScreenData.selectedActorBox.uuid}">${purchaseScreenData.selectedActorBox.name}</a>`,
@@ -62,7 +72,7 @@ export class PurchaseScreenApp extends Application {
             );
         }
 
-        if (purchaseScreenData.shopActorBox) {
+        if (purchaseScreenData.shopActorBox && purchaseScreenData.shopActorBox.id && purchaseScreenData.shopActorBox.name) {
             purchaseScreenData.shopActorBox.uuid = `Actor.${purchaseScreenData.shopActorBox.id}`;
             purchaseScreenData.shopActorBox.enrichedName = await TextEditor.enrichHTML(
                 `<a data-entity-link data-uuid="${purchaseScreenData.shopActorBox.uuid}">${purchaseScreenData.shopActorBox.name}</a>`,
@@ -70,13 +80,14 @@ export class PurchaseScreenApp extends Application {
             );
         }
 
-        if (purchaseScreenData.connectionBox) {
+        if (purchaseScreenData.connectionBox && purchaseScreenData.connectionBox.id && purchaseScreenData.connectionBox.name) {
             purchaseScreenData.connectionBox.uuid = `Actor.${purchaseScreenData.connectionBox.id}`;
             purchaseScreenData.connectionBox.enrichedName = await TextEditor.enrichHTML(
                 `<a data-entity-link data-uuid="${purchaseScreenData.connectionBox.uuid}">${purchaseScreenData.connectionBox.name}</a>`,
                 { entities: true }
             );
         }
+
         // Preload the partial templates
         await loadTemplates([
             "modules/sr5-marketplace/templates/libraryItem.hbs",
@@ -88,7 +99,6 @@ export class PurchaseScreenApp extends Application {
             Handlebars.registerPartial('shop', 'modules/sr5-marketplace/templates/shop.hbs');
             Handlebars.registerPartial('orderReview', 'modules/sr5-marketplace/templates/orderReview.hbs');
         });
-        
         console.log("User role:", game.user.role);
         console.log("Is the current user a GM?", this.isGM);
         
@@ -267,6 +277,52 @@ export class PurchaseScreenApp extends Application {
         // Handle the "Reject Request" button click
         html.on('click', '.send-request-button.cancel', event => this._onCancelOrder(event, html));
     }
+    /**
+     * 
+     * @param {*} event drag event that can provide actor or item data to the purchase-screen-app
+     */
+    async _onDrop(event) {
+        event.preventDefault();
+        
+        // Directly retrieve dragData as an object
+        const dragData = JSON.parse(event.dataTransfer.getData("text/plain"));
+        console.log("Drag data object:", dragData); // Log drag data object to verify structure
+    
+        // Identify the drop target
+        const dropTarget = event.target.id;
+        console.log("Drop target ID:", dropTarget); // Log the drop target ID to confirm
+    
+        if (dropTarget === "shopActorDropzone" && dragData.type === "Actor") {
+            // Handle dropped actor
+            const actor = await fromUuid(dragData.uuid);
+            if (actor) {
+                console.log(`Actor dropped: ${actor.name}`);
+                const shopActorData = {
+                    id: actor.id,
+                    name: actor.name,
+                    img: actor.img,
+                };
+                await this.marketplaceHelper.setShopActor(game.user.id, shopActorData);
+                this.render(true);
+            }
+        } else if (dropTarget === "connectionItemDropzone" && dragData.type === "Item") {
+            // Handle dropped item
+            const item = await fromUuid(dragData.uuid);
+            if (item) {
+                console.log(`Item dropped: ${item.name}`);
+                const connectionItemData = {
+                    id: item.id,
+                    name: item.name,
+                    img: item.img,
+                };
+                await this.marketplaceHelper.setConnectionItem(game.user.id, connectionItemData);
+                this.render(true);
+            }
+        } else {
+            console.warn("Dropped data is not an actor or item, or drop target is invalid.");
+        }
+    }
+    
     /**
      * Handle the cancel order button, sends a rejection message, and removes the flag and associated data.
      * @param {*} event 
@@ -1004,6 +1060,49 @@ export class PurchaseScreenApp extends Application {
         }
         // Call logActorHistory after purchase to update the journal
         await logActorHistory(actor);
-    }                                       
+    }
+    async _onDropShopActor(event, currentUser) {
+        event.preventDefault();
+    
+        // Instantiate MarketplaceHelper if not already done in the constructor
+        this.marketplaceHelper = this.marketplaceHelper || new MarketplaceHelper(); 
+        
+        // Ensure settings are initialized for the user
+        await this.marketplaceHelper.initializePurchaseScreenSetting();
+    
+        // Retrieve drag data (e.g., actor ID)
+        const dragData = event.dataTransfer?.getData("text/plain");
+        if (!dragData) {
+            console.warn("No drag data found.");
+            return;
+        }
+    
+        const parsedData = JSON.parse(dragData);
+        console.log("Parsed drag data:", parsedData);
+        const actorId = parsedData?.id;
+        if (!actorId) {
+            console.warn("No valid actor ID in drag data.");
+            return;
+        }
+    
+        const actor = game.actors.get(actorId);
+        if (!actor) {
+            console.warn(`Actor with ID ${actorId} not found.`);
+            return;
+        }
+    
+        // Structure actor data for display
+        const shopActorData = {
+            id: actor.id,
+            name: actor.name,
+            img: actor.img,
+        };
+    
+        // Store shop actor data under the current user's settings
+        await this.marketplaceHelper.setShopActor(currentUser.id, shopActorData);
+    
+        // Re-render the app to reflect the actor update in the Shop Actor box
+        this.render(false);
+    }                                               
 }
   

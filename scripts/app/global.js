@@ -316,7 +316,7 @@ export class MarketplaceHelper {
     // Initialize the setting to include user-specific data if not already set
     async initializePurchaseScreenSetting() {
         const existingData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
-        const currentUserId = game.user.id;
+        const currentUserId = game.user.id || null;
 
         if (!existingData[currentUserId]) {
             existingData[currentUserId] = {
@@ -337,7 +337,7 @@ export class MarketplaceHelper {
      */
     async getPurchaseScreenData(currentUser, selectedActor) {
         const allData = await game.settings.get(this.moduleNamespace, this.settingKey);
-        const currentUserId = currentUser.id;
+        let currentUserId = currentUser.id || null;
         let userData = allData[currentUserId] || {
             selectedActor: null,
             shopActor: null,
