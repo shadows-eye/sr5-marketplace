@@ -4,6 +4,7 @@ import { ActorItemData } from './app/actorItemData.js';
 import { PurchaseScreenApp } from './app/purchase-screen-app.js';
 import { registerBasicHelpers } from './lib/helpers.js';
 import GlobalHelper from './app/global.js';
+//import {MarketplaceHelper} from './app/global.js';
 // Call the function to register helpers
 registerBasicHelpers();
 Hooks.once('init', () => {
@@ -24,6 +25,14 @@ Hooks.once('init', () => {
             }
         }
     });
+    // Register a separate setting to track if initial setup has been done
+    game.settings.register("sr5-marketplace", "initialized", {
+        name: "Initialization Flag",
+        scope: "world",
+        config: false,
+        type: Boolean,
+        default: false // This indicates that the setup is not done yet
+    });
     game.settings.register("sr5-marketplace", "reviewRequests", {
         name: "Hidden Review Requests",
         scope: "world",
@@ -39,7 +48,7 @@ Hooks.once('init', () => {
         type: Object,   // Store as an object with multiple baskets
         default: {}     // Initialize as an empty object
     });
-    game.settings.register("sr5-marketplace", "purchase-Screen-App", {
+    game.settings.register("sr5-marketplace", "purchase-screen-app", {
         name: "Hidden Purchase Screen Settings",
         scope: "world",
         config: false,
@@ -62,6 +71,49 @@ Hooks.on('renderChatMessage', (message, html, data) => {
 Hooks.once('ready', async function() {
     const itemData = new ItemData();
     await itemData.fetchItems();
+    let currentUserId = game.user.id;
+    // Define the function for first-time setup
+    async function initializePurchaseScreenSetting() {
+        let purchaseScreenData = await game.settings.get("sr5-marketplace", "purchase-screen-app") || {};
+
+        // Check if the data is already initialized
+        const isInitialized = await game.settings.get("sr5-marketplace", "initialized");
+
+        // Initialize settings only if they are not already initialized
+        if (!isInitialized) {
+            // Set up global shop actor if not present
+            if (!purchaseScreenData.globalShopActor) {
+                purchaseScreenData.globalShopActor = {
+                    id: null,
+                    name: null,
+                    img: null,
+                    uuid: null,
+                    items: []
+                };
+            }
+
+            // User-specific data setup
+            let currentUserId = game.user.id;
+            purchaseScreenData.users = purchaseScreenData.users || {};
+            if (!purchaseScreenData.users[currentUserId]) {
+                purchaseScreenData.users[currentUserId] = {
+                    selectedActorOrUserActor: null,
+                    connectionItem: null
+                };
+            }
+
+            // Save initialized settings to ensure they persist
+            await game.settings.set("sr5-marketplace", "purchase-screen-app", purchaseScreenData);
+            console.log("Initialized purchase-Screen-App data:", purchaseScreenData);
+
+            // Mark settings as initialized
+            await game.settings.set("sr5-marketplace", "initialized", true);
+        } else {
+            console.log("Settings already initialized; current purchase-Screen-App data:", purchaseScreenData);
+        }
+    }
+    // Perform the initial setup if needed
+    await initializePurchaseScreenSetting();
     // Check if the user is not a GM
     if (!game.user.isGM) {
         // Select all review-request-button elements
@@ -75,6 +127,7 @@ Hooks.once('ready', async function() {
             }
         });
     }
+    
     console.log("Cleaning up unused flags in sr5-marketplace...");
     const currentUser = game.user;  // Get the current user
     const isGM = currentUser.isGM;  // Check if the current user is a GM
@@ -97,7 +150,7 @@ Hooks.once('ready', async function() {
             }
         }
     }
-
+    
     // If the current user is a GM, clean flags for all users
     if (isGM) {
         console.log("GM detected, cleaning flags for all users.");
@@ -155,6 +208,8 @@ Hooks.once('ready', async function() {
             console.log(`No order review data found for flag ID ${flagId}`);
         }
     });
+    let purchaseScreenData = await game.settings.get("sr5-marketplace", "purchase-screen-app");
+    console.log("purchase-Screen-App data on ready:", purchaseScreenData);
     // Check the "Reset Item Load" setting
     const resetItemLoad = game.settings.get("sr5-marketplace", "resetItemLoad");
     if (!resetItemLoad) {
@@ -382,7 +437,7 @@ Hooks.on("renderActorSheet", (app, html, data) => {
                 await ActorItemData.prototype.decreaseSkill(app.document, skillKey, false);
             });
         });
-    }, 100);  // Delay injection to ensure full render
+    }, 100);  // Delay injection to ensure full render  
 });
 
 

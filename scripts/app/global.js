@@ -309,7 +309,7 @@ export class BasketHelper {
 }
 export class MarketplaceHelper {
     constructor() {
-        this.settingKey = "purchase-Screen-App";
+        this.settingKey = "purchase-screen-app";
         this.moduleNamespace = "sr5-marketplace";
     }
 
@@ -317,16 +317,33 @@ export class MarketplaceHelper {
     async initializePurchaseScreenSetting() {
         const existingData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
         const currentUserId = game.user.id || null;
-
-        if (!existingData[currentUserId]) {
-            existingData[currentUserId] = {
-                selectedActor: null,
-                shopActor: null,
-                connectionItem: null,
-                hasShopActor: false
+    
+        // Check for and initialize global settings if they are missing
+        if (!existingData.globalShopActor) {
+            existingData.globalShopActor = {
+                id: null,
+                name: null,
+                img: null,
+                uuid: null,
+                items: [] // Initialize with an empty items array
             };
-            await game.settings.set(this.moduleNamespace, this.settingKey, existingData);
         }
+    
+        // Ensure user-specific data structure exists, if not initialize it
+        if (!existingData.users) {
+            existingData.users = {};
+        }
+    
+        // Check if the current user's settings exist; initialize if missing
+        if (!existingData.users[currentUserId]) {
+            existingData.users[currentUserId] = {
+                selectedActorOrUserActor: null,
+                connectionItem: null
+            };
+        }
+    
+        // Save the updated structure back to settings if any modifications were made
+        await game.settings.set(this.moduleNamespace, this.settingKey, existingData);
     }
 
     /**
@@ -336,78 +353,94 @@ export class MarketplaceHelper {
      * @returns {Object} Processed data for the template display.
      */
     async getPurchaseScreenData(currentUser, selectedActor) {
-        const allData = await game.settings.get(this.moduleNamespace, this.settingKey);
-        let currentUserId = currentUser.id || null;
-        let userData = allData[currentUserId] || {
-            selectedActor: null,
-            shopActor: null,
-            connectionItem: null,
-            hasShopActor: false
-        };
+        const allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
+        const currentUserId = currentUser?.id || null;
 
-        // Determine actor to display based on the user or GM selection
+        // Retrieve global shop actor data for display
+        const globalShopActor = allData.globalShopActor || { items: [] };
+        const shopActorBox = globalShopActor?.id ? {
+            id: globalShopActor.id,
+            name: globalShopActor.name,
+            img: globalShopActor.img,
+            uuid: globalShopActor.uuid
+        } : null;
+
+        // Retrieve user-specific data for current user, defaulting to null if not available
+        const userData = allData.users?.[currentUserId] || { selectedActorOrUserActor: null, connectionItem: null };
+
+        // Determine which actor to display based on user type
         const selectedActorOrUserActor = currentUser.isGM ? selectedActor : currentUser.character;
 
-        // Display data to return for rendering in the template
+        // Structure data for template rendering
         const displayData = {
             selectedActorBox: selectedActorOrUserActor ? {
                 id: selectedActorOrUserActor.id,
                 name: selectedActorOrUserActor.name,
                 img: selectedActorOrUserActor.img
             } : null,
-            shopActorBox: userData.shopActor ? {
-                id: userData.shopActor.id,
-                name: userData.shopActor.name,
-                img: userData.shopActor.img
-            } : null,
+            shopActorBox: shopActorBox,
             connectionBox: userData.connectionItem ? {
                 id: userData.connectionItem.id,
                 name: userData.connectionItem.name,
                 img: userData.connectionItem.img
             } : null,
-            hasShopActor: !!userData.shopActor
+            hasShopActor: !!globalShopActor.id
         };
-        await this.setSelectedActor(currentUserId, displayData.selectedActorBox.id);
+
+        // Save the selected actor for the user if needed
+        if (currentUserId) {
+            await this.setSelectedActor(currentUserId, displayData.selectedActorBox);
+        }
+
         return displayData;
     }
-
     // Set selected actor for the current user
-    async setSelectedActor(currentUserId, actorData) {
-        let userIdInSet = currentUserId
-        const allData = await game.settings.get(this.moduleNamespace, this.settingKey);
-        
-        // Update only the current user's data
-        allData[userIdInSet] = {
-            ...allData[userIdInSet],
-            selectedActor: actorData
+    async setSelectedActor(currentUser, actorData) {
+        const allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
+        // Initialize users object if not existing
+        allData.users = allData.users || {};
+        let setSelectCurrentUderId = currentUser.id;
+        let setActorSelectedActorUserId = currentUser.id;
+        let selectedActorOrUserActor = currentUser.isGM ? actorData : currentUser.character;
+        allData.users[setSelectCurrentUderId] = {
+            ...allData.users[setSelectCurrentUderId],
+            selectedActorOrUserActor: selectedActorOrUserActor
         };
-
+    
         await game.settings.set(this.moduleNamespace, this.settingKey, allData);
     }
-
-    // Set shop actor for the current user
-    async setShopActor(currentUserId, shopActorData) {
-        const currentShopUserId = currentUserId;
-        const allData = await game.settings.get(this.moduleNamespace, this.settingKey);
-
-        // Update only the current user's data
-        allData[currentShopUserId] = {
-            ...allData[currentShopUserId],
-            shopActor: shopActorData,
-            hasShopActor: true
+    // Set shop actor globally
+    async setShopActor(shopActorData) {
+        let allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
+    
+        // Update global shop actor data
+        allData.globalShopActor = {
+            id: shopActorData.id,
+            name: shopActorData.name,
+            img: shopActorData.img,
+            uuid: shopActorData.uuid,
+            items: shopActorData.items || [] // default empty array for shop items
         };
-
+    
         await game.settings.set(this.moduleNamespace, this.settingKey, allData);
     }
 
     // Set connection item for the current user
-    async setConnectionItem(currentUserId, connectionItemData) {
-        const currentConnectionUserId = currentUserId;
-        const allData = await game.settings.get(this.moduleNamespace, this.settingKey);
+    async setConnectionItem(currentUser, connectionItemData) {
+        const allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
+        allData.users = allData.users || {};
+        let conncetionCurrentUserId = currentUser.id;
+        allData.users[conncetionCurrentUserId] = {
+            ...allData.users[conncetionCurrentUserId],
+            connectionItem: connectionItemData
+        };
+        let currentConnctionUserId = currentUser.id;
+        // Initialize users object if not existing
+        allData.users = allData.users || {};
 
-        // Update only the current user's data
-        allData[currentConnectionUserId] = {
-            ...allData[currentConnectionUserId],
+        // Update only the current user's data under users object
+        allData.users[currentConnctionUserId] = {
+            ...allData.users[currentConnctionUserId],
             connectionItem: connectionItemData
         };
 
@@ -426,6 +459,41 @@ export class MarketplaceHelper {
             connectionItem: null,
             hasShopActor: false
         };
+
+        await game.settings.set(this.moduleNamespace, this.settingKey, allData);
+    }
+
+    // Remove the global shop actor (GM only)
+    async removeShopActor() {
+        let allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
+        
+        // Clear global shop actor data
+        delete allData.globalShopActor;
+        await game.settings.set(this.moduleNamespace, this.settingKey, allData);
+    }
+
+    // Remove the selected actor for a specific user
+    async removeSelectedActor(currentUser, actorId) {
+        let RemoveUserId = currentUser.id;
+        let allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
+        allData.users = allData.users || {};
+
+        if (allData.users[RemoveUserId]) {
+            allData.users[RemoveUserId].selectedActorOrUserActor = null;
+        }
+
+        await game.settings.set(this.moduleNamespace, this.settingKey, allData);
+    }
+
+    // Remove the connection item for a specific user
+    async removeConnectionItem(currentUser, itemId) {
+        let removeConnectionUserId = currentUser.id;
+        let allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
+        allData.users = allData.users || {};
+
+        if (allData.users[removeConnectionUserId]) {
+            allData.users[removeConnectionUserId].connectionItem = null;
+        }
 
         await game.settings.set(this.moduleNamespace, this.settingKey, allData);
     }

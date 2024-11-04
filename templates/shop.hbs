@@ -61,28 +61,37 @@
     <label for="search-box">{{localize "SR5.Marketplace.Search"}}:</label>
     <input type="text" id="search-box" placeholder='{{localize "SR5.Marketplace.Search items..."}}' class="marketplace-search">
     <!-- New actor selection and connection boxes -->
+    <!-- Shop Actor Drop Zone -->
     <div class="sr5-marketplace SR5ShopActor-box" id="shopActorDropzone">
-        {{#if shopActorBox}}
+        {{#if shopActorBox.id}}
             <a data-entity-link="Actor" data-uuid="{{shopActorBox.uuid}}">
                 <img src="{{shopActorBox.img}}" alt="{{shopActorBox.name}}" class="actor-icon">
             </a>
+            {{#if isGM}}
+                <span class="remove-link" title="Remove Shop Actor" data-shop-id="{{shopActorBox.id}}">&times;</span>
+            {{/if}}
         {{/if}}
     </div>
 
+    <!-- Connection Item Drop Zone -->
     <div class="sr5-marketplace SR5ConnectionLink-box" id="connectionItemDropzone">
         {{#if connectionBox}}
             <a data-entity-link="Item" data-uuid="{{connectionBox.uuid}}">
                 <img src="{{connectionBox.img}}" alt="{{connectionBox.name}}" class="item-icon">
             </a>
+            <span class="remove-link" title="Remove Connection Item" data-item-id="{{connectionBox.id}}">&times;</span>
         {{/if}}
     </div>
 
-    {{#if selectedActorBox}}
+    <!-- Selected Actor Drop Zone -->
+    {{#if selectedActorBox.id}}
         <div class="sr5-marketplace SR5ActorSelected-box" id="{{selectedActorBox.id}}">
             <a data-entity-link="Actor" data-uuid="{{selectedActorBox.uuid}}">
                 <img src="{{selectedActorBox.img}}" alt="{{selectedActorBox.name}}" class="actor-icon">
             </a>
-            <span class="remove-link" title="Remove Actor" data-user-id="{{selectedActorBox.id}}">&times;</span>
+            {{#if isGM}}
+                <span class="remove-link" title="Remove Selected Actor" data-actor-id="{{selectedActorBox.id}}">&times;</span>
+            {{/if}}
         </div>
     {{/if}}
 </div>

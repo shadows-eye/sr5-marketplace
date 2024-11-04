@@ -61,7 +61,7 @@ export class PurchaseScreenApp extends Application {
         let purchaseScreenActor = foundry.utils.deepClone(this.selectedActor);
         let returnHasEnhancedData = foundry.utils.deepClone(this.hasEnhancedItems);
         // Retrieve current PurchaseScreen data (including selected actor) for use in the template
-        const purchaseScreenData = await this.marketplaceHelper.getPurchaseScreenData(purchaseScreenUser, purchaseScreenActor);
+        let purchaseScreenData = await this.marketplaceHelper.getPurchaseScreenData(purchaseScreenUser, purchaseScreenActor);
 
         // Ensure UUID creation and enrich HTML for actor objects only if fields are non-null
         if (purchaseScreenData.selectedActorBox && purchaseScreenData.selectedActorBox.id && purchaseScreenData.selectedActorBox.name) {
@@ -104,6 +104,7 @@ export class PurchaseScreenApp extends Application {
         
         // Set up review data if needed
         const reviewData = this.reviewData ? this.reviewData : {};
+        
     
         // Return the data to the template for rendering
         return {
@@ -311,8 +312,17 @@ export class PurchaseScreenApp extends Application {
         const dropTarget = event.target.id;
         console.log("Drop target ID:", dropTarget); // Log the drop target ID to confirm
     
+        // Reference to the current user and current user's actor selection
+        const currentUser = this.currentUser;
+        const selectedActor = this.selectedActor;
+    
         if (dropTarget === "shopActorDropzone" && dragData.type === "Actor") {
-            // Handle dropped actor
+            // Handle dropped actor for the shop actor box
+            if (!currentUser.isGM) {
+                ui.notifications.warn("Only GMs can set the shop actor.");
+                return;
+            }
+    
             const actor = await fromUuid(dragData.uuid);
             if (actor) {
                 console.log(`Actor dropped: ${actor.name}`);
@@ -320,12 +330,15 @@ export class PurchaseScreenApp extends Application {
                     id: actor.id,
                     name: actor.name,
                     img: actor.img,
+                    uuid: dragData.uuid
                 };
-                await this.marketplaceHelper.setShopActor(game.user.id, shopActorData);
-                this.render(true);
+                // Set the shop actor and refresh the display
+                await this.marketplaceHelper.setShopActor(shopActorData);
+                const displayData = await this.marketplaceHelper.getPurchaseScreenData(currentUser, selectedActor);
+                this.render(false, displayData);
             }
         } else if (dropTarget === "connectionItemDropzone" && dragData.type === "Item") {
-            // Handle dropped item
+            // Handle dropped item for the connection item box
             const item = await fromUuid(dragData.uuid);
             if (item) {
                 console.log(`Item dropped: ${item.name}`);
@@ -333,9 +346,12 @@ export class PurchaseScreenApp extends Application {
                     id: item.id,
                     name: item.name,
                     img: item.img,
+                    uuid: dragData.uuid
                 };
-                await this.marketplaceHelper.setConnectionItem(game.user.id, connectionItemData);
-                this.render(true);
+                // Set the connection item and refresh the display
+                await this.marketplaceHelper.setConnectionItem(currentUser.id, connectionItemData);
+                const displayData = await this.marketplaceHelper.getPurchaseScreenData(currentUser, selectedActor);
+                this.render(false, displayData);
             }
         } else {
             console.warn("Dropped data is not an actor or item, or drop target is invalid.");
