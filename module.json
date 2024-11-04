@@ -27,6 +27,14 @@
     ],
     "requires": []
   },
+  "socket": true,
+  "dependencies": [
+        {
+            "name": "socketlib",
+            "type": "module",
+            "manifest": "https://github.com/manuelVo/foundryvtt-socketlib/releases/latest/download/module.json"
+        }
+    ],
   "styles": [
     "styles/marketplace.css"
   ],

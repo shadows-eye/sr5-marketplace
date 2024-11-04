@@ -6,23 +6,37 @@ export default class GlobalHelper {
     }
 
     // Initialize the global setting if not already set
-    async initializeGlobalSetting() {
-        const existingData = game.settings.get(this.moduleNamespace, this.settingKey);
+    async initializeGlobalSetting(socket = null) {
+        // Check if the call is being made via socketlib
+        if (!socket && !game.user.isGM) {
+            // Only GM can initialize this setting
+            return ui.notifications.warn("Only a GM can initialize global settings.");
+        }
+        
+        const existingData = await game.settings.get(this.moduleNamespace, this.settingKey);
         if (!existingData || typeof existingData !== 'object') {
             await game.settings.set(this.moduleNamespace, this.settingKey, {});
             console.log("GlobalHelper loaded successfully");
         }
     }
 
-    // Retrieve all review requests
+    // Retrieve all review requests, with socketlib support and optional GM permission
     async getReviewRequests() {
-        return game.settings.get(this.moduleNamespace, this.settingKey) || {};
-    } 
+        // Fetch review requests from settings directly
+        return await game.settings.get(this.moduleNamespace, this.settingKey) || {};
+    }
     // Retrieve a specific review request by ID
     async getReviewRequest(requestId) {
+        // Only GM can retrieve specific review requests if called remotely, but use player's userId for context
+        if (!game.user.isGM && !userId) {
+            return ui.notifications.warn("Only a GM can access specific review requests.");
+        }
+
+        // If userId is provided, we retrieve data for that specific user's request
         const reviewRequests = await this.getReviewRequests();
         return reviewRequests[requestId] || null;
     }
+
 
     // Add or update a review request
     async addOrUpdateReviewRequest(requestId, requestData) {

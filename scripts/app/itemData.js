@@ -12,7 +12,7 @@ export default class ItemData {
      * Initialize the global settings for the module.
      */
     async initializeSettings() {
-        await this.globalHelper.initializeGlobalSetting();
+        await socket.executeAsGM("initializeGlobalSetting");
     }
     async fetchItems() {
         const worldItems = game.items.contents.filter(item => !item.name.includes('#[CF_tempEntity]'));

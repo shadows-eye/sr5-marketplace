@@ -9,7 +9,8 @@ import { MarketplaceHelper } from './global.js';
 export class PurchaseScreenApp extends Application {
     constructor(options = {}) {
         super(options);
-    
+        // Define the socket as a class property for access throughout the app
+        this.socket = socketlib.registerModule("sr5-marketplace");
         // Determine if the current user is a GM
         this.isGM = game.user.isGM;
         this.currentUser = game.user;
@@ -19,9 +20,6 @@ export class PurchaseScreenApp extends Application {
         this.orderData = options.orderData || {};
         this.completeItemsArray = Array.isArray(options.completeItemsArray) ? options.completeItemsArray : [];
         this.itemData = new ItemData();  // Instantiate ItemData here to use its methods
-        this.globalHelper = new GlobalHelper();  // Instantiate GlobalHelper for global operations
-        this.basketHelper = new BasketHelper();  // Instantiate BasketHelper for basket operations
-        this.marketplaceHelper = new MarketplaceHelper(); // Instantiate MarketplaceHelper for PurchaseScreen setting
         this.hasEnhancedItems = game.user.getFlag('sr5-marketplace', 'enhancedItemsFlag') || false;
       }
       static get defaultOptions() {
@@ -52,8 +50,7 @@ export class PurchaseScreenApp extends Application {
         await this.itemData.fetchItems(); // Fetch all items in your system
         // Initialize the completeItemsArray if not already set (may come from passed options)
         this.completeItemsArray = this.completeItemsArray || [];
-        this.marketplaceHelper = new MarketplaceHelper(); // Instantiate MarketplaceHelper for PurchaseScreen setting
-        await this.marketplaceHelper.initializePurchaseScreenSetting(); // Initialize the PurchaseScreen setting if not already set
+        await this.socket.executeAsGM("initializePurchaseScreenSetting");
         // Restore basket items from flags (if needed)
         const savedBasket = game.user.getFlag('sr5-marketplace', 'basket') || [];
         this.itemData.basketItems = savedBasket;
@@ -61,7 +58,7 @@ export class PurchaseScreenApp extends Application {
         let purchaseScreenActor = foundry.utils.deepClone(this.selectedActor);
         let returnHasEnhancedData = foundry.utils.deepClone(this.hasEnhancedItems);
         // Retrieve current PurchaseScreen data (including selected actor) for use in the template
-        let purchaseScreenData = await this.marketplaceHelper.getPurchaseScreenData(purchaseScreenUser, purchaseScreenActor);
+        let purchaseScreenData = await this.socket.executeAsGM("getPurchaseScreenData", purchaseScreenUser, purchaseScreenActor);
 
         // Ensure UUID creation and enrich HTML for actor objects only if fields are non-null
         if (purchaseScreenData.selectedActorBox && purchaseScreenData.selectedActorBox.id && purchaseScreenData.selectedActorBox.name) {
@@ -333,8 +330,8 @@ export class PurchaseScreenApp extends Application {
                     uuid: dragData.uuid
                 };
                 // Set the shop actor and refresh the display
-                await this.marketplaceHelper.setShopActor(shopActorData);
-                const displayData = await this.marketplaceHelper.getPurchaseScreenData(currentUser, selectedActor);
+                await this.socket.executeAsGM("setShopActor",shopActorData);
+                const displayData = await this.socket.executeAsGM("getPurchaseScreenData", currentUser, selectedActor);
                 this.render(false, displayData);
             }
         } else if (dropTarget === "connectionItemDropzone" && dragData.type === "Item") {
@@ -349,8 +346,8 @@ export class PurchaseScreenApp extends Application {
                     uuid: dragData.uuid
                 };
                 // Set the connection item and refresh the display
-                await this.marketplaceHelper.setConnectionItem(currentUser.id, connectionItemData);
-                const displayData = await this.marketplaceHelper.getPurchaseScreenData(currentUser, selectedActor);
+                await this.socket.executeAsGM("setConnectionItem", currentUser.id, connectionItemData);
+                const displayData = await this.socket.executeAsGM("getPurchaseScreenData", currentUser, selectedActor);
                 this.render(false, displayData);
             }
         } else {
@@ -489,8 +486,7 @@ export class PurchaseScreenApp extends Application {
         console.log("Event data:", event);
         let currentUserId = currentBasketUser.id;
         let basketActor = userActor;
-        this.basketHelper = new BasketHelper();  // Instantiate BasketHelper for basket operations
-        await this.basketHelper.initializeBasketsSetting(); // Initialize the basket setting if not already set
+        await this.socket.executeAsGM("initializeBasketsSetting");
         // Get the current user's ID
         const itemId = $(event.currentTarget).data('itemId');
         
@@ -498,7 +494,7 @@ export class PurchaseScreenApp extends Application {
 
 
         // Retrieve the item from the basket to pass its details to BasketHelper
-        await this.basketHelper.saveItemToGlobalBasket(itemId, currentUserId, basketActor);
+        await this.socket.executeAsGM("saveItemToGlobalBasket", itemId, currentUserId, basketActor);
 
         this._renderBasket(html); // Re-render the basket with updated items
     }
@@ -523,7 +519,7 @@ export class PurchaseScreenApp extends Application {
         let currentUserId = currentUser.id;
         let removeBasketActor = userActor;
         const basketId = $(event.currentTarget).data('basketId'); //item of the basket not the basket itself
-        await this.basketHelper.removeItemFromGlobalBasket(basketId, currentUserId, removeBasketActor); // Global basket removal of item
+        await this.socket.executeAsGM("removeItemFromGlobalBasket", basketId, currentUserId, removeBasketActor); // Global basket removal of item
         this.itemData.removeItemFromBasket(basketId); // Remove item using the unique basketId
         this._renderBasket(html); // Re-render the basket with updated items
 
@@ -884,7 +880,7 @@ export class PurchaseScreenApp extends Application {
             flagData.actorId = actorId;
         }
         // Add or update the global review request with the same data
-        await this.globalHelper.addOrUpdateReviewRequest(requestId, flagData);
+        await this.socket.executeAsGM("addOrUpdateReviewRequest", requestId, flagData);
         // Add the flag data to the requesting user (GM or player)
         await requestingUser.setFlag('sr5-marketplace', requestId, flagData);
     
@@ -1080,7 +1076,7 @@ export class PurchaseScreenApp extends Application {
         if (gmUser) {
             await gmUser.unsetFlag('sr5-marketplace', flagId);  // Remove the flag from the GM user
 
-            await this.basketHelper.deleteGlobalUserBasket(buyActorId);
+            await this.socket.executeAsGM("deleteGlobalUserBasket", buyActorId);
             ui.notifications.info(`Order data cleared from GM user flags.`);
         }
         // Delete the old chat message associated with the flag
@@ -1100,10 +1096,10 @@ export class PurchaseScreenApp extends Application {
         event.preventDefault();
     
         // Instantiate MarketplaceHelper if not already done in the constructor
-        this.marketplaceHelper = this.marketplaceHelper || new MarketplaceHelper(); 
+        //this.marketplaceHelper = this.marketplaceHelper || new MarketplaceHelper(); 
         
         // Ensure settings are initialized for the user
-        await this.marketplaceHelper.initializePurchaseScreenSetting();
+        await this.socket.executeAsGM("initializePurchaseScreenSetting");
     
         // Retrieve drag data (e.g., actor ID)
         const dragData = event.dataTransfer?.getData("text/plain");
@@ -1134,7 +1130,7 @@ export class PurchaseScreenApp extends Application {
         };
     
         // Store shop actor data under the current user's settings
-        await this.marketplaceHelper.setShopActor(currentUser.id, shopActorData);
+        await this.socket.executeAsGM("setShopActor", shopActorData);
     
         // Re-render the app to reflect the actor update in the Shop Actor box
         this.render(false);
