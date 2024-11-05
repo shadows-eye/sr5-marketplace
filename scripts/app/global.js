@@ -329,7 +329,7 @@ export class MarketplaceHelper {
 
     // Initialize the setting to include user-specific data if not already set
     async initializePurchaseScreenSetting() {
-        const existingData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
+        let existingData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
         const currentUserId = game.user.id || null;
     
         // Check for and initialize global settings if they are missing
@@ -367,7 +367,7 @@ export class MarketplaceHelper {
      * @returns {Object} Processed data for the template display.
      */
     async getPurchaseScreenData(currentUser, selectedActor) {
-        const allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
+        let allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
         const currentUserId = currentUser?.id || null;
 
         // Retrieve global shop actor data for display
@@ -403,7 +403,7 @@ export class MarketplaceHelper {
 
         // Save the selected actor for the user if needed
         if (currentUserId) {
-            await this.setSelectedActor(currentUserId, displayData.selectedActorBox);
+            await this.setSelectedActor(currentUser, displayData.selectedActorBox);
         }
 
         return displayData;
@@ -414,7 +414,6 @@ export class MarketplaceHelper {
         // Initialize users object if not existing
         allData.users = allData.users || {};
         let setSelectCurrentUderId = currentUser.id;
-        let setActorSelectedActorUserId = currentUser.id;
         let selectedActorOrUserActor = currentUser.isGM ? actorData : currentUser.character;
         allData.users[setSelectCurrentUderId] = {
             ...allData.users[setSelectCurrentUderId],
@@ -441,7 +440,7 @@ export class MarketplaceHelper {
 
     // Set connection item for the current user
     async setConnectionItem(currentUser, connectionItemData) {
-        const allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
+        let allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
         allData.users = allData.users || {};
         let conncetionCurrentUserId = currentUser.id;
         allData.users[conncetionCurrentUserId] = {
@@ -464,7 +463,7 @@ export class MarketplaceHelper {
     // Clear the Purchase Screen data for the current user
     async clearPurchaseScreenData(currentUserId) {
         const clearCurrentUserId = currentUserId;
-        const allData = await game.settings.get(this.moduleNamespace, this.settingKey);
+        let allData = await game.settings.get(this.moduleNamespace, this.settingKey);
 
         // Reset only the current user's data
         allData[clearCurrentUserId] = {
@@ -480,7 +479,7 @@ export class MarketplaceHelper {
     // Remove the global shop actor (GM only)
     async removeShopActor() {
         let allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
-        
+
         // Clear global shop actor data
         delete allData.globalShopActor;
         await game.settings.set(this.moduleNamespace, this.settingKey, allData);
@@ -488,23 +487,39 @@ export class MarketplaceHelper {
 
     // Remove the selected actor for a specific user
     async removeSelectedActor(currentUser, actorId) {
-        let RemoveUserId = currentUser.id;
-        let allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
+        // Retrieve all data from settings or initialize if it doesn’t exist
+        const allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
         allData.users = allData.users || {};
-
-        if (allData.users[RemoveUserId]) {
-            allData.users[RemoveUserId].selectedActorOrUserActor = null;
+    
+        // Get the current user's ID
+        const removeUserId = currentUser.id;
+    
+        // Check if the user's data exists and matches the actorId
+        if (allData.users[removeUserId] && allData.users[removeUserId].selectedActorOrUserActor.id === actorId) {
+            // Deselect any tokens that belong to this actor to prevent re-selection
+            canvas.tokens.placeables
+                .filter(token => token.actor?.id === actorId)
+                .forEach(token => token.control({ releaseOthers: true }));
+            
+            // Set selectedActorOrUserActor to null to "remove" the actor
+            allData.users[removeUserId].selectedActorOrUserActor = null;
+    
+            // Save the updated settings back to Foundry
+            await game.settings.set(this.moduleNamespace, this.settingKey, allData);
+            
+            console.log(`Actor with ID ${actorId} has been removed for user ${removeUserId}.`);
+        } else {
+            console.warn(`No matching actor with ID ${actorId} found for user ${removeUserId}.`);
         }
-
-        await game.settings.set(this.moduleNamespace, this.settingKey, allData);
     }
 
     // Remove the connection item for a specific user
-    async removeConnectionItem(currentUser, itemId) {
+    async removeConnectionItem(currentUser, connectionItemId) {
         let removeConnectionUserId = currentUser.id;
         let allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
         allData.users = allData.users || {};
 
+        // Check if the user exists in settings and clear the connection item
         if (allData.users[removeConnectionUserId]) {
             allData.users[removeConnectionUserId].connectionItem = null;
         }

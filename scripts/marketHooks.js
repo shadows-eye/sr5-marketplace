@@ -133,11 +133,11 @@ Hooks.once('ready', async function() {
     });
     socket.register("clearPurchaseScreenData", async (currentUserId) => await marketplaceHelper.clearPurchaseScreenData(currentUserId));
     socket.register("removeShopActor", async () => await marketplaceHelper.removeShopActor());
-    socket.register("removeSelectedActor", async (currentUser, actorId) => {
-        await marketplaceHelper.removeSelectedActor(currentUser, actorId);
+    socket.register("removeSelectedActor", async (currentUser, selectedActorId) => {
+        await marketplaceHelper.removeSelectedActor(currentUser, selectedActorId);
     });
-    socket.register("removeConnectionItem", async (currentUser, itemId) => {
-        await marketplaceHelper.removeConnectionItem(currentUser, itemId);
+    socket.register("removeConnectionItem", async (currentUser, connectionItemId) => {
+        await marketplaceHelper.removeConnectionItem(currentUser, connectionItemId);
     });
     // Check if the user is not a GM
     if (!game.user.isGM) {

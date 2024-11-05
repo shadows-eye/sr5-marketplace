@@ -15,7 +15,7 @@ export class PurchaseScreenApp extends Application {
         this.isGM = game.user.isGM;
         this.currentUser = game.user;
         this.userActor = game.user.character;
-        this.selectedActor = game.canvas.tokens.controlled[0]?.actor || game.user.character || {};
+        this.selectedActor = game.canvas.tokens.controlled[0]?.actor || this.userActor  || {};
         this.tab = options.tab || "shop"; // Default to "shop" tab
         this.orderData = options.orderData || {};
         this.completeItemsArray = Array.isArray(options.completeItemsArray) ? options.completeItemsArray : [];
@@ -130,7 +130,7 @@ export class PurchaseScreenApp extends Application {
                 }
             }
         });
-        
+        html.on('click', '.remove-link', (event) => this._onRemoveSelectedActorItemShopActor(event, this.currentUser));
         // Existing listeners for search, selection, basket, etc.
         html.find(".item-type-selector").change(event => this._onFilterChange(event, html));
         const firstType = html.find(".item-type-selector option:first").val();
@@ -302,35 +302,56 @@ export class PurchaseScreenApp extends Application {
         event.preventDefault();
         
         // Directly retrieve dragData as an object
-        const dragData = JSON.parse(event.dataTransfer.getData("text/plain"));
+        let dragData = JSON.parse(event.dataTransfer.getData("text/plain"));
         console.log("Drag data object:", dragData); // Log drag data object to verify structure
     
         // Identify the drop target
-        const dropTarget = event.target.id;
+        let dropTarget = event.target.id;
         console.log("Drop target ID:", dropTarget); // Log the drop target ID to confirm
     
         // Reference to the current user and current user's actor selection
-        const currentUser = this.currentUser;
-        const selectedActor = this.selectedActor;
+        let currentUser = this.currentUser;
+        let isGM = currentUser.isGM;
+        let selectedActor = this.selectedActor;
     
         if (dropTarget === "shopActorDropzone" && dragData.type === "Actor") {
             // Handle dropped actor for the shop actor box
-            if (!currentUser.isGM) {
+            if (!isGM) {
                 ui.notifications.warn("Only GMs can set the shop actor.");
                 return;
             }
     
-            const actor = await fromUuid(dragData.uuid);
+            let actor = await fromUuid(dragData.uuid);
             if (actor) {
                 console.log(`Actor dropped: ${actor.name}`);
+                
+                // Retrieve actor's items and transform them to the desired format
+                let shopItems = actor.items.map((actorItem) => {
+                    let shopId = foundry.utils.randomID();
+                    let originalItemUuid = actorItem.uuid;
+                    let worldItem = game.items.get(actorItem.id) || null;
+                    let worldItemUuid = worldItem ? worldItem.uuid : null;
+    
+                    return {
+                        shopItem: actorItem,
+                        shopQuantity: 1,
+                        shopId: shopId,
+                        originalItemUuid: originalItemUuid,
+                        worldItemUuid: worldItemUuid
+                    };
+                });
+    
+                // Prepare shop actor data with items included
                 const shopActorData = {
                     id: actor.id,
                     name: actor.name,
                     img: actor.img,
-                    uuid: dragData.uuid
+                    uuid: dragData.uuid,
+                    items: shopItems
                 };
+    
                 // Set the shop actor and refresh the display
-                await this.socket.executeAsGM("setShopActor",shopActorData);
+                await this.socket.executeAsGM("setShopActor", shopActorData);
                 const displayData = await this.socket.executeAsGM("getPurchaseScreenData", currentUser, selectedActor);
                 this.render(false, displayData);
             }
@@ -345,8 +366,9 @@ export class PurchaseScreenApp extends Application {
                     img: item.img,
                     uuid: dragData.uuid
                 };
+    
                 // Set the connection item and refresh the display
-                await this.socket.executeAsGM("setConnectionItem", currentUser.id, connectionItemData);
+                await this.socket.executeAsGM("setConnectionItem", currentUser, connectionItemData);
                 const displayData = await this.socket.executeAsGM("getPurchaseScreenData", currentUser, selectedActor);
                 this.render(false, displayData);
             }
@@ -1134,6 +1156,35 @@ export class PurchaseScreenApp extends Application {
     
         // Re-render the app to reflect the actor update in the Shop Actor box
         this.render(false);
+    }
+    async _onRemoveSelectedActorItemShopActor(event, currentUser) {
+        event.preventDefault();
+        
+        // Get the current user
+        let removeCurrentUser = currentUser;
+    
+        // Identify the type of removal based on data attributes
+        let shopId = $(event.currentTarget).data("shopId");
+        let actorId = $(event.currentTarget).data("actorId");
+        let itemId = $(event.currentTarget).data("itemId");
+    
+        // Execute removal based on the type of item, ensuring GM permissions
+        if (shopId) {
+            // Trigger shop actor removal as GM
+            await this.socket.executeAsGM("removeShopActor", shopId);
+            this.render(false);
+            ui.notifications.info("Shop Actor removed successfully.");
+        } else if (actorId) {
+            // Trigger selected actor removal as GM
+            await this.socket.executeAsGM("removeSelectedActor",removeCurrentUser, actorId)
+            this.render(true);
+            ui.notifications.info("Selected Actor removed successfully.");
+        } else if (itemId) {
+            // Trigger connection item removal as GM
+            await this.socket.executeAsGM("removeConnectionItem", removeCurrentUser, itemId);
+            this.render(true);
+            ui.notifications.info("Connection Item removed successfully.");
+        }
     }                                               
 }
   
