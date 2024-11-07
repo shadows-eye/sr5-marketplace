@@ -64,11 +64,11 @@
     <!-- Shop Actor Drop Zone -->
     <div class="sr5-marketplace SR5ShopActor-box" id="shopActorDropzone">
         {{#if shopActorBox.shopId}}
-            <a data-entity-link="Actor" data-uuid="{{shopActorBox.uuid}}">
-                <img src="{{shopActorBox.img}}" alt="{{shopActorBox.name}}" class="actor-icon">
+            <a data-entity-link="Actor" data-uuid="{{shopActorBox.shopUuid}}">
+                <img src="{{shopActorBox.shopImg}}" alt="{{shopActorBox.shopName}}" class="actor-icon">
             </a>
             {{#if isGM}}
-                <span class="remove-link" title="Remove Shop Actor" data-shop-id="{{shopActorBox.id}}">&times;</span>
+                <span class="remove-link" title="Remove Shop Actor" data-shop-id="{{shopActorBox.shopId}}">&times;</span>
             {{/if}}
         {{/if}}
     </div>

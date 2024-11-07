@@ -7,6 +7,7 @@ export default class ItemData {
         this.basketItems = [];
         this.filteredItems = [];
         this.orderReviewItems = [];
+        this.socket = socketlib.registerModule("sr5-marketplace");
     }
     /**
      * Initialize the global settings for the module.
@@ -36,6 +37,36 @@ export default class ItemData {
             .includes(item.type)
         );
         this.filteredItems = this.items; // Initialize filteredItems with all items
+    }
+
+    /**
+     * Fetch items from the shop actor specified in global settings.
+     */
+    async fetchActorItems() {
+        // Ensure purchase screen settings are initialized
+        let getDataUserId = game.user.id;
+        await this.socket.executeAsGM("initializePurchaseScreenSetting", getDataUserId);
+
+        // Retrieve the `globalShopActor` data via socket
+        const shopActorData = await this.socket.executeAsGM("getGlobalShopActorData");
+
+        // Ensure the shop actor is valid and retrieve its items
+        const shopActor = game.actors.get(shopActorData?.id);
+        if (!shopActor) {
+            console.warn("Shop actor not found.");
+            this.items = []; // Return empty if actor is not set or found
+            return;
+        }
+
+        // Retrieve items from the shop actor and filter as necessary
+        const actorItems = shopActor.items.contents.filter(item => !item.name.includes('#[CF_tempEntity]'));
+        this.items = actorItems.filter(item => !["contact", "adept_power", "call_in_action", "critter_power", "echo", "host", "metamagic", "sprite_power"].includes(item.type));
+        
+        this.excludedItems = actorItems.filter(item => 
+            ["adept_power", "call_in_action", "critter_power", "echo", "host", "metamagic", "sprite_power"].includes(item.type)
+        );
+
+        this.filteredItems = this.items; // Initialize filteredItems with all actor items
     }
 
     get itemsByType() {

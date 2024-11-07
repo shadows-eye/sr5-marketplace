@@ -356,6 +356,23 @@ export class MarketplaceHelper {
         // Save initialized data back to settings
         await game.settings.set(this.moduleNamespace, this.settingKey, mergedData);
     }
+    /**
+     * 
+     * @returns {boolean} Returns true if the global shop actor exists, false otherwise.
+     */
+    async getHasShopActor() {
+        const settingsData = await game.settings.get(this.moduleNamespace, this.settingKey);
+        return settingsData.hasShopActor || false;
+    }
+
+    /**
+     * 
+     * @returns {Object} Returns the global shop actor data from settings.
+     */
+    async getGlobalShopActorData() {
+        const settingsData = await game.settings.get(this.moduleNamespace, this.settingKey);
+        return settingsData.globalShopActor || null;
+    }
 
     /**
      * Retrieves Purchase Screen data for the current user.
@@ -376,11 +393,11 @@ export class MarketplaceHelper {
     
         // Prepare global shop actor data for display
         const globalShopActor = allData.globalShopActor || { items: [] };
-        const shopActorBox = globalShopActor?.id ? {
-            shopId: globalShopActor.id,
-            shopName: globalShopActor.name,
-            shopImg: globalShopActor.img,
-            shopUuid: globalShopActor.uuid,
+        const shopActorBox = globalShopActor?.shopId ? {
+            shopId: globalShopActor.shopId,
+            shopName: globalShopActor.shopName,
+            shopImg: globalShopActor.shopImg,
+            shopUuid: globalShopActor.shopUuid,
             //shopActorItems: globalShopActor.items
         } : null;
     
@@ -420,7 +437,7 @@ export class MarketplaceHelper {
                 connectionImg: userData.connectionItem.img,
                 connectionUuid: userData.connectionItem.uuid
             } : null,
-            hasShopActor: !!globalShopActor.id
+            hasShopActor: !!globalShopActor.shopId
         };
     
         // Update selected actor for the current user in settings
@@ -451,15 +468,17 @@ export class MarketplaceHelper {
     }
     // Set shop actor globally
     async setShopActor(shopActorData) {
+        let shoptest = shopActorData;
+        console.log('Shop actor data:', shoptest);
         let allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
     
         // Update global shop actor data and set hasShopActor to true
         allData.globalShopActor = {
-            id: shopActorData.id,
-            name: shopActorData.name,
-            img: shopActorData.img,
-            uuid: shopActorData.uuid,
-            shopItems: shopActorData.items || [] // Ensures shopItems is always an array
+            shopId: shopActorData.id,
+            shopName: shopActorData.name,
+            shopImg: shopActorData.img,
+            shopUuid: shopActorData.uuid,
+            shopActorItems: shopActorData.items || [] // Ensures shopItems is always an array
         };
         allData.hasShopActor = true;
     
@@ -506,7 +525,7 @@ export class MarketplaceHelper {
         let allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
 
         // Clear global shop actor data
-        delete allData.globalShopActor;
+        allData.globalShopActor = false;
         await game.settings.set(this.moduleNamespace, this.settingKey, allData);
     }
 

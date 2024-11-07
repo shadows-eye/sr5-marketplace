@@ -45,13 +45,19 @@ export class PurchaseScreenApp extends Application {
     }
 
     async getData() {
-        // Ensure itemData is properly instantiated and fetch items
         this.itemData = new ItemData();
-        await this.itemData.fetchItems(); // Fetch all items in your system
-        // Initialize the completeItemsArray if not already set (may come from passed options)
-        this.completeItemsArray = this.completeItemsArray || [];
         let getDataUserId = game.user.id;
         await this.socket.executeAsGM("initializePurchaseScreenSetting", getDataUserId);
+        // Check if shop actor is set
+        const hasShopActor = await this.socket.executeAsGM("getHasShopActor");
+        if (hasShopActor) {
+            // Fetch items directly from the shop actor
+            await this.itemData.fetchActorItems();
+        } else {
+            // Fallback to the normal item fetch if no shop actor is set
+            await this.itemData.fetchItems();
+        } // Fetch all items in your system
+        this.completeItemsArray = this.completeItemsArray || [];
         // Restore basket items from flags (if needed)
         const savedBasket = game.user.getFlag('sr5-marketplace', 'basket') || [];
         this.itemData.basketItems = savedBasket;
@@ -317,7 +323,7 @@ export class PurchaseScreenApp extends Application {
         
         let dragData = JSON.parse(event.dataTransfer.getData("text/plain"));
         const dropTarget = event.target.id;
-        const currentUserDrop = game.user;
+        const currentUserDrop = game.user || this.currentUser;
         const isGM = this.currentUser.isGM;
     
         if (dropTarget === "shopActorDropzone" && dragData.type === "Actor") {
@@ -329,9 +335,9 @@ export class PurchaseScreenApp extends Application {
             const actor = await fromUuid(dragData.uuid);
             if (actor) {
                 const shopItems = actor.items.map(item => ({
-                    shopItem: item,
+                    shopActorItem: item,
                     shopQuantity: 1,
-                    shopId: foundry.utils.randomID(),
+                    shopItemId: foundry.utils.randomID(),
                     originalItemUuid: item.uuid,
                     worldItemUuid: game.items.get(item.id)?.uuid || null
                 }));
@@ -341,7 +347,7 @@ export class PurchaseScreenApp extends Application {
                     name: actor.name,
                     img: actor.img,
                     uuid: dragData.uuid,
-                    items: shopItems
+                    shopActorItems: shopItems
                 };
     
                 await this.socket.executeAsGM("setShopActor", shopActorData);
