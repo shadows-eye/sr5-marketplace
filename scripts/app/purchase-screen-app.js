@@ -77,18 +77,22 @@ export class PurchaseScreenApp extends Application {
             );
         }
 
-        if (purchaseScreenData.shopActorBox && purchaseScreenData.shopActorBox.id) {
-            purchaseScreenData.shopActorBox.uuid = `Actor.${purchaseScreenData.shopActorBox.id}`;
+        if (purchaseScreenData.shopActorBox && purchaseScreenData.shopActorBox.shopId) {
+            purchaseScreenData.shopActorBox.shopUuid = `Actor.${purchaseScreenData.shopActorBox.shopId}`;
             purchaseScreenData.shopActorBox.enrichedName = await TextEditor.enrichHTML(
-                `<a data-entity-link data-uuid="${purchaseScreenData.shopActorBox.uuid}">${purchaseScreenData.shopActorBox.name}</a>`,
+                `<a data-entity-link data-uuid="${purchaseScreenData.shopActorBox.shopUuid}">${purchaseScreenData.shopActorBox.shopName}</a>`,
                 { entities: true }
             );
         }
 
-        if (purchaseScreenData.connectionBox && purchaseScreenData.connectionBox.id) {
-            purchaseScreenData.connectionBox.uuid = `Actor.${purchaseScreenData.connectionBox.id}`;
+        // Update `connectionBox` UUID to include both actor and item IDs if present
+        if (purchaseScreenData.connectionBox && purchaseScreenData.connectionBox.connectionId && purchaseScreenData.connectionBox.connectionUuid) {
+            const actorId = purchaseScreenData.connectionBox.connectionId; // Actor ID
+            const itemId = purchaseScreenData.connectionBox.connectionUuid.split('.').pop(); // Extract item ID
+            purchaseScreenData.connectionBox.uuid = purchaseScreenData.connectionBox.connectionUuid || `Actor.${actorId}.Item.${itemId}`;
+
             purchaseScreenData.connectionBox.enrichedName = await TextEditor.enrichHTML(
-                `<a data-entity-link data-uuid="${purchaseScreenData.connectionBox.uuid}">${purchaseScreenData.connectionBox.name}</a>`,
+                `<a data-entity-link data-uuid="${purchaseScreenData.connectionBox.connectionUuid}">${purchaseScreenData.connectionBox.connectionName}</a>`,
                 { entities: true }
             );
         }

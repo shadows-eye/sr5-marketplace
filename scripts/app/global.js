@@ -336,11 +336,11 @@ export class MarketplaceHelper {
             connectionItem: null,
             hasShopActor: false,
             globalShopActor: {
-                id: null,
-                name: null,
-                img: null,
-                uuid: null,
-                shopItems: []
+                shopId: null,
+                shopName: null,
+                shopImg: null,
+                shopUuid: null,
+                shopActorItems: []
             },
             users: {
                 [userId]: {
@@ -377,10 +377,11 @@ export class MarketplaceHelper {
         // Prepare global shop actor data for display
         const globalShopActor = allData.globalShopActor || { items: [] };
         const shopActorBox = globalShopActor?.id ? {
-            id: globalShopActor.id,
-            name: globalShopActor.name,
-            img: globalShopActor.img,
-            uuid: globalShopActor.uuid
+            shopId: globalShopActor.id,
+            shopName: globalShopActor.name,
+            shopImg: globalShopActor.img,
+            shopUuid: globalShopActor.uuid,
+            //shopActorItems: globalShopActor.items
         } : null;
     
         // Ensure user-specific data structure exists in settings
@@ -407,15 +408,17 @@ export class MarketplaceHelper {
         // Structure data for template display
         const displayData = {
             selectedActorBox: selectedActorOrUserActor ? {
-                id: selectedActorOrUserActor.id || selectedActorOrUserActor._id,
-                name: selectedActorOrUserActor.name,
-                img: selectedActorOrUserActor.img
+                actorId: selectedActorOrUserActor.id || selectedActorOrUserActor._id,
+                actorName: selectedActorOrUserActor.name,
+                actorImg: selectedActorOrUserActor.img,
+                actorUuid: selectedActorOrUserActor.uuid
             } : null,
             shopActorBox: shopActorBox,
             connectionBox: userData.connectionItem ? {
-                id: userData.connectionItem.id,
-                name: userData.connectionItem.name,
-                img: userData.connectionItem.img
+                connectionId: userData.connectionItem.id,
+                connectionName: userData.connectionItem.name,
+                connectionImg: userData.connectionItem.img,
+                connectionUuid: userData.connectionItem.uuid
             } : null,
             hasShopActor: !!globalShopActor.id
         };
