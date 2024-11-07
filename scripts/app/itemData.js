@@ -51,7 +51,7 @@ export default class ItemData {
         const shopActorData = await this.socket.executeAsGM("getGlobalShopActorData");
 
         // Ensure the shop actor is valid and retrieve its items
-        const shopActor = game.actors.get(shopActorData?.id);
+        const shopActor = game.actors.get(shopActorData?.shopId);
         if (!shopActor) {
             console.warn("Shop actor not found.");
             this.items = []; // Return empty if actor is not set or found

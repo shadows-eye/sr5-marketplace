@@ -332,9 +332,15 @@ export class PurchaseScreenApp extends Application {
                 return;
             }
     
+            // Retrieve the actor from the UUID
             const actor = await fromUuid(dragData.uuid);
             if (actor) {
-                const shopItems = actor.items.map(item => ({
+                // Log the actor and its items for debugging
+                console.log("Dropped Actor:", actor);
+                console.log("Actor Items:", actor.items.contents);
+    
+                // Map the actor's items into the structure for shop items
+                let shopItems = actor.items.map(item => ({
                     shopActorItem: item,
                     shopQuantity: 1,
                     shopItemId: foundry.utils.randomID(),
@@ -342,7 +348,11 @@ export class PurchaseScreenApp extends Application {
                     worldItemUuid: game.items.get(item.id)?.uuid || null
                 }));
     
-                const shopActorData = {
+                // Log the mapped items to ensure they are structured correctly
+                console.log("Mapped Shop Items:", shopItems);
+    
+                // Construct the shop actor data
+                let shopActorData = {
                     id: actor.id,
                     name: actor.name,
                     img: actor.img,
@@ -350,15 +360,18 @@ export class PurchaseScreenApp extends Application {
                     shopActorItems: shopItems
                 };
     
+                // Log the complete shopActorData before sending it to settings
+                console.log("Complete Shop Actor Data to Save:", shopActorData);
+    
                 await this.socket.executeAsGM("setShopActor", shopActorData);
                 let onDropSelectedActor = this.selectedActor
                 const displayData = await this.socket.executeAsGM("getPurchaseScreenData", currentUserDrop, onDropSelectedActor);
                 this.render(false, displayData);
             }
         } else if (dropTarget === "connectionItemDropzone" && dragData.type === "Item") {
-            const item = await fromUuid(dragData.uuid);
+            let item = await fromUuid(dragData.uuid);
             if (item) {
-                const connectionItemData = {
+                let connectionItemData = {
                     id: item.id,
                     name: item.name,
                     img: item.img,
