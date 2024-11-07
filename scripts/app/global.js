@@ -328,49 +328,53 @@ export class MarketplaceHelper {
     }
 
     // Initialize the setting to include user-specific data if not already set
-    async initializePurchaseScreenSetting() {
-        let existingData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
-        const currentUserId = game.user.id || null;
-    
-        // Check for and initialize global settings if they are missing
-        if (!existingData.globalShopActor) {
-            existingData.globalShopActor = {
+    async initializePurchaseScreenSetting(userId) {
+        let existingData = await game.settings.get(this.moduleNamespace, this.settingKey);
+        
+        // Structure with all necessary properties, ensuring consistency
+        const defaultData = {
+            connectionItem: null,
+            hasShopActor: false,
+            globalShopActor: {
                 id: null,
                 name: null,
                 img: null,
                 uuid: null,
-                items: [] // Initialize with an empty items array
-            };
-        }
-    
-        // Ensure user-specific data structure exists, if not initialize it
-        if (!existingData.users) {
-            existingData.users = {};
-        }
-    
-        // Check if the current user's settings exist; initialize if missing
-        if (!existingData.users[currentUserId]) {
-            existingData.users[currentUserId] = {
-                selectedActorOrUserActor: null,
-                connectionItem: null
-            };
-        }
-    
-        // Save the updated structure back to settings if any modifications were made
-        await game.settings.set(this.moduleNamespace, this.settingKey, existingData);
+                shopItems: []
+            },
+            users: {
+                [userId]: {
+                    selectedActorOrUserActor: null,
+                    connectionItem: null
+                }
+            }
+        };
+        
+        // Merge existing data with defaults, ensuring missing properties are set
+        const mergedData = foundry.utils.mergeObject(defaultData, existingData);
+        
+        // Save initialized data back to settings
+        await game.settings.set(this.moduleNamespace, this.settingKey, mergedData);
     }
 
     /**
      * Retrieves Purchase Screen data for the current user.
      * @param {Object} currentUser - The current user.
-     * @param {Object} selectedActor - Actor selected on the screen.
+     * @param {Object} playerActor - Actor assigned to the current user (if any).
+     * @param {Object} selectedActor - Actor selected on the screen (if any).
      * @returns {Object} Processed data for the template display.
      */
-    async getPurchaseScreenData(currentUser, selectedActor) {
+    async getPurchaseScreenData(currentUser,playerActor, selectedActor) {
+        console.log("Retrieving purchase screen data for user:", currentUser);
+        let getPlayerActor = playerActor;
+        console.log("Player actor data:", getPlayerActor);
+        // Retrieve or initialize the global settings data
         let allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
-        const currentUserId = currentUser?.id || null;
-
-        // Retrieve global shop actor data for display
+        const currentUserId = currentUser?.id || game.user.id;
+        console.log("Current user ID:", currentUserId);
+        console.log("Current user data from settings:", allData.users?.[currentUserId]);
+    
+        // Prepare global shop actor data for display
         const globalShopActor = allData.globalShopActor || { items: [] };
         const shopActorBox = globalShopActor?.id ? {
             id: globalShopActor.id,
@@ -378,17 +382,32 @@ export class MarketplaceHelper {
             img: globalShopActor.img,
             uuid: globalShopActor.uuid
         } : null;
-
-        // Retrieve user-specific data for current user, defaulting to null if not available
-        const userData = allData.users?.[currentUserId] || { selectedActorOrUserActor: null, connectionItem: null };
-
-        // Determine which actor to display based on user type
-        const selectedActorOrUserActor = currentUser.isGM ? selectedActor : currentUser.character;
-
-        // Structure data for template rendering
+    
+        // Ensure user-specific data structure exists in settings
+        if (!allData.users) allData.users = {};
+        if (!allData.users[currentUserId]) {
+            allData.users[currentUserId] = {
+                selectedActorOrUserActor: null,
+                connectionItem: null
+            };
+        }
+        const userData = allData.users[currentUserId];
+    
+        // Determine selected actor based on user role (GM vs. Player)
+        let selectedActorOrUserActor;
+        if (currentUser.isGM) {
+            // For GM: Use selected token on the canvas if available; otherwise, leave null
+            selectedActorOrUserActor = selectedActor || null;
+        } else {
+            // For Players: Always use playerActor
+            selectedActorOrUserActor = getPlayerActor;
+            console.log("Player actor data:", selectedActorOrUserActor);
+        }
+    
+        // Structure data for template display
         const displayData = {
             selectedActorBox: selectedActorOrUserActor ? {
-                id: selectedActorOrUserActor.id,
+                id: selectedActorOrUserActor.id || selectedActorOrUserActor._id,
                 name: selectedActorOrUserActor.name,
                 img: selectedActorOrUserActor.img
             } : null,
@@ -400,63 +419,67 @@ export class MarketplaceHelper {
             } : null,
             hasShopActor: !!globalShopActor.id
         };
-
-        // Save the selected actor for the user if needed
-        if (currentUserId) {
-            await this.setSelectedActor(currentUser, displayData.selectedActorBox);
-        }
-
+    
+        // Update selected actor for the current user in settings
+        await this.setSelectedActor(currentUser, displayData.selectedActorBox);
+    
         return displayData;
-    }
+    }    
+
     // Set selected actor for the current user
     async setSelectedActor(currentUser, actorData) {
         const allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
-        // Initialize users object if not existing
-        allData.users = allData.users || {};
-        let setSelectCurrentUderId = currentUser.id;
-        let selectedActorOrUserActor = currentUser.isGM ? actorData : currentUser.character;
-        allData.users[setSelectCurrentUderId] = {
-            ...allData.users[setSelectCurrentUderId],
-            selectedActorOrUserActor: selectedActorOrUserActor
-        };
     
+        // Ensure user-specific data structure exists in settings
+        const userId = currentUser.id || game.user.id;
+        if (!allData.users) allData.users = {};
+        if (!allData.users[userId]) {
+            allData.users[userId] = {
+                selectedActorOrUserActor: null,
+                connectionItem: null
+            };
+        }
+    
+        // Assign selected actor based on user type
+        allData.users[userId].selectedActorOrUserActor = actorData || null;
+    
+        // Save updated settings
         await game.settings.set(this.moduleNamespace, this.settingKey, allData);
     }
     // Set shop actor globally
     async setShopActor(shopActorData) {
         let allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
     
-        // Update global shop actor data
+        // Update global shop actor data and set hasShopActor to true
         allData.globalShopActor = {
             id: shopActorData.id,
             name: shopActorData.name,
             img: shopActorData.img,
             uuid: shopActorData.uuid,
-            items: shopActorData.items || [] // default empty array for shop items
+            shopItems: shopActorData.items || [] // Ensures shopItems is always an array
         };
+        allData.hasShopActor = true;
     
         await game.settings.set(this.moduleNamespace, this.settingKey, allData);
     }
 
     // Set connection item for the current user
     async setConnectionItem(currentUser, connectionItemData) {
+        // Retrieve existing data or initialize it if undefined
         let allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
+    
+        // Ensure `users` object and current user's structure exist
         allData.users = allData.users || {};
-        let conncetionCurrentUserId = currentUser.id;
-        allData.users[conncetionCurrentUserId] = {
-            ...allData.users[conncetionCurrentUserId],
-            connectionItem: connectionItemData
+        const currentUserId = currentUser.id || game.user.id;
+        allData.users[currentUserId] = allData.users[currentUserId] || {
+            selectedActorOrUserActor: null,
+            connectionItem: null
         };
-        let currentConnctionUserId = currentUser.id;
-        // Initialize users object if not existing
-        allData.users = allData.users || {};
-
-        // Update only the current user's data under users object
-        allData.users[currentConnctionUserId] = {
-            ...allData.users[currentConnctionUserId],
-            connectionItem: connectionItemData
-        };
-
+    
+        // Update the connection item for the specified user
+        allData.users[currentUserId].connectionItem = connectionItemData;
+    
+        // Save updated data back to the game settings
         await game.settings.set(this.moduleNamespace, this.settingKey, allData);
     }
 
@@ -467,8 +490,7 @@ export class MarketplaceHelper {
 
         // Reset only the current user's data
         allData[clearCurrentUserId] = {
-            selectedActor: null,
-            shopActor: null,
+            
             connectionItem: null,
             hasShopActor: false
         };

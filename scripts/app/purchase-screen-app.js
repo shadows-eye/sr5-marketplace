@@ -50,18 +50,26 @@ export class PurchaseScreenApp extends Application {
         await this.itemData.fetchItems(); // Fetch all items in your system
         // Initialize the completeItemsArray if not already set (may come from passed options)
         this.completeItemsArray = this.completeItemsArray || [];
-        await this.socket.executeAsGM("initializePurchaseScreenSetting");
+        let getDataUserId = game.user.id;
+        await this.socket.executeAsGM("initializePurchaseScreenSetting", getDataUserId);
         // Restore basket items from flags (if needed)
         const savedBasket = game.user.getFlag('sr5-marketplace', 'basket') || [];
         this.itemData.basketItems = savedBasket;
+        // Clone user and actor data to prepare for socket execution
         let purchaseScreenUser = foundry.utils.deepClone(this.currentUser);
+        let playerActor = this.currentUser.character;
         let purchaseScreenActor = foundry.utils.deepClone(this.selectedActor);
+        console.log("Purchase screen user:", purchaseScreenUser);
+        console.log("Player actor:", playerActor);
+        console.log("Selected actor for purchase screen:", purchaseScreenActor);
+        let userIsGM = this.isGM;
         let returnHasEnhancedData = foundry.utils.deepClone(this.hasEnhancedItems);
-        // Retrieve current PurchaseScreen data (including selected actor) for use in the template
-        let purchaseScreenData = await this.socket.executeAsGM("getPurchaseScreenData", purchaseScreenUser, purchaseScreenActor);
+        // Retrieve current PurchaseScreen data, including selected actor
+        let purchaseScreenData = await this.socket.executeAsGM("getPurchaseScreenData", purchaseScreenUser, playerActor, purchaseScreenActor);
+        console.log("Purchase screen data retrieved:", purchaseScreenData);
 
-        // Ensure UUID creation and enrich HTML for actor objects only if fields are non-null
-        if (purchaseScreenData.selectedActorBox && purchaseScreenData.selectedActorBox.id && purchaseScreenData.selectedActorBox.name) {
+        // Enrich HTML for actor objects only if fields are non-null
+        if (purchaseScreenData.selectedActorBox && purchaseScreenData.selectedActorBox.id) {
             purchaseScreenData.selectedActorBox.uuid = `Actor.${purchaseScreenData.selectedActorBox.id}`;
             purchaseScreenData.selectedActorBox.enrichedName = await TextEditor.enrichHTML(
                 `<a data-entity-link data-uuid="${purchaseScreenData.selectedActorBox.uuid}">${purchaseScreenData.selectedActorBox.name}</a>`,
@@ -69,7 +77,7 @@ export class PurchaseScreenApp extends Application {
             );
         }
 
-        if (purchaseScreenData.shopActorBox && purchaseScreenData.shopActorBox.id && purchaseScreenData.shopActorBox.name) {
+        if (purchaseScreenData.shopActorBox && purchaseScreenData.shopActorBox.id) {
             purchaseScreenData.shopActorBox.uuid = `Actor.${purchaseScreenData.shopActorBox.id}`;
             purchaseScreenData.shopActorBox.enrichedName = await TextEditor.enrichHTML(
                 `<a data-entity-link data-uuid="${purchaseScreenData.shopActorBox.uuid}">${purchaseScreenData.shopActorBox.name}</a>`,
@@ -77,13 +85,15 @@ export class PurchaseScreenApp extends Application {
             );
         }
 
-        if (purchaseScreenData.connectionBox && purchaseScreenData.connectionBox.id && purchaseScreenData.connectionBox.name) {
+        if (purchaseScreenData.connectionBox && purchaseScreenData.connectionBox.id) {
             purchaseScreenData.connectionBox.uuid = `Actor.${purchaseScreenData.connectionBox.id}`;
             purchaseScreenData.connectionBox.enrichedName = await TextEditor.enrichHTML(
                 `<a data-entity-link data-uuid="${purchaseScreenData.connectionBox.uuid}">${purchaseScreenData.connectionBox.name}</a>`,
                 { entities: true }
             );
         }
+
+    //console.log("Final purchase screen data with enriched links:", purchaseScreenData);
 
         // Preload the partial templates
         await loadTemplates([
@@ -289,7 +299,7 @@ export class PurchaseScreenApp extends Application {
 
             connectionItemDropzone.addEventListener("dragenter", (event) => this._onDragEnter(event, this.currentUser));
             connectionItemDropzone.addEventListener("dragover", (event) => this._onDragOver(event, this.currentUser));
-            connectionItemDropzone.addEventListener("drop", (event) => this._onDrop(event, this.currentUser));
+            connectionItemDropzone.addEventListener("drop", (event) => this._onDrop(event));
         } else {
             console.warn("Drag-and-drop elements not found for shop actor or connection item setup.");
         }
@@ -301,47 +311,27 @@ export class PurchaseScreenApp extends Application {
     async _onDrop(event) {
         event.preventDefault();
         
-        // Directly retrieve dragData as an object
         let dragData = JSON.parse(event.dataTransfer.getData("text/plain"));
-        console.log("Drag data object:", dragData); // Log drag data object to verify structure
-    
-        // Identify the drop target
-        let dropTarget = event.target.id;
-        console.log("Drop target ID:", dropTarget); // Log the drop target ID to confirm
-    
-        // Reference to the current user and current user's actor selection
-        let currentUser = this.currentUser;
-        let isGM = currentUser.isGM;
-        let selectedActor = this.selectedActor;
+        const dropTarget = event.target.id;
+        const currentUserDrop = game.user;
+        const isGM = this.currentUser.isGM;
     
         if (dropTarget === "shopActorDropzone" && dragData.type === "Actor") {
-            // Handle dropped actor for the shop actor box
             if (!isGM) {
                 ui.notifications.warn("Only GMs can set the shop actor.");
                 return;
             }
     
-            let actor = await fromUuid(dragData.uuid);
+            const actor = await fromUuid(dragData.uuid);
             if (actor) {
-                console.log(`Actor dropped: ${actor.name}`);
-                
-                // Retrieve actor's items and transform them to the desired format
-                let shopItems = actor.items.map((actorItem) => {
-                    let shopId = foundry.utils.randomID();
-                    let originalItemUuid = actorItem.uuid;
-                    let worldItem = game.items.get(actorItem.id) || null;
-                    let worldItemUuid = worldItem ? worldItem.uuid : null;
+                const shopItems = actor.items.map(item => ({
+                    shopItem: item,
+                    shopQuantity: 1,
+                    shopId: foundry.utils.randomID(),
+                    originalItemUuid: item.uuid,
+                    worldItemUuid: game.items.get(item.id)?.uuid || null
+                }));
     
-                    return {
-                        shopItem: actorItem,
-                        shopQuantity: 1,
-                        shopId: shopId,
-                        originalItemUuid: originalItemUuid,
-                        worldItemUuid: worldItemUuid
-                    };
-                });
-    
-                // Prepare shop actor data with items included
                 const shopActorData = {
                     id: actor.id,
                     name: actor.name,
@@ -350,16 +340,14 @@ export class PurchaseScreenApp extends Application {
                     items: shopItems
                 };
     
-                // Set the shop actor and refresh the display
                 await this.socket.executeAsGM("setShopActor", shopActorData);
-                const displayData = await this.socket.executeAsGM("getPurchaseScreenData", currentUser, selectedActor);
+                let onDropSelectedActor = this.selectedActor
+                const displayData = await this.socket.executeAsGM("getPurchaseScreenData", currentUserDrop, onDropSelectedActor);
                 this.render(false, displayData);
             }
         } else if (dropTarget === "connectionItemDropzone" && dragData.type === "Item") {
-            // Handle dropped item for the connection item box
             const item = await fromUuid(dragData.uuid);
             if (item) {
-                console.log(`Item dropped: ${item.name}`);
                 const connectionItemData = {
                     id: item.id,
                     name: item.name,
@@ -367,9 +355,9 @@ export class PurchaseScreenApp extends Application {
                     uuid: dragData.uuid
                 };
     
-                // Set the connection item and refresh the display
-                await this.socket.executeAsGM("setConnectionItem", currentUser, connectionItemData);
-                const displayData = await this.socket.executeAsGM("getPurchaseScreenData", currentUser, selectedActor);
+                await this.socket.executeAsGM("setConnectionItem", currentUserDrop, connectionItemData);
+                let selectedActor;
+                const displayData = await this.socket.executeAsGM("getPurchaseScreenData", currentUserDrop, selectedActor = null);
                 this.render(false, displayData);
             }
         } else {
@@ -1113,49 +1101,6 @@ export class PurchaseScreenApp extends Application {
         }
         // Call logActorHistory after purchase to update the journal
         await logActorHistory(actor);
-    }
-    async _onDropShopActor(event, currentUser) {
-        event.preventDefault();
-    
-        // Instantiate MarketplaceHelper if not already done in the constructor
-        //this.marketplaceHelper = this.marketplaceHelper || new MarketplaceHelper(); 
-        
-        // Ensure settings are initialized for the user
-        await this.socket.executeAsGM("initializePurchaseScreenSetting");
-    
-        // Retrieve drag data (e.g., actor ID)
-        const dragData = event.dataTransfer?.getData("text/plain");
-        if (!dragData) {
-            console.warn("No drag data found.");
-            return;
-        }
-    
-        const parsedData = JSON.parse(dragData);
-        console.log("Parsed drag data:", parsedData);
-        const actorId = parsedData?.id;
-        if (!actorId) {
-            console.warn("No valid actor ID in drag data.");
-            return;
-        }
-    
-        const actor = game.actors.get(actorId);
-        if (!actor) {
-            console.warn(`Actor with ID ${actorId} not found.`);
-            return;
-        }
-    
-        // Structure actor data for display
-        const shopActorData = {
-            id: actor.id,
-            name: actor.name,
-            img: actor.img,
-        };
-    
-        // Store shop actor data under the current user's settings
-        await this.socket.executeAsGM("setShopActor", shopActorData);
-    
-        // Re-render the app to reflect the actor update in the Shop Actor box
-        this.render(false);
     }
     async _onRemoveSelectedActorItemShopActor(event, currentUser) {
         event.preventDefault();

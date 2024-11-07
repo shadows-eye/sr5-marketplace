@@ -117,9 +117,9 @@ Hooks.once('ready', async function() {
     socket.register("getAllBaskets", async () => await basketHelper.getAllBaskets());
 
     // MarketplaceHelper function registrations
-    socket.register("initializePurchaseScreenSetting", async () => await marketplaceHelper.initializePurchaseScreenSetting());
-    socket.register("getPurchaseScreenData", async (currentUser, selectedActor) => {
-        return await marketplaceHelper.getPurchaseScreenData(currentUser, selectedActor);
+    socket.register("initializePurchaseScreenSetting", async (currentUserId) => await marketplaceHelper.initializePurchaseScreenSetting(currentUserId));
+    socket.register("getPurchaseScreenData", async (currentUser, playerActor, selectedActor) => {
+        return await marketplaceHelper.getPurchaseScreenData(currentUser, playerActor, selectedActor);
     });
     socket.register("getResetItemLoad", async () => {
         return await game.settings.get("sr5-marketplace", "resetItemLoad");
