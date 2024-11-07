@@ -525,7 +525,8 @@ export class MarketplaceHelper {
         let allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
 
         // Clear global shop actor data
-        allData.globalShopActor = false;
+        allData.globalShopActor = {};
+        allData.hasShopActor = false;
         await game.settings.set(this.moduleNamespace, this.settingKey, allData);
     }
 

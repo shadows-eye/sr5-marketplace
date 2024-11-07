@@ -1126,7 +1126,7 @@ export class PurchaseScreenApp extends Application {
         // Execute removal based on the type of item, ensuring GM permissions
         if (shopId) {
             // Trigger shop actor removal as GM
-            await this.socket.executeAsGM("removeShopActor", shopId);
+            await this.socket.executeAsGM("removeShopActor");
             this.render(false);
             ui.notifications.info("Shop Actor removed successfully.");
         } else if (actorId) {
