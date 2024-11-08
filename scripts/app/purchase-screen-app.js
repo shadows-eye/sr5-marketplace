@@ -195,8 +195,8 @@ export class PurchaseScreenApp extends Application {
             let basketSelectedActor = foundry.utils.deepClone(this.selectedActor);
             console.log("Event userActor:", basketSelectedActor);
 
-            let passSelectedActor = foundry.utils.deepClone(this.selectedActor);
-            let basketItemUser = foundry.utils.deepClone(this.currentUser);
+            let passSelectedActor = this.selectedActor;
+            let basketItemUser = game.user;
             this._onAddToBasket(event, html, basketItemUser, passSelectedActor);
         
             // Use setTimeout to ensure the DOM is fully updated before updating the basket count
@@ -516,20 +516,19 @@ export class PurchaseScreenApp extends Application {
 
     async _onAddToBasket(event, html, currentBasketUser, userActor) {
         event.preventDefault();
-        console.log("Event data:", event);
-        let currentUserId = currentBasketUser.id;
-        let basketActor = userActor;
+        let currentUserId = currentBasketUser.id || game.user.id;
+        let basketActor = userActor || game.user.character;
         await this.socket.executeAsGM("initializeBasketsSetting");
-        // Get the current user's ID
-        const itemId = $(event.currentTarget).data('itemId');
+        // Retrieve the item ID from the event data
+        let itemId = $(event.currentTarget).data('itemId');
         
         await this.itemData.addItemToBasket(itemId); // Add item to the basket
-
+        this._renderBasketAsync(html);
 
         // Retrieve the item from the basket to pass its details to BasketHelper
         await this.socket.executeAsGM("saveItemToGlobalBasket", itemId, currentUserId, basketActor);
 
-        this._renderBasket(html); // Re-render the basket with updated items
+        //this._renderBasket(html); // Re-render the basket with updated items
     }
 
     async close(options = {}) {
@@ -554,7 +553,7 @@ export class PurchaseScreenApp extends Application {
         const basketId = $(event.currentTarget).data('basketId'); //item of the basket not the basket itself
         await this.socket.executeAsGM("removeItemFromGlobalBasket", basketId, currentUserId, removeBasketActor); // Global basket removal of item
         this.itemData.removeItemFromBasket(basketId); // Remove item using the unique basketId
-        this._renderBasket(html); // Re-render the basket with updated items
+        await this._renderBasketAsync(html); // Re-render the basket with updated items
 
         this._saveBasketState(); // Save the updated basket state
     }
@@ -617,7 +616,25 @@ export class PurchaseScreenApp extends Application {
             this._updateTotalCost(html);
         });
     }
-    
+    async _updateTotalCostAsync(html) {
+        // Calculate the total cost and availability using itemData's calculation functions
+        const totalCost = await this.itemData.calculateTotalCost(); // Await if async
+        const totalAvailability = await this.itemData.calculateTotalAvailability(); // Await if async
+        
+        // Update the total cost in the DOM
+        html.find("#total-cost").html(`Total: ${totalCost} <i class="fa-duotone fa-solid fa-circle-yen"></i>`);
+        
+        // Update the total availability in the DOM
+        html.find("#total-availability").text(`Total Availability: ${totalAvailability}`);
+    }
+
+    async _renderBasketAsync(html) {
+        const basketItems = this.itemData.getBasketItems();
+        const templateData = { items: basketItems };
+        let renderedHtml = await renderTemplate("modules/sr5-marketplace/templates/basket.hbs", templateData)
+        html.find("#basket-items").html(renderedHtml);
+        await this._updateTotalCostAsync(html);;
+    }
     async _onRatingChangeOrderReview(event, html) {
         event.preventDefault();
     
@@ -913,6 +930,7 @@ export class PurchaseScreenApp extends Application {
             flagData.actorId = actorId;
         }
         // Add or update the global review request with the same data
+        await this.socket.executeAsGM("initializeGlobalSetting");
         await this.socket.executeAsGM("addOrUpdateReviewRequest", requestId, flagData);
         // Add the flag data to the requesting user (GM or player)
         await requestingUser.setFlag('sr5-marketplace', requestId, flagData);

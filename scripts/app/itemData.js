@@ -114,7 +114,7 @@ export default class ItemData {
                 : baseRating;
     
             const calculatedCost = await this.calculateCost(item, selectedRating);
-            const calculatedAvailability = await this.calculateAvailability(item, selectedRating);
+            const calculatedAvailability = this.calculateAvailability(item, selectedRating);
             const calculatedEssence = await this.calculateEssence(item, selectedRating);
             const calculatedKarma = await this.calculatedKarmaCost(item);
             const basketItem = {
@@ -228,7 +228,35 @@ export default class ItemData {
         const localizedText = textPart ? game.i18n.localize(`SR5.Marketplace.system.avail.${textPart}`) : "";
     
         // Return the calculated availability with the localized text part
-        return (baseAvailability * rating) + (localizedText ? ` ${localizedText}` : "");
+        return (baseAvailability * rating) + (localizedText ? `${localizedText}` : "");
+    }
+    async calculateAvailabilitySpecial(item) {
+        // Check if the item is a spell or complex form and retrieve availability from flag if so
+        if (["spell", "complex_form"].includes(item.type)) {
+            const flagAvailability = item.getFlag('sr5-marketplace', 'Availability');
+            if (flagAvailability) return flagAvailability; // Return the flagged availability if present
+        }
+    
+        // Define a mapping for availability text parts (for localization)
+        const textMapping = {
+            "E": "E",  // German for Restricted
+            "V": "V",  // German for Forbidden
+            "R": "R",  // English Restricted
+            "F": "F",  // English Forbidden
+            "": ""     // No text
+        };
+    
+        const rating = item.selectedRating || 1; // Default rating
+        const baseAvailability = parseInt(item.system.technology?.availability) || 0; // Get base availability
+    
+        // Determine text part and normalize it
+        let textPart = item.system.technology?.availability?.replace(/^\d+/, '').trim() || "";
+        textPart = textMapping[textPart.toUpperCase()] || "";  // Normalize the text part if it exists
+    
+        // Construct the final availability string
+        let availabilityString = `${baseAvailability * rating}${textPart}`.trim();
+    
+        return availabilityString;
     }      
     calculateTotalEssenceCost() {
         return this.basketItems.reduce((total, item) => total + this.calculateEssence(item), 0);

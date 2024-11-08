@@ -134,7 +134,7 @@ export class BasketHelper {
         const currentUser = userId;
         const basketUser = game.users.get(currentUser);
         const isGM = basketUser && basketUser.isGM;
-        let basketUserActor = userActor;
+        let basketUserActor = userActor || game.user.character;
         let actorOrUserId;
     
         if (isGM) {
@@ -179,7 +179,7 @@ export class BasketHelper {
         const baseRating = addedToBasketItem.system.technology?.rating || 1;
         const selectedRating = addedToBasketItem.selectedRating || baseRating;
         const calculatedCost = await this.itemData.calculateCost(addedToBasketItem, selectedRating);
-        const calculatedAvailability = await this.itemData.calculateAvailability(addedToBasketItem, selectedRating);
+        const calculatedAvailability = await this.itemData.calculateAvailabilitySpecial(addedToBasketItem, selectedRating);
         const calculatedEssence = await this.itemData.calculateEssence(addedToBasketItem, selectedRating);
         const calculatedKarma = await this.itemData.calculatedKarmaCost(addedToBasketItem);
         let counter = 0;
