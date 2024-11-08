@@ -45,7 +45,7 @@ export default class GlobalHelper {
         await game.settings.set(this.moduleNamespace, this.settingKey, reviewRequests);
     }
 
-        /**
+    /**
      * Save the current basket items as a purchase request in hidden settings.
      * @param {String} requestId - Unique ID for the purchase request.
      */
@@ -76,9 +76,16 @@ export default class GlobalHelper {
        
     // Delete a specific review request
     async deleteReviewRequest(requestId) {
-        const reviewRequests = await this.getReviewRequests();
-        delete reviewRequests[requestId];
-        await game.settings.set(this.moduleNamespace, this.settingKey, reviewRequests);
+        // Retrieve the current reviewRequests data from settings
+        let reviewRequests = await this.getReviewRequests();
+        
+        // Use Object.entries to filter out the requestId and reconstruct the object
+        let updatedReviewRequests = Object.fromEntries(
+            Object.entries(reviewRequests).filter(([key]) => key !== requestId)
+        );
+    
+        // Save the updated reviewRequests object back to settings
+        await game.settings.set(this.moduleNamespace, this.settingKey, updatedReviewRequests);
     }
 
     // Clear all review requests

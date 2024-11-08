@@ -687,7 +687,7 @@ export class PurchaseScreenApp extends Application {
             cost: item.calculatedCost || 0, // Use calculated cost or fallback to 0
             rating: item.selectedRating || 1, // Use selected rating or fallback to 1
             essence: item.calculatedEssence || 0, // Use calculated essence or fallback to 0
-            karma: item.flags.sr5-marketplace.Karma
+            karma: item.flags['sr5-marketplace']?.Karma || 0
         }));
     
         // Update the chat message with the latest data
@@ -978,7 +978,9 @@ export class PurchaseScreenApp extends Application {
             console.warn('No flag ID found for the clicked button.');
             return;
         }
-    
+        await this.socket.executeAsGM("initializeGlobalSetting");
+        await this.socket.executeAsGM("getReviewRequest", flagId);
+        await this.socket.executeAsGM("deleteReviewRequest", flagId);
         const orderData = await this.itemData.getOrderDataFromFlag(flagId);
         let DeapCloneOrderData = foundry.utils.deepClone(orderData);
         let buyActorId = foundry.utils.deepClone(orderData.actorId);
