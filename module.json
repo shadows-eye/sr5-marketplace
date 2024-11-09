@@ -3,7 +3,7 @@
   "title": "Shadowrun 5e Marketplace",
   "description": "",
   "version": "#{VERSION}#",
-  "library": "false",
+  "library": false,
   "manifestPlusVersion": "1.2.0",
   "compatibility": {
     "minimum": 12,
@@ -27,11 +27,20 @@
     ],
     "requires": []
   },
+  "socket": true,
+  "dependencies": [
+        {
+            "name": "socketlib",
+            "type": "module",
+            "manifest": "https://github.com/manuelVo/foundryvtt-socketlib/releases/latest/download/module.json"
+        }
+    ],
   "styles": [
     "styles/marketplace.css"
   ],
   "esmodules": [
     "scripts/marketHooks.js",
+    "scripts/app/global.js",
     "scripts/app/actorItemData.js"
   ],
   "includes": [

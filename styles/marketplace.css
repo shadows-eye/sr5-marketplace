@@ -70,6 +70,59 @@
     position: relative; /* Important for pseudo-elements positioning */
     z-index: 2; /* Set above the diagonal stripes */
 }
+/* Styling for the new actor and item placeholder boxes */
+.SR5ActorSelected-box,
+.SR5ShopActor-box,
+.SR5ConnectionLink-box {
+    width: 50px;
+    height: 40px;
+    background-color: #bdbdbd;
+    border: 1px solid #d5d5d5;
+    border-radius: 5px;
+    display: inline-flex;
+    vertical-align: top;
+    text-align: left;
+    padding: 5px;
+    margin-left: 10px;
+}
+
+.actor-icon, .item-icon{
+    max-width: 45px;
+    max-height: 30px;
+    object-fit: cover;
+    border-radius: 3px;
+}
+
+/* Adjust anchor tags containing images */
+.SR5ActorSelected-box a,
+.SR5ShopActor-box a,
+.SR5ConnectionLink-box a {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 3px;
+    overflow: hidden; /* Ensure content fits within border-radius */
+}
+
+/* Ensure the image itself fits within the anchor tag */
+.SR5ActorSelected-box img,
+.SR5ShopActor-box img,
+.SR5ConnectionLink-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;  /* Crop the image to fit proportionally */
+    border: none;
+}
+
+span.remove-link {
+    margin-left: -6px;
+    margin-top: -10px;
+    z-index: 2;
+    color: brown;
+    cursor: pointer;
+    width: 5px;
+    height: 5px;
+}
 
 /* Red border with white break around window-content */
 .sr5-market > section.window-content::before {

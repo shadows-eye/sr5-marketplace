@@ -3,19 +3,26 @@ import {getFormattedTimestamp} from './itemData.js';
 import {fetchAndSelectLanguage} from './itemData.js';
 import {ActorItemData} from './actorItemData.js';
 import { logActorHistory } from './actorHistoryLog.js';
+import GlobalHelper from './global.js';
+import {BasketHelper} from './global.js';
+import { MarketplaceHelper } from './global.js';
 export class PurchaseScreenApp extends Application {
     constructor(options = {}) {
         super(options);
-    
+        // Define the socket as a class property for access throughout the app
+        this.socket = socketlib.registerModule("sr5-marketplace");
         // Determine if the current user is a GM
         this.isGM = game.user.isGM;
+        this.currentUser = game.user;
+        this.userActor = game.user.character;
+        this.selectedActor = game.canvas.tokens.controlled[0]?.actor || this.userActor  || {};
         this.tab = options.tab || "shop"; // Default to "shop" tab
         this.orderData = options.orderData || {};
         this.completeItemsArray = Array.isArray(options.completeItemsArray) ? options.completeItemsArray : [];
         this.itemData = new ItemData();  // Instantiate ItemData here to use its methods
         this.hasEnhancedItems = game.user.getFlag('sr5-marketplace', 'enhancedItemsFlag') || false;
       }
-    static get defaultOptions() {
+      static get defaultOptions() {
         return foundry.utils.mergeObject(super.defaultOptions, {
             id: "purchase-screen",
             title: "Purchase Screen",
@@ -23,22 +30,81 @@ export class PurchaseScreenApp extends Application {
             width: 1000,
             height: 850,
             resizable: false,
-            classes: ["sr5-market"]
+            classes: ["sr5-market"],
+            dragDrop: [
+                {
+                    dragSelector: ".directory-item.entity.actor",  // Selector for draggable actors
+                    dropSelector: "#shopActorDropzone"            // Drop target for actors
+                },
+                {
+                    dragSelector: ".directory-item.entity.item",  // Selector for draggable items
+                    dropSelector: "#connectionItemDropzone"       // Drop target for items
+                }
+            ]
         });
     }
 
     async getData() {
-        // Ensure itemData is properly instantiated and fetch items
         this.itemData = new ItemData();
-        await this.itemData.fetchItems(); // Fetch all items in your system
-    
-        // Initialize the completeItemsArray if not already set (may come from passed options)
+        let getDataUserId = game.user.id;
+        await this.socket.executeAsGM("initializePurchaseScreenSetting", getDataUserId);
+        // Check if shop actor is set
+        const hasShopActor = await this.socket.executeAsGM("getHasShopActor");
+        if (hasShopActor) {
+            // Fetch items directly from the shop actor
+            await this.itemData.fetchActorItems();
+        } else {
+            // Fallback to the normal item fetch if no shop actor is set
+            await this.itemData.fetchItems();
+        } // Fetch all items in your system
         this.completeItemsArray = this.completeItemsArray || [];
-    
         // Restore basket items from flags (if needed)
         const savedBasket = game.user.getFlag('sr5-marketplace', 'basket') || [];
         this.itemData.basketItems = savedBasket;
-    
+        // Clone user and actor data to prepare for socket execution
+        let purchaseScreenUser = foundry.utils.deepClone(this.currentUser);
+        let playerActor = this.currentUser.character;
+        let purchaseScreenActor = foundry.utils.deepClone(this.selectedActor);
+        console.log("Purchase screen user:", purchaseScreenUser);
+        console.log("Player actor:", playerActor);
+        console.log("Selected actor for purchase screen:", purchaseScreenActor);
+        let userIsGM = this.isGM;
+        let returnHasEnhancedData = foundry.utils.deepClone(this.hasEnhancedItems);
+        // Retrieve current PurchaseScreen data, including selected actor
+        let purchaseScreenData = await this.socket.executeAsGM("getPurchaseScreenData", purchaseScreenUser, playerActor, purchaseScreenActor);
+        console.log("Purchase screen data retrieved:", purchaseScreenData);
+
+        // Enrich HTML for actor objects only if fields are non-null
+        if (purchaseScreenData.selectedActorBox && purchaseScreenData.selectedActorBox.id) {
+            purchaseScreenData.selectedActorBox.uuid = `Actor.${purchaseScreenData.selectedActorBox.id}`;
+            purchaseScreenData.selectedActorBox.enrichedName = await TextEditor.enrichHTML(
+                `<a data-entity-link data-uuid="${purchaseScreenData.selectedActorBox.uuid}">${purchaseScreenData.selectedActorBox.name}</a>`,
+                { entities: true }
+            );
+        }
+
+        if (purchaseScreenData.shopActorBox && purchaseScreenData.shopActorBox.shopId) {
+            purchaseScreenData.shopActorBox.shopUuid = `Actor.${purchaseScreenData.shopActorBox.shopId}`;
+            purchaseScreenData.shopActorBox.enrichedName = await TextEditor.enrichHTML(
+                `<a data-entity-link data-uuid="${purchaseScreenData.shopActorBox.shopUuid}">${purchaseScreenData.shopActorBox.shopName}</a>`,
+                { entities: true }
+            );
+        }
+
+        // Update `connectionBox` UUID to include both actor and item IDs if present
+        if (purchaseScreenData.connectionBox && purchaseScreenData.connectionBox.connectionId && purchaseScreenData.connectionBox.connectionUuid) {
+            const actorId = purchaseScreenData.connectionBox.connectionId; // Actor ID
+            const itemId = purchaseScreenData.connectionBox.connectionUuid.split('.').pop(); // Extract item ID
+            purchaseScreenData.connectionBox.uuid = purchaseScreenData.connectionBox.connectionUuid || `Actor.${actorId}.Item.${itemId}`;
+
+            purchaseScreenData.connectionBox.enrichedName = await TextEditor.enrichHTML(
+                `<a data-entity-link data-uuid="${purchaseScreenData.connectionBox.connectionUuid}">${purchaseScreenData.connectionBox.connectionName}</a>`,
+                { entities: true }
+            );
+        }
+
+    //console.log("Final purchase screen data with enriched links:", purchaseScreenData);
+
         // Preload the partial templates
         await loadTemplates([
             "modules/sr5-marketplace/templates/libraryItem.hbs",
@@ -50,12 +116,12 @@ export class PurchaseScreenApp extends Application {
             Handlebars.registerPartial('shop', 'modules/sr5-marketplace/templates/shop.hbs');
             Handlebars.registerPartial('orderReview', 'modules/sr5-marketplace/templates/orderReview.hbs');
         });
-    
         console.log("User role:", game.user.role);
         console.log("Is the current user a GM?", this.isGM);
-    
+        
         // Set up review data if needed
         const reviewData = this.reviewData ? this.reviewData : {};
+        
     
         // Return the data to the template for rendering
         return {
@@ -63,14 +129,28 @@ export class PurchaseScreenApp extends Application {
             basketItems: this.itemData.basketItems, // Pass basket items to be rendered
             isGM: this.isGM,
             reviewData: reviewData,
-            hasEnhancedItems: this.hasEnhancedItems,
-            completeItemsArray: this.completeItemsArray // Ensure the array is available in the template context
+            hasEnhancedItems: returnHasEnhancedData,
+            completeItemsArray: this.completeItemsArray, // Ensure the array is available in the template context
+            ...purchaseScreenData, // Pass the PurchaseScreen data to the template
         };
     }
 
     activateListeners(html) {
         super.activateListeners(html);
-
+        html.on('click', '[data-entity-link]', async (event) => {
+            event.preventDefault();
+            const uuid = event.currentTarget.getAttribute('data-uuid');
+            if (uuid) {
+                // Retrieve the document based on the UUID and open its sheet
+                const doc = await fromUuid(uuid);
+                if (doc && doc.sheet) {
+                    doc.sheet.render(true);
+                } else {
+                    console.warn(`No document found for UUID: ${uuid}`);
+                }
+            }
+        });
+        html.on('click', '.remove-link', (event) => this._onRemoveSelectedActorItemShopActor(event, this.currentUser));
         // Existing listeners for search, selection, basket, etc.
         html.find(".item-type-selector").change(event => this._onFilterChange(event, html));
         const firstType = html.find(".item-type-selector option:first").val();
@@ -112,7 +192,12 @@ export class PurchaseScreenApp extends Application {
         html.on('change', '.item-rating', event => this._onRatingChange(event, html));
         html.on('click', '.add-to-cart', event => {
             // Call the existing function to add the item to the basket
-            this._onAddToBasket(event, html);
+            let basketSelectedActor = foundry.utils.deepClone(this.selectedActor);
+            console.log("Event userActor:", basketSelectedActor);
+
+            let passSelectedActor = this.selectedActor;
+            let basketItemUser = game.user;
+            this._onAddToBasket(event, html, basketItemUser, passSelectedActor);
         
             // Use setTimeout to ensure the DOM is fully updated before updating the basket count
             setTimeout(() => {
@@ -120,8 +205,10 @@ export class PurchaseScreenApp extends Application {
             }, 100); // Small delay of 100ms to ensure the basket DOM is updated
         });
         html.on('click', '.remove-item', event => {
+            let passSelectedActor = foundry.utils.deepClone(this.selectedActor);
+            let basketItemUser = foundry.utils.deepClone(this.currentUser);
             // Call the existing function to remove the item from the basket
-            this._onRemoveFromBasket(event, html);
+            this._onRemoveFromBasket(event, html, basketItemUser, passSelectedActor);
         
             // Use setTimeout to ensure the DOM is fully updated before updating the basket count
             setTimeout(() => {
@@ -138,7 +225,7 @@ export class PurchaseScreenApp extends Application {
         this._handleTabSwitch(html, "shop");
     
         // Handle the "Send Request to GM" button click
-        html.on('click', '#send-request-button', event => this._onSendRequest(event, html));
+        html.on('click', '#send-request-button', event => this._onSendRequest(event, html, this.selectedActor));
     
         // Handle the "Review and Confirm" button click
         html.on('click', '.review-request-button', event => this._onReviewRequest(event, html));
@@ -208,7 +295,99 @@ export class PurchaseScreenApp extends Application {
 
         // Handle the "Reject Request" button click
         html.on('click', '.send-request-button.cancel', event => this._onCancelOrder(event, html));
+        this._initializeDragAndDropListeners();
     }
+    // Define _initializeDragAndDropListeners with clear logging
+    _initializeDragAndDropListeners() {
+        const shopActorDropzone = document.getElementById("shopActorDropzone");
+        const connectionItemDropzone = document.getElementById("connectionItemDropzone");
+
+        if (shopActorDropzone && connectionItemDropzone) {
+            shopActorDropzone.addEventListener("dragenter", (event) => this._onDragEnter(event, this.currentUser));
+            shopActorDropzone.addEventListener("dragover", (event) => this._onDragOver(event, this.currentUser));
+            shopActorDropzone.addEventListener("drop", (event) => this._onDrop(event, this.currentUser));
+
+            connectionItemDropzone.addEventListener("dragenter", (event) => this._onDragEnter(event, this.currentUser));
+            connectionItemDropzone.addEventListener("dragover", (event) => this._onDragOver(event, this.currentUser));
+            connectionItemDropzone.addEventListener("drop", (event) => this._onDrop(event));
+        } else {
+            console.warn("Drag-and-drop elements not found for shop actor or connection item setup.");
+        }
+    }
+    /**
+     * 
+     * @param {*} event drag event that can provide actor or item data to the purchase-screen-app
+     */
+    async _onDrop(event) {
+        event.preventDefault();
+        
+        let dragData = JSON.parse(event.dataTransfer.getData("text/plain"));
+        const dropTarget = event.target.id;
+        const currentUserDrop = game.user || this.currentUser;
+        const isGM = this.currentUser.isGM;
+    
+        if (dropTarget === "shopActorDropzone" && dragData.type === "Actor") {
+            if (!isGM) {
+                ui.notifications.warn("Only GMs can set the shop actor.");
+                return;
+            }
+    
+            // Retrieve the actor from the UUID
+            const actor = await fromUuid(dragData.uuid);
+            if (actor) {
+                // Log the actor and its items for debugging
+                console.log("Dropped Actor:", actor);
+                console.log("Actor Items:", actor.items.contents);
+    
+                // Map the actor's items into the structure for shop items
+                let shopItems = actor.items.map(item => ({
+                    shopActorItem: item,
+                    shopQuantity: 1,
+                    shopItemId: foundry.utils.randomID(),
+                    originalItemUuid: item.uuid,
+                    worldItemUuid: game.items.get(item.id)?.uuid || null
+                }));
+    
+                // Log the mapped items to ensure they are structured correctly
+                console.log("Mapped Shop Items:", shopItems);
+    
+                // Construct the shop actor data
+                let shopActorData = {
+                    id: actor.id,
+                    name: actor.name,
+                    img: actor.img,
+                    uuid: dragData.uuid,
+                    shopActorItems: shopItems
+                };
+    
+                // Log the complete shopActorData before sending it to settings
+                console.log("Complete Shop Actor Data to Save:", shopActorData);
+    
+                await this.socket.executeAsGM("setShopActor", shopActorData);
+                let onDropSelectedActor = this.selectedActor
+                const displayData = await this.socket.executeAsGM("getPurchaseScreenData", currentUserDrop, onDropSelectedActor);
+                this.render(false, displayData);
+            }
+        } else if (dropTarget === "connectionItemDropzone" && dragData.type === "Item") {
+            let item = await fromUuid(dragData.uuid);
+            if (item) {
+                let connectionItemData = {
+                    id: item.id,
+                    name: item.name,
+                    img: item.img,
+                    uuid: dragData.uuid
+                };
+    
+                await this.socket.executeAsGM("setConnectionItem", currentUserDrop, connectionItemData);
+                let selectedActor;
+                const displayData = await this.socket.executeAsGM("getPurchaseScreenData", currentUserDrop, selectedActor = null);
+                this.render(false, displayData);
+            }
+        } else {
+            console.warn("Dropped data is not an actor or item, or drop target is invalid.");
+        }
+    }
+    
     /**
      * Handle the cancel order button, sends a rejection message, and removes the flag and associated data.
      * @param {*} event 
@@ -335,13 +514,21 @@ export class PurchaseScreenApp extends Application {
         await game.user.setFlag('sr5-marketplace', 'basket', this.itemData.getBasketItems());
     }
 
-    async _onAddToBasket(event, html) {
+    async _onAddToBasket(event, html, currentBasketUser, userActor) {
         event.preventDefault();
-
-        const itemId = $(event.currentTarget).data('itemId');
+        let currentUserId = currentBasketUser.id || game.user.id;
+        let basketActor = userActor || game.user.character;
+        await this.socket.executeAsGM("initializeBasketsSetting");
+        // Retrieve the item ID from the event data
+        let itemId = $(event.currentTarget).data('itemId');
+        
         await this.itemData.addItemToBasket(itemId); // Add item to the basket
+        this._renderBasketAsync(html);
 
-        this._renderBasket(html); // Re-render the basket with updated items
+        // Retrieve the item from the basket to pass its details to BasketHelper
+        await this.socket.executeAsGM("saveItemToGlobalBasket", itemId, currentUserId, basketActor);
+
+        //this._renderBasket(html); // Re-render the basket with updated items
     }
 
     async close(options = {}) {
@@ -359,13 +546,14 @@ export class PurchaseScreenApp extends Application {
         return super.close(options);
     }
 
-    async _onRemoveFromBasket(event, html) {
+    async _onRemoveFromBasket(event, html, currentUser, userActor) {
         event.preventDefault();
-
-        const basketId = $(event.currentTarget).data('basketId');
+        let currentUserId = currentUser.id;
+        let removeBasketActor = userActor;
+        const basketId = $(event.currentTarget).data('basketId'); //item of the basket not the basket itself
+        await this.socket.executeAsGM("removeItemFromGlobalBasket", basketId, currentUserId, removeBasketActor); // Global basket removal of item
         this.itemData.removeItemFromBasket(basketId); // Remove item using the unique basketId
-
-        this._renderBasket(html); // Re-render the basket with updated items
+        await this._renderBasketAsync(html); // Re-render the basket with updated items
 
         this._saveBasketState(); // Save the updated basket state
     }
@@ -428,7 +616,25 @@ export class PurchaseScreenApp extends Application {
             this._updateTotalCost(html);
         });
     }
-    
+    async _updateTotalCostAsync(html) {
+        // Calculate the total cost and availability using itemData's calculation functions
+        const totalCost = await this.itemData.calculateTotalCost(); // Await if async
+        const totalAvailability = await this.itemData.calculateTotalAvailability(); // Await if async
+        
+        // Update the total cost in the DOM
+        html.find("#total-cost").html(`Total: ${totalCost} <i class="fa-duotone fa-solid fa-circle-yen"></i>`);
+        
+        // Update the total availability in the DOM
+        html.find("#total-availability").text(`Total Availability: ${totalAvailability}`);
+    }
+
+    async _renderBasketAsync(html) {
+        const basketItems = this.itemData.getBasketItems();
+        const templateData = { items: basketItems };
+        let renderedHtml = await renderTemplate("modules/sr5-marketplace/templates/basket.hbs", templateData)
+        html.find("#basket-items").html(renderedHtml);
+        await this._updateTotalCostAsync(html);;
+    }
     async _onRatingChangeOrderReview(event, html) {
         event.preventDefault();
     
@@ -481,7 +687,7 @@ export class PurchaseScreenApp extends Application {
             cost: item.calculatedCost || 0, // Use calculated cost or fallback to 0
             rating: item.selectedRating || 1, // Use selected rating or fallback to 1
             essence: item.calculatedEssence || 0, // Use calculated essence or fallback to 0
-            karma: item.flags.sr5-marketplace.Karma
+            karma: item.flags['sr5-marketplace']?.Karma || 0
         }));
     
         // Update the chat message with the latest data
@@ -638,9 +844,9 @@ export class PurchaseScreenApp extends Application {
         html.find(`#id-${selectedTab}`).addClass("active");
     }
     /// send basket to GM
-    async _onSendRequest(event, html) {
+    async _onSendRequest(event, html, userActor) {
         event.preventDefault();
-    
+        let orderReviewActorRequester = userActor;
         // Prepare data for the chat message
         const basketItems = this.itemData.getBasketItems();
         const totalCost = await this.itemData.calculateTotalCost();
@@ -652,7 +858,7 @@ export class PurchaseScreenApp extends Application {
     
         // Get the actorId of the requesting user (can be null if GM has no actor)
         const actor = requestingUser.character || null;
-        const actorId = actor ? actor._id : null;
+        const actorId = actor ? actor._id : orderReviewActorRequester.id;
     
         if (isGM && !actorId) {
             console.warn("GM has no actor assigned. Proceeding without actor linkage.");
@@ -712,7 +918,6 @@ export class PurchaseScreenApp extends Application {
         console.log("Total Availability:", totalAvailability);
         console.log("Total Essence Cost:", totalEssenceCost);
         console.log("Total Karma Cost:", totalKarmaCost);
-    
         // Prepare the flag data for the user request
         const flagData = {
             id: requestId,
@@ -724,7 +929,9 @@ export class PurchaseScreenApp extends Application {
             flagData.actor = actor;
             flagData.actorId = actorId;
         }
-    
+        // Add or update the global review request with the same data
+        await this.socket.executeAsGM("initializeGlobalSetting");
+        await this.socket.executeAsGM("addOrUpdateReviewRequest", requestId, flagData);
         // Add the flag data to the requesting user (GM or player)
         await requestingUser.setFlag('sr5-marketplace', requestId, flagData);
     
@@ -749,12 +956,11 @@ export class PurchaseScreenApp extends Application {
                 whisper: isGM ? [] : game.users.filter(u => u.isGM).map(u => u.id)
             });
     
-            // Empty the basket
-            this.itemData.basketItems = [];
-    
-            // Render the empty basket
-            this._renderBasket(html);
         });
+        // Empty the basket
+        this.itemData.basketItems = [];
+        // Render the empty basket
+        await this._renderBasketAsync(html);
     }
     /**
      * 
@@ -764,18 +970,23 @@ export class PurchaseScreenApp extends Application {
      */
     async _onBuyItems(event, html) {
         event.preventDefault();
-    
+        
         // Retrieve the flag ID from the button's data attribute
         const flagId = $(event.currentTarget).data('flag-id');
         if (!flagId) {
             console.warn('No flag ID found for the clicked button.');
             return;
         }
-    
+        await this.socket.executeAsGM("initializeGlobalSetting");
+        await this.socket.executeAsGM("getReviewRequest", flagId);
+        await this.socket.executeAsGM("deleteReviewRequest", flagId);
         const orderData = await this.itemData.getOrderDataFromFlag(flagId);
-    
+        let DeapCloneOrderData = foundry.utils.deepClone(orderData);
+        let buyActorId = foundry.utils.deepClone(orderData.actorId);
+        console.log("Buy Actor ID:", buyActorId);
+        console.log("Order Data in _onBuyStart:", DeapCloneOrderData);
         // Check if actorId is available in flag data
-        let actorId = orderData.actorId || null;
+        let actorId = buyActorId || null;
         if (!actorId && canvas.tokens.controlled.length > 0) {
             const selectedToken = canvas.tokens.controlled[0];
             actorId = selectedToken.actor?._id || null;
@@ -786,11 +997,12 @@ export class PurchaseScreenApp extends Application {
             $(event.currentTarget).find('i').addClass('fa-exclamation-circle');
             return;
         }
-    
+
         const actor = game.actors.get(actorId);
     
         // Retrieve actor's current nuyen amount
         let currentNuyen = actor.system.nuyen || 0;  // Default to 0 if no nuyen found
+        console.log("Current Nuyen:", currentNuyen);
     
         // Calculate the total cost of the items in the order
         const totalCost = orderData.items.reduce((total, item) => total + (item.calculatedCost || 0), 0);
@@ -813,7 +1025,8 @@ export class PurchaseScreenApp extends Application {
         actorItemData.logItems();
     
         const creationItems = await actorItemData.createItemsWithInjectedData();
-        const createdItems = await actorItemData.createItemsOnActor(actor, creationItems, orderData);
+        let ActorOrderData = foundry.utils.deepClone(orderData);
+        const createdItems = await actorItemData.createItemsOnActor(actor, creationItems, ActorOrderData);
         // Check if the actor already has a history flag for the provided flagId
         let historyFlag = actor.getFlag('sr5-marketplace', 'history') || [];
             
@@ -825,9 +1038,9 @@ export class PurchaseScreenApp extends Application {
             historyFlag = Object.keys(historyFlag).map(key => historyFlag[key]);
         }
         
-    // Now `historyFlag` is guaranteed to be an array
-    // Check if the flagId already exists in the actor's history
-    const existingHistoryEntry = historyFlag.find(entry => entry.flagId === flagId);
+        // Now `historyFlag` is guaranteed to be an array
+        // Check if the flagId already exists in the actor's history
+        const existingHistoryEntry = historyFlag.find(entry => entry.flagId === flagId);
         const { chatTimestamp, flagTimestamp } = await getFormattedTimestamp(); // Get formatted timestamps from itemData.js
         // If no history entry exists for the flag, create a new one
         if (!existingHistoryEntry) {
@@ -861,7 +1074,7 @@ export class PurchaseScreenApp extends Application {
             // If the history flag already exists, skip creation and move to the chat message
             ui.notifications.info(`A history flag already exists for flagId: ${flagId}. Skipping flag creation.`);
         }
-        
+        // Calculate the total availability for the order confirmation
         // Prepare the message data for the chat
         const messageData = {
             items: creationItems.map(item => ({
@@ -914,6 +1127,8 @@ export class PurchaseScreenApp extends Application {
         const gmUser = game.users.find(u => u.isGM);  // Find the GM user
         if (gmUser) {
             await gmUser.unsetFlag('sr5-marketplace', flagId);  // Remove the flag from the GM user
+
+            await this.socket.executeAsGM("deleteGlobalUserBasket", buyActorId);
             ui.notifications.info(`Order data cleared from GM user flags.`);
         }
         // Delete the old chat message associated with the flag
@@ -928,6 +1143,35 @@ export class PurchaseScreenApp extends Application {
         }
         // Call logActorHistory after purchase to update the journal
         await logActorHistory(actor);
-    }                                       
+    }
+    async _onRemoveSelectedActorItemShopActor(event, currentUser) {
+        event.preventDefault();
+        
+        // Get the current user
+        let removeCurrentUser = currentUser;
+    
+        // Identify the type of removal based on data attributes
+        let shopId = $(event.currentTarget).data("shopId");
+        let actorId = $(event.currentTarget).data("actorId");
+        let itemId = $(event.currentTarget).data("itemId");
+    
+        // Execute removal based on the type of item, ensuring GM permissions
+        if (shopId) {
+            // Trigger shop actor removal as GM
+            await this.socket.executeAsGM("removeShopActor");
+            this.render(false);
+            ui.notifications.info("Shop Actor removed successfully.");
+        } else if (actorId) {
+            // Trigger selected actor removal as GM
+            await this.socket.executeAsGM("removeSelectedActor",removeCurrentUser, actorId)
+            this.render(true);
+            ui.notifications.info("Selected Actor removed successfully.");
+        } else if (itemId) {
+            // Trigger connection item removal as GM
+            await this.socket.executeAsGM("removeConnectionItem", removeCurrentUser, itemId);
+            this.render(true);
+            ui.notifications.info("Connection Item removed successfully.");
+        }
+    }                                               
 }
   

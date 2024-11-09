@@ -7,8 +7,14 @@ export default class ItemData {
         this.basketItems = [];
         this.filteredItems = [];
         this.orderReviewItems = [];
+        this.socket = socketlib.registerModule("sr5-marketplace");
     }
-
+    /**
+     * Initialize the global settings for the module.
+     */
+    async initializeSettings() {
+        await socket.executeAsGM("initializeGlobalSetting");
+    }
     async fetchItems() {
         const worldItems = game.items.contents.filter(item => !item.name.includes('#[CF_tempEntity]'));
         const compendiumItems = [];
@@ -31,6 +37,36 @@ export default class ItemData {
             .includes(item.type)
         );
         this.filteredItems = this.items; // Initialize filteredItems with all items
+    }
+
+    /**
+     * Fetch items from the shop actor specified in global settings.
+     */
+    async fetchActorItems() {
+        // Ensure purchase screen settings are initialized
+        let getDataUserId = game.user.id;
+        await this.socket.executeAsGM("initializePurchaseScreenSetting", getDataUserId);
+
+        // Retrieve the `globalShopActor` data via socket
+        const shopActorData = await this.socket.executeAsGM("getGlobalShopActorData");
+
+        // Ensure the shop actor is valid and retrieve its items
+        const shopActor = game.actors.get(shopActorData?.shopId);
+        if (!shopActor) {
+            console.warn("Shop actor not found.");
+            this.items = []; // Return empty if actor is not set or found
+            return;
+        }
+
+        // Retrieve items from the shop actor and filter as necessary
+        const actorItems = shopActor.items.contents.filter(item => !item.name.includes('#[CF_tempEntity]'));
+        this.items = actorItems.filter(item => !["contact", "adept_power", "call_in_action", "critter_power", "echo", "host", "metamagic", "sprite_power"].includes(item.type));
+        
+        this.excludedItems = actorItems.filter(item => 
+            ["adept_power", "call_in_action", "critter_power", "echo", "host", "metamagic", "sprite_power"].includes(item.type)
+        );
+
+        this.filteredItems = this.items; // Initialize filteredItems with all actor items
     }
 
     get itemsByType() {
@@ -78,7 +114,7 @@ export default class ItemData {
                 : baseRating;
     
             const calculatedCost = await this.calculateCost(item, selectedRating);
-            const calculatedAvailability = await this.calculateAvailability(item, selectedRating);
+            const calculatedAvailability = this.calculateAvailability(item, selectedRating);
             const calculatedEssence = await this.calculateEssence(item, selectedRating);
             const calculatedKarma = await this.calculatedKarmaCost(item);
             const basketItem = {
@@ -88,7 +124,7 @@ export default class ItemData {
                 name: item.name,
                 description: item.system.description ? item.system.description.value : "", // Safely access description
                 type: item.type,
-                basketId: foundry.utils.randomID(),
+                basketId: 'basket.' + item._id, // Unique basket ID
                 selectedRating, // Default or selected rating
                 calculatedCost, // Use the awaited calculated cost
                 calculatedAvailability, // Use the awaited availability
@@ -192,12 +228,40 @@ export default class ItemData {
         const localizedText = textPart ? game.i18n.localize(`SR5.Marketplace.system.avail.${textPart}`) : "";
     
         // Return the calculated availability with the localized text part
-        return (baseAvailability * rating) + (localizedText ? ` ${localizedText}` : "");
+        return (baseAvailability * rating) + (localizedText ? `${localizedText}` : "");
+    }
+    async calculateAvailabilitySpecial(item) {
+        // Check if the item is a spell or complex form and retrieve availability from flag if so
+        if (["spell", "complex_form"].includes(item.type)) {
+            const flagAvailability = item.getFlag('sr5-marketplace', 'Availability');
+            if (flagAvailability) return flagAvailability; // Return the flagged availability if present
+        }
+    
+        // Define a mapping for availability text parts (for localization)
+        const textMapping = {
+            "E": "E",  // German for Restricted
+            "V": "V",  // German for Forbidden
+            "R": "R",  // English Restricted
+            "F": "F",  // English Forbidden
+            "": ""     // No text
+        };
+    
+        const rating = item.selectedRating || 1; // Default rating
+        const baseAvailability = parseInt(item.system.technology?.availability) || 0; // Get base availability
+    
+        // Determine text part and normalize it
+        let textPart = item.system.technology?.availability?.replace(/^\d+/, '').trim() || "";
+        textPart = textMapping[textPart.toUpperCase()] || "";  // Normalize the text part if it exists
+    
+        // Construct the final availability string
+        let availabilityString = `${baseAvailability * rating}${textPart}`.trim();
+    
+        return availabilityString;
     }      
     calculateTotalEssenceCost() {
         return this.basketItems.reduce((total, item) => total + this.calculateEssence(item), 0);
     }
-    calculateOrderReviewAvailability(item, selectedRating) {
+    _calculateOrderReviewAvailability(item, selectedRating) {
         // Check if the item type is any Karma related ones
         if (item.type === "quality" || item.type === "complex_form" || item.type === "action" || item.type === "ritual" || item.type === "spell") {
             // Return availability as '0' for these item types
@@ -404,7 +468,7 @@ export default class ItemData {
             return total + (cost * rating); // Calculate total cost based on rating
         }, 0);
     }
-    calculateTotalAvailability() {
+    async calculateTotalAvailability() {
         const availabilityData = this.basketItems.reduce((acc, item) => {
             // Skip items that should not be included in the availability calculation
             if (["quality", "action", "ritual"].includes(item.type)) {
@@ -591,8 +655,8 @@ export default class ItemData {
                     enrichedItem.calculatedEssence = 0;
                 } else {
                     enrichedItem.calculatedCost = await this.calculateCostReviewUpdate(enrichedItem, enrichedItem.selectedRating) || 0;
-                    enrichedItem.calculatedAvailability = await this.calculateOrderReviewAvailability(enrichedItem, enrichedItem.selectedRating);
-                    enrichedItem.calculatedEssence = await this.calculateEssence(enrichedItem);
+                    enrichedItem.calculatedAvailability = this._calculateOrderReviewAvailability(enrichedItem, enrichedItem.selectedRating);
+                    enrichedItem.calculatedEssence = this.calculateEssence(enrichedItem);
                 }
     
                 reviewPrep.push(enrichedItem);
@@ -605,7 +669,7 @@ export default class ItemData {
     
         // Calculate total values using enriched items
         const totalCost = reviewPrep.reduce((sum, item) => sum + (item.calculatedCost || 0), 0);
-        const totalAvailability = reviewPrep.reduce((acc, item) => {
+        const availabilitySummary = reviewPrep.reduce((acc, item) => {
             const availability = item.calculatedAvailability || '';
             const numericPart = parseInt(availability.match(/\d+/), 10) || 0;
             acc.total += numericPart;
@@ -621,16 +685,17 @@ export default class ItemData {
     
             return acc;
         }, { total: 0, text: '' });
-    
+        let conformationTotalAvailability = `${availabilitySummary.total}${availabilitySummary.text}`.trim();
         const totalEssenceCost = reviewPrep.reduce((sum, item) => sum + (item.calculatedEssence || 0), 0);
         const totalKarmaCost = reviewPrep.reduce((sum, item) => sum + (item.calculatedKarma || 0), 0);
-    
+        console.log("Total Availability to chat:", conformationTotalAvailability);
         // Final enriched order data
+        conformationTotalAvailability= conformationTotalAvailability?? availabilitySummary;
         const orderData = {
             id: flagData.id,
             items: reviewPrep,
             totalCost,
-            totalAvailability,
+            totalAvailability: conformationTotalAvailability,
             totalEssenceCost,
             totalKarmaCost,
             requester: flagData.requester,
