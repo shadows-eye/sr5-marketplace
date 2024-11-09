@@ -8,64 +8,112 @@
 <!--- ![Forge Installs](https://img.shields.io/badge/dynamic/json?label=Forge%20Installs&query=package.installs&suffix=%25&url=https%3A%2F%2Fforge-vtt.com%2Fapi%2Fbazaar%2Fpackage%2F<your-module-name>&colorB=4aa94a) -->
 
 
-# How to use this Modul
+# Shadowrun 5e Marketplace
 
-1. Open your repository's releases page.
+![Foundry Version](https://img.shields.io/badge/Foundry-v12-informational)
+![Shadowrun 5e System](https://img.shields.io/badge/System-Shadowrun%205e-green)
 
-![Where to click to open repository releases.](https://user-images.githubusercontent.com/7644614/93409301-9fd25080-f864-11ea-9e0c-bdd09e4418e4.png)
+## Overview
 
-2. Click "Draft a new release"
+The Shadowrun 5e Marketplace is a module for Foundry Virtual Tabletop (Foundry VTT) that brings an immersive marketplace experience to your Shadowrun 5th Edition games. It allows players and game masters (GMs) to manage in-game purchases seamlessly, integrating item browsing, purchasing, and inventory management directly into the game interface.
 
-![Draft a new release button.](https://user-images.githubusercontent.com/7644614/93409364-c1333c80-f864-11ea-89f1-abfcb18a8d9f.png)
+## Features
 
-3. Fill out the release version as the tag name.
+- **In-Game Shop Interface**: Browse through a catalog of items categorized by type, such as Weapons, Armor, Cyberware, and more, all within a dedicated marketplace window.
+- **Shopping Basket and Order Review**: Add items to a virtual basket, adjust quantities and item ratings, and review your order before finalizing purchases.
+- **Automatic Cost Calculations**: Calculates Karma and Nuyen costs for items, factoring in item ratings, availability, and any custom modifiers.
+- **Actor Inventory Integration**: Purchased items are automatically added to the selected actor's inventory, whether it's your character or a selected token in the scene.
+- **GM Approval Workflow**: Optionally enable a purchase approval system where GMs can review and approve player purchase requests before items are added to inventories.
+- **Socket Communication with SocketLib**: Utilizes SocketLib for smooth communication between clients and the server, ensuring data consistency.
+- **Customizable Shop Actor**: GMs can designate any actor as the shop, allowing full control over the items available in the marketplace.
+- **Language Support**: Includes localization files for English and German, with the ability to add more languages.
 
-If you want to add details at this stage you can, or you can always come back later and edit them.
+## Installation
 
-![Release Creation Form](https://user-images.githubusercontent.com/7644614/93409543-225b1000-f865-11ea-9a19-f1906a724421.png)
+### Dependencies
 
-4. Hit submit.
+This module requires the following:
+- Foundry VTT version 12
+- Shadowrun 5e game system
+- SocketLib module
 
-5. Wait a few minutes.
+### Installing the Module
 
-A Github Action will run to populate the `module.json` and `module.zip` with the correct urls that you can then use to distribute this release. You can check on its status in the "Actions" tab.
+1. Open the **Add-on Modules** tab in the Foundry VTT Setup screen.
+2. Click on **Install Module**.
+3. Enter the following manifest URL:
+4. Click **Install** and wait for the installation to complete.
+5. Activate the **Shadowrun 5e Marketplace** module in your world by navigating to **Configure Settings > Manage Modules** within your game session.
 
-![Actions Tab](https://user-images.githubusercontent.com/7644614/93409820-c1800780-f865-11ea-8c6b-c3792e35e0c8.png)
+## Usage
 
-6. Grab the module.json url from the release's details page.
+### For Players
 
-![image](https://user-images.githubusercontent.com/7644614/93409960-10c63800-f866-11ea-83f6-270cc5d10b71.png)
+#### Accessing the Marketplace:
+- Click on the marketplace icon in the scene controls, or use a macro/hotkey provided by the GM to open the Purchase Screen.
 
-This `module.json` will only ever point at this release's `module.zip`, making it useful for sharing a specific version for compatibility purposes.
+#### Browsing and Searching Items:
+- Navigate through different item categories using tabs.
+- Use the search bar and filters to find specific items.
 
-7. You can use the url `https://github.com/<user>/<repo>/releases/latest/download/module.json` to refer to the manifest.
+#### Adding Items to Basket:
+- Click on **Add to Basket** for items you wish to purchase.
+- Adjust item ratings and quantities as needed.
 
-This is the url you want to use to install the module typically, as it will get updated automatically.
+#### Reviewing Orders:
+- Go to the **Order Review** tab to see all items in your basket.
+- Make any necessary changes before finalizing the order.
 
-# How to List Your Releases on Package Admin
+#### Sending Purchase Requests:
+- Click on **Send Request** to submit your order to the GM for approval (if enabled).
 
-To request a package listing for your first release, go to the [Package Submission Form](https://foundryvtt.com/packages/submit) (accessible via a link at the bottom of the "[Systems and Modules](https://foundryvtt.com/packages/)" page on the Foundry website).
+#### Receiving Items:
+- Once approved by the GM, items will be automatically added to your character's inventory.
 
-Fill in the form. "Package Name" must match the name in the module manifest.  Package Title will be the display name for the package.  Package URL should be your repo URL.
-![image](https://user-images.githubusercontent.com/36359784/120664263-b49e5500-c482-11eb-9126-af7006389903.png)
+### For Game Masters
 
+#### Setting Up the Shop Actor:
+- Drag and drop an actor onto the Shop Actor Dropzone in the Purchase Screen to designate it as the marketplace inventory.
 
-One of the Foundry staff will typically get back to you with an approval or any further questions within a few days, and give you access to the package admin pages.
+#### Managing Available Items:
+- Add or remove items from the Shop Actor's inventory to control what's available for purchase.
 
-Once you have access to the [module admin page](https://foundryvtt.com/admin/packages/package/), you can release a new version by going into the page for your module, scrolling to the bottom, and filling in a new Package Version.
+#### Reviewing Purchase Requests:
+- Receive notifications when players send purchase requests.
+- Approve or deny requests through the provided interface.
 
-When listing a new version, Version should be the version number you set above, and the Manifest URL should be the manifest __for that specific version__ (do not use /latest/ here).
-![image](https://user-images.githubusercontent.com/36359784/120664346-c4b63480-c482-11eb-9d8b-731b50d70939.png)
+#### Configuring Module Settings:
+- Access **Module Settings** to enable or disable features like GM approvals, reset item data, or adjust other preferences.
 
-> ### :warning: Important :warning:
-> 
-> It is very important that you use the specific release manifest url, and not the `/latest` url here. For more details about why this is important and how Foundry Installs/Updates packages, read [this wiki article](https://foundryvtt.wiki/en/development/guides/releases-and-history).
+## Helpers and Utilities
 
-Clicking "Save" in the bottom right will save the new version, which means that anyone installing your module from within Foundry will get that version, and a post will be generated in the #release-announcements channel on the official Foundry VTT Discord.
+- **GlobalHelper**: Manages global settings and purchase review requests.
+- **BasketHelper**: Handles adding and removing items from player baskets.
+- **MarketplaceHelper**: Initializes purchase screen settings and manages shop actor data.
+- **ItemData**: Fetches and processes items, calculates costs, availability, and handles item-specific data.
+- **ActorItemData**: Manages item interactions on actors, including creating items and adjusting skills.
 
+## Localization
 
-# FoundryVTT Module
+This module supports multiple languages:
+- English (en)
+- German (de)
 
-A Modul for Shadowrun 5e, it will provide a new actor type: Merchant and it will intorduce the Purchase Screen.
+To add more languages, include additional localization files in the `languages` directory.
 
-## Changelog
+## License
+
+This module is distributed under the terms specified in the LICENSE file included with the repository.
+
+## Support and Contributions
+
+- **GitHub Repository**: [shadows-eye/sr5-marketplace](https://github.com/shadows-eye/sr5-marketplace)
+- **Author**: Shadow
+- **Discord**: shadows_plays
+
+Contributions, issues, and feature requests are welcome! Please submit them through the GitHub repository.
+
+## Acknowledgements
+
+- **SocketLib** by Manuel Voß for providing essential socket communication functionality.
+- The Foundry VTT community for their continuous support and contributions.
