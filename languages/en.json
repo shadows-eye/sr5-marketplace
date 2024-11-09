@@ -1,5 +1,6 @@
 {
     "SR5": {
+        "PurchaseScreen": "Marketplace Purchase Screen",
         "Marketplace": {
             "YourOrderHasArrived": "Your order has arrived!",
             "OrderReviewItems": "Items List for the Review",
@@ -24,6 +25,8 @@
             "Total": "Total",
             "TotalCost": "Total Cost",
             "TotalAvailability": "Total Availability",
+            "TotalKarma": "Total Karma Cost",
+            "TotalEssence": "Total Essence Cost",
             "Search": "Search",
             "Search items...": "Search items...",
             "shoppingListRequest": "Shopping List Request",
@@ -32,9 +35,11 @@
             "Items": "Items",
             "system": {
                 "avail":{
-                    "avail": "Verfg.",
-                    "R": "E",
-                    "F": "V"
+                    "avail": "Avail.",
+                    "R": "R",
+                    "F": "F",
+                    "E": "R",
+                    "V": "F"
                 },
                 "karma": "Karma",
                 "essence": "Essence",
@@ -43,6 +48,13 @@
                     "availability": "Availability",
                     "Cost": "Cost",
                     "quantity": "Quantity"
+                },
+                "spell":{
+                    "type": "Type",
+                    "range": "Range",
+                    "duration": "Duration",
+                    "damage": "Damage",
+                    "drain": "Drain"
                 }
             },
             "Tab": {

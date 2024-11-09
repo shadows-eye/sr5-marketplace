@@ -347,6 +347,7 @@ button.cancel-request-button:hover, button.send-request-button:hover {
     grid-template-columns: 4fr 0.8fr 0.8fr  0.6fr 0.2fr; /* Adjust based on your needs */
     gap: 10px;
     align-items: center;
+    padding-bottom: 10px;
 }
 .sr5-marketplaceTotal {
     padding-top: 0.5em;
@@ -425,13 +426,13 @@ button.cancel-request-button:hover, button.send-request-button:hover {
 .marketplace-item.grid-item {
     display: flex;
     flex-direction: column;
-    background-color: #e7c93e;
+    background-color: #e7c93ee0;
     padding: 0.7em;
-    border: 0.2em solid #ccc;
+    border: 0.2em solid #590f0f26;
     border-radius: 0.7em;
     box-sizing: border-box;
     width: 100%;
-    height: 11em;
+    height: 12em;
 }
 :hover.marketplace-item.grid-item {
 
@@ -449,7 +450,7 @@ button.cancel-request-button:hover, button.send-request-button:hover {
 .item-image {
     max-width: 62px;
     background-color: #5f5f5f46;
-    border-radius: 5px;
+    border-radius: 10px;
     border: 3px;
     border-style: outset;
 }
@@ -481,7 +482,7 @@ button.cancel-request-button:hover, button.send-request-button:hover {
 }
 .order-review-grid {
     display: grid;
-    grid-template-columns: 4em 2fr 1fr 1fr 1fr 2em;  /* Define column widths explicitly */
+    grid-template-columns: 5em 3fr 0.9fr 0.9fr 0.7fr 5em;  /* Define column widths explicitly */
     grid-gap: 10px;
     align-items: center;
     justify-items: start;
@@ -524,6 +525,7 @@ button.cancel-request-button:hover, button.send-request-button:hover {
     text-size-adjust: 1.5em;
     z-index: 2;
     padding-right: 0.1em;
+    padding-left: 1.7em;
 }
 .order-review-grid > .marketplace.item-header:hover {
     /*text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3);*/
@@ -540,6 +542,9 @@ button.cancel-request-button:hover, button.send-request-button:hover {
 .order-review-item {
     display: contents; /* So the individual grid items take up their respective places */
 }
+.order-review-summary{
+    padding-top: 2em;
+}
 .item-details {
     font-size: 0.9em;
     text-align: left;
@@ -547,9 +552,9 @@ button.cancel-request-button:hover, button.send-request-button:hover {
     text-overflow: ellipsis;
     white-space: nowrap;
     display: grid;
-    grid-template-columns: 9em auto; /* Two columns: one flexible and one auto-sized */
+    grid-template-columns: 10em auto; /* Two columns: one flexible and one auto-sized */
     gap: 10px; /* Adjust the gap between elements as needed */
-    align-items: center; /* Aligns the content vertically */
+    padding-top: 5px;
 }
 .hidden{
     display: none;
@@ -622,7 +627,7 @@ button.remove-item {
     background-repeat: no-repeat;
     z-index: 2;
     background-color: #ffec1900;
-    line-height: 30px;
+    line-height: 38px;
     border-radius: 4px;
     border: 1px solid #00000000;
     color: #f4cf0e;
@@ -890,6 +895,9 @@ minus {
 }
 .red{
     color: red;
+}
+.darkred{
+    color: rgb(90, 5, 5);
 }
 @container (max-width: 900px) {
     .grid-container {

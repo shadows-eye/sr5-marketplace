@@ -95,8 +95,10 @@
         </div>
         <!-- Section for displaying total cost and availability -->
         <div class="order-review-summary">
-            <p><strong>{{localize "SR5.Marketplace.Total"}} {{localize "SR5.Marketplace.system.technology.Cost"}}: <span id="order-review-total-cost">{{totalCost}}</span> <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen"></i></strong></p>
-            <p><strong>{{localize "SR5.Marketplace.TotalAvailability"}}: <span id="order-review-total-availability">{{totalAvailability}}</span></strong></p>
+            <p><strong>{{localize "SR5.Marketplace.Total"}} {{localize "SR5.Marketplace.system.technology.Cost"}}:</strong> <span id="order-review-total-cost"><strong class="SR5-marketplace darkred">{{totalCost}}</strong></span> <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen"></i></p>
+            <p><strong>{{localize "SR5.Marketplace.TotalAvailability"}}:</strong> <span id="order-review-total-availability"><strong class="SR5-marketplace darkred">{{totalAvailability}}</span></strong></p>
+            {{#if totalKarmaCost}}<p><strong>{{localize "SR5.Marketplace.TotalKarma"}}:</strong> <span id="order-review-total-karma"><strong class="SR5-marketplace darkred">{{totalKarmaCost}}</span></strong><i class="fa-duotone fa-solid fa-circle-star"></i></p>{{/if}}
+            {{#if totalEssenceCost}}<p><strong>{{localize "SR5.Marketplace.TotalEssence"}}:</strong> <span id="order-review-total-karma"><strong class="SR5-marketplace darkred">{{totalEssenceCost}}</span></strong> <i class="fa-duotone fa-solid fa-capsules"></i></p>{{/if}}
         </div>
     </div>
     

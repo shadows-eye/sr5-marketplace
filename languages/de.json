@@ -1,5 +1,6 @@
 {
     "SR5": {
+        "PurchaseScreen": "Marktplatz Fenster",
         "Marketplace": {
             "YourOrderHasArrived": "Deine Bestellung ist angekommen!",
             "OrderReviewItems": "Artikel Liste für die Überprüfung",
@@ -24,6 +25,8 @@
             "Total": "Gesamt",
             "TotalCost": "Gesamtkosten",
             "TotalAvailability": "Gesamtverfügbarkeit",
+            "TotalKarma": "Gesamtkarma Kosten",
+            "TotalEssence": "Gesamtessenz Kosten",
             "Search": "Suche",
             "Search items...": "Gegenstand Suche",
             "shoppingListRequest": "Einkaufslisten Anfrage",
@@ -35,6 +38,8 @@
                     "avail": "Verfg.",
                     "R": "E",
                     "F": "V",
+                    "E": "E",
+                    "V": "V",
                     "" : ""
                 },
                 "karma": "Karma",
@@ -44,6 +49,13 @@
                     "availability": "Verfügbarkeit",
                     "Cost": "Kosten",
                     "quantity": "Menge"
+                },
+                "spell":{
+                    "type": "Typ",
+                    "range": "Reichweite",
+                    "duration": "Dauer",
+                    "damage": "Schaden",
+                    "drain": "Entzug"
                 }
             },
             "Tab": {
