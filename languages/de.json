@@ -1,5 +1,6 @@
 {
     "SR5": {
+        "PurchaseScreen": "Marktplatz Fenster",
         "Marketplace": {
             "YourOrderHasArrived": "Deine Bestellung ist angekommen!",
             "OrderReviewItems": "Artikel Liste für die Überprüfung",
@@ -35,6 +36,8 @@
                     "avail": "Verfg.",
                     "R": "E",
                     "F": "V",
+                    "E": "E",
+                    "V": "V",
                     "" : ""
                 },
                 "karma": "Karma",

@@ -25,7 +25,7 @@ export class PurchaseScreenApp extends Application {
       static get defaultOptions() {
         return foundry.utils.mergeObject(super.defaultOptions, {
             id: "purchase-screen",
-            title: "Purchase Screen",
+            title: game.i18n.localize("SR5.PurchaseScreen"),
             template: "modules/sr5-marketplace/templates/purchase.hbs",
             width: 1000,
             height: 850,

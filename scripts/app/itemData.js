@@ -237,25 +237,20 @@ export default class ItemData {
             if (flagAvailability) return flagAvailability; // Return the flagged availability if present
         }
     
-        // Define a mapping for availability text parts (for localization)
-        const textMapping = {
-            "E": "E",  // German for Restricted
-            "V": "V",  // German for Forbidden
-            "R": "R",  // English Restricted
-            "F": "F",  // English Forbidden
-            "": ""     // No text
-        };
+        // Get rating and base availability values
+        const rating = item.selectedRating || 1;
+        const baseAvailability = parseInt(item.system.technology?.availability) || 0;
     
-        const rating = item.selectedRating || 1; // Default rating
-        const baseAvailability = parseInt(item.system.technology?.availability) || 0; // Get base availability
+        // Determine and localize the text part of availability, if applicable
+        let textPart = item.system.technology?.availability?.replace(/^\d+/, '').trim().toUpperCase() || "";
     
-        // Determine text part and normalize it
-        let textPart = item.system.technology?.availability?.replace(/^\d+/, '').trim() || "";
-        textPart = textMapping[textPart.toUpperCase()] || "";  // Normalize the text part if it exists
+        // Fetch the localized value if it exists in the language file
+        textPart = game.i18n.has(`SR5.Marketplace.system.avail.${textPart}`)
+            ? game.i18n.localize(`SR5.Marketplace.system.avail.${textPart}`)
+            : textPart; // fallback to original if no localization found
     
-        // Construct the final availability string
-        let availabilityString = `${baseAvailability * rating}${textPart}`.trim();
-    
+        // Construct the final availability string with localized text part
+        const availabilityString = `${baseAvailability * rating}${textPart ? ` ${textPart}` : ""}`;
         return availabilityString;
     }      
     calculateTotalEssenceCost() {

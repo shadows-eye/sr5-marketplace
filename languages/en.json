@@ -1,5 +1,6 @@
 {
     "SR5": {
+        "PurchaseScreen": "Marketplace Purchase Screen",
         "Marketplace": {
             "YourOrderHasArrived": "Your order has arrived!",
             "OrderReviewItems": "Items List for the Review",
@@ -32,9 +33,11 @@
             "Items": "Items",
             "system": {
                 "avail":{
-                    "avail": "Verfg.",
-                    "R": "E",
-                    "F": "V"
+                    "avail": "Avail.",
+                    "R": "R",
+                    "F": "F",
+                    "E": "R",
+                    "V": "F"
                 },
                 "karma": "Karma",
                 "essence": "Essence",
