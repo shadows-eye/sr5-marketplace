@@ -15,10 +15,14 @@
 ## Overview
 
 The Shadowrun 5e Marketplace is a module for Foundry Virtual Tabletop (Foundry VTT) that brings an immersive marketplace experience to your Shadowrun 5th Edition games. It allows players and game masters (GMs) to manage in-game purchases seamlessly, integrating item browsing, purchasing, and inventory management directly into the game interface.
+![image](https://github.com/user-attachments/assets/c07f6b53-0231-4949-80db-910b9041f3fd)
+
 
 ## Features
 
 - **In-Game Shop Interface**: Browse through a catalog of items categorized by type, such as Weapons, Armor, Cyberware, and more, all within a dedicated marketplace window.
+![image](https://github.com/user-attachments/assets/9f83febb-af72-4a2e-b00e-683a2a145d0c)
+
 - **Shopping Basket and Order Review**: Add items to a virtual basket, adjust quantities and item ratings, and review your order before finalizing purchases.
 - **Automatic Cost Calculations**: Calculates Karma and Nuyen costs for items, factoring in item ratings, availability, and any custom modifiers.
 - **Actor Inventory Integration**: Purchased items are automatically added to the selected actor's inventory, whether it's your character or a selected token in the scene.
