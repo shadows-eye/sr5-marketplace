@@ -25,7 +25,12 @@
         "compatibility": {}
       }
     ],
-    "requires": []
+    "requires": [
+      {
+        "id": "socketlib",
+        "type": "module"
+      }
+    ]
   },
   "socket": true,
   "dependencies": [
