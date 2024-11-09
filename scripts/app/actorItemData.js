@@ -132,7 +132,7 @@ export class ActorItemData extends ItemData {
         });
     
         // Log or return the creationItems for later use
-        console.log('Creation Items:', creationItems);
+        //console.log('Creation Items:', creationItems);
     
         // Return creationItems for further processing (e.g., creating items on the actor)
         return creationItems;

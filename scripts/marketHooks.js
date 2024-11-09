@@ -3,7 +3,9 @@ import {fetchAndSelectLanguage} from './app/itemData.js';
 import { ActorItemData } from './app/actorItemData.js';
 import { PurchaseScreenApp } from './app/purchase-screen-app.js';
 import { registerBasicHelpers } from './lib/helpers.js';
-
+import GlobalHelper from './app/global.js';
+import {BasketHelper} from './app/global.js';
+import {MarketplaceHelper} from './app/global.js';
 // Call the function to register helpers
 registerBasicHelpers();
 Hooks.once('init', () => {
@@ -24,6 +26,36 @@ Hooks.once('init', () => {
             }
         }
     });
+    // Register a separate setting to track if initial setup has been done
+    game.settings.register("sr5-marketplace", "initialized", {
+        name: "Initialization Flag",
+        scope: "world",
+        config: false,
+        type: Boolean,
+        default: false // This indicates that the setup is not done yet
+    });
+    game.settings.register("sr5-marketplace", "reviewRequests", {
+        name: "Hidden Review Requests",
+        scope: "world",
+        config: false,  // Hidden from UI
+        type: Object,   // Store as an object with multiple requests
+        default: {}     // Initialize as an empty object
+    });
+    
+    game.settings.register("sr5-marketplace", "baskets", {
+        name: "Hidden Baskets",
+        scope: "world",
+        config: false,  // Hidden from UI
+        type: Object,   // Store as an object with multiple baskets
+        default: {}     // Initialize as an empty object
+    });
+    game.settings.register("sr5-marketplace", "purchase-screen-app", {
+        name: "Hidden Purchase Screen Settings",
+        scope: "world",
+        config: false,
+        type: Object,
+        default: {}
+    });
 });
 Hooks.on('renderChatMessage', (message, html, data) => {
     // Check if the current user is a GM
@@ -40,6 +72,77 @@ Hooks.on('renderChatMessage', (message, html, data) => {
 Hooks.once('ready', async function() {
     const itemData = new ItemData();
     await itemData.fetchItems();
+    let currentUserId = game.user.id;
+    // Define the function for first-time setup
+
+    if (!game.modules.get("socketlib")?.active) {
+        return ui.notifications.error("SocketLib is required for SR5 Marketplace to work correctly.");
+    }
+
+    console.log("SR5 Marketplace Module ready, initializing settings...");
+
+    const socket = socketlib.registerModule("sr5-marketplace");
+    socket.register("getPurchaseScreenApp", async () => {
+        return game.settings.get("sr5-marketplace", "purchase-screen-app");
+    });
+    socket.register("setPurchaseScreenApp", async (newData) => {
+        await game.settings.set("sr5-marketplace", "purchase-screen-app", newData);
+    });
+    // Initialize helpers
+    const globalHelper = new GlobalHelper();
+    const basketHelper = new BasketHelper();
+    const marketplaceHelper = new MarketplaceHelper();
+
+    // GlobalHelper function registrations
+    socket.register("initializeGlobalSetting", async () => await globalHelper.initializeGlobalSetting());
+    socket.register("getReviewRequests", async () => await globalHelper.getReviewRequests());
+    socket.register("getReviewRequest", async (requestId) => await globalHelper.getReviewRequest(requestId));
+    socket.register("addOrUpdateReviewRequest", async (requestId, requestData) => {
+        await globalHelper.addOrUpdateReviewRequest(requestId, requestData);
+    });
+    socket.register("deleteReviewRequest", async (requestId) => await globalHelper.deleteReviewRequest(requestId));
+    socket.register("clearAllReviewRequests", async () => await globalHelper.clearAllReviewRequests());
+    socket.register("savePurchaseRequest", async (requestId) => await globalHelper.savePurchaseRequest(requestId));
+    socket.register("loadPurchaseRequest", async (requestId) => await globalHelper.loadPurchaseRequest(requestId));
+
+    // BasketHelper function registrations
+    socket.register("initializeBasketsSetting", async () => await basketHelper.initializeBasketsSetting());
+    socket.register("saveItemToGlobalBasket", async (itemId, userId, userActor) => {
+        await basketHelper.saveItemToGlobalBasket(itemId, userId, userActor);
+    });
+    socket.register("removeItemFromGlobalBasket", async (basketId, userId, userActor) => {
+        await basketHelper.removeItemFromGlobalBasket(basketId, userId, userActor);
+    });
+    socket.register("deleteGlobalUserBasket", async (actorId) => await basketHelper.deleteGlobalUserBasket(actorId));
+    socket.register("getAllBaskets", async () => await basketHelper.getAllBaskets());
+
+    // MarketplaceHelper function registrations
+    socket.register("initializePurchaseScreenSetting", async (currentUserId) => await marketplaceHelper.initializePurchaseScreenSetting(currentUserId));
+    socket.register("getPurchaseScreenData", async (currentUser, playerActor, selectedActor) => {
+        return await marketplaceHelper.getPurchaseScreenData(currentUser, playerActor, selectedActor);
+    });
+    socket.register("getHasShopActor", async () => await marketplaceHelper.getHasShopActor());
+    socket.register("getGlobalShopActorData", async () => {
+        return await marketplaceHelper.getGlobalShopActorData();
+    });
+    socket.register("getResetItemLoad", async () => {
+        return await game.settings.get("sr5-marketplace", "resetItemLoad");
+    });
+    socket.register("setSelectedActor", async (currentUser, actorData) => {
+        await marketplaceHelper.setSelectedActor(currentUser, actorData);
+    });
+    socket.register("setShopActor", async (shopActorData) => await marketplaceHelper.setShopActor(shopActorData));
+    socket.register("setConnectionItem", async (currentUser, connectionItemData) => {
+        await marketplaceHelper.setConnectionItem(currentUser, connectionItemData);
+    });
+    socket.register("clearPurchaseScreenData", async (currentUserId) => await marketplaceHelper.clearPurchaseScreenData(currentUserId));
+    socket.register("removeShopActor", async () => await marketplaceHelper.removeShopActor());
+    socket.register("removeSelectedActor", async (currentUser, selectedActorId) => {
+        await marketplaceHelper.removeSelectedActor(currentUser, selectedActorId);
+    });
+    socket.register("removeConnectionItem", async (currentUser, connectionItemId) => {
+        await marketplaceHelper.removeConnectionItem(currentUser, connectionItemId);
+    });
     // Check if the user is not a GM
     if (!game.user.isGM) {
         // Select all review-request-button elements
@@ -56,7 +159,7 @@ Hooks.once('ready', async function() {
     console.log("Cleaning up unused flags in sr5-marketplace...");
     const currentUser = game.user;  // Get the current user
     const isGM = currentUser.isGM;  // Check if the current user is a GM
-
+    const selectedActor = canvas.tokens.controlled[0]?.actor;
     // Define the function to clean flags for a user
     async function cleanFlagsForUser(user) {
         const userFlags = user.flags['sr5-marketplace'] || {};
@@ -75,7 +178,8 @@ Hooks.once('ready', async function() {
             }
         }
     }
-
+    //let purchaseScreenData = await game.settings.get("sr5-marketplace", "purchase-screen-app");
+    //console.log("purchase-Screen-App data on ready:", purchaseScreenData);
     // If the current user is a GM, clean flags for all users
     if (isGM) {
         console.log("GM detected, cleaning flags for all users.");
@@ -133,74 +237,82 @@ Hooks.once('ready', async function() {
             console.log(`No order review data found for flag ID ${flagId}`);
         }
     });
-    // Check the "Reset Item Load" setting
-    const resetItemLoad = game.settings.get("sr5-marketplace", "resetItemLoad");
-    if (!resetItemLoad) {
-        console.log("Reset Item Load is disabled; skipping Karma flag reinitialization.");
-        return; // Exit if resetItemLoad is false
+    // Ensure only GMs execute this block
+if (!game.user.isGM) {
+    console.log("Only GMs can run the reset process.");
+    return;
+}
+
+// Check the "Reset Item Load" setting with GM permissions
+const resetItemLoad = await socket.executeAsGM("getResetItemLoad");
+
+if (!resetItemLoad) {
+    console.log("Reset Item Load is disabled; skipping Karma flag reinitialization.");
+    return; // Exit if resetItemLoad is false
+}
+
+console.log("Initializing sr5-marketplace Karma flag for specified item types...");
+const itemTypesToFlag = ["quality", "adept_power", "spell", "complex_form"];
+
+async function updateItemWithKarmaFlag(item) {
+    const spellPowerAvailabilityCost = {
+        "health": { karma: 5, availability: "4R", cost: 500 },
+        "illusion": { karma: 5, availability: "8R", cost: 1000 },
+        "combat": { karma: 5, availability: "8R", cost: 2000 },
+        "manipulation": { karma: 5, availability: "8R", cost: 1500 },
+        "detection": { karma: 5, availability: "4R", cost: 500 }
+    };
+
+    const marketplaceHistory = item.flags?.['sr5-marketplace-history'] || null;
+    await item.update({ 'flags.sr5-marketplace': {} });
+
+    let newFlags = {};
+    if (item.type === "quality" && item.system.karma !== undefined) {
+        newFlags.karma = item.system.karma;
+    } else if (["spell", "complex_form"].includes(item.type)) {
+        newFlags.karma = 5;
+        const category = item.system.category;
+        if (spellPowerAvailabilityCost[category]) {
+            const { availability, cost } = spellPowerAvailabilityCost[category];
+            newFlags.Availability = availability;
+            newFlags.Cost = cost;
+        }
+    } else if (!newFlags.karma) {
+        newFlags.karma = 0;
     }
 
-    console.log("Initializing sr5-marketplace Karma flag for specified item types...");
-    const itemTypesToFlag = ["quality", "adept_power", "spell", "complex_form"];
+    await item.update({ 'flags.sr5-marketplace': newFlags });
+    if (marketplaceHistory) {
+        await item.update({ 'flags.sr5-marketplace-history': marketplaceHistory });
+    }
+}
 
-    async function updateItemWithKarmaFlag(item) {
-        const spellPowerAvailabilityCost = {
-            "health": { karma: 5, availability: "4R", cost: 500 },
-            "illusion": { karma: 5, availability: "8R", cost: 1000 },
-            "combat": { karma: 5, availability: "8R", cost: 2000 },
-            "manipulation": { karma: 5, availability: "8R", cost: 1500 },
-            "detection": { karma: 5, availability: "4R", cost: 500 }
-        };
-
-        const marketplaceHistory = item.flags?.['sr5-marketplace-history'] || null;
-        await item.update({ 'flags.sr5-marketplace': {} });
-
-        let newFlags = {};
-        if (item.type === "quality" && item.system.karma !== undefined) {
-            newFlags.karma = item.system.karma;
-        } else if (["spell", "complex_form"].includes(item.type)) {
-            newFlags.karma = 5;
-            const category = item.system.category;
-            if (spellPowerAvailabilityCost[category]) {
-                const { availability, cost } = spellPowerAvailabilityCost[category];
-                newFlags.Availability = availability;
-                newFlags.Cost = cost;
-            }
-        } else if (!newFlags.karma) {
-            newFlags.karma = 0;
-        }
-
-        await item.update({ 'flags.sr5-marketplace': newFlags });
-        if (marketplaceHistory) {
-            await item.update({ 'flags.sr5-marketplace-history': marketplaceHistory });
+async function initializeKarmaFlags() {
+    console.log("Initializing Karma flags for world items...");
+    for (let item of game.items.contents) {
+        if (itemTypesToFlag.includes(item.type)) {
+            await updateItemWithKarmaFlag(item);
         }
     }
 
-    async function initializeKarmaFlags() {
-        console.log("Initializing Karma flags for world items...");
-        for (let item of game.items.contents) {
-            if (itemTypesToFlag.includes(item.type)) {
-                await updateItemWithKarmaFlag(item);
-            }
-        }
-
-        console.log("Initializing Karma flags for compendium items...");
-        for (let pack of game.packs) {
-            if (pack.documentName === "Item") {
-                const items = await pack.getDocuments();
-                for (let item of items) {
-                    if (itemTypesToFlag.includes(item.type)) {
-                        await updateItemWithKarmaFlag(item);
-                    }
+    console.log("Initializing Karma flags for compendium items...");
+    for (let pack of game.packs) {
+        if (pack.documentName === "Item") {
+            const items = await pack.getDocuments();
+            for (let item of items) {
+                if (itemTypesToFlag.includes(item.type)) {
+                    await updateItemWithKarmaFlag(item);
                 }
             }
         }
     }
+}
 
-    // Call the function to initialize the Karma flags if the setting is true
-    await initializeKarmaFlags();
-    console.log("sr5-marketplace Karma flag initialization completed.");
+// Call the function to initialize the Karma flags if the setting is true
+await initializeKarmaFlags();
+console.log("sr5-marketplace Karma flag initialization completed.");
 });
+
 Hooks.on('getSceneControlButtons', (controls) => {
     const mainControl = controls.find(c => c.name === 'token'); // Use the main control
 
@@ -360,7 +472,7 @@ Hooks.on("renderActorSheet", (app, html, data) => {
                 await ActorItemData.prototype.decreaseSkill(app.document, skillKey, false);
             });
         });
-    }, 100);  // Delay injection to ensure full render
+    }, 100);  // Delay injection to ensure full render  
 });
 
 
