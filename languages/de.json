@@ -2,6 +2,16 @@
     "SR5": {
         "PurchaseScreen": "Marktplatz Fenster",
         "Marketplace": {
+            "Settings": {
+                "ApprovalWorkflow": {
+                    "name": "GM Genehmigungsprocess",
+                    "hint": "Schalte diese Einstellung um den Genehmigungsprocess für Spielerkäufe zu deaktivieren!"
+                },
+                "ResetItemLoad":{
+                    "name": "Item Verbesserung landen zurücksetzen",
+                    "hint": "Dies ermöglicht es die Karma Werte und den Kosten und Verfügbarkeiten von Welt- und Kompendiumsartikeln, ihre Flags für Karma neu zu initialisieren. Wenn Sie diese Einstellung auf true setzen, werden alle Änderungen, die Sie an Karma, Kosten oder Verfügbarkeit der Items vorgenommen haben, rückgängig gemacht."
+                }
+            },
             "YourOrderHasArrived": "Deine Bestellung ist angekommen!",
             "OrderReviewItems": "Artikel Liste für die Überprüfung",
             "YourItems": "Deine Artikel",

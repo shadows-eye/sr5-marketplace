@@ -2,6 +2,17 @@
     "SR5": {
         "PurchaseScreen": "Marketplace Purchase Screen",
         "Marketplace": {
+            "Settings": {
+                "ApprovalWorkflow": {
+                    "name": "GM Approval Workflow",
+                    "hint": "Toggle this setting to Disable the approval workflow for player purchases!"
+                },
+                "ResetItemLoad":{
+                    "name": "Reset Item Enhancement Load",
+                    "hint": "This will allow the karma values and cost/availability of world and compendium items to get their flags reinitialized. Setting this setting to true will undo any changes you made to Karma, cost, or Availability of the items."
+                }
+
+            },
             "YourOrderHasArrived": "Your order has arrived!",
             "OrderReviewItems": "Items List for the Review",
             "YourItems": "Your Items",

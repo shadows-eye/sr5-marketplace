@@ -12,8 +12,8 @@ Hooks.once('init', () => {
     console.log("Initializing SR5 Marketplace Module...");
 
     game.settings.register("sr5-marketplace", "resetItemLoad", {
-        name: "Reset Item Load",
-        hint: "This will allow the karma values and cost/availability of world and compendium items to get their flags reinitialized. Setting this setting to true will undo any changes you made to Karma, cost, or Availability of the items.",
+        name: game.i18n.localize("SR5.Marketplace.Settings.ResetItemLoad.name"),
+        hint: game.i18n.localize("SR5.Marketplace.Settings.ResetItemLoad.hint"),
         scope: "world",
         config: true,
         type: Boolean,
@@ -31,8 +31,8 @@ Hooks.once('init', () => {
     });
     // Register the second setting
     game.settings.register("sr5-marketplace", "Approval Workflow", {
-        name: "GM Disable Approval Workflow",
-        hint: "Toggle this setting to Disable the approval workflow for player purchases!",
+        name: game.i18n.localize("SR5.Marketplace.Settings.ApprovalWorkflow.name"),
+        hint: game.i18n.localize("SR5.Marketplace.Settings.ApprovalWorkflow.hint"),
         scope: "world",
         config: false,
         type: Boolean,
