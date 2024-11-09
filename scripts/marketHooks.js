@@ -18,11 +18,33 @@ Hooks.once('init', () => {
         config: true,
         type: Boolean,
         default: false,
+        restricted: true, // Restrict this setting to GM users only
         onChange: value => {
             if (value) {
                 console.log("Reset Item Load is enabled; item flags will be reset on load.");
             } else {
                 console.log("Reset Item Load is disabled; item flags will not be reset on load.");
+            }
+            // Force a page reload to apply the setting change
+            window.location.reload();
+        }
+    });
+    // Register the second setting
+    game.settings.register("sr5-marketplace", "Approval Workflow", {
+        name: "GM Disable Approval Workflow",
+        hint: "Toggle this setting to Disable the approval workflow for player purchases!",
+        scope: "world",
+        config: false,
+        type: Boolean,
+        default: true,
+        restricted: true, // Restrict this setting to GM users only
+        onChange: value => {
+            if (value) {
+                console.log("Approval Workflow is enabled.");
+                // Add any other functionality to execute when the setting is enabled
+            } else {
+                console.log("Approval Workflow is disabled!");
+                // Add any other functionality to execute when the setting is disabled
             }
         }
     });
@@ -316,17 +338,17 @@ console.log("sr5-marketplace Karma flag initialization completed.");
 Hooks.on('getSceneControlButtons', (controls) => {
     const mainControl = controls.find(c => c.name === 'token'); // Use the main control
 
-    // Add a new button to call fetchAndSelectLanguage
-    if (game.user.isGM) { 
+    // Check if the user is a GM and if the resetItemLoad setting is true
+    if (game.user.isGM && game.settings.get("sr5-marketplace", "resetItemLoad")) { 
         mainControl.tools.push({
-        name: 'enhance-item-data',
-        title: 'Enhance Item Data',
-        icon: 'fas fa-language', // You can choose a different FontAwesome icon if you like
-        onClick: () => {
-            fetchAndSelectLanguage();
-        },
-        button: true
-    });
+            name: 'enhance-item-data',
+            title: 'Enhance Item Data',
+            icon: 'fas fa-language', 
+            onClick: () => {
+                fetchAndSelectLanguage();
+            },
+            button: true
+        });
     }
 });
 Hooks.on('getSceneControlButtons', (controls) => {
