@@ -956,12 +956,11 @@ export class PurchaseScreenApp extends Application {
                 whisper: isGM ? [] : game.users.filter(u => u.isGM).map(u => u.id)
             });
     
-            // Empty the basket
-            this.itemData.basketItems = [];
-    
-            // Render the empty basket
-            this._renderBasket(html);
         });
+        // Empty the basket
+        this.itemData.basketItems = [];
+        // Render the empty basket
+        await this._renderBasketAsync(html);
     }
     /**
      * 
