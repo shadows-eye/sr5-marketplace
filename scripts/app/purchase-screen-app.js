@@ -620,12 +620,15 @@ export class PurchaseScreenApp extends Application {
         // Calculate the total cost and availability using itemData's calculation functions
         const totalCost = await this.itemData.calculateTotalCost(); // Await if async
         const totalAvailability = await this.itemData.calculateTotalAvailability(); // Await if async
-        
+        const totalKarmaCost = await this.itemData.calculateTotalKarmaCost(); // Await if async
         // Update the total cost in the DOM
-        html.find("#total-cost").html(`Total: ${totalCost} <i class="fa-duotone fa-solid fa-circle-yen"></i>`);
-        
+        html.find("#total-cost").html(`${game.i18n.localize("SR5.Marketplace.TotalCost")}: ${totalCost} <i class="fa-duotone fa-solid fa-circle-yen"></i>`);
+
         // Update the total availability in the DOM
-        html.find("#total-availability").text(`Total Availability: ${totalAvailability}`);
+        html.find("#total-availability").text(`${game.i18n.localize("SR5.Marketplace.TotalAvailability")}: ${totalAvailability}`);
+
+        // Update the total karma cost in the DOM
+        html.find("#total-karma").text(`${game.i18n.localize("SR5.Marketplace.TotalKarma")}: ${totalKarmaCost} <i class="fa-duotone fa-solid fa-circle-star"></i>`);
     }
 
     async _renderBasketAsync(html) {
@@ -633,7 +636,7 @@ export class PurchaseScreenApp extends Application {
         const templateData = { items: basketItems };
         let renderedHtml = await renderTemplate("modules/sr5-marketplace/templates/basket.hbs", templateData)
         html.find("#basket-items").html(renderedHtml);
-        await this._updateTotalCostAsync(html);;
+        await this._updateTotalCostAsync(html);
     }
     async _onRatingChangeOrderReview(event, html) {
         event.preventDefault();
@@ -985,20 +988,22 @@ export class PurchaseScreenApp extends Application {
         let buyActorId = foundry.utils.deepClone(orderData.actorId);
         console.log("Buy Actor ID:", buyActorId);
         console.log("Order Data in _onBuyStart:", DeapCloneOrderData);
-        // Check if actorId is available in flag data
-        let actorId = buyActorId || null;
-        if (!actorId && canvas.tokens.controlled.length > 0) {
-            const selectedToken = canvas.tokens.controlled[0];
-            actorId = selectedToken.actor?._id || null;
+        // Check if a token is selected on the canvas for the GM and prioritize its actor
+        let actor;
+        if (canvas.tokens.controlled.length > 0) {
+            actor = canvas.tokens.controlled[0].actor;
+            console.log("Using selected token actor:", actor.name);
+        } else {
+            // Fallback to the sidebar actor if no token is selected
+            actor = game.actors.get(buyActorId);
+            console.log("Using sidebar actor:", actor.name);
         }
-    
-        if (!actorId) {
+
+        if (!actor) {
             ui.notifications.warn("No actor selected. Please select an actor to confirm the order.");
             $(event.currentTarget).find('i').addClass('fa-exclamation-circle');
             return;
         }
-
-        const actor = game.actors.get(actorId);
     
         // Retrieve actor's current nuyen amount
         let currentNuyen = actor.system.nuyen || 0;  // Default to 0 if no nuyen found

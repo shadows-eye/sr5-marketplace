@@ -25,6 +25,8 @@
             "Total": "Total",
             "TotalCost": "Total Cost",
             "TotalAvailability": "Total Availability",
+            "TotalKarma": "Total Karma Cost",
+            "TotalEssence": "Total Essence Cost",
             "Search": "Search",
             "Search items...": "Search items...",
             "shoppingListRequest": "Shopping List Request",
@@ -46,6 +48,13 @@
                     "availability": "Availability",
                     "Cost": "Cost",
                     "quantity": "Quantity"
+                },
+                "spell":{
+                    "type": "Type",
+                    "range": "Range",
+                    "duration": "Duration",
+                    "damage": "Damage",
+                    "drain": "Drain"
                 }
             },
             "Tab": {

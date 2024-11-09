@@ -9,8 +9,9 @@
         <div class="grid-item header">{{localize "SR5.Marketplace.system.karma"}}</div>
         <i class="fas fa-trash grid-item header" aria-label='{{localize "SR5.Marketplace.RemoveItem"}}'></i>
         {{#each items}}
-
+                <a data-entity-link="Item" data-uuid="Item.{{this.id_Item}}">
                     <div class="basket-item item-name">{{this.name}}</div>
+                </a>
                     {{#if this.system.technology.rating}}
                 <select class="item-rating" data-basket-id="{{this.basketId}}">
                         {{#range 1 13}}
@@ -28,9 +29,10 @@
 
         <!-- Summary for Cost and Availability -->
     <div class="basket-summary">
-        <div id="total-cost" class="sr5-marketplaceTotalCost">Total: {{totalCost}} <i class="fa-duotone fa-solid fa-circle-yen"></i></div>
-        <div id="total-availability" class="sr5-marketplaceTotalAvail">Total Availability: {{totalAvailability}}</div>
-        <div id="total-karma" class="sr5-marketplaceTotalKarma">{{totalKarma}} </div>
+        <div id="total-cost" class="sr5-marketplaceTotalCost">Total: {{totalCost}} <i class="fa-duotone fa-solid fa-circle-yen darkRed"></i></div>
+        <div id="total-availability" class="sr5-marketplaceTotalAvail">{{localize "SR5.Marketplace.TotalAvailability"}}: {{totalAvailability}}</div>
+        {{#if totalKarma}}<div id="total-karma" class="sr5-marketplaceTotalKarma">{{localize "SR5.Marketplace.TotalKarma"}}: {{totalKarma}}<i class="fa-duotone fa-solid fa-circle-star yellow"></i></div>{{/if}}
+        {{#if totalEssenceCost}}<div id="total-essence" class="sr5-marketplaceTotalEssence">{{localize "SR5.Marketplace.TotalEssence"}}: {{totalEssenceCost}}<i class="fa-duotone fa-solid fa-capsules red"></i></div>{{/if}}
     </div>
 
         <!-- Buttons to send or cancel the request -->
