@@ -103,50 +103,110 @@ export default class ItemData {
     }
     async addItemToBasket(itemId) {
         const item = this.items.find(item => item._id === itemId);
-        if (item) {
-            // Ensure all async calculations are awaited before adding to the basket
-            // Get the base rating of the item (if available), otherwise default to 1
-            const baseRating = item.system.technology?.rating || 1;
-            
-            // Ensure that selectedRating is at least the base rating of the item, or default to the base rating
-            const selectedRating = item.selectedRating !== undefined && item.selectedRating !== null
-                ? Math.max(item.selectedRating, baseRating) // Ensure the rating is not lower than the baseRating
-                : baseRating;
+        if (!item) return; // Exit if item is not found
     
-            const calculatedCost = await this.calculateCost(item, selectedRating);
-            const calculatedAvailability = this.calculateAvailability(item, selectedRating);
-            const calculatedEssence = await this.calculateEssence(item, selectedRating);
-            const calculatedKarma = await this.calculatedKarmaCost(item);
+        // Define item type behaviors
+        let uniqueTypes = ["bioware", "cyberware", "spell", "action", "quality", "complex_form", "ritual"]; // Only one of these can be added to the basket
+        let multiIdTypes = ["weapon", "armor"]; // Allow multiple unique instances of these in the basket
+        let quantityTypes = ["ammo", "equipment", "modification", "device", "lifestyle", "program", "sin"]; // Increment quantity for existing entries in the basket
+    
+        // Ensure all async calculations are awaited before adding to the basket
+        const baseRating = item.system.technology?.rating || 1;
+        const selectedRating = item.selectedRating !== undefined && item.selectedRating !== null
+            ? Math.max(item.selectedRating, baseRating)
+            : baseRating;
+    
+        const calculatedCost = await this.calculateCost(item, selectedRating);
+        const calculatedAvailability = this.calculateAvailability(item, selectedRating);
+        const calculatedEssence = await this.calculateEssence(item, selectedRating);
+        const calculatedKarma = await this.calculatedKarmaCost(item);
+    
+        // Check if the item already exists in the basket
+        let existingItem = this.basketItems.find(basketItem => basketItem.id_Item === item._id);
+    
+        if (uniqueTypes.includes(item.type)) {
+            // Unique items should only be added once to the basket
+            if (!existingItem) {
+                const basketItem = {
+                    ...item,
+                    id_Item: item._id,
+                    image: item.img,
+                    name: item.name,
+                    description: item.system.description ? item.system.description.value : "",
+                    type: item.type,
+                    basketId: 'basket.' + item._id, // Unique basket ID
+                    selectedRating,
+                    calculatedCost,
+                    calculatedAvailability,
+                    calculatedEssence,
+                    calculatedKarma,
+                    buyQuantity: 1 // Initial quantity for unique items
+                };
+                this.basketItems.push(basketItem); // Add new unique item to basket
+            }
+        } else if (multiIdTypes.includes(item.type)) {
+            // Items in multiIdTypes can have multiple instances in the basket
             const basketItem = {
                 ...item,
                 id_Item: item._id,
                 image: item.img,
                 name: item.name,
-                description: item.system.description ? item.system.description.value : "", // Safely access description
+                description: item.system.description ? item.system.description.value : "",
                 type: item.type,
-                basketId: 'basket.' + item._id, // Unique basket ID
-                selectedRating, // Default or selected rating
-                calculatedCost, // Use the awaited calculated cost
-                calculatedAvailability, // Use the awaited availability
-                calculatedEssence, // Use the awaited essence
-                calculatedKarma: calculatedKarma
+                basketId: 'basket.' + foundry.utils.randomID(), // New unique basket ID for each instance
+                selectedRating,
+                calculatedCost,
+                calculatedAvailability,
+                calculatedEssence,
+                calculatedKarma,
+                buyQuantity: 1 // Initial quantity for new instance
             };
-    
-            this.basketItems.push(basketItem);
+            this.basketItems.push(basketItem); // Add new unique instance to basket
+        } else if (quantityTypes.includes(item.type)) {
+            // If the item allows quantity, increase quantity if it already exists
+            if (existingItem) {
+                // Increment buyQuantity and update calculated values
+                existingItem.buyQuantity += 1;
+                existingItem.calculatedCost += calculatedCost; // Update cost with new quantity
+                existingItem.calculatedAvailability += calculatedAvailability; // Update availability with new quantity
+                existingItem.calculatedEssence += calculatedEssence; // Update essence with new quantity
+                existingItem.calculatedKarma += calculatedKarma; // Update karma with new quantity
+            } else {
+                // If the item is not in the basket, add it with buyQuantity = 1
+                const basketItem = {
+                    ...item,
+                    id_Item: item._id,
+                    image: item.img,
+                    name: item.name,
+                    description: item.system.description ? item.system.description.value : "",
+                    type: item.type,
+                    basketId: 'basket.' + item._id, // Unique basket ID for quantity-based items
+                    selectedRating,
+                    calculatedCost,
+                    calculatedAvailability,
+                    calculatedEssence,
+                    calculatedKarma,
+                    buyQuantity: 1 // Initial quantity
+                };
+                this.basketItems.push(basketItem); // Add new item to basket
+            }
+        } else {
+            console.warn(`Item type '${item.type}' not recognized for addItemToBasket.`);
         }
     }
-    calculateCost(item) {
-        const rating = item.selectedRating || 1; // Default rating
     
+    calculateCost(item) {
+        let rating = item.selectedRating || 1; // Default rating
+        let quantity = item.buyQuantity || 1; // Default quantity
         // Check if the item is a spell or complex form and retrieve cost from flag if so
         if (["spell", "complex_form"].includes(item.type)) {
             const flagCost = item.getFlag('sr5-marketplace', 'Cost');
             return flagCost ? flagCost * rating : 0; // Default to 0 if no flag cost is set
         }
-    
+        
         // For other item types, calculate cost based on system data
         const baseCost = item.system.technology?.cost || 0; // Get base cost from item data
-        return baseCost * rating; // Calculate the cost based on the rating
+        return baseCost * rating * quantity; // Calculate the cost based on the rating
     }
     /**
      * Asynchronously calculate the cost for the order review based on item rating.
@@ -164,14 +224,14 @@ export default class ItemData {
 
         // Get the base cost from the game item
         const baseCost = baseItem.system?.technology?.cost || 0;
-
+        let buyQuantity = item.buyQuantity || 1; // Default to 1 if buyQuantity is not set
         // Ensure baseCost is a number before proceeding
         if (typeof baseCost !== "number") {
             console.warn(`Base cost is not a number for item ${item._id || item.id}, got:`, baseCost);
             return 0; // Default to 0 if baseCost is not valid
         }
 
-        const calculatedCost = baseCost * rating; // Calculate the cost based on the rating
+        const calculatedCost = baseCost * rating * buyQuantity; // Calculate the cost based on the rating
 
         // Return the recalculated cost
         return parseFloat(calculatedCost) || 0; // Ensure that the result is a valid number
@@ -451,6 +511,7 @@ export default class ItemData {
     
             // Use flag-based cost for spell and complex_form items
             const rating = item.selectedRating || 1; // Default to 1 if no rating is selected
+            let buyQuantity = item.buyQuantity || 1; // Default to 1 if no quantity is set
             let cost = 0;
     
             if (["spell", "complex_form"].includes(item.type)) {
@@ -460,7 +521,7 @@ export default class ItemData {
                 cost = item.system.technology?.cost || 0; // Use system data for other items
             }
     
-            return total + (cost * rating); // Calculate total cost based on rating
+            return total + (cost * rating * buyQuantity); // Calculate total cost based on rating
         }, 0);
     }
     async calculateTotalAvailability() {

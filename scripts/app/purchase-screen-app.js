@@ -62,9 +62,9 @@ export class PurchaseScreenApp extends Application {
         const savedBasket = game.user.getFlag('sr5-marketplace', 'basket') || [];
         this.itemData.basketItems = savedBasket;
         // Clone user and actor data to prepare for socket execution
-        let purchaseScreenUser = foundry.utils.deepClone(this.currentUser);
-        let playerActor = this.currentUser.character;
-        let purchaseScreenActor = foundry.utils.deepClone(this.selectedActor);
+        const purchaseScreenUser = foundry.utils.deepClone(this.currentUser);
+        const playerActor = this.currentUser.character;
+        const purchaseScreenActor = foundry.utils.deepClone(this.selectedActor);
         console.log("Purchase screen user:", purchaseScreenUser);
         console.log("Player actor:", playerActor);
         console.log("Selected actor for purchase screen:", purchaseScreenActor);
@@ -150,7 +150,7 @@ export class PurchaseScreenApp extends Application {
                 }
             }
         });
-        html.on('click', '.remove-link', (event) => this._onRemoveSelectedActorItemShopActor(event, this.currentUser));
+        html.on('click', '.remove-link', (event) => this._onRemoveSelectedActorItemShopActor(event, purchaseScreenUser));
         // Existing listeners for search, selection, basket, etc.
         html.find(".item-type-selector").change(event => this._onFilterChange(event, html));
         const firstType = html.find(".item-type-selector option:first").val();
@@ -195,8 +195,9 @@ export class PurchaseScreenApp extends Application {
             let basketSelectedActor = foundry.utils.deepClone(this.selectedActor);
             console.log("Event userActor:", basketSelectedActor);
 
-            let passSelectedActor = this.selectedActor;
-            let basketItemUser = game.user;
+            const passSelectedActor = foundry.utils.deepClone(this.selectedActor);
+            const basketItemUser = foundry.utils.deepClone(this.currentUser);
+            console.log("Event userId:", basketItemUser);
             this._onAddToBasket(event, html, basketItemUser, passSelectedActor);
         
             // Use setTimeout to ensure the DOM is fully updated before updating the basket count
@@ -205,8 +206,8 @@ export class PurchaseScreenApp extends Application {
             }, 100); // Small delay of 100ms to ensure the basket DOM is updated
         });
         html.on('click', '.remove-item', event => {
-            let passSelectedActor = foundry.utils.deepClone(this.selectedActor);
-            let basketItemUser = foundry.utils.deepClone(this.currentUser);
+            const passSelectedActor = foundry.utils.deepClone(this.selectedActor);
+            const basketItemUser = foundry.utils.deepClone(this.currentUser);
             // Call the existing function to remove the item from the basket
             this._onRemoveFromBasket(event, html, basketItemUser, passSelectedActor);
         
@@ -215,6 +216,19 @@ export class PurchaseScreenApp extends Application {
                 this._updateBasketCount(html);
             }, 100); // Small delay of 100ms to ensure the basket DOM is updated
         });
+        html.on('click', '.minus', event => {
+            // Retrieve the necessary data attributes from the clicked element
+            let basketId = $(event.currentTarget).data('basket-id'); // Get basket ID
+            let itemId = $(event.currentTarget).data('item-id');     // Get item ID
+        
+            // Clone the current user and actor details to pass into _onMinus
+            const passSelectedActor = foundry.utils.deepClone(this.selectedActor);
+            const basketItemUser = foundry.utils.deepClone(this.currentUser);
+        
+            // Call _onMinus to handle the decrease logic
+            this._onMinus(event, html, basketId, itemId, basketItemUser, passSelectedActor);
+        });        
+        
         //Order Review Change
         html.on('change', '.order-review-rating', event => this._onRatingChangeOrderReview(event, html));
         // Tab Switching Logic
@@ -505,7 +519,7 @@ export class PurchaseScreenApp extends Application {
         itemListContainer.empty();
 
         // Re-render the marketplace items using Handlebars
-        const templateData = { items: items };
+        let templateData = { items: items };
         const renderedHtml = await renderTemplate("modules/sr5-marketplace/templates/libraryItem.hbs", templateData);
         itemListContainer.append(renderedHtml);
     }
@@ -516,17 +530,16 @@ export class PurchaseScreenApp extends Application {
 
     async _onAddToBasket(event, html, currentBasketUser, userActor) {
         event.preventDefault();
-        let currentUserId = currentBasketUser.id || game.user.id;
-        let basketActor = userActor || game.user.character;
+        const currentUser = currentBasketUser || game.user.id;
+        const basketActor = userActor || game.user.character || game.user;
         await this.socket.executeAsGM("initializeBasketsSetting");
         // Retrieve the item ID from the event data
         let itemId = $(event.currentTarget).data('itemId');
-        
+        // Retrieve the item from the basket to pass its details to BasketHelper
+        console.log("UserId:", currentUser.id);
+        await this.socket.executeAsGM("saveItemToGlobalBasket", itemId, currentUser, basketActor);
         await this.itemData.addItemToBasket(itemId); // Add item to the basket
         this._renderBasketAsync(html);
-
-        // Retrieve the item from the basket to pass its details to BasketHelper
-        await this.socket.executeAsGM("saveItemToGlobalBasket", itemId, currentUserId, basketActor);
 
         //this._renderBasket(html); // Re-render the basket with updated items
     }
@@ -548,33 +561,70 @@ export class PurchaseScreenApp extends Application {
 
     async _onRemoveFromBasket(event, html, currentUser, userActor) {
         event.preventDefault();
-        let currentUserId = currentUser.id;
-        let removeBasketActor = userActor;
-        const basketId = $(event.currentTarget).data('basketId'); //item of the basket not the basket itself
-        await this.socket.executeAsGM("removeItemFromGlobalBasket", basketId, currentUserId, removeBasketActor); // Global basket removal of item
+        const currentUserRemove = currentUser;
+        const removeBasketActor = userActor;
+        await this.socket.executeAsGM("initializeBasketsSetting");
+        const basketId = "basket." + $(event.currentTarget).data('basketId'); //item of the basket not the basket itself
+        await this.socket.executeAsGM("removeItemFromGlobalBasket", basketId, currentUserRemove, removeBasketActor); // Global basket removal of item
         this.itemData.removeItemFromBasket(basketId); // Remove item using the unique basketId
         await this._renderBasketAsync(html); // Re-render the basket with updated items
 
         this._saveBasketState(); // Save the updated basket state
+    }
+    async _onMinus(event, html, basketId, itemId, currentUser, userActor) {
+        let currentUserId = currentUser.id;
+        let removeBasketActor = userActor;
+    
+        // Fetch the user's basket from global settings
+        let userBasket = await this.socket.executeAsGM("getUserBasket", currentUserId);
+        
+        // Locate the specific basket item by basketId and itemId
+        const basketItem = userBasket.find(item => item.basketId === basketId && item.id_Item === itemId);
+    
+        if (basketItem) {
+            if (basketItem.buyQuantity > 1) {
+                // If quantity is greater than 1, decrease the quantity
+                basketItem.buyQuantity -= 1;
+                await this.socket.executeAsGM("decreaseItemQuantityInGlobalBasket", basketId, currentUserId, removeBasketActor);
+    
+                // Re-render the basket to show updated quantity
+                await this._renderBasketAsync(html);
+                this._saveBasketState();
+            } else {
+                // If buyQuantity is 1, remove the item entirely
+                await this._onRemoveFromBasket(event, html, currentUser, userActor);
+            }
+    
+            // Update the basket count after a short delay
+            setTimeout(() => {
+                this._updateBasketCount(html);
+            }, 100);
+        }
     }
     /**
      * Updates the basket count displayed on the shopping cart icon.
      * @param {HTMLElement} html - The HTML content of the marketplace.
      */
     _updateBasketCount(html) {
-        // Find all elements with class 'remove-item' within the grid basket-grid
-        const basketItems = html.find('.basket-grid .remove-item');
-        const itemCount = basketItems.length;
-
+        // Initialize total item count
+        let itemCount = 0;
+    
+        // Find all `.item-quantity` elements in the basket
+        const quantityElements = html.find('.basket-grid .item-quantity');
+    
+        // Calculate the total item count based on each item's quantity
+        quantityElements.each((_, element) => {
+            const quantity = parseInt($(element).text()) || 1; // Default to 1 if no quantity is set
+            itemCount += quantity; // Add the full quantity of the item to the count
+        });
+    
         // Find the basket count element
         const basketCountElement = html.find('.basket-count');
-
-        // Find the basket content to check if it's expanded or collapsed
         const basketContent = html.find('.basket-content');
-
+    
         // Update the count text
         basketCountElement.text(itemCount);
-
+    
         // If the basket is collapsed (hidden), show the count if there are items
         if (basketContent.hasClass('hidden')) {
             if (itemCount > 0) {
@@ -586,7 +636,7 @@ export class PurchaseScreenApp extends Application {
             // If the basket is expanded, always hide the count
             basketCountElement.addClass('hidden');
         }
-    }
+    }    
 
     _onRatingChange(event, html) {
         const basketId = $(event.currentTarget).data('basketId');
@@ -610,17 +660,21 @@ export class PurchaseScreenApp extends Application {
 
     _renderBasket(html) {
         const basketItems = this.itemData.getBasketItems();
-        const templateData = { items: basketItems };
+        let templateData = { items: basketItems };
         renderTemplate("modules/sr5-marketplace/templates/basket.hbs", templateData).then(renderedHtml => {
             html.find("#basket-items").html(renderedHtml);
             this._updateTotalCost(html);
         });
     }
-    async _updateTotalCostAsync(html) {
+    async _updateTotalCostAsync(html, basketItems) {
         // Calculate the total cost and availability using itemData's calculation functions
-        const totalCost = await this.itemData.calculateTotalCost(); // Await if async
-        const totalAvailability = await this.itemData.calculateTotalAvailability(); // Await if async
-        const totalKarmaCost = await this.itemData.calculateTotalKarmaCost(); // Await if async
+        let checkCalculation = basketItems;
+        if (checkCalculation.length === 0) {
+            return;
+        }
+        const totalCost = await this.itemData.calculateTotalCost() || 0; // Await if async
+        const totalAvailability = await this.itemData.calculateTotalAvailability() || 0 ;// Await if async
+        const totalKarmaCost = await this.itemData.calculateTotalKarmaCost() ||0; // Await if async
         // Update the total cost in the DOM
         html.find("#total-cost").html(`${game.i18n.localize("SR5.Marketplace.TotalCost")}: ${totalCost} <i class="fa-duotone fa-solid fa-circle-yen"></i>`);
 
@@ -632,11 +686,13 @@ export class PurchaseScreenApp extends Application {
     }
 
     async _renderBasketAsync(html) {
-        const basketItems = this.itemData.getBasketItems();
-        const templateData = { items: basketItems };
-        let renderedHtml = await renderTemplate("modules/sr5-marketplace/templates/basket.hbs", templateData)
+        await this.socket.executeAsGM("initializeBasketsSetting");
+        const basketItems = await this.socket.executeAsGM("getUserBasket", game.user.id);
+        let templateData = { items: basketItems };
+        let renderedHtml = await renderTemplate("modules/sr5-marketplace/templates/basket.hbs", templateData);
         html.find("#basket-items").html(renderedHtml);
-        await this._updateTotalCostAsync(html);
+        html.find("#basket-summary").html(renderedHtml);
+        await this._updateTotalCostAsync(html, basketItems);
     }
     async _onRatingChangeOrderReview(event, html) {
         event.preventDefault();
@@ -964,6 +1020,32 @@ export class PurchaseScreenApp extends Application {
         this.itemData.basketItems = [];
         // Render the empty basket
         await this._renderBasketAsync(html);
+    }
+    async _onDecrementQuantity(event, html, currentUser, userActor) {
+        event.preventDefault();
+        const basketId = $(event.currentTarget).data('basketId'); // Get the unique basket ID
+        const item = this.itemData.basketItems.find(item => item.basketId === basketId);
+        let currentUserId = currentUser.id;
+    
+        if (item) {
+            if (item.buyQuantity > 1) {
+                // Decrease buyQuantity and update calculated properties
+                item.buyQuantity -= 1;
+                item.calculatedCost = await this.itemData.calculateCost(item, item.selectedRating) * item.buyQuantity;
+                item.calculatedAvailability = await this.itemData.calculateAvailability(item, item.selectedRating);
+                item.calculatedEssence = await this.itemData.calculateEssence(item, item.selectedRating);
+                item.calculatedKarma = await this.itemData.calculatedKarmaCost(item);
+            } else {
+                // If buyQuantity reaches 0, remove the item completely
+                await this._onRemoveFromBasket(event, html, currentUser, userActor);
+                return; // Exit the function after removal
+            }
+        }
+    
+        // Update the global basket and re-render
+        await this.socket.executeAsGM("removeItemFromGlobalBasket", basketId, currentUserId, userActor);
+        await this._renderBasketAsync(html); // Refresh the basket display
+        this._updateBasketCount(html); // Update the basket item count display
     }
     /**
      * 
