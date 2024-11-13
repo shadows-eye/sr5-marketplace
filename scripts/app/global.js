@@ -55,6 +55,7 @@ export default class GlobalHelper {
             items: this.basketItems.map(item => ({
                 id: item.id_Item,
                 name: item.name,
+                buyQuantity: item.buyQuantity,
                 type: item.type,
                 description: item.description,
                 selectedRating: item.selectedRating,
@@ -130,18 +131,30 @@ export class BasketHelper {
         }
     }
     /**
+     * This method retrieves the basket for a specific User or Actor.
+     * @param {*string} userId User ID to retrieve the basket for
+     * @returns {*Array} Returns the user's basket or an empty array if not found.
+     */
+    async getUserBasket(userId) {
+        // Get all baskets from global settings
+        const baskets = await game.settings.get("sr5-marketplace", "baskets");
+    
+        // Return the user's basket or an empty array if not found
+        return baskets[userId] || [];
+    }
+    /**
      * 
-     * @param {*string} itemId The ID of the item to save to the global
-     * @param {*string} userId The ID of the user or GM to save the item for
+     * @param {*string} itemid The ID of the item to save to the global
+     * @param {*object} user The ID of the user or GM to save the item for
      * @param {*object} userActor The actor assigned to the user, if available to save the item for
      * @returns 
      */
-    async saveItemToGlobalBasket(itemId, userId, userActor) {
+    async saveItemToGlobalBasket(itemId, user, userActor) {
         // Retrieve the current user and check if they are a GM
-        const currentUser = userId;
-        const basketUser = game.users.get(currentUser);
+        const currentUserId = user.id || game.user.id; 
+        const basketUser = game.users.get(currentUserId);
         const isGM = basketUser && basketUser.isGM;
-        let basketUserActor = userActor || game.user.character;
+        let basketUserActor = userActor || game.users.get(currentUser)?.character || currentUserId;
         let actorOrUserId;
     
         if (isGM) {
@@ -153,16 +166,12 @@ export class BasketHelper {
     
             if (selectedSceneActor && typeof selectedSceneActor.getUuid === "function") {
                 // Use the selected actor on the scene if present and valid
-                actorOrUserId = await selectedSceneActor.id;
+                actorOrUserId =  selectedSceneActor.id;
                 console.log(`Selected scene actor found: ${actorOrUserId}`);
-            } else if (basketUserActor) {
-                // Fallback to the GM's assigned character if no scene actor is selected
-                actorOrUserId = await basketUserActor.id;
-                console.log(`Using GM's assigned actor: ${actorOrUserId}`);
             } else {
                 // If no selected actor or assigned character, use the GM's user ID
                 console.warn("GM has no actor selected; using GM's user ID for basket.");
-                actorOrUserId = currentUser;
+                actorOrUserId = currentUserId;
             }
         } else {
             // For non-GM users, ensure they have an assigned character
@@ -170,7 +179,7 @@ export class BasketHelper {
                 ui.notifications.warn("Please assign an actor to proceed with adding items to the basket.");
                 return; // Exit if the user does not have an assigned character
             }
-            actorOrUserId = await basketUserActor.id;
+            actorOrUserId =  basketUserActor.id;
         }
     
         // Fetch the item by ID
@@ -185,6 +194,7 @@ export class BasketHelper {
         // Calculate the item properties using ItemData methods
         const baseRating = addedToBasketItem.system.technology?.rating || 1;
         const selectedRating = addedToBasketItem.selectedRating || baseRating;
+        const buyQuantity = addedToBasketItem.buyQuantity || 1;
         const calculatedCost = await this.itemData.calculateCost(addedToBasketItem, selectedRating);
         const calculatedAvailability = await this.itemData.calculateAvailabilitySpecial(addedToBasketItem, selectedRating);
         const calculatedEssence = await this.itemData.calculateEssence(addedToBasketItem, selectedRating);
@@ -199,6 +209,7 @@ export class BasketHelper {
             type: addedToBasketItem.type,
             basketId: 'basket.' + addedToBasketItem.id,
             selectedRating,
+            buyQuantity,
             calculatedCost,
             calculatedAvailability,
             calculatedEssence,
@@ -232,49 +243,46 @@ export class BasketHelper {
         // Update the global basket setting
         await game.settings.set(this.moduleNamespace, this.settingKey, globalBaskets);
     
-        console.log(`Saved item ${addedToBasketItem.name} to global baskets for user ${userId} or actor ${actorOrUserId}`, basketItem);
+        console.log(`Saved item ${addedToBasketItem.name} to global baskets for user ${currentUserId} or actor ${actorOrUserId}`, basketItem);
         console.log( 'Baskets: ' , globalBaskets);
     }
     
     // Method to remove an item from a specific user or actor's basket by basketId
     /**
      * Removes an item from the global basket by basketId and user selection.
-     * @param {string} basketId - The ID of the item to be removed, provided by the delete button.
+     * @param {string} basketId - The ID of the item to be removed, provided by the delete button added with basket+ itemId.
      * @param {string} userId - The ID of the user to remove the item from.
      * @param {object} userActor - The actor object from the selected token or assigned user actor.
      */
-    async removeItemFromGlobalBasket(basketId, userId, userActor) {
+    async removeItemFromGlobalBasket(basketId, user, userActor) {
         // Retrieve the current user and check if they are a GM
-        const currentUser = userId;
-        const basketUser = game.users.get(currentUser);
+        const currentUserId = user.id || game.user.id;
+        const basketUser = game.users.get(currentUserId);
+        let basketUserActor = userActor || game.users.get(currentUser)?.character || currentUserId;
         const isGM = basketUser && basketUser.isGM;
         let actorOrUserId;
 
         if (isGM) {
             // Check if any actor is selected on the scene
             const selectedToken = canvas.tokens.controlled[0]; // Get the first selected token on the scene
-            const selectedSceneActor = selectedToken?.actor; // Access the actor from the selected token
+            const selectedSceneActor = selectedToken?.actor // Access the actor from the selected token
 
             if (selectedSceneActor) {
                 // Use the selected actor on the scene if present
                 actorOrUserId = selectedSceneActor.id;
                 console.log(`Selected scene actor found: ${actorOrUserId}`);
-            } else if (userActor) {
-                // Fallback to the GM's assigned character if no scene actor is selected
-                actorOrUserId = userActor.id;
-                console.log(`Using GM's assigned actor: ${actorOrUserId}`);
             } else {
                 // If no selected actor or assigned character, use the GM's user ID
                 console.warn("GM has no actor selected; using GM's user ID for basket.");
-                actorOrUserId = currentUser;
+                actorOrUserId = currentUserId;
             }
         } else {
             // For non-GM users, ensure they have an assigned character
-            if (!userActor) {
+            if (!basketUserActor) {
                 ui.notifications.warn("Please assign an actor to proceed with adding items to the basket.");
                 return; // Exit if the user does not have an assigned character
             }
-            actorOrUserId = userActor.id;
+            actorOrUserId = basketUserActor.id;
         }
 
         // Fetch all baskets from global settings
@@ -302,6 +310,72 @@ export class BasketHelper {
 
         console.log(`Removed item with basketId ${basketId} from the global basket for actor or user ${actorOrUserId}.`);
     }
+    /**
+     * Decrease the quantity of an item in the global basket by 1.
+     * If the quantity reaches zero, remove the item entirely.
+     *
+     * @param {string} basketId - The BasketId of the item to decrease the quantity of.
+     * @param {string} userId - The userId of the user to decrease the quantity for in the global baskets.
+     * @param {object} userActor - The actor object from the selected token or assigned user actor.
+     */
+    async decreaseItemQuantityInGlobalBasket(basketId, userId, userActor) {
+        const currentUser = userId;
+        const basketUser = game.users.get(currentUser);
+        const isGM = basketUser && basketUser.isGM;
+        let actorOrUserId;
+
+        if (isGM) {
+            // Check if any actor is selected on the scene
+            const selectedToken = canvas.tokens.controlled[0]; // Get the first selected token on the scene
+            const selectedSceneActor = selectedToken?.actor; // Access the actor from the selected token
+
+            if (selectedSceneActor) {
+                actorOrUserId = selectedSceneActor.id;
+                console.log(`Selected scene actor found: ${actorOrUserId}`);
+            } else if (userActor) {
+                actorOrUserId = userActor.id;
+                console.log(`Using GM's assigned actor: ${actorOrUserId}`);
+            } else {
+                console.warn("GM has no actor selected; using GM's user ID for basket.");
+                actorOrUserId = currentUser;
+            }
+        } else {
+            if (!userActor) {
+                ui.notifications.warn("Please assign an actor to proceed with adding items to the basket.");
+                return; // Exit if the user does not have an assigned character
+            }
+            actorOrUserId = userActor.id;
+        }
+
+        // Fetch the user's basket
+        const allBaskets = await game.settings.get("sr5-marketplace", "baskets");
+        let userBasket = allBaskets[actorOrUserId];
+
+        if (!userBasket) {
+            console.warn(`No basket found for actor or user ${actorOrUserId}.`);
+            return;
+        }
+
+        // Find the basket item by basketId
+        const basketItem = userBasket.find(item => item.basketId === basketId);
+        if (!basketItem) {
+            console.warn(`Item with basketId ${basketId} not found in user's basket.`);
+            return;
+        }
+
+        // Decrease buyQuantity
+        basketItem.buyQuantity -= 1;
+        if (basketItem.buyQuantity <= 0) {
+            // Remove the item entirely if quantity is zero
+            userBasket = userBasket.filter(item => item.basketId !== basketId);
+            console.log(`Removed item with basketId ${basketId} as quantity reached zero.`);
+        }
+
+        // Update the global settings with the modified basket
+        allBaskets[actorOrUserId] = userBasket;
+        await game.settings.set("sr5-marketplace", "baskets", allBaskets);
+        console.log(`Decreased quantity of item with basketId ${basketId} for actor/user ${actorOrUserId}.`);
+    }   
     /**
      * 
      * @param {*string} actorId the ID of the actor to clear the basket for

@@ -344,7 +344,7 @@ button.cancel-request-button:hover, button.send-request-button:hover {
 }
 .basket-grid {
     display: grid;
-    grid-template-columns: 4fr 0.8fr 0.8fr  0.6fr 0.2fr; /* Adjust based on your needs */
+    grid-template-columns: 4fr 0.4fr 0.4fr 0.4fr  0.4fr 0.1fr; /* Adjust based on your needs */
     gap: 10px;
     align-items: center;
     padding-bottom: 10px;
@@ -391,22 +391,49 @@ button.cancel-request-button:hover, button.send-request-button:hover {
 .basket-item.item-name{
     padding: 0 1.6em;
     grid-column: 1;
+    tag.item-tag {
+        /* text-anchor: start; */
+        /* text-align: center; */
+        margin-left: 5px;
+    }
+    img.mini-img {
+        width: 20px;
+        margin-top: 2px;
+        border: none;
+    }
+}
+.basket-item.item-quantity{
+    padding: 0 1.6em;
+    grid-column: 2;
+    display: flex;
+}
+.SR5-marketplace-plus-minus{
+    padding-left: 2px;
+    padding-right: 2px;
+}
+.fa-circle-minus.SR5-marketplace.minus{
+    color: red;
+    cursor: pointer;
+}
+.fa-circle-plus.SR5-marketplace.plus{
+    color: green;
+    cursor: pointer;
 }
 .basket-item.item-rating{
     padding: 0 1.6em;
-    grid-column: 2;
+    grid-column: 3;
 }
 .basket-item.item-cost{
     padding: 0 1.4em;
-    grid-column: 3;
+    grid-column: 4;
 }
 .basket-item.item-karma {
     padding: 0 1.6em;
-    grid-column: 4;
+    grid-column: 5;
 }
 .basket-item.remove-item{
     padding: 0 1.6em;
-    grid-column: 5;
+    grid-column: 6;
 }
 /* Hidden class */
 .hidden {
@@ -645,6 +672,7 @@ button.remove-item {
 }
 .marketplace-tab{
     max-width: 60px;
+    margin-bottom: 5px;
 }
 .item-search-box {
     width: 100%;

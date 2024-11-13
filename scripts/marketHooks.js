@@ -129,13 +129,15 @@ Hooks.once('ready', async function() {
 
     // BasketHelper function registrations
     socket.register("initializeBasketsSetting", async () => await basketHelper.initializeBasketsSetting());
-    socket.register("saveItemToGlobalBasket", async (itemId, userId, userActor) => {
-        await basketHelper.saveItemToGlobalBasket(itemId, userId, userActor);
+    socket.register("saveItemToGlobalBasket", async (itemId, user, userActor) => {
+        await basketHelper.saveItemToGlobalBasket(itemId, user, userActor);
     });
     socket.register("removeItemFromGlobalBasket", async (basketId, userId, userActor) => {
         await basketHelper.removeItemFromGlobalBasket(basketId, userId, userActor);
     });
+    socket.register("getUserBasket", async (actorId) => await basketHelper.getUserBasket(actorId));
     socket.register("deleteGlobalUserBasket", async (actorId) => await basketHelper.deleteGlobalUserBasket(actorId));
+    socket.register("decreaseItemQuantityInGlobalBasket", async (basketId, userId, userActor) => await basketHelper.decreaseItemQuantityInGlobalBasket(basketId, userId, userActor));
     socket.register("getAllBaskets", async () => await basketHelper.getAllBaskets());
 
     // MarketplaceHelper function registrations

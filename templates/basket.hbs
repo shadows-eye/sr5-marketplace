@@ -4,24 +4,41 @@
     <!-- Actual basket items start here -->
     <div class="grid basket-grid">
         <div class="grid-item header">{{localize "SR5.Marketplace.Name"}}</div>
+        <div class="grid-item header">{{localize "SR5.Marketplace.system.technology.quantity"}}</div>
         <div class="grid-item header">{{localize "SR5.Marketplace.system.technology.rating"}}</div>
         <div class="grid-item header">{{localize "SR5.Marketplace.system.technology.Cost"}}</div>
         <div class="grid-item header">{{localize "SR5.Marketplace.system.karma"}}</div>
         <i class="fas fa-trash grid-item header" aria-label='{{localize "SR5.Marketplace.RemoveItem"}}'></i>
         {{#each items}}
                 <a data-entity-link="Item" data-uuid="Item.{{this.id_Item}}">
-                    <div class="basket-item item-name">{{this.name}}</div>
+                    <div class="basket-item item-name"><img class="mini-img" src="{{this.image}}" alt="{{this.name}}"><tag class="item-tag">{{this.name}}</tag></div>
                 </a>
-                    {{#if this.system.technology.rating}}
-                <select class="item-rating" data-basket-id="{{this.basketId}}">
+                <div class="basket-item item-quantity">
+                    <!-- Show the plus button only if buyQuantity is greater than 1 -->
+                    {{#if (gt this.buyQuantity 1)}}
+                        <div id="{{this.id_Item}}" data-basket-id="{{this.id_Item}}" class="SR5-marketplace-plus-minus">
+                            <i class="fa-solid fa-circle-plus SR5-marketplace plus"></i>
+                        </div>
+                    {{/if}}
+                    <!-- Display the current buyQuantity -->
+                    <span>{{this.buyQuantity}}</span>
+                    <!-- Show the minus button only if buyQuantity is greater than 1 -->
+                    {{#if (gt this.buyQuantity 1)}}
+                        <div id="{{this.id_Item}}" data-basket-id="{{this.id_Item}}" class="SR5-marketplace-plus-minus">
+                            <i class="fa-solid fa-circle-minus SR5-marketplace minus"></i>
+                        </div>
+                    {{/if}}
+                </div>                
+                {{#if this.system.technology.rating}}
+                <select class="item-rating" data-basket-id="{{this.id_Item}}">
                         {{#range 1 13}}
                         <option value="{{this}}" {{#ifeq this ../selectedRating}}selected{{/ifeq}}>{{this}}</option>
                         {{/range}}
                 </select>
-                    {{/if}}
+                {{/if}}
                 <div class="basket-item item-cost">{{this.calculatedCost}} <i class="fa-duotone fa-solid fa-circle-yen"></i></div>
                 <div class="basket-item item-karma">{{this.calculatedKarma}} <i class="fa-duotone fa-solid fa-circle-star"></i></div>
-                <button class="remove-item" data-basket-id="{{this.basketId}}">
+                <button class="remove-item" data-basket-id="{{this.id_Item}}">
                         <i class="fas fa-trash"></i>
                 </button>
         {{/each}}
