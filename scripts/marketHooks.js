@@ -97,10 +97,6 @@ Hooks.once('ready', async function() {
     let currentUserId = game.user.id;
     // Define the function for first-time setup
 
-    if (!game.modules.get("socketlib")?.active) {
-        return ui.notifications.error("SocketLib is required for SR5 Marketplace to work correctly.");
-    }
-
     console.log("SR5 Marketplace Module ready, initializing settings...");
 
     const socket = socketlib.registerModule("sr5-marketplace");
@@ -261,7 +257,24 @@ Hooks.once('ready', async function() {
             console.log(`No order review data found for flag ID ${flagId}`);
         }
     });
-    // Ensure only GMs execute this block
+    // Ensure Shadowrun5e system is loaded
+    if (!game.shadowrun5e) {
+        console.warn("Shadowrun5e system not loaded. Test registration skipped.");
+        return;
+    }
+
+    // Dynamically import the test registration utility and execute the registration
+    try {
+        const tests = await import('./test/utils/testRegistry.js'); // Adjust the path as needed
+        tests.registerTests();
+        console.log("SR5 Marketplace | Tests registered successfully.");
+    } catch (error) {
+        console.error("SR5 Marketplace | Failed to register tests:", error);
+    }
+    if (!game.modules.get("socketlib")?.active) {
+        return ui.notifications.error("SocketLib is required for SR5 Marketplace to work correctly.");
+    }
+// Ensure only GMs execute this block of code
 if (!game.user.isGM) {
     console.log("Only GMs can run the reset process.");
     return;

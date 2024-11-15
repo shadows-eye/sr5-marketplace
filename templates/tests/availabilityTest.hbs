@@ -1,0 +1,18 @@
+<div class="SR5-marketplace test-dialog">
+    <h3>{{localize "Marketplace.Availability"}}{{localize "Marketplace.Availability"}}</h3>
+    
+    <label for="connection">Select Connection:</label>
+    <select id="connection" name="connection">
+        {{#each connections}}
+            <option value="{{this.uuid}}" {{#if (eq this.uuid ../defaultConnectionUuid)}}selected{{/if}}>
+                {{this.name}} (Connection: {{this.value}}, Loyalty: {{this.loyalty}})
+            </option>
+        {{/each}}
+    </select>
+
+    <p>Estimated Time for Purchase: {{estimatedTime}}</p>
+    <button class="dialog-button roll" data-button="roll">
+        <i class="fas fa-dice-six"></i>
+        {{localize "Roll"}}
+    </button>
+</div>

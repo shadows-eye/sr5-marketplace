@@ -44,6 +44,7 @@
             "OrderRejected": "Sorry but the following items can not be confirmed",
             "requestActor": "From ",
             "Items": "Items",
+            "Tests": {"Availability": "Availability Test"},
             "system": {
                 "avail":{
                     "avail": "Avail.",

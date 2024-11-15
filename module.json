@@ -46,7 +46,8 @@
   "esmodules": [
     "scripts/marketHooks.js",
     "scripts/app/global.js",
-    "scripts/app/actorItemData.js"
+    "scripts/app/actorItemData.js",
+    "scripts/test/utils/testRegistry.js"
   ],
   "includes": [
     "./assets/**",

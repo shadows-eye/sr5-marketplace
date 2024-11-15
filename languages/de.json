@@ -43,6 +43,7 @@
             "OrderRejected": "Entschuldigung, aber die folgenden Artikel können nicht bestätigt werden",
             "requestActor": "Von ",
             "Items": "Gegenstände",
+            "Tests": {"Tests": "Verfügbarkeit Test"},
             "system": {
                 "avail":{
                     "avail": "Verfg.",
