@@ -265,7 +265,7 @@ Hooks.once('ready', async function() {
 
     // Dynamically import the test registration utility and execute the registration
     try {
-        const tests = await import('./test/utils/testRegistry.js'); // Adjust the path as needed
+        let tests = await import('/modules/sr5-marketplace/scripts/test/utils/testRegistry.mjs'); // Adjust the path as needed
         tests.registerTests();
         console.log("SR5 Marketplace | Tests registered successfully.");
     } catch (error) {

@@ -4,7 +4,7 @@
  * load order between system and module as tests and this code relies on the system having
  * been loaded first and having setup system globals and test registry.
  */
-import { AvailabilityTest } from "../tests/availabilityTest.js";
+import { AvailabilityTest } from "../availabilityTest.js";
 
 export class TestRegistrationError extends Error {}
 
