@@ -164,7 +164,7 @@ export class BasketHelper {
             const selectedSceneActor = selectedToken?.actor; // Access the actor from the selected token
             console.log(selectedSceneActor);
     
-            if (selectedSceneActor && typeof selectedSceneActor.getUuid === "function") {
+            if (selectedSceneActor) {
                 // Use the selected actor on the scene if present and valid
                 actorOrUserId =  selectedSceneActor.id;
                 console.log(`Selected scene actor found: ${actorOrUserId}`);

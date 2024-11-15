@@ -687,9 +687,39 @@ export class PurchaseScreenApp extends Application {
 
     async _renderBasketAsync(html) {
         await this.socket.executeAsGM("initializeBasketsSetting");
-        const basketItems = await this.socket.executeAsGM("getUserBasket", game.user.id);
-        let templateData = { items: basketItems };
-        let renderedHtml = await renderTemplate("modules/sr5-marketplace/templates/basket.hbs", templateData);
+    
+        const currentUser = game.user;
+        let actorOrUserId;
+    
+        if (currentUser.isGM) {
+            // If the user is a GM, check for a selected token
+            const selectedToken = canvas.tokens.controlled[0]; // Get the first selected token
+            const selectedActor = selectedToken?.actor; // Retrieve the actor from the selected token
+    
+            if (selectedActor) {
+                actorOrUserId = selectedActor.id; // Use the token's actor ID
+                //console.log(`GM with selected token: using actor ID ${actorOrUserId}`);
+            } else {
+                actorOrUserId = currentUser.id; // Fallback to GM's user ID
+                //console.warn("GM has no selected token; falling back to GM user ID.");
+            }
+        } else {
+            // For players, use their assigned character's ID
+            const playerCharacter = currentUser.character;
+            if (!playerCharacter) {
+                ui.notifications.warn("You must assign a character to proceed.");
+                return; // Exit if no character is assigned
+            }
+            actorOrUserId = playerCharacter.id;
+            //console.log(`Player: using character ID ${actorOrUserId}`);
+        }
+    
+        // Fetch the basket items using the determined ID
+        const basketItems = await this.socket.executeAsGM("getUserBasket", actorOrUserId);
+    
+        const templateData = { items: basketItems };
+        const renderedHtml = await renderTemplate("modules/sr5-marketplace/templates/basket.hbs", templateData);
+    
         html.find("#basket-items").html(renderedHtml);
         html.find("#basket-summary").html(renderedHtml);
         await this._updateTotalCostAsync(html, basketItems);
