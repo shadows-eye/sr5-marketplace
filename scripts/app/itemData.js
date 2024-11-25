@@ -101,6 +101,7 @@ export default class ItemData {
             item.system.category === itemCategory
         );
     }
+    /**
     async addItemToBasket(itemId) {
         const item = this.items.find(item => item._id === itemId);
         if (!item) return; // Exit if item is not found
@@ -194,6 +195,7 @@ export default class ItemData {
             console.warn(`Item type '${item.type}' not recognized for addItemToBasket.`);
         }
     }
+    */
     
     calculateCost(item) {
         let rating = item.selectedRating || 1; // Default rating

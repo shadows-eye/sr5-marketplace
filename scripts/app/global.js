@@ -3,6 +3,7 @@ export default class GlobalHelper {
     constructor() {
         this.settingKey = "reviewRequests";
         this.moduleNamespace = "sr5-marketplace";
+        this.itemData = new ItemData();
     }
 
     // Initialize the global setting if not already set
@@ -40,7 +41,7 @@ export default class GlobalHelper {
 
     // Add or update a review request
     async addOrUpdateReviewRequest(requestId, requestData) {
-        const reviewRequests = await this.getReviewRequests();
+        let reviewRequests = await this.getReviewRequests();
         reviewRequests[requestId] = requestData;
         await game.settings.set(this.moduleNamespace, this.settingKey, reviewRequests);
     }
@@ -109,7 +110,7 @@ export default class GlobalHelper {
         // Populate basketItems with loaded data
         this.basketItems = requestData.items.map(item => ({
             ...item,
-            basketId: foundry.utils.randomID() // Assign unique basket IDs
+            basketId: basketId || null // Assign unique basket IDs
         }));
 
         console.log(`Loaded purchase request ${requestId} into basketItems.`);
@@ -133,182 +134,211 @@ export class BasketHelper {
     /**
      * This method retrieves the basket for a specific User or Actor.
      * @param {*string} userId User ID to retrieve the basket for
-     * @returns {*Array} Returns the user's basket or an empty array if not found.
+     * @returns {*Object} Returns the user's basket items and aggregated totals.
      */
     async getUserBasket(userId) {
-        // Get all baskets from global settings
         const baskets = await game.settings.get("sr5-marketplace", "baskets");
-    
-        // Return the user's basket or an empty array if not found
-        return baskets[userId] || [];
-    }
-    /**
-     * 
-     * @param {*string} itemid The ID of the item to save to the global
-     * @param {*object} user The ID of the user or GM to save the item for
-     * @param {*object} userActor The actor assigned to the user, if available to save the item for
-     * @returns 
-     */
-    async saveItemToGlobalBasket(itemId, user, userActor) {
-        // Retrieve the current user and check if they are a GM
-        const currentUserId = user.id || game.user.id; 
-        const basketUser = game.users.get(currentUserId);
-        const isGM = basketUser && basketUser.isGM;
-        let basketUserActor = userActor || game.users.get(currentUser)?.character || currentUserId;
-        let actorOrUserId;
-    
-        if (isGM) {
-            // Check if any actor is selected on the scene
-            const selectedToken = canvas.tokens.controlled[0]; // Get the first selected token on the scene
+        const userBasket = baskets[userId] || [];
 
-            const selectedSceneActor = selectedToken?.actor; // Access the actor from the selected token
-            console.log(selectedSceneActor);
-    
-            if (selectedSceneActor && typeof selectedSceneActor.getUuid === "function") {
-                // Use the selected actor on the scene if present and valid
-                actorOrUserId =  selectedSceneActor.id;
-                console.log(`Selected scene actor found: ${actorOrUserId}`);
-            } else {
-                // If no selected actor or assigned character, use the GM's user ID
-                console.warn("GM has no actor selected; using GM's user ID for basket.");
-                actorOrUserId = currentUserId;
-            }
-        } else {
-            // For non-GM users, ensure they have an assigned character
-            if (!basketUserActor) {
-                ui.notifications.warn("Please assign an actor to proceed with adding items to the basket.");
-                return; // Exit if the user does not have an assigned character
-            }
-            actorOrUserId =  basketUserActor.id;
+        // Helper function to calculate availability for a single item
+        let calculateItemAvailability = async (basketItem) => {
+            const item = await fromUuid(basketItem.uuid);
+            if (!item) return { numeric: 0, priority: 0 };
+
+            const priorityMapping = { "": 0, "E": 1, "R": 2, "F": 3, "V": 3 }; // Define priority levels
+            const rating = basketItem.selectedRating || 1;
+            const baseAvailability = parseInt(item.system.technology?.availability) || 0;
+
+            // Extract and normalize the text part
+            let textPart = item.system.technology?.availability?.replace(/^\d+/, '').trim() || "";
+            const normalizedText = textPart.toUpperCase();
+            const priority = priorityMapping[normalizedText] || 0;
+
+            return { numeric: baseAvailability * rating, priority };
+        };
+
+        // Process basket items and fetch full item data
+        const itemsWithFullData = await Promise.all(userBasket.map(async (basketItem) => {
+            const item = await fromUuid(basketItem.uuid);
+            if (!item) return null;
+            return { ...basketItem, fullItemData: item };
+        }));
+
+        // Filter out invalid items
+        let validItems = itemsWithFullData.filter((item) => item !== null);
+
+        // Aggregate totals
+        let totalNumeric = 0;
+        let highestPriority = 0;
+
+        for (const basketItem of validItems) {
+            const { numeric, priority } = await calculateItemAvailability(basketItem);
+            totalNumeric += numeric;
+            if (priority > highestPriority) highestPriority = priority;
         }
-    
-        // Fetch the item by ID
-        const addedToBasketItem = game.items.get(itemId);
-    
-        // Ensure the item exists
+
+        const reverseMapping = { 0: "", 1: "E", 2: "R", 3: "F" };
+        const rawTextPart = reverseMapping[highestPriority] || "";
+        const textPartLocalized = rawTextPart 
+            ? game.i18n.localize(`SR5.Marketplace.system.avail.${rawTextPart}`) 
+            : "";
+
+        const totals = {
+            totalCost: validItems.reduce((sum, item) => sum + (item.calculatedCost * item.buyQuantity), 0),
+            totalAvailability: `${totalNumeric}${textPartLocalized}`.trim(),
+            totalKarma: validItems.reduce((sum, item) => sum + item.calculatedKarma, 0),
+            totalEssenceCost: validItems.reduce((sum, item) => sum + item.calculatedEssence, 0),
+        };
+
+        return { items: validItems, totals };
+    }
+
+    /**
+     * Save an item to the global basket using UUIDs.
+     * @param {string} itemUuid - The UUID of the item to save.
+     * @param {object} user - The user adding the item to the basket.
+     */
+    async saveItemToGlobalBasket(itemUuid, userId, basketActor) {
+        const currentUserId = userId;
+        const basketaktor = basketActor || null;
+
+        let actorUuid = null;
+
+        // Determine the actor UUID based on GM or player
+        if (!basketaktor) {
+            const selectedToken = canvas.tokens.controlled[0]; // Get the first selected token
+            actorUuid = selectedToken?.actor?.uuid || null; // Use selected token's actor UUID, or null if no token is selected
+        } else {
+            basketaktor // For players, use their assigned character's UUID
+        }
+
+        // Retrieve or initialize the global baskets
+        const baskets = await game.settings.get(this.moduleNamespace, this.settingKey);
+        if (!baskets[currentUserId]) {
+            baskets[currentUserId] = [];
+        }
+        const userBasket = baskets[currentUserId];
+
+        // Fetch the item from the UUID
+        const addedToBasketItem = await fromUuid(itemUuid);
         if (!addedToBasketItem) {
-            console.warn(`Item with ID ${itemId} not found.`);
+            console.warn(`Item with UUID ${itemUuid} not found.`);
             return;
         }
-    
-        // Calculate the item properties using ItemData methods
+
+        // Define item type behaviors
+        const uniqueTypes = ["bioware", "cyberware", "spell", "action", "quality", "complex_form", "ritual"];
+        const multiIdTypes = ["weapon", "armor"];
+        const quantityTypes = ["ammo", "equipment", "modification", "device", "lifestyle", "program", "sin"];
+
+        // Check for existing item in the basket
+        const existingItem = userBasket.find(item => item.uuid === itemUuid);
+
+        // Calculate necessary values
         const baseRating = addedToBasketItem.system.technology?.rating || 1;
         const selectedRating = addedToBasketItem.selectedRating || baseRating;
-        const buyQuantity = addedToBasketItem.buyQuantity || 1;
+        const buyQuantity = 1;
         const calculatedCost = await this.itemData.calculateCost(addedToBasketItem, selectedRating);
         const calculatedAvailability = await this.itemData.calculateAvailabilitySpecial(addedToBasketItem, selectedRating);
         const calculatedEssence = await this.itemData.calculateEssence(addedToBasketItem, selectedRating);
         const calculatedKarma = await this.itemData.calculatedKarmaCost(addedToBasketItem);
-        let counter = 0;
-        // Construct the basket item object with actor UUID if available
-        const basketItem = {
-            id_Item: addedToBasketItem.id,
-            name: addedToBasketItem.name,
-            image: addedToBasketItem.img,
-            description: addedToBasketItem.system.description?.value || "",
-            type: addedToBasketItem.type,
-            basketId: 'basket.' + addedToBasketItem.id,
-            selectedRating,
-            buyQuantity,
-            calculatedCost,
-            calculatedAvailability,
-            calculatedEssence,
-            calculatedKarma,
-            actorId: actorOrUserId,  // Store the determined actor ID or user ID
-        };
-        let globalBaskets = await this.getAllBaskets();
-        // Restructure globalBaskets if it’s an array
-        if (Array.isArray(globalBaskets)) {
-            const structuredBaskets = {};
-            for (const item of globalBaskets) {
-                if (item.actorId) {
-                    if (!structuredBaskets[item.actorId]) {
-                        structuredBaskets[item.actorId] = [];
-                    }
-                    structuredBaskets[item.actorId].push(item);
-                }
+
+        // Handle unique, multiId, and quantity types
+        if (uniqueTypes.includes(addedToBasketItem.type)) {
+            if (existingItem) {
+                ui.notifications.warn(`Only one instance of ${addedToBasketItem.name} is allowed in the basket.`);
+                return;
             }
-            globalBaskets = structuredBaskets;
-            console.log("Restructured globalBaskets to object format:", globalBaskets);
         }
 
-        // Initialize the user's basket array if not created
-        if (!globalBaskets[actorOrUserId]) {
-            globalBaskets[actorOrUserId] = [];
+        if (quantityTypes.includes(addedToBasketItem.type) && existingItem) {
+            // Increment quantity for existing item
+            existingItem.buyQuantity += 1;
+            existingItem.calculatedCost += calculatedCost;
+        } else {
+            // Add new item to the basket
+            const basketItem = {
+                uuid: itemUuid,
+                name: addedToBasketItem.name,
+                image: addedToBasketItem.img,
+                description: addedToBasketItem.system.description?.value || "",
+                type: addedToBasketItem.type,
+                basketId: foundry.utils.randomID(),
+                selectedRating,
+                buyQuantity,
+                calculatedCost,
+                calculatedAvailability,
+                calculatedEssence,
+                calculatedKarma,
+                actorUuid: actorUuid, // Save the actor UUID if available
+                userId: currentUserId, // Save the user ID
+            };
+
+            userBasket.push(basketItem);
         }
 
-        // Add the item to the user’s basket array in the global settings
-        globalBaskets[actorOrUserId].push(basketItem);
-    
-        // Update the global basket setting
-        await game.settings.set(this.moduleNamespace, this.settingKey, globalBaskets);
-    
-        console.log(`Saved item ${addedToBasketItem.name} to global baskets for user ${currentUserId} or actor ${actorOrUserId}`, basketItem);
-        console.log( 'Baskets: ' , globalBaskets);
+        // Save the updated basket back to settings
+        baskets[currentUserId] = userBasket;
+        await game.settings.set(this.moduleNamespace, this.settingKey, baskets);
+
+        console.log(`Updated basket for user ${currentUserId}`, userBasket);
     }
+
+    async updateBasketItemRating(basketId, newRating, userId) {
+        const baskets = await game.settings.get("sr5-marketplace", "baskets");
+        const userBasket = baskets[userId];
     
-    // Method to remove an item from a specific user or actor's basket by basketId
+        const basketItem = userBasket?.find(item => item.basketId === basketId);
+        if (basketItem) {
+            basketItem.selectedRating = newRating;
+    
+            // Recalculate properties
+            const item = await fromUuid(basketItem.uuid);
+            basketItem.calculatedCost = await this.itemData.calculateCost(item, newRating);
+            basketItem.calculatedAvailability = this.calculateAvailability(item, newRating);
+            basketItem.calculatedEssence = await this.itemData.calculateEssence(item, newRating);
+            basketItem.calculatedKarma = await this.itemData.calculatedKarmaCost(item);
+    
+            // Save updated basket
+            await game.settings.set("sr5-marketplace", "baskets", baskets);
+            console.log(`Updated rating for basket item: ${basketId}`);
+        }
+    }
+
     /**
      * Removes an item from the global basket by basketId and user selection.
-     * @param {string} basketId - The ID of the item to be removed, provided by the delete button added with basket+ itemId.
-     * @param {string} userId - The ID of the user to remove the item from.
-     * @param {object} userActor - The actor object from the selected token or assigned user actor.
+     * @param {string} basketId - The ID of the item to be removed, prefixed with "basket.".
+     * @param {object} user - The user object performing the action.
+     * @param {object} userActor - The actor object assigned to the user or selected token, if applicable.
      */
-    async removeItemFromGlobalBasket(basketId, user, userActor) {
-        // Retrieve the current user and check if they are a GM
-        const currentUserId = user.id || game.user.id;
-        const basketUser = game.users.get(currentUserId);
-        let basketUserActor = userActor || game.users.get(currentUser)?.character || currentUserId;
-        const isGM = basketUser && basketUser.isGM;
-        let actorOrUserId;
+    async removeItemFromGlobalBasket(basketId, userId, userActor) {
+        const currentUserId = userId;
+        const basketaktor = userActor;
 
-        if (isGM) {
-            // Check if any actor is selected on the scene
-            const selectedToken = canvas.tokens.controlled[0]; // Get the first selected token on the scene
-            const selectedSceneActor = selectedToken?.actor // Access the actor from the selected token
-
-            if (selectedSceneActor) {
-                // Use the selected actor on the scene if present
-                actorOrUserId = selectedSceneActor.id;
-                console.log(`Selected scene actor found: ${actorOrUserId}`);
-            } else {
-                // If no selected actor or assigned character, use the GM's user ID
-                console.warn("GM has no actor selected; using GM's user ID for basket.");
-                actorOrUserId = currentUserId;
-            }
-        } else {
-            // For non-GM users, ensure they have an assigned character
-            if (!basketUserActor) {
-                ui.notifications.warn("Please assign an actor to proceed with adding items to the basket.");
-                return; // Exit if the user does not have an assigned character
-            }
-            actorOrUserId = basketUserActor.id;
-        }
-
-        // Fetch all baskets from global settings
+        // Retrieve baskets from settings
         const baskets = await game.settings.get("sr5-marketplace", "baskets");
 
-        // Access the user's basket directly by their ID
-        const userBasket = baskets[actorOrUserId];
-
+        // Access the basket for the determined user/actor ID
+        const userBasket = baskets[currentUserId];
         if (!userBasket) {
-            console.warn(`No basket found for actor or user ${actorOrUserId}.`);
+            console.warn(`No basket found for actor/user ID: ${currentUserId}`);
             return;
         }
 
-        // Filter out the item with the specified basketId
+        // Filter out the item by basketId
         const updatedItems = userBasket.filter(item => item.basketId !== basketId);
 
+        // If no items were removed, log a warning
         if (userBasket.length === updatedItems.length) {
-            console.warn(`Item with basketId ${basketId} not found in the basket for actor or user ${actorOrUserId}.`);
+            console.warn(`Item with basketId ${basketId} not found in basket for actor/user ID: ${currentUserId}`);
             return;
         }
 
-        // Update the basket for this actor/user and save back to settings
-        baskets[actorOrUserId] = updatedItems;
+        // Save the updated basket back to settings
+        baskets[currentUserId] = updatedItems;
         await game.settings.set("sr5-marketplace", "baskets", baskets);
 
-        console.log(`Removed item with basketId ${basketId} from the global basket for actor or user ${actorOrUserId}.`);
+        console.log(`Successfully removed item with basketId ${basketId} for actor/user ID: ${currentUserId}`);
     }
     /**
      * Decrease the quantity of an item in the global basket by 1.
@@ -380,21 +410,21 @@ export class BasketHelper {
      * 
      * @param {*string} actorId the ID of the actor to clear the basket for
      */
-    async deleteGlobalUserBasket(actorId) {
+    async deleteGlobalUserBasket(userId) {
         // Retrieve the current global baskets setting
         const baskets = await this.getAllBaskets();
     
         // Check if a basket exists for the given actorId
-        if (baskets[actorId]) {
+        if (baskets[userId]) {
             // Clear the basket by setting it to an empty array
-            baskets[actorId] = [];
+            baskets[userId] = [];
     
             // Update the global basket setting with the cleared basket
             await game.settings.set(this.moduleNamespace, this.settingKey, baskets);
     
-            console.log(`Cleared basket for actorId: ${actorId}`);
+            console.log(`Cleared basket for actorId: ${userId}`);
         } else {
-            console.warn(`No basket found for actorId: ${actorId}`);
+            console.warn(`No basket found for actorId: ${userId}`);
         }
     }
     
