@@ -200,7 +200,7 @@ export class BasketHelper {
      */
     async saveItemToGlobalBasket(itemUuid, userId, basketActor) {
         const currentUserId = userId;
-        const basketaktor = basketActor || null;
+        const basketaktor = basketActor;
 
         let actorUuid = null;
 
@@ -209,7 +209,7 @@ export class BasketHelper {
             const selectedToken = canvas.tokens.controlled[0]; // Get the first selected token
             actorUuid = selectedToken?.actor?.uuid || null; // Use selected token's actor UUID, or null if no token is selected
         } else {
-            basketaktor // For players, use their assigned character's UUID
+            actorUuid = basketaktor.uuid // For players, use their assigned character's UUID
         }
 
         // Retrieve or initialize the global baskets
@@ -494,11 +494,10 @@ export class MarketplaceHelper {
      */
     async getPurchaseScreenData(currentUser,playerActor, selectedActor) {
         console.log("Retrieving purchase screen data for user:", currentUser);
-        let getPlayerActor = playerActor;
-        console.log("Player actor data:", getPlayerActor);
         // Retrieve or initialize the global settings data
         let allData = await game.settings.get(this.moduleNamespace, this.settingKey) || {};
         const currentUserId = currentUser?.id || game.user.id;
+        let getPlayerActor = playerActor || game.users.get(currentUserId).character;
         console.log("Current user ID:", currentUserId);
         console.log("Current user data from settings:", allData.users?.[currentUserId]);
     
@@ -532,14 +531,16 @@ export class MarketplaceHelper {
             selectedActorOrUserActor = getPlayerActor;
             console.log("Player actor data:", selectedActorOrUserActor);
         }
-    
+        if (!selectedActorOrUserActor) {
+            selectedActorOrUserActor = getPlayerActor;
+        }
         // Structure data for template display
         const displayData = {
             selectedActorBox: selectedActorOrUserActor ? {
                 actorId: selectedActorOrUserActor.id || selectedActorOrUserActor._id,
                 actorName: selectedActorOrUserActor.name,
                 actorImg: selectedActorOrUserActor.img,
-                actorUuid: selectedActorOrUserActor.uuid
+                actorUuid: selectedActorOrUserActor.uuid || 'Actor.'+selectedActorOrUserActor._id
             } : null,
             shopActorBox: shopActorBox,
             connectionBox: userData.connectionItem ? {

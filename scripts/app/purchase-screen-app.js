@@ -945,124 +945,112 @@ export class PurchaseScreenApp extends Application {
         html.find(`#id-${selectedTab}`).addClass("active");
     }
     /// send basket to GM
-    async _onSendRequest(event, html, userActor) {
+    /**
+     * Send the basket to the GM and create a review request.
+     */
+    async _onSendRequest(event, html) {
         event.preventDefault();
-        let orderReviewActorRequester = userActor;
-        // Prepare data for the chat message
-        const basketItems = this.itemData.getBasketItems();
+
+        const requestingUser = game.user;
+        const isGM = requestingUser.isGM;
+
+        let actorUuid = null;
+
+        // Ensure GM has a selected actor
+        if (isGM) {
+            const selectedToken = canvas.tokens.controlled[0];
+            if (!selectedToken || !selectedToken.actor) {
+                ui.notifications.warn("Please select an actor before sending a request.");
+                return;
+            }
+            actorUuid = selectedToken.actor.uuid;
+        } else {
+            // For players, use the assigned character
+            actorUuid = requestingUser.character?.uuid;
+        }
+
+        // Fetch the user's basket via socket
+        let userId = requestingUser.id;
+        const userBasket = (await this.socket.executeAsGM("getUserBasket", userId)).items || [];
+
+        if (!userBasket.length) {
+            ui.notifications.warn("Your basket is empty. Add items before sending a request.");
+            return;
+        }
+
+        // Aggregate totals using itemData methods
         const totalCost = await this.itemData.calculateTotalCost();
         const totalAvailability = await this.itemData.calculateTotalAvailability();
         const totalEssenceCost = await this.itemData.calculateTotalEssenceCost();
         const totalKarmaCost = await this.itemData.calculateTotalKarmaCost();
-        const requestingUser = game.user;
-        const isGM = requestingUser.isGM;
-    
-        // Get the actorId of the requesting user (can be null if GM has no actor)
-        const actor = requestingUser.character || null;
-        const actorId = actor ? actor._id : orderReviewActorRequester.id;
-    
-        if (isGM && !actorId) {
-            console.warn("GM has no actor assigned. Proceeding without actor linkage.");
-        }
-    
+
         const requestId = foundry.utils.randomID(); // Generate a unique request ID
-    
-        // Clean up unnecessary flags on each item in the world
-        await Promise.all(basketItems.map(async (itemData) => {
-            const item = game.items.get(itemData.id_Item || itemData._id);
-    
-            if (item) {
-                const existingMarketplaceFlags = item.flags?.['sr5-marketplace'] || {};
-    
-                // Clean up flags by retaining only "Availability", "Cost", and "karma" if they exist
-                const cleanedFlags = {
-                    ...(existingMarketplaceFlags.Availability && { Availability: existingMarketplaceFlags.Availability }),
-                    ...(existingMarketplaceFlags.Cost && { Cost: existingMarketplaceFlags.Cost }),
-                    ...(existingMarketplaceFlags.karma && { karma: existingMarketplaceFlags.karma }) // Only lowercase "karma" retained
-                };
-    
-                // Update the item's flags in the world to contain only cleaned flags
-                await item.update({ 'flags.sr5-marketplace': cleanedFlags });
-    
-                console.log(`Cleaned flags for item ${item.name}:`, cleanedFlags);
-            }
+
+        // Prepare item details for the review request
+        const itemDetails = userBasket.map(item => ({
+            uuid: item.uuid,
+            name: item.name,
+            image: item.image || "icons/svg/item-bag.svg",
+            description: item.description || "",
+            type: item.type,
+            cost: item.calculatedCost,
+            rating: item.selectedRating || 1,
+            buyQuantity: item.buyQuantity,
+            essence: item.calculatedEssence,
+            karma: item.calculatedKarma,
+            availability: item.calculatedAvailability,
+            basketId: item.basketId,
         }));
-    
-        // Prepare item details for chat message, with compatibility for system.technology
-        const itemDetails = basketItems.map(itemData => {
-            // Retrieve values from either system.technology or sr5-marketplace flags
-            const availability = itemData.system?.technology?.availability || itemData.flags?.['sr5-marketplace']?.Availability || "0";
-            const cost = itemData.system?.technology?.cost || itemData.flags?.['sr5-marketplace']?.Cost || 0;
-            const rating = itemData.system?.technology?.rating || itemData.selectedRating || 1;
-    
-            return {
-                id: itemData.id_Item || itemData._id,
-                name: itemData.name,
-                image: itemData.img || "icons/svg/item-bag.svg",
-                description: itemData.system.description?.value || "",
-                type: itemData.type,
-                cost: cost,
-                rating: rating,
-                essence: itemData.calculatedEssence || 0,
-                karma: itemData.calculatedKarma || itemData.flags?.['sr5-marketplace']?.karma || 0,
-                flags: {
-                    ...(availability && { Availability: availability }),
-                    ...(cost && { Cost: cost }),
-                    ...(itemData.flags?.['sr5-marketplace']?.karma && { karma: itemData.flags['sr5-marketplace'].karma })
-                }
-            };
-        });
-    
-        // Log final item details and total values for verification
-        console.log("Final itemDetails to be sent in chat:", itemDetails);
-        console.log("Total Cost:", totalCost);
-        console.log("Total Availability:", totalAvailability);
-        console.log("Total Essence Cost:", totalEssenceCost);
-        console.log("Total Karma Cost:", totalKarmaCost);
-        // Prepare the flag data for the user request
-        const flagData = {
+
+        // Prepare the review request data
+        const reviewRequestData = {
             id: requestId,
             items: itemDetails,
             requester: isGM ? "GM" : requestingUser.name,
-        };
-    
-        if (actorId) {
-            flagData.actor = actor;
-            flagData.actorId = actorId;
-        }
-        // Add or update the global review request with the same data
-        await this.socket.executeAsGM("initializeGlobalSetting");
-        await this.socket.executeAsGM("addOrUpdateReviewRequest", requestId, flagData);
-        // Add the flag data to the requesting user (GM or player)
-        await requestingUser.setFlag('sr5-marketplace', requestId, flagData);
-    
-        // Prepare the message data to display in chat
-        const messageData = {
-            items: itemDetails,
-            totalCost: totalCost,
-            totalAvailability: totalAvailability,
-            totalEssenceCost: totalEssenceCost,
-            totalKarmaCost: totalKarmaCost,
-            requesterName: isGM ? "GM" : requestingUser.name,
-            id: requestId,
-            actorId: actorId,
-            isGM: isGM
+            userId: requestingUser.id,
+            actorUuid,
+            totals: {
+                totalCost,
+                totalAvailability,
+                totalEssenceCost,
+                totalKarmaCost,
+            },
         };
 
-        // Render the message using the chatMessageRequest.hbs template
-        renderTemplate('modules/sr5-marketplace/templates/chatMessageRequest.hbs', messageData).then(htmlContent => {
-            ChatMessage.create({
-                user: requestingUser.id,
-                content: htmlContent,
-                whisper: isGM ? [] : game.users.filter(u => u.isGM).map(u => u.id)
-            });
-    
+        // Save the review request in the global settings
+        await this.socket.executeAsGM("addOrUpdateReviewRequest", requestId, reviewRequestData);
+
+        // Add the review request as a flag for the requesting user
+        await requestingUser.setFlag('sr5-marketplace', requestId, reviewRequestData);
+
+        // Prepare the chat message data
+        const messageData = {
+            items: itemDetails,
+            totalCost,
+            totalAvailability,
+            totalEssenceCost,
+            totalKarmaCost,
+            requesterName: isGM ? "GM" : requestingUser.name,
+            id: requestId,
+            actorUuid,
+            isGM,
+        };
+
+        // Render the chat message using the template
+        const htmlContent = await renderTemplate('modules/sr5-marketplace/templates/chatMessageRequest.hbs', messageData);
+        ChatMessage.create({
+            user: requestingUser.id,
+            content: htmlContent,
+            whisper: isGM ? [] : game.users.filter(u => u.isGM).map(u => u.id),
         });
-        // Empty the basket
-        this.itemData.basketItems = [];
-        // Render the empty basket
+
+        // Clear the basket after sending the request
+        await this.socket.executeAsGM("clearUserBasket", requestingUser.id);
+
+        // Render the updated (empty) basket
         await this._renderBasketAsync(html);
     }
+
     async _onDecrementQuantity(event, html, currentUser, userActor) {
         event.preventDefault();
         const basketId = $(event.currentTarget).data('basketId'); // Get the unique basket ID
