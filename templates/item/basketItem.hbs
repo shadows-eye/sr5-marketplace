@@ -1,0 +1,14 @@
+<form class="sheet item-sheet basket-item-sheet">
+    <header>
+      <h1>{{name}}</h1>
+    </header>
+    <div class="contents">
+      <h2>Contents</h2>
+      <ul>
+        {{#each system.contents}}
+          <li>{{itemId}} - Quantity: {{quantity}}, Rating: {{rating}}</li>
+        {{/each}}
+      </ul>
+      <p>Total Cost: {{system.totalCost}}</p>
+    </div>
+  </form>  

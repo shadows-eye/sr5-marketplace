@@ -20,11 +20,29 @@
 .SR5-marketplace.grid-basket{
     display: grid;;
 }
-.marketplace-tab.active {
+nav.marketplace-tabs {
+    display: flex;
+    margin-bottom: 10px;
+}
+button#id-orderReview.marketplace-tab {
+    width: 60px;
+    display: block;
+}
+.application.sr5-marketplace .marketplace-tab.active {
     font-weight: bold;
     color: #333; /* Active tab styling */
 }
-
+.application a.button, .application.sr5-marketplace #id-shop.marketplace-tab{
+    font-weight: bold;
+    color: #333; /* Active tab styling */
+    width: 60px;
+    display: block;
+}
+.application.sr5-marketplace #id-shop.marketplace-tab.active {
+    font-weight: bold;
+    color: #333; /* Active tab styling */
+    width: 60px;
+}
 .tab-content {
     display: none; /* Hide all tab contents initially */
 }
@@ -32,7 +50,7 @@
 .tab-content.active {
     display: block; /* Show active tab */
 }
-.marketplace-tab.active {
+.SR5-marketplace & .marketplace-tab.active {
     font-weight: bold;
     color: #333; /* Style for active tab */
 }
@@ -58,7 +76,7 @@
     color: rgb(231, 190, 4);
 }
 
-.sr5-market > section.window-content {
+.application.sr5-marketplace .window-content {
     max-width: 100%;
     max-height: 100%;
     background: url(/modules/sr5-marketplace/assets/light-page.webp) repeat;

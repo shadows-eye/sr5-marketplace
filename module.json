@@ -34,19 +34,24 @@
   },
   "socket": true,
   "dependencies": [
-        {
-            "name": "socketlib",
-            "type": "module",
-            "manifest": "https://github.com/manuelVo/foundryvtt-socketlib/releases/latest/download/module.json"
-        }
-    ],
-  "styles": [
-    "styles/marketplace.css"
+    {
+      "name": "socketlib",
+      "type": "module",
+      "manifest": "https://github.com/manuelVo/foundryvtt-socketlib/releases/latest/download/module.json"
+    }
   ],
+  "Item": {
+    "types": ["basket"],
+    "templates": {
+      "basket": "modules/sr5-marketplace/templates/item/basketItem.hbs"
+    }
+  },
   "esmodules": [
     "scripts/marketHooks.js",
     "scripts/app/global.js",
-    "scripts/app/actorItemData.js"
+    "scripts/app/actorItemData.js",
+    "scripts/item/model/basket.mjs",
+    "scripts/item/model/basketModel.mjs"
   ],
   "includes": [
     "./assets/**",
