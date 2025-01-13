@@ -1,36 +1,34 @@
 export class BasketItemSheet extends ItemSheet {
     /**
-     * Return the default options for this ItemSheet
-     * @return {Object}
+     * Default options for the Basket Item Sheet.
+     * @returns {Object} - The default options.
      */
     static get defaultOptions() {
         return foundry.utils.mergeObject(super.defaultOptions, {
             template: "modules/sr5-marketplace/templates/item/basketItem.hbs",
             classes: ["sr5-marketplace", "sheet", "item"],
             width: 600,
-            height: 400,
+            height: 500,
             resizable: true,
         });
     }
 
     /**
-     * Get data to be provided to the handlebars template.
-     * @param {Object} options - Options passed to the sheet
-     * @returns {Object} - Data context for the template
+     * Get the data for rendering the Basket Item Sheet.
+     * @param {Object} options - Options passed to the sheet.
+     * @returns {Object} - The context data for the template.
      */
     async getData(options) {
-        // Get the base data
+        // Get the base data from the parent class
         const context = await super.getData(options);
-
-        // Access the item's system data
         const systemData = this.object.system;
 
-        // Initialize the contents if not already present
+        // Initialize contents if not already set
         if (!systemData.contents) {
             systemData.contents = [];
         }
 
-        // Prepare additional data for rendering
+        // Map contents to include item names for easier display
         context.contents = systemData.contents.map((content) => ({
             ...content,
             itemName: game.items.get(content.itemId)?.name || "Unknown Item",
@@ -40,36 +38,67 @@ export class BasketItemSheet extends ItemSheet {
     }
 
     /**
-     * Activate listeners for the sheet
-     * @param {jQuery} html - The HTML of the rendered sheet
+     * Activate listeners for interactive UI elements.
+     * @param {jQuery} html - The rendered HTML of the sheet.
      */
     activateListeners(html) {
         super.activateListeners(html);
 
-        // Add item to basket contents
-        html.find(".add-item").click(() => {
+        // Add item to the basket
+        html.find(".add-item").click(async () => {
             const itemId = html.find('select[name="item-select"]').val();
             const quantity = parseInt(html.find('input[name="item-quantity"]').val(), 10) || 1;
             const rating = parseInt(html.find('input[name="item-rating"]').val(), 10) || 1;
 
             if (!itemId) {
-                return ui.notifications.warn("No item selected.");
+                return ui.notifications.warn("Please select an item to add.");
             }
 
             const newContent = { itemId, quantity, rating };
-            const contents = this.object.system.contents || [];
-            contents.push(newContent);
+            const contents = [...(this.object.system.contents || []), newContent];
 
-            this.object.update({ "system.contents": contents });
+            await this.object.update({ "system.contents": contents });
+            this.render(false);
         });
 
-        // Remove item from basket contents
-        html.find(".remove-item").click((event) => {
-            const index = event.currentTarget.dataset.index;
-            const contents = this.object.system.contents || [];
-            contents.splice(index, 1);
+        // Remove an item from the basket
+        html.find(".remove-item").click(async (event) => {
+            const index = parseInt(event.currentTarget.dataset.index, 10);
+            const contents = [...(this.object.system.contents || [])];
 
-            this.object.update({ "system.contents": contents });
+            if (index >= 0 && index < contents.length) {
+                contents.splice(index, 1);
+                await this.object.update({ "system.contents": contents });
+                this.render(false);
+            } else {
+                ui.notifications.warn("Invalid item index.");
+            }
         });
+
+        // Update basket metadata
+        html.find(".update-metadata").change(async (event) => {
+            const field = event.target.name;
+            const value = event.target.type === "checkbox" ? event.target.checked : event.target.value;
+
+            await this.object.update({ [field]: value });
+        });
+    }
+
+    /**
+     * Enrich the basket contents for better presentation.
+     * @param {Object[]} contents - The contents of the basket.
+     * @returns {Promise<Object[]>} - The enriched contents.
+     */
+    async _enrichContents(contents) {
+        return Promise.all(
+            contents.map(async (content) => ({
+                ...content,
+                itemName: await TextEditor.enrichHTML(game.items.get(content.itemId)?.name || "Unknown Item", {
+                    async: true,
+                    secrets: this.object.isOwner,
+                    relativeTo: this.object,
+                }),
+            }))
+        );
     }
 }
