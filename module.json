@@ -1,7 +1,7 @@
 {
   "id": "sr5-marketplace",
   "title": "Shadowrun 5e Marketplace",
-  "description": "",
+  "description": "A module to enhance the Shadowrun 5e system with a marketplace feature.",
   "version": "#{VERSION}#",
   "library": false,
   "manifestPlusVersion": "1.2.0",
@@ -40,18 +40,11 @@
       "manifest": "https://github.com/manuelVo/foundryvtt-socketlib/releases/latest/download/module.json"
     }
   ],
-  "Item": {
-    "types": ["basket"],
-    "templates": {
-      "basket": "modules/sr5-marketplace/templates/item/basketItem.hbs"
-    }
-  },
+  "styles": [
+    "styles/marketplace.css"
+  ],
   "esmodules": [
-    "scripts/marketHooks.js",
-    "scripts/app/global.js",
-    "scripts/app/actorItemData.js",
-    "scripts/item/model/basket.mjs",
-    "scripts/item/model/basketModel.mjs"
+    "main.mjs"
   ],
   "includes": [
     "./assets/**",
@@ -75,6 +68,11 @@
       "path": "languages/de.json"
     }
   ],
+  "documentTypes": {
+    "Item": {
+      "basket": {}
+    }
+  },
   "url": "#{URL}#",
   "manifest": "#{MANIFEST}#",
   "download": "#{DOWNLOAD}#",

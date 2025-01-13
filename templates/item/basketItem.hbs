@@ -1,14 +1,51 @@
-<form class="sheet item-sheet basket-item-sheet">
+<form class="sr5-marketplace sheet item-sheet">
     <header>
-      <h1>{{name}}</h1>
+        <h1>{{name}}</h1>
+        <div class="flexrow">
+            <label>{{localize "SR5.Marketplace.Basket.Description"}}</label>
+            <textarea name="system.description" rows="3">{{system.description}}</textarea>
+        </div>
     </header>
-    <div class="contents">
-      <h2>Contents</h2>
-      <ul>
-        {{#each system.contents}}
-          <li>{{itemId}} - Quantity: {{quantity}}, Rating: {{rating}}</li>
-        {{/each}}
-      </ul>
-      <p>Total Cost: {{system.totalCost}}</p>
-    </div>
-  </form>  
+
+    <section class="contents">
+        <h2>{{localize "SR5.Marketplace.Basket.Contents"}}</h2>
+        <!-- Item Add Section -->
+        <div class="add-item-section">
+            <div class="flexrow">
+                <label for="item-select">{{localize "SR5.Marketplace.Basket.SelectItem"}}</label>
+                <select name="item-select">
+                    {{#each game.items.contents}}
+                    <option value="{{this.id}}">{{this.name}}</option>
+                    {{/each}}
+                </select>
+            </div>
+            <div class="flexrow">
+                <label for="item-quantity">{{localize "SR5.Marketplace.Basket.Quantity"}}</label>
+                <input type="number" name="item-quantity" value="1" min="1" />
+            </div>
+            <div class="flexrow">
+                <label for="item-rating">{{localize "SR5.Marketplace.Basket.Rating"}}</label>
+                <input type="number" name="item-rating" value="1" min="0" />
+            </div>
+            <button type="button" class="add-item">{{localize "SR5.Marketplace.Basket.AddItem"}}</button>
+        </div>
+
+        <!-- Basket Contents -->
+        <div class="basket-contents">
+            <h3>{{localize "SR5.Marketplace.Basket.CurrentContents"}}</h3>
+            <ul>
+                {{#each contents}}
+                <li>
+                    <span>{{itemName}} (x{{quantity}})</span>
+                    {{#if rating}}
+                    <span> - {{localize "SR5.Marketplace.Basket.Rating"}}: {{rating}}</span>
+                    {{/if}}
+                    <button type="button" class="remove-item" data-index="{{@index}}">
+                        {{localize "SR5.Marketplace.Basket.Remove"}}
+                    </button>
+                </li>
+                {{/each}}
+            </ul>
+        </div>
+    </section>
+</form> 
