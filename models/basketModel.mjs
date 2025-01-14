@@ -13,8 +13,8 @@ export class BasketModel extends foundry.abstract.TypeDataModel {
                 categories: ["IMAGE"],
                 default: "icons/svg/treasure.svg",
             }),
-            basketUuid: new fields.StringField({ required: true, default: "" }),
-            system: new fields.SchemaField({
+            basketUuid: new fields.StringField({ required: false, default: "" }),
+            marketbasket: new fields.SchemaField({
                 basketQuantity: new fields.NumberField({ required: true, default: 1 }),
                 basketPrice: new fields.NumberField({ required: true, default: 0 }),
                 basketAvailability: new fields.StringField({ required: true, default: "0" }),

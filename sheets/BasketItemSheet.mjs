@@ -18,7 +18,7 @@ export class BasketItemSheet extends ItemSheet {
      * @param {Object} options - Options passed to the sheet.
      * @returns {Object} - The context data for the template.
      */
-    async getData(options) {
+    async getData(options ={}) {
         // Get the base data from the parent class
         const context = await super.getData(options);
         const systemData = this.object.system;
