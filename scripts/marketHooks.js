@@ -63,7 +63,8 @@ Hooks.once("init", () => {
 // Actions to perform when the module is ready
 Hooks.on("ready", () => {
     console.log("SR5 Marketplace | Module is ready!");
-
+    // Log the data model schema
+    console.log("BasketModel Schema:", CONFIG.Item.dataModels?.basket?.defineSchema());
     // Check and log the current item types
     const itemTypes = game.system.documentTypes?.Item || {};
     console.log("Current allowed item types:", Object.keys(itemTypes));

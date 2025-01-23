@@ -21,7 +21,7 @@ export class BasketItemSheet extends ItemSheet {
     async getData(options ={}) {
         // Get the base data from the parent class
         const context = await super.getData(options);
-        const systemData = this.object.system;
+        const systemData = this.object.marketbasket;
 
         // Initialize contents if not already set
         if (!systemData.contents) {
@@ -64,7 +64,7 @@ export class BasketItemSheet extends ItemSheet {
         // Remove an item from the basket
         html.find(".remove-item").click(async (event) => {
             const index = parseInt(event.currentTarget.dataset.index, 10);
-            const contents = [...(this.object.system.contents || [])];
+            const contents = [...(this.object.marketbasket.contents || [])];
 
             if (index >= 0 && index < contents.length) {
                 contents.splice(index, 1);
