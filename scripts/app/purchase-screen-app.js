@@ -22,8 +22,12 @@ export class PurchaseScreenAppV2 extends HandlebarsApplicationMixin(ApplicationV
       id: "purchase-screen",
       title: game.i18n.localize("SR5.PurchaseScreen"),
       classes: ["sr5-marketplace"],
-      width: 1000,
-      height: 850,
+      position: {
+        width: 910,
+        height: 800,
+        top: 50,
+        left: 120,
+      },
     });
   }
 

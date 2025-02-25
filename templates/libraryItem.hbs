@@ -13,28 +13,28 @@
 
             <!-- Show Karma instead of cost if the item has a Karma value -->
             {{#if (eq this.type "quality")}}
-            <div class="item">
+            <div class="marketplace-item">
                 {{this.system.karma}}
                 <i class="fa-duotone fa-solid fa-circle-star sr5-marketplace-karma"></i>
             </div>
             {{else if (eq this.type "adept_power")}}
-            <div class="item">
+            <div class="marketplace-item">
                 {{this.flags.sr5-marketplace.Karma}}
                 <i class="fa-duotone fa-solid fa-circle-star sr5-marketplace-karma"></i>
             </div>
             {{else if (eq this.type "spell")}}
-            <div class="item">
+            <div class="marketplace-item">
                 {{this.flags.sr5-marketplace.Karma}}
                 <i class="fa-duotone fa-solid fa-circle-star sr5-marketplace-karma"></i>
             </div>
             {{else if (eq this.type "complex_form")}}
-            <div class="item">
+            <div class="marketplace-item">
                 {{this.flags.sr5-marketplace.Karma}}
                 <i class="fa-duotone fa-solid fa-circle-star sr5-marketplace-karma"></i>
             </div>
             {{else}}
             <!-- Otherwise, show the cost for other item types -->
-            <div class="item">
+            <div class="marketplace-item">
                 {{this.system.technology.cost}}
                 <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen"></i>
             </div>
@@ -42,7 +42,7 @@
         </order>
 
         <div class="item-details">
-            <h4>{{this.name}}</h4>
+            <h4 class="marketplace_h4">{{this.name}}</h4>
 
             <!-- Spell-specific logic: show drain instead of rating or availability -->
             {{#if (eq this.type "spell")}}

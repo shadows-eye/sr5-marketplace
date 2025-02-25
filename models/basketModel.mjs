@@ -5,8 +5,8 @@ export class BasketModel extends foundry.abstract.TypeDataModel {
 
         return {
             description: new fields.SchemaField({
-                long: new fields.HTMLField({ required: false, blank: true, default: "" }),
-                short: new fields.HTMLField({ required: false, blank: true, default: "" }),
+                long: new fields.HTMLField({ required: false, blank: false, default: "None" }),
+                short: new fields.HTMLField({ required: false, blank: false, default: "None" }),
             }),
             img: new fields.FilePathField({
                 required: false,

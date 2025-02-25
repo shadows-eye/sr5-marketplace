@@ -8,13 +8,23 @@ import { BasketItemSheet } from "./sheets/BasketItemSheet.mjs";
 const registerItemTypes = () => {
     console.log("SR5 Marketplace | Registering Item Types and Models...");
 
-    // Register Basket type and its data model
-    Object.assign(CONFIG.Item.dataModels, {
-        "sr5-marketplace.basket": BasketModel,
-    });
+    // Ensure CONFIG.Item.documentClasses is defined
+    if (!CONFIG.Item.documentClasses) CONFIG.Item.documentClasses = {};
 
-    console.log("SR5 Marketplace | Registered Data Models:", CONFIG.Item.dataModels);
+    // Register Basket type as a document class
+    CONFIG.Item.documentClasses["sr5-marketplace.basket"] = class extends CONFIG.Item.documentClass {};
+
+    console.log("SR5 Marketplace | Registered Document Class for sr5-marketplace.basket");
+
+    // Ensure CONFIG.Item.dataModels is defined
+    if (!CONFIG.Item.dataModels) CONFIG.Item.dataModels = {};
+
+    // Register BasketModel as the DataModel for this Item Type
+    CONFIG.Item.dataModels["sr5-marketplace.basket"] = BasketModel;
+
+    console.log("SR5 Marketplace | Registered Data Model for sr5-marketplace.basket.");
 };
+
 
 /**
  * Function to register item sheets.

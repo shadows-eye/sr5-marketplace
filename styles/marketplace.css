@@ -5,6 +5,19 @@
     --basket-content-width: 0; /* Initially hidden basket content */
     --bar-width: 25px
 }
+.application h4 , .application h4:first-child.marketplace_h4{
+    margin: 0rem 0 0.2rem;
+    margin-top: -0.3rem;
+    line-height: 1;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 1.1vw;
+    color: #a10e0e;
+    text-shadow: 1px 1px 3px #b9a913;
+}
+.fa-doutone .sr5-marketplace-yen:before, 
+.sr5-marketplace-yen{
+    color: #c50000;
+}
 .sr5-marketplace-btn {
     display: flex;
     align-items: center;
@@ -57,7 +70,9 @@ button#id-orderReview.marketplace-tab {
 .sr5-marketplace-btn:hover {
     background-color: #3d3d3d;
 }
-
+.section.marketplace-tab-content {
+    margin-right: 40px;
+}
 .sr5-marketplace-btn i {
     margin-right: 5px;
 }
@@ -204,6 +219,7 @@ span.remove-link {
 
 .marketplace-filter {
     margin-bottom: 10px;
+    margin-right: 42px;
     height: auto;
     padding: 10px;
     background-color: #00000017;
@@ -231,11 +247,12 @@ input#item-search {
     box-sizing: border-box;
     position: relative;
     z-index: 3;
+    margin-right: 41px;
 }
 .marketplace-items {
     grid-column: 1 / span 6;
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 columns by default */
+    grid-template-columns: repeat(3, 1fr); /* 4 columns by default */
     gap: 0.4em;
     overflow-y: auto;
     max-height: 630px;
@@ -376,7 +393,9 @@ button.cancel-request-button:hover, button.send-request-button:hover {
 .sr5-marketplaceTotalCost {
     padding-top: 0.2em;
 }
-
+i.fa-duotone.fa-solid.fa-circle-star.sr5-marketplace-karma{
+    color: #c50000;
+}
 .basket-frame {
     position: absolute;
     top: 0;
@@ -476,10 +495,16 @@ button.cancel-request-button:hover, button.send-request-button:hover {
     border: 0.2em solid #590f0f26;
     border-radius: 0.7em;
     box-sizing: border-box;
-    width: 100%;
-    height: 12em;
+    width: 98%;
+    height: 10.5em;
+    margin-left: 3px;
 }
 :hover.marketplace-item.grid-item {
+
+    background-color: #770808;
+    color: #e7c93e;
+}
+:hover.marketplace-item.grid-item h4 {
 
     background-color: #770808;
     color: #e7c93e;
@@ -598,7 +623,7 @@ button.cancel-request-button:hover, button.send-request-button:hover {
     white-space: nowrap;
     display: grid;
     grid-template-columns: 10em auto; /* Two columns: one flexible and one auto-sized */
-    gap: 10px; /* Adjust the gap between elements as needed */
+    gap: 5px; /* Adjust the gap between elements as needed */
     padding-top: 5px;
 }
 .hidden{
@@ -612,17 +637,17 @@ button.cancel-request-button:hover, button.send-request-button:hover {
 }
 .item-essence, .item-all {
     grid-column: 1; /* Place in the first column */
-    margin-top: -15px;
-}
-.item-essence{
-    margin-top: -12px;
+    margin-top: -4px;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 1.0vw;
 }
 .item-right {
     grid-column: 2; /* Place in the second column, always on the right */
     justify-self: end; /* Align this item to the right within its grid cell */
 }
 .rating{
-    margin-top: -10px;
+    margin-top: -4px;
+    font-size: 1.0vw;
 }
 
 .item-action {
@@ -633,7 +658,7 @@ button.cancel-request-button:hover, button.send-request-button:hover {
     padding-bottom: 2px;
 }
 
-.add-to-cart {
+.item-action .add-to-cart {
     background-color: #4CAF50;
     color:rgb(215 239 210);
     border: none;    
@@ -643,6 +668,12 @@ button.cancel-request-button:hover, button.send-request-button:hover {
     font-size: 0.8em; /* Smaller font size */
     max-width: fit-content;
     display: block;
+}
+.marketplace-item{
+    margin-top: 3px;
+    color: #000;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: medium;
 }
 
 .add-to-cart i {
@@ -700,15 +731,32 @@ button.remove-item {
     border: 1px solid #ccc;
     border-radius: 5px;
 }
-.item-type-selector {
+.application select:focus, .application select .item-type-selector {
     border: solid;
     border-color: rgb(209, 189, 11);
     border-width: 2px;
     background-color: #cdbd1114;
+    width: min-content;
+    outline: 2px solid rgb(227 166 10);
 }
-input[type="text"]#search-box.marketplace-search{
+
+select#item-type-selector {
+    width: min-content;
+    max-height: 1.3rem;
+    border: 1px solid #dfbd15;
+    background: #f7ca1e;
+    color: #770808;
+}
+
+.application select#item-type-selector option, .theme-light select #item-type-selector {
+    background-color: #770808;
+    color: #f7ca1e;
+    outline: none;
+}
+.application input[type="text"]#search-box.marketplace-search{
     margin-top: 1.1em;
     max-width: 200px;
+    max-height: 1.3rem;
     border: solid;
     border-color: rgb(209, 189, 11);
     border-width: 2px;

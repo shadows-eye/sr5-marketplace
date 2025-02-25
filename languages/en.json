@@ -89,7 +89,7 @@
                 "Spells": "Spells",
                 "Actions": "Actions",
                 "Qualitys": "Qualities",
-                "ComplexForms": "Complex Forms"
+                "complex_form": "Complex Forms"
             }
         }
     }

@@ -1,14 +1,15 @@
-<form class="sr5-marketplace sheet item-sheet">
+<form class="sr5-marketplace sheet item-sheet" autocomplete="off">
     <header>
-        <h1>{{name}}</h1>
+        <h1><input type="text" name="name" value="{{name}}" /></h1>
         <div class="flexrow">
             <label>{{localize "SR5.Marketplace.Basket.Description"}}</label>
-            <textarea name="system.description" rows="3">{{system.description}}</textarea>
+            <textarea name="system.description.long">{{system.description.long}}</textarea>
         </div>
     </header>
 
     <section class="contents">
         <h2>{{localize "SR5.Marketplace.Basket.Contents"}}</h2>
+
         <!-- Item Add Section -->
         <div class="add-item-section">
             <div class="flexrow">
@@ -21,11 +22,11 @@
             </div>
             <div class="flexrow">
                 <label for="item-quantity">{{localize "SR5.Marketplace.Basket.Quantity"}}</label>
-                <input type="number" name="item-quantity" value="1" min="1" />
+                <input type="number" name="system.marketbasket.basketQuantity" value="{{system.marketbasket.basketQuantity}}" min="1" />
             </div>
             <div class="flexrow">
                 <label for="item-rating">{{localize "SR5.Marketplace.Basket.Rating"}}</label>
-                <input type="number" name="item-rating" value="1" min="0" />
+                <input type="number" name="system.marketbasket.basketPrice" value="{{system.marketbasket.basketPrice}}" min="0" />
             </div>
             <button type="button" class="add-item">{{localize "SR5.Marketplace.Basket.AddItem"}}</button>
         </div>
@@ -34,11 +35,11 @@
         <div class="basket-contents">
             <h3>{{localize "SR5.Marketplace.Basket.CurrentContents"}}</h3>
             <ul>
-                {{#each contents}}
+                {{#each system.marketbasket.basketItems}}
                 <li>
-                    <span>{{itemName}} (x{{quantity}})</span>
-                    {{#if rating}}
-                    <span> - {{localize "SR5.Marketplace.Basket.Rating"}}: {{rating}}</span>
+                    <span>{{name}} (x{{basketItemQuantity}})</span>
+                    {{#if basketItemRating}}
+                    <span> - {{localize "SR5.Marketplace.Basket.Rating"}}: {{basketItemRating}}</span>
                     {{/if}}
                     <button type="button" class="remove-item" data-index="{{@index}}">
                         {{localize "SR5.Marketplace.Basket.Remove"}}
@@ -48,4 +49,4 @@
             </ul>
         </div>
     </section>
-</form> 
+</form>
