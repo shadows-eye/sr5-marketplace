@@ -4,11 +4,10 @@
   "description": "A module to enhance the Shadowrun 5e system with a marketplace feature.",
   "version": "#{VERSION}#",
   "library": false,
-  "manifestPlusVersion": "1.2.0",
   "compatibility": {
-    "minimum": 12,
-    "verified": 12,
-    "maximum": 12
+    "minimum": 13,
+    "verified": 13,
+    "maximum": 13
   },
   "authors": [
     {
@@ -24,22 +23,8 @@
         "type": "system",
         "compatibility": {}
       }
-    ],
-    "requires": [
-      {
-        "id": "socketlib",
-        "type": "module"
-      }
     ]
   },
-  "socket": true,
-  "dependencies": [
-    {
-      "name": "socketlib",
-      "type": "module",
-      "manifest": "https://github.com/manuelVo/foundryvtt-socketlib/releases/latest/download/module.json"
-    }
-  ],
   "styles": [
     "styles/marketplace.css"
   ],

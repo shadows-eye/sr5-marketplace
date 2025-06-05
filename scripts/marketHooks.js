@@ -81,19 +81,28 @@ Hooks.on("ready", () => {
 
 // Add a control button for opening the Marketplace
 Hooks.on("getSceneControlButtons", (controls) => {
-    const mainControl = controls.find((c) => c.name === "token");
-    if (mainControl) {
-        mainControl.tools.push({
-            name: "sr5-marketplace",
-            title: "Open Marketplace",
-            icon: "fas fa-shopping-cart",
-            onClick: () => {
-                new PurchaseScreenAppV2().render(true);
-            },
-            button: true,
-        });
+  const tokenControls = controls["tokens"];
+  if (!tokenControls) return;
+
+  // Prevent overwriting existing tool
+  if (tokenControls.tools["sr5-marketplace"]) return;
+
+  tokenControls.tools["sr5-marketplace"] = {
+    name: "sr5-marketplace",
+    title: "Open Marketplace",
+    icon: "fas fa-shopping-cart",
+    visible: true,
+    toggle: false,
+    onClick: () => {
+      try {
+        new PurchaseScreenAppV2().render(true);
+      } catch (e) {
+        console.error("Failed to render PurchaseScreenAppV2:", e);
+      }
     }
+  };
 });
+
 Hooks.on("preCreateItem", async (item, data, options, userId) => {
     if (item.type === "sr5-marketplace.basket") {
         console.log("SR5 Marketplace | Ensuring BasketModel is applied...");
