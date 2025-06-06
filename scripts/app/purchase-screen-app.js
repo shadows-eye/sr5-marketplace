@@ -33,7 +33,7 @@ export class PurchaseScreenAppV2 extends HandlebarsApplicationMixin(ApplicationV
 
   static PARTS = {
     main: {
-      template: "modules/sr5-marketplace/templates/purchase.hbs",
+      template: "modules/sr5-marketplace/templates/apps/inGameMarketplace/inGameMarketplace.hbs",
     },
   };
 
@@ -63,7 +63,7 @@ export class PurchaseScreenAppV2 extends HandlebarsApplicationMixin(ApplicationV
   
     let tabContent;
     if (this.tabGroups.main === "shop") {
-      tabContent = await renderTemplate("modules/sr5-marketplace/templates/shop.hbs", {
+      tabContent = await renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.hbs", {
         itemsByType: this.itemData.itemsByType,
         selectedKey,
         selectedItems,
@@ -71,7 +71,7 @@ export class PurchaseScreenAppV2 extends HandlebarsApplicationMixin(ApplicationV
         isGM: game.user.isGM,
       });
     } else if (this.tabGroups.main === "orderReview") {
-      tabContent = await renderTemplate("modules/sr5-marketplace/templates/orderReview.hbs", {
+      tabContent = await renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/orderReview.hbs", {
         basket: this.basket,
         basketTotals: this.itemData.calculateBasketTotals(this.basket),
       });
