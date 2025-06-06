@@ -33,10 +33,9 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     };
 
     async _prepareContext(options = {}) {
-        // This method remains the same as the last version.
-        // It correctly prepares the data for rendering.
         await this.itemData.fetchItems();
         const basket = await this.basketService.getBasket();
+        const basketItemCount = basket.basketItems.length;
 
         const selectedKey = this.selectedKey || "rangedWeapons";
         this.selectedKey = selectedKey;
@@ -52,24 +51,34 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             label: game.i18n.localize("SR5.Marketplace.Tab.OrderReview"),
             icon: "fa-list-check",
             cssClass: this.tabGroups.main === "orderReview" ? "active" : ""
-        }, {
-            id: "shoppingCart",
-            label: game.i18n.localize("SR5.Marketplace.ShoppingBasket"),
-            icon: "fa-shopping-cart",
-            cssClass: this.tabGroups.main === "shoppingCart" ? "active" : "",
-            count: basket.basketItems.length
         }];
-        
-        const partialContext = { basket, itemsByType: this.itemData.itemsByType, selectedKey, selectedItems, isGM: game.user.isGM };
 
+        // Only add the Shopping Cart tab if the basket is not empty
+        if (basketItemCount > 0) {
+            tabs.push({
+                id: "shoppingCart",
+                label: ` (${basketItemCount})`,
+                icon: "fa-shopping-cart",
+                cssClass: this.tabGroups.main === "shoppingCart" ? "active" : "",
+                count: basketItemCount
+            });
+        }
+        
+        // If the cart becomes empty while the user is viewing it, switch back to the shop tab
+        if (this.tabGroups.main === "shoppingCart" && basketItemCount === 0) {
+            this.tabGroups.main = "shop";
+        }
+
+        const partialContext = { basket, itemsByType: this.itemData.itemsByType, selectedKey, selectedItems, isGM: game.user.isGM };
         let tabContent;
-        if (this.tabGroups.main === "shop") {
-            tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.hbs", partialContext);
-        } else if (this.tabGroups.main === "shoppingCart") {
+
+        if (this.tabGroups.main === "shoppingCart") {
             partialContext.items = basket.basketItems;
             tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.hbs", partialContext);
         } else if (this.tabGroups.main === "orderReview") {
             tabContent = `<h2>${game.i18n.localize("SR5.Marketplace.OrderReview")}</h2><p>Order review content goes here.</p>`;
+        } else {
+            tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.hbs", partialContext);
         }
 
         return { tabs, tabContent, tabGroups: this.tabGroups, isGM: game.user.isGM };
