@@ -1,19 +1,18 @@
 <div class="marketplace-container">
     <header class="marketplace-header">
-        <nav class="marketplace-tabs">
-          {{#each tabs}}
-          <button
-            id="id-{{id}}"
-            class="marketplace-tab {{cssClass}}"
-            data-action="changeTab"
-            data-tab="{{id}}"
-            type="button"
-          >
-            <i class="fa-solid fa-{{id}}"></i>{{label}}
-          </button>
-          {{/each}}
+        <nav class="marketplace-tabs" data-group="main">
+            {{#each tabs}}
+            <button
+                id="id-{{this.id}}"
+                class="marketplace-tab {{this.cssClass}}"
+                data-tab="{{this.id}}"
+                type="button"
+            >
+                <i class="fa-solid fa-{{this.id}}"></i>{{this.label}}
+            </button>
+            {{/each}}
         </nav>
-      </header>
+    </header>
       
       <!-- Render the content for the active tab -->
       <section class="marketplace-tab-content">
