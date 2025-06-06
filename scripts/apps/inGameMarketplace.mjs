@@ -1,18 +1,16 @@
 // Import required components from Foundry VTT
 import ItemDataServices from '../services/ItemDataServices.mjs';
-import { ActorItemServices } from '../services/actorItemServices.mjs';
-import { ActorHistoryLogService } from '../services/actorHistoryLogService.mjs';
-import GlobalHelper from '../services/global.mjs';
-import { BasketHelper } from '../services/global.mjs';
-import { MarketplaceHelper } from '../services/global.mjs';
+import { BasketService } from '../services/basketService.mjs';
+// other imports as needed...
+
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2) {
     constructor(options = {}) {
         super(options);
         this.itemData = new ItemDataServices();
-        this.basket = [];
-        this.tabGroups = { main: options.tab || "shop" }; // This will store the active tab for each group
+        this.tabGroups = { main: options.tab || "shop" };
+        this.basketService = new BasketService();
     }
 
     static get DEFAULT_OPTIONS() {
@@ -20,12 +18,10 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             id: "purchase-screen",
             title: game.i18n.localize("SR5.PurchaseScreen"),
             classes: ["sr5-marketplace"],
-            position: {
-                width: 910,
-                height: 800,
-                top: 50,
-                left: 120,
-            },
+            position: { width: 910, height: 800, top: 50, left: 120 },
+            // Add this to prevent the app from re-rendering on every data change,
+            // as we handle rendering manually with this.render()
+            reactive: false
         });
     }
 
@@ -37,13 +33,10 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
     async _prepareContext(options = {}) {
         await this.itemData.fetchItems();
-
         const selectedKey = options.selectedKey || this.selectedKey || "rangedWeapons";
         this.selectedKey = selectedKey;
-
         const selectedItems = this.itemData.itemsByType[selectedKey]?.items || [];
 
-        // This context data is used by the inGameMarketplace.hbs template to render the tabs
         const tabs = [{
             id: "shop",
             label: game.i18n.localize("SR5.Marketplace.Tab.Shop"),
@@ -59,65 +52,73 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.hbs", {
                 itemsByType: this.itemData.itemsByType,
                 selectedKey,
-                selectedItems,
-                basket: this.basket,
-                isGM: game.user.isGM,
+                selectedItems
             });
         } else if (this.tabGroups.main === "orderReview") {
-            tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/orderReview.hbs", {
-                basket: this.basket,
-                basketTotals: this.itemData.calculateBasketTotals(this.basket),
-            });
+            // Placeholder for order review content
+            tabContent = `<h2>${game.i18n.localize("SR5.Marketplace.OrderReview")}</h2><p>Order review content goes here.</p>`;
         }
 
-        return {
-            tabs,
-            tabContent,
-            selectedKey,
-            selectedItems,
-            isGM: game.user.isGM,
-        };
+        return { tabs, tabContent, selectedKey, selectedItems, isGM: game.user.isGM };
     }
 
-    /**
-     * Handle tab switching.
-     * @param {string} group The tab group name.
-     * @param {string} tab The target tab name.
-     */
     async changeTab(group, tab) {
         if (this.tabGroups[group] === tab) return;
         this.tabGroups[group] = tab;
-        console.log(`Switched to tab: '${tab}' in group: '${group}'`);
         await this.render(false);
     }
-
+    
+    /**
+     * @override
+     * This is the ideal place in ApplicationV2 to add event listeners.
+     */
     _onRender(context, options) {
-        const html = this.element;
-
-        // Handle grouped tab switching
-        html.querySelectorAll(".marketplace-tabs[data-group] .marketplace-tab").forEach((tab) => {
-            tab.addEventListener("click", (event) => {
-                event.preventDefault();
-                const button = event.currentTarget;
-                const nav = button.closest(".marketplace-tabs");
-                const group = nav.dataset.group;
-                const tabId = button.dataset.tab;
-                
-                if (group && tabId) {
-                    this.changeTab(group, tabId);
-                }
-            });
-        });
-
-        // Handle dropdown changes
-        const dropdown = html.querySelector("#item-type-selector");
+        // We explicitly bind `this` to ensure the context is correct in the handler methods.
+        this.element.addEventListener("click", this._onClick.bind(this));
+        
+        const dropdown = this.element.querySelector("#item-type-selector");
         if (dropdown) {
-            dropdown.addEventListener("change", async (event) => {
-                const selectedKey = event.target.value;
-                this.selectedKey = selectedKey;
-                await this.render(false);
-            });
+            dropdown.addEventListener("change", this._onCategoryChange.bind(this));
         }
+    }
+
+    /**
+     * Handles all delegated click events inside the application.
+     * @param {PointerEvent} event - The originating click event.
+     * @private
+     */
+    _onClick(event) {
+        const cartButton = event.target.closest("button.add-to-cart");
+        if (cartButton) {
+            event.preventDefault();
+            const itemUuid = cartButton.dataset.itemId;
+            if (itemUuid) {
+                this.basketService.addToBasket(itemUuid);
+            }
+            return;
+        }
+
+        const tabButton = event.target.closest(".marketplace-tab");
+        if (tabButton) {
+            event.preventDefault();
+            const nav = tabButton.closest(".marketplace-tabs");
+            const group = nav?.dataset.group;
+            const tabId = tabButton.dataset.tab;
+            if (group && tabId) {
+                this.changeTab(group, tabId);
+            }
+            return;
+        }
+    }
+
+    /**
+     * Handles changing the item category dropdown.
+     * @param {Event} event - The originating change event.
+     * @private
+     */
+    async _onCategoryChange(event) {
+        this.selectedKey = event.target.value;
+        await this.render(false);
     }
     
     async _onDrop(event) {
