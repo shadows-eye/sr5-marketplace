@@ -1,9 +1,9 @@
-import ItemData from './itemData.js';
+import ItemDataServices from './ItemDataServices.mjs';
 export default class GlobalHelper {
     constructor() {
         this.settingKey = "reviewRequests";
         this.moduleNamespace = "sr5-marketplace";
-        this.itemData = new ItemData();
+        this.itemData = new ItemDataServices();
     }
 
     // Initialize the global setting if not already set
@@ -122,7 +122,7 @@ export class BasketHelper {
     constructor() {
         this.settingKey = "baskets";
         this.moduleNamespace = "sr5-marketplace";
-        this.itemData = new ItemData();  // Instantiate ItemData to access its methods
+        this.itemData = new ItemDataServices();  // Instantiate ItemData to access its methods
     }
 
     async initializeBasketsSetting() {

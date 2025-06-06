@@ -1,4 +1,4 @@
-import ItemData from '../app/itemData.js';
+import ItemData from '../services/ItemDataServices.mjs';
 export const registerBasicHelpers = () => {
     Handlebars.registerHelper('hasItemType', function(type, options) {
         const itemData = new ItemData();

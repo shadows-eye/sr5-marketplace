@@ -1,5 +1,5 @@
-import { ActorItemData } from './actorItemData.js';
-export class ActorHistoryLog {
+import { ActorItemServices } from './actorItemServices.mjs';
+export class ActorHistoryLogService {
     // Ensure the 'market-history' folder exists
     static async ensureHistoryFolder() {
         let folder = game.folders.find(f => f.name === "market-history" && f.type === "JournalEntry");

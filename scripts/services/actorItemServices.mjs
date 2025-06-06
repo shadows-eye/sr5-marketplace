@@ -1,7 +1,7 @@
-import ItemData from './itemData.js';  // Assuming itemData.js contains getOrderDataFromFlag
-import { logActorHistory } from './actorHistoryLog.js';
+import ItemDataServices from './ItemDataServices.mjs';  // Assuming itemData.js contains getOrderDataFromFlag
+import { ActorHistoryLogService } from './actorHistoryLogService.mjs';
 //import { getFormattedTimestamp } from './itemData.js'; 
-export class ActorItemData extends ItemData {
+export class ActorItemServices extends ItemDataServices {
     constructor(actor = null) {
         super();
         this.actor = actor;  // Actor will be set later, if available

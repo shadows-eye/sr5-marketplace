@@ -1,6 +1,6 @@
 // Import required helpers
 // Import necessary classes and helpers
-import { PurchaseScreenAppV2 } from "./app/purchase-screen-app.js";
+import { inGameMarketplace } from "./apps/inGameMarketplace.mjs";
 import { registerBasicHelpers } from "./lib/helpers.js";
 
 // Register helpers and templates
@@ -92,12 +92,12 @@ Hooks.on("getSceneControlButtons", (controls) => {
     title: "Open Marketplace",
     icon: "fas fa-shopping-cart",
     visible: true,
-    toggle: false,
-    onClick: () => {
+    toggle: true,
+    onChange: () => {
       try {
-        new PurchaseScreenAppV2().render(true);
+        new inGameMarketplace().render(true);
       } catch (e) {
-        console.error("Failed to render PurchaseScreenAppV2:", e);
+        console.error("Failed to render inGameMarketplace:", e);
       }
     }
   };

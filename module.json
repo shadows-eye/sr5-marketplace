@@ -30,8 +30,8 @@
   ],
   "esmodules": [
     "scripts/marketHooks.js",
-    "scripts/app/actorItemData.js",
-    "scripts/app/itemData.js",
+    "scripts/services/actorItemServices.mjs",
+    "scripts/services/itemDataServices.mjs",
     "main.mjs"
   ],
   "includes": [

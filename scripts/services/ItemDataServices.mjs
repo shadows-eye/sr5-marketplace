@@ -1,5 +1,5 @@
 // Import necessary dependencies
-export default class ItemData {
+export default class ItemDataServices {
     constructor() {
         this.items = [];
         this.excludedItems = [];

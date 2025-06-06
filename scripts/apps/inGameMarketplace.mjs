@@ -1,18 +1,18 @@
 // Import required components from Foundry VTT
-import ItemData from './itemData.js';
+import ItemDataServices from '../services/ItemDataServices.mjs';
 //import {getFormattedTimestamp} from './itemData.js';
-import {ActorItemData} from './actorItemData.js';
-import { logActorHistory } from './actorHistoryLog.js';
-import GlobalHelper from './global.js';
-import {BasketHelper} from './global.js';
-import { MarketplaceHelper } from './global.js';
+import {ActorItemServices} from '../services/actorItemServices.mjs';
+import { ActorHistoryLogService } from '../services/actorHistoryLogService.mjs';
+import GlobalHelper from '../services/global.mjs';
+import {BasketHelper} from '../services/global.mjs';
+import { MarketplaceHelper } from '../services/global.mjs';
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
-export class PurchaseScreenAppV2 extends HandlebarsApplicationMixin(ApplicationV2) {
+export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2) {
   constructor(options = {}) {
     super(options);
     this.socket = socketlib.registerModule("sr5-marketplace");
-    this.itemData = new ItemData();
+    this.itemData = new ItemDataServices();
     this.basket = [];
     this.tabGroups = { main: options.tab || "shop" }; // Initialize tabGroups
   }
