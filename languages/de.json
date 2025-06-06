@@ -89,7 +89,7 @@
                 "Spells": "Zauber",
                 "Actions": "Aktionen",
                 "Qualitys": "Vor/Nachteile",
-                "ComplexForms": "Komplexe Formen"
+                "complex_form": "Komplexe Formen"
             }
         }
     }

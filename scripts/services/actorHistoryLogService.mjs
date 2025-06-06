@@ -1,5 +1,5 @@
-import { ActorItemData } from './actorItemData.js';
-export class ActorHistoryLog {
+import { ActorItemServices } from './actorItemServices.mjs';
+export class ActorHistoryLogService {
     // Ensure the 'market-history' folder exists
     static async ensureHistoryFolder() {
         let folder = game.folders.find(f => f.name === "market-history" && f.type === "JournalEntry");
@@ -71,7 +71,7 @@ export class ActorHistoryLog {
             };
     
             // Render the Handlebars template
-            const rawContent = await renderTemplate('modules/sr5-marketplace/templates/historyJournal.hbs', historyData);
+            const rawContent = await foundry.applications.handlebars.renderTemplate('modules/sr5-marketplace/templates/historyJournal.hbs', historyData);
             console.log(historyData)
             // Use TextEditor.enrichHTML to enrich @UUID links and make them clickable
             //console.log(rawContent)
