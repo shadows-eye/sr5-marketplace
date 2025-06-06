@@ -107,29 +107,47 @@ export class BasketService {
 
     /**
      * Updates the quantity of a stackable item.
-     * NOTE: This function is for future use when a setting is implemented to allow item stacking.
-     * The default "add-to-basket" behavior does not use this.
-     * @param {string} itemUuid - The UUID of the item to update.
+     * @param {string} basketItemId - The unique ID of the basket entry to update.
      * @param {number} change - The amount to change the quantity by (e.g., 1 to increment, -1 to decrement).
      */
-    async updateItemQuantity(itemUuid, change) {
-        console.warn("updateItemQuantity is reserved for future item-stacking logic and is not used by default.");
-        // Example placeholder logic for when stacking is implemented:
-        /*
+    async updateItemQuantity(basketItemId, change) {
+        if (!basketItemId || !change) return;
         const basket = await this.getBasket();
-        const basketItem = basket.basketItems.find(i => i.itemUuid === itemUuid); // Find the item that stacks
+        const basketItem = basket.basketItems.find(i => i.basketItemId === basketItemId);
+
         if (!basketItem) return;
+
         basketItem.buyQuantity += change;
+
         if (basketItem.buyQuantity <= 0) {
-            await this.removeFromBasket(basketItem.basketItemId); // Assumes removal logic is separate
+            await this.removeFromBasket(basketItemId);
         } else {
             const updatedBasket = this._recalculateTotals(basket);
             await this.saveBasket(updatedBasket);
-            ui.notifications.info(`Basket updated.`);
         }
-        */
     }
 
+    /**
+     * Updates the rating of an item in the basket.
+     * NOTE: For now, this only updates the rating. A future step would be to recalculate
+     * cost and other properties based on the new rating.
+     * @param {string} basketItemId - The unique ID of the basket entry to update.
+     * @param {number} rating - The new rating value.
+     */
+    async updateItemRating(basketItemId, rating) {
+        if (!basketItemId) return;
+        const basket = await this.getBasket();
+        const basketItem = basket.basketItems.find(i => i.basketItemId === basketItemId);
+
+        if (basketItem) {
+            basketItem.selectedRating = rating;
+            // TODO: Recalculate cost/availability based on new rating.
+            // For now, we just save the new rating.
+            await this.saveBasket(basket);
+            console.log(`Updated rating for ${basketItem.name} to ${rating}`);
+        }
+    }
+    
     /**
      * Recalculates all total fields for the basket based on its items.
      * @private

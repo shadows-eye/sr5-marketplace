@@ -1,7 +1,5 @@
-// Import required components from Foundry VTT
 import ItemDataServices from '../services/ItemDataServices.mjs';
 import { BasketService } from '../services/basketService.mjs';
-// other imports as needed...
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -19,8 +17,6 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             title: game.i18n.localize("SR5.PurchaseScreen"),
             classes: ["sr5-marketplace"],
             position: { width: 910, height: 800, top: 50, left: 120 },
-            // Add this to prevent the app from re-rendering on every data change,
-            // as we handle rendering manually with this.render()
             reactive: false
         });
     }
@@ -33,33 +29,43 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
     async _prepareContext(options = {}) {
         await this.itemData.fetchItems();
-        const selectedKey = options.selectedKey || this.selectedKey || "rangedWeapons";
+        const basket = await this.basketService.getBasket();
+
+        const selectedKey = this.selectedKey || "rangedWeapons";
         this.selectedKey = selectedKey;
         const selectedItems = this.itemData.itemsByType[selectedKey]?.items || [];
 
         const tabs = [{
             id: "shop",
             label: game.i18n.localize("SR5.Marketplace.Tab.Shop"),
-            cssClass: this.tabGroups.main === "shop" ? "active" : "",
+            icon: "fa-store",
+            cssClass: this.tabGroups.main === "shop" ? "active" : ""
         }, {
             id: "orderReview",
             label: game.i18n.localize("SR5.Marketplace.Tab.OrderReview"),
-            cssClass: this.tabGroups.main === "orderReview" ? "active" : "",
+            icon: "fa-list-check",
+            cssClass: this.tabGroups.main === "orderReview" ? "active" : ""
+        }, {
+            id: "shoppingCart",
+            label: game.i18n.localize("SR5.Marketplace.ShoppingBasket"),
+            icon: "fa-shopping-cart",
+            cssClass: this.tabGroups.main === "shoppingCart" ? "active" : "",
+            count: basket.basketItems.length
         }];
+        
+        const partialContext = { basket, itemsByType: this.itemData.itemsByType, selectedKey, selectedItems, isGM: game.user.isGM };
 
         let tabContent;
         if (this.tabGroups.main === "shop") {
-            tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.hbs", {
-                itemsByType: this.itemData.itemsByType,
-                selectedKey,
-                selectedItems
-            });
+            tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.hbs", partialContext);
+        } else if (this.tabGroups.main === "shoppingCart") {
+            partialContext.items = basket.basketItems; // Pass basket items to the cart template
+            tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.hbs", partialContext);
         } else if (this.tabGroups.main === "orderReview") {
-            // Placeholder for order review content
             tabContent = `<h2>${game.i18n.localize("SR5.Marketplace.OrderReview")}</h2><p>Order review content goes here.</p>`;
         }
 
-        return { tabs, tabContent, selectedKey, selectedItems, isGM: game.user.isGM };
+        return { tabs, tabContent, tabGroups: this.tabGroups, isGM: game.user.isGM };
     }
 
     async changeTab(group, tab) {
@@ -68,57 +74,67 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         await this.render(false);
     }
     
-    /**
-     * @override
-     * This is the ideal place in ApplicationV2 to add event listeners.
-     */
     _onRender(context, options) {
-        // We explicitly bind `this` to ensure the context is correct in the handler methods.
         this.element.addEventListener("click", this._onClick.bind(this));
-        
-        const dropdown = this.element.querySelector("#item-type-selector");
-        if (dropdown) {
-            dropdown.addEventListener("change", this._onCategoryChange.bind(this));
-        }
+        this.element.addEventListener("change", this._onChange.bind(this));
     }
 
-    /**
-     * Handles all delegated click events inside the application.
-     * @param {PointerEvent} event - The originating click event.
-     * @private
-     */
-    _onClick(event) {
-        const cartButton = event.target.closest("button.add-to-cart");
+    async _onClick(event) {
+        const target = event.target;
+        
+        // --- Find closest button/element for delegation ---
+        const cartButton = target.closest("button.add-to-cart");
+        const removeButton = target.closest(".remove-from-basket-btn");
+        const plusButton = target.closest(".plus");
+        const minusButton = target.closest(".minus");
+        const tabButton = target.closest(".marketplace-tab");
+
+        // --- Handle events ---
         if (cartButton) {
             event.preventDefault();
-            const itemUuid = cartButton.dataset.itemId;
-            if (itemUuid) {
-                this.basketService.addToBasket(itemUuid);
+            await this.basketService.addToBasket(cartButton.dataset.itemId);
+            this.render(false);
+        } else if (removeButton) {
+            event.preventDefault();
+            const basketItemId = removeButton.closest("[data-basket-item-id]")?.dataset.basketItemId;
+            if (basketItemId) {
+                await this.basketService.removeFromBasket(basketItemId);
+                this.render(false);
             }
-            return;
-        }
-
-        const tabButton = event.target.closest(".marketplace-tab");
-        if (tabButton) {
+        } else if (plusButton) {
+            event.preventDefault();
+            const basketItemId = plusButton.closest("[data-basket-item-id]")?.dataset.basketItemId;
+            if(basketItemId) {
+                await this.basketService.updateItemQuantity(basketItemId, 1);
+                this.render(false);
+            }
+        } else if (minusButton) {
+            event.preventDefault();
+            const basketItemId = minusButton.closest("[data-basket-item-id]")?.dataset.basketItemId;
+            if(basketItemId) {
+                await this.basketService.updateItemQuantity(basketItemId, -1);
+                this.render(false);
+            }
+        } else if (tabButton) {
             event.preventDefault();
             const nav = tabButton.closest(".marketplace-tabs");
-            const group = nav?.dataset.group;
-            const tabId = tabButton.dataset.tab;
-            if (group && tabId) {
-                this.changeTab(group, tabId);
-            }
-            return;
+            if (nav) this.changeTab(nav.dataset.group, tabButton.dataset.tab);
         }
     }
 
-    /**
-     * Handles changing the item category dropdown.
-     * @param {Event} event - The originating change event.
-     * @private
-     */
-    async _onCategoryChange(event) {
-        this.selectedKey = event.target.value;
-        await this.render(false);
+    async _onChange(event) {
+        const target = event.target;
+        if (target.matches(".item-rating-select")) {
+            const basketItemId = target.dataset.basketItemId;
+            const newRating = parseInt(target.value, 10);
+            if (basketItemId) {
+                await this.basketService.updateItemRating(basketItemId, newRating);
+                this.render(false);
+            }
+        } else if (target.matches("#item-type-selector")) {
+            this.selectedKey = target.value;
+            await this.render(false);
+        }
     }
     
     async _onDrop(event) {
