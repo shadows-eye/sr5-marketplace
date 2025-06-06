@@ -439,9 +439,14 @@ i.fa-duotone.fa-solid.fa-circle-star.sr5-marketplace-karma{
         border: none;
     }
 }
-.basket-item.item-quantity{
+.basket-item.item-pack-quantity {
     padding: 0 1.6em;
     grid-column: 2;
+    display: flex;
+}
+.basket-item.item-quantity{
+    padding: 0 1.6em;
+    grid-column: 3;
     display: flex;
 }
 .SR5-marketplace-plus-minus{
@@ -458,19 +463,19 @@ i.fa-duotone.fa-solid.fa-circle-star.sr5-marketplace-karma{
 }
 .basket-item.item-rating{
     padding: 0 1.6em;
-    grid-column: 3;
+    grid-column: 4;
 }
 .basket-item.item-cost{
     padding: 0 1.4em;
-    grid-column: 4;
+    grid-column: 5;
 }
 .basket-item.item-karma {
     padding: 0 1.6em;
-    grid-column: 5;
+    grid-column: 6;
 }
 .basket-item.remove-item{
     padding: 0 1.6em;
-    grid-column: 6;
+    grid-column: 7;
 }
 /* Hidden class */
 .hidden {
@@ -992,6 +997,25 @@ minus {
 }
 .darkred{
     color: rgb(90, 5, 5);
+}
+/* New styles for the 7-column shopping cart grid */
+.basket-grid.seven-columns {
+    display: grid;
+    grid-template-columns: 3fr 1fr 1fr 1fr 1fr 1fr 0.5fr;
+    gap: 8px;
+    align-items: center;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #ccc;
+}
+
+.basket-grid.seven-columns .grid-item,
+.basket-grid.seven-columns .basket-item {
+    text-align: center;
+}
+
+.basket-grid.seven-columns .item-name {
+    justify-self: start;
+    text-align: left;
 }
 @container (max-width: 900px) {
     .grid-container {

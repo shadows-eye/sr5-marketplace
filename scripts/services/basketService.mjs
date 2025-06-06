@@ -75,6 +75,9 @@ export class BasketService {
             karma: item.system.karma || item.flags?.['sr5-marketplace']?.Karma || 0,
             availability: item.system.technology?.availability || "0",
             essence: item.system.essence || 0,
+            itemQuantity: item.system.quantity || 1,
+            rating: item.system.rating || 1,
+            selectedRating: item.system.rating || 1, // Default to item's rating
         };
         basket.basketItems.push(basketItem);
 
@@ -147,7 +150,7 @@ export class BasketService {
             console.log(`Updated rating for ${basketItem.name} to ${rating}`);
         }
     }
-    
+
     /**
      * Recalculates all total fields for the basket based on its items.
      * @private

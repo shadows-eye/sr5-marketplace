@@ -1,5 +1,6 @@
 import ItemDataServices from '../services/ItemDataServices.mjs';
 import { BasketService } from '../services/basketService.mjs';
+// other imports as needed...
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -9,6 +10,10 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         this.itemData = new ItemDataServices();
         this.tabGroups = { main: options.tab || "shop" };
         this.basketService = new BasketService();
+
+        // Bind event handlers to `this` and store them so they can be added and removed.
+        this._onClick = this._onClick.bind(this);
+        this._onChange = this._onChange.bind(this);
     }
 
     static get DEFAULT_OPTIONS() {
@@ -28,6 +33,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     };
 
     async _prepareContext(options = {}) {
+        // This method remains the same as the last version.
+        // It correctly prepares the data for rendering.
         await this.itemData.fetchItems();
         const basket = await this.basketService.getBasket();
 
@@ -59,7 +66,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         if (this.tabGroups.main === "shop") {
             tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.hbs", partialContext);
         } else if (this.tabGroups.main === "shoppingCart") {
-            partialContext.items = basket.basketItems; // Pass basket items to the cart template
+            partialContext.items = basket.basketItems;
             tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.hbs", partialContext);
         } else if (this.tabGroups.main === "orderReview") {
             tabContent = `<h2>${game.i18n.localize("SR5.Marketplace.OrderReview")}</h2><p>Order review content goes here.</p>`;
@@ -74,54 +81,79 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         await this.render(false);
     }
     
+    /**
+     * @override
+     * Clean up and re-apply event listeners on every render.
+     */
     _onRender(context, options) {
-        this.element.addEventListener("click", this._onClick.bind(this));
-        this.element.addEventListener("change", this._onChange.bind(this));
+        const html = this.element;
+        
+        // --- THIS IS THE FIX ---
+        // Remove any listeners from the previous render to prevent duplication.
+        html.removeEventListener("click", this._onClick);
+        html.removeEventListener("change", this._onChange);
+
+        // Add the fresh listeners.
+        html.addEventListener("click", this._onClick);
+        html.addEventListener("change", this._onChange);
     }
 
+    /**
+     * Handles all delegated click events inside the application.
+     * @private
+     */
     async _onClick(event) {
+      // Item Link Click Handler ---
+        const itemLink = event.target.closest("a[data-entity-link='Item']");
+        if (itemLink) {
+            event.preventDefault();
+            const uuid = itemLink.dataset.uuid;
+            if (uuid) {
+                const item = await fromUuid(uuid);
+                item?.sheet.render(true);
+            }
+            return;
+        }
         const target = event.target;
         
-        // --- Find closest button/element for delegation ---
         const cartButton = target.closest("button.add-to-cart");
         const removeButton = target.closest(".remove-from-basket-btn");
         const plusButton = target.closest(".plus");
         const minusButton = target.closest(".minus");
         const tabButton = target.closest(".marketplace-tab");
 
-        // --- Handle events ---
         if (cartButton) {
             event.preventDefault();
             await this.basketService.addToBasket(cartButton.dataset.itemId);
-            this.render(false);
         } else if (removeButton) {
             event.preventDefault();
             const basketItemId = removeButton.closest("[data-basket-item-id]")?.dataset.basketItemId;
-            if (basketItemId) {
-                await this.basketService.removeFromBasket(basketItemId);
-                this.render(false);
-            }
+            if (basketItemId) await this.basketService.removeFromBasket(basketItemId);
         } else if (plusButton) {
             event.preventDefault();
             const basketItemId = plusButton.closest("[data-basket-item-id]")?.dataset.basketItemId;
-            if(basketItemId) {
-                await this.basketService.updateItemQuantity(basketItemId, 1);
-                this.render(false);
-            }
+            if(basketItemId) await this.basketService.updateItemQuantity(basketItemId, 1);
         } else if (minusButton) {
             event.preventDefault();
             const basketItemId = minusButton.closest("[data-basket-item-id]")?.dataset.basketItemId;
-            if(basketItemId) {
-                await this.basketService.updateItemQuantity(basketItemId, -1);
-                this.render(false);
-            }
+            if(basketItemId) await this.basketService.updateItemQuantity(basketItemId, -1);
         } else if (tabButton) {
             event.preventDefault();
             const nav = tabButton.closest(".marketplace-tabs");
             if (nav) this.changeTab(nav.dataset.group, tabButton.dataset.tab);
+            return;
+        } else {
+            return;
         }
+        
+        // Re-render the application after any basket-modifying action
+        this.render(false);
     }
 
+    /**
+     * Handles all delegated change events inside the application.
+     * @private
+     */
     async _onChange(event) {
         const target = event.target;
         if (target.matches(".item-rating-select")) {
@@ -129,12 +161,15 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             const newRating = parseInt(target.value, 10);
             if (basketItemId) {
                 await this.basketService.updateItemRating(basketItemId, newRating);
-                this.render(false);
             }
         } else if (target.matches("#item-type-selector")) {
             this.selectedKey = target.value;
-            await this.render(false);
+        } else {
+            return; // Exit if no relevant element was changed
         }
+
+        // Re-render after any change
+        this.render(false);
     }
     
     async _onDrop(event) {
