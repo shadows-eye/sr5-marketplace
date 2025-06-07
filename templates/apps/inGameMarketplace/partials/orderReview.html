@@ -1,0 +1,55 @@
+<div class="order-review-container">
+    <h2>{{localize "SR5.Marketplace.OrderReviewItems"}}</h2>
+
+    {{#each pendingRequests}}
+    <div class="pending-request-block" data-user-id="{{this.user._id}}">
+        <h3 class="actor-request-header">
+            <span>{{localize "SR5.Marketplace.RequestFor"}} <strong>{{this.actor.name}}</strong></span>
+            <span class="actor-funds">
+                ({{localize "SR5.Marketplace.funds"}}: {{this.actor.nuyen}} ¥ / {{this.actor.karma}} K)
+            </span>
+        </h3>
+        
+        <div class="basket-grid headers seven-columns">
+            <div class="grid-item header" style="justify-self: start;">{{localize "SR5.Marketplace.Name"}}</div>
+            <div class="grid-item header" title="{{localize 'SR5.Marketplace.system.technology.quantity'}} (per Pack)">{{localize "SR5.Marketplace.quantityPerPack"}}</div>
+            <div class="grid-item header">{{localize "SR5.Marketplace.buyQuantity"}}</div>
+            <div class="grid-item header">{{localize "SR5.Marketplace.system.technology.rating"}}</div>
+            <div class="grid-item header">{{localize "SR5.Marketplace.system.technology.Cost"}}</div>
+            <div class="grid-item header">{{localize "SR5.Marketplace.system.karma"}}</div>
+            <div class="grid-item header">{{localize "SR5.Marketplace.actions"}}</div>
+        </div>
+
+        {{#each this.basket.basketItems}}
+        <div class="basket-grid item-row seven-columns" data-basket-item-id="{{this.basketItemId}}">
+            <div class="basket-item item-name"><a data-entity-link="Item" data-uuid="{{this.itemUuid}}">{{this.name}}</a></div>
+            
+            <div class="basket-item item-pack-quantity">
+                {{#if (gt this.itemQuantity 1)}}{{this.itemQuantity}}{{else}}&mdash;{{/if}}
+            </div>
+
+            <div class="basket-item"><input type="number" name="buyQuantity" value="{{this.buyQuantity}}" class="gm-review-input" data-property="buyQuantity" min="1" /></div>
+            
+            <div class="basket-item"><input type="number" name="rating" value="{{this.selectedRating}}" class="gm-review-input" data-property="selectedRating" /></div>
+            
+            <div class="basket-item"><input type="number" name="cost" value="{{this.cost}}" class="gm-review-input" data-property="cost" /></div>
+            
+            <div class="basket-item"><input type="number" name="karma" value="{{this.karma}}" class="gm-review-input" data-property="karma" /></div>
+            
+            <div class="basket-item item-actions">
+                <button class="approve-item-btn" title="Approve Item"><i class="fas fa-check"></i></button>
+                <button class="reject-item-btn" title="Reject Item"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+        {{/each}}
+
+        <div class="basket-actions full-basket-actions">
+            <span><strong>{{this.user.name}}</strong>'s {{localize "SR5.Marketplace.purchaseReview"}}:</span>
+            <button class="approve-all-btn" data-user-id="{{this.user._id}}">{{localize "SR5.Marketplace.allApproved"}}</button>
+            <button class="reject-all-btn" data-user-id="{{this.user._id}}">{{localize "SR5.Marketplace.allRejected"}}</button>
+        </div>
+    </div>
+    {{else}}
+    <p>{{localize "SR5.Marketplace.noPurchaseRequests"}}</p>
+    {{/each}}
+</div>

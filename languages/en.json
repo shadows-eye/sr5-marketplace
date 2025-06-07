@@ -13,9 +13,14 @@
                 }
 
             },
+            "funds": "Funds",
             "YourOrderHasArrived": "Your order has arrived!",
             "OrderReviewItems": "Items List for the Review",
             "YourItems": "Your Items",
+            "aprroved": "approved",
+            "rejected": "rejected",
+            "allApproved": "all approved",
+            "allRejected": "all rejected",
             "ConfirmTime": "Date",
             "of": "of",
             "each": "each",
@@ -42,8 +47,12 @@
             "Search items...": "Search items...",
             "shoppingListRequest": "Shopping List Request",
             "OrderRejected": "Sorry but the following items can not be confirmed",
+            "noPurchaseRequests": "There are no purchase requests",
+            "purchaseReview": "purchase review",
             "requestActor": "From ",
             "Items": "Items",
+            "buyQuntity": "Buy Quantity",
+            "actions": "Actions",
             "system": {
                 "avail":{
                     "avail": "Avail.",
