@@ -24,7 +24,9 @@ const initializeSettings = () => {
         name: game.i18n.localize("SR5.Marketplace.Settings.ResetItemLoad.name"),
         hint: game.i18n.localize("SR5.Marketplace.Settings.ResetItemLoad.hint"),
         scope: "world",
-        config: true,
+        config: false,
+        // This setting is not meant to be user-configurable in the UI for now
+        // but can be toggled programmatically or via console
         type: Boolean,
         default: false,
         restricted: true,
@@ -44,12 +46,24 @@ const initializeSettings = () => {
         restricted: true,
     });
 
-    game.settings.register("sr5-marketplace", "purchase-screen-app", {
-        name: "Hidden Purchase Screen Settings",
+    game.settings.register("sr5-marketplace", "karmaCostForSpell", {
+        name: game.i18n.localize("SR5.Marketplace.Settings.KarmaSpell.name"),
+        hint: game.i18n.localize("SR5.Marketplace.Settings.KarmaSpell.hint"),
         scope: "world",
-        config: false,
-        type: Object,
-        default: {},
+        config: true,
+        type: Number,
+        default: 5,
+        restricted: true,
+    });
+
+    game.settings.register("sr5-marketplace", "karmaCostForComplexForm", {
+        name: game.i18n.localize("SR5.Marketplace.Settings.KarmaComplexForm.name"),
+        hint: game.i18n.localize("SR5.Marketplace.Settings.KarmaComplexForm.hint"),
+        scope: "world",
+        config: true,
+        type: Number,
+        default: 5,
+        restricted: true,
     });
 };
 

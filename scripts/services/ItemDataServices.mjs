@@ -4,26 +4,59 @@ export default class ItemDataServices {
         this.items = [];
         this.excludedItems = [];
         this.filteredItems = [];
+        this._isDataLoaded = false;
     }
 
     /**
-     * Fetch items from the world and compendiums, filter them, and prepare them for the UI.
+     * Fetch items from the world and compendiums.
+     * This method now caches its results and will only perform a full fetch once,
+     * showing a progress bar in the notifications area during the initial load.
      */
     async fetchItems() {
+        if (this._isDataLoaded) {
+            return;
+        }
+
+        // 1. Create a permanent notification. ui.notifications.info returns a standard HTMLElement.
+        const progressNote = ui.notifications.info("Preparing to index marketplace items...", { permanent: true });
+
+        // 2. Find all item compendia to determine the total for our progress bar.
+        const itemPacks = game.packs.filter(pack => pack.metadata.type === "Item");
+        const totalPacks = itemPacks.length;
+        let packsProcessed = 0;
+
+        if (totalPacks === 0) {
+            progressNote.innerHTML = "No item compendia found to index.";
+            setTimeout(() => ui.notifications.remove(progressNote.id), 2000); // Remove the notification via its ID
+            this._isDataLoaded = true;
+            return;
+        }
+
+        console.log(`SR5 Marketplace | Starting indexing of ${totalPacks} item compendia...`);
+
         const worldItems = game.items.contents.filter(item => !item.name.includes('#[CF_tempEntity]'));
         const compendiumItems = [];
 
-        for (let pack of game.packs) {
-            if (pack.metadata.type === "Item") {
-                const content = await pack.getDocuments();
-                compendiumItems.push(...content.filter(item => !item.name.includes('#[CF_tempEntity]')));
-            }
-        }
+        // 3. Loop through the packs and update the progress bar after each one.
+        for (const pack of itemPacks) {
+            const content = await pack.getDocuments();
+            compendiumItems.push(...content.filter(item => !item.name.includes('#[CF_tempEntity]')));
 
-        // Merge and filter items
+            packsProcessed++;
+            const progress = Math.round((packsProcessed / totalPacks) * 100);
+            
+            // Create the HTML for the progress bar and update the notification using innerHTML.
+            const message = `
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                    <span>Indexing: ${pack.metadata.label} (${packsProcessed}/${totalPacks})</span>
+                    <progress value="${progress}" max="100" style="width: 100%;"></progress>
+                </div>
+            `;
+            progressNote.innerHTML = message;
+        }
+        
         this.items = [...worldItems, ...compendiumItems].filter(item => !["contact"].includes(item.type));
 
-        // Separate excluded items
         this.excludedItems = this.items.filter(item =>
             ["adept_power", "call_in_action", "critter_power", "echo", "host", "metamagic", "sprite_power"].includes(item.type)
         );
@@ -31,6 +64,13 @@ export default class ItemDataServices {
         this.filteredItems = this.items.filter(item =>
             !["adept_power", "call_in_action", "critter_power", "echo", "host", "metamagic", "sprite_power"].includes(item.type)
         );
+        
+        // --- Finalize: Remove the progress notification and show a new, temporary one. ---
+        ui.notifications.remove(progressNote.id);
+        ui.notifications.info("Item indexing complete!");
+
+        this._isDataLoaded = true;
+        console.log("SR5 Marketplace | Item data fetch complete and cached for this session.");
     }
 
     /**

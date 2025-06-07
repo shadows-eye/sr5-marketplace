@@ -1,7 +1,7 @@
 <div class="basket-items-container">
     <div class="basket-grid headers seven-columns">
         <div class="grid-item header" style="justify-self: start;">{{localize "SR5.Marketplace.Name"}}</div>
-        <div class="grid-item header">{{localize "SR5.Marketplace.system.technology.quantity"}}</div>
+        <div class="grid-item header" title="{{localize 'SR5.Marketplace.system.technology.quantity'}} (per Pack)">{{localize "SR5.Marketplace.quantityPerPack"}}</div>
         <div class="grid-item header">{{localize "SR5.Marketplace.buyQuantity"}}</div>
         <div class="grid-item header">{{localize "SR5.Marketplace.system.technology.rating"}}</div>
         <div class="grid-item header">{{localize "SR5.Marketplace.system.technology.Cost"}}</div>
@@ -51,6 +51,43 @@
     {{#if basket.totalKarma}}<div id="total-karma"><strong>{{localize "SR5.Marketplace.TotalKarma"}}:</strong> {{basket.totalKarma}} <i class="fa-duotone fa-solid fa-circle-star yellow"></i></div>{{/if}}
     {{#if basket.totalEssenceCost}}<div id="total-essence"><strong>{{localize "SR5.Marketplace.TotalEssence"}}:</strong> {{basket.totalEssenceCost}}</div>{{/if}}
 </div>
+
+<hr>
+
+<div class="actor-contact-grid">
+    <div class="actor-info-col">
+        <h4>{{localize "SR5.Marketplace.purchasingFor"}}</h4>
+        {{#if purchasingActor}}
+        <div class="actor-link-wrapper">
+             <a class="actor-link" data-entity-link="Actor" data-uuid="{{purchasingActor.uuid}}">
+                <img src="{{purchasingActor.img}}" alt="{{purchasingActor.name}}" class="actor-portrait"/>
+                <span class="actor-name"><strong>{{purchasingActor.name}}</strong></span>
+            </a>
+        </div>
+        <div class="actor-funds">
+            <div>{{localize "SR5.Marketplace.funds"}}: {{purchasingActor.nuyen}} ¥ / {{purchasingActor.karma}} K</div>
+            <div class="funds-after-purchase">{{localize "SR5.Marketplace.fundsAfter"}}: {{purchasingActor.nuyenAfterPurchase}} ¥ / {{purchasingActor.karmaAfterPurchase}} K</div>
+        </div>
+        {{else}}
+        <p>{{localize "SR5.Marketplace.noActorAssociated"}}</p>
+        {{/if}}
+    </div>
+
+    <div class="contact-info-col">
+        <label>{{localize "SR5.Marketplace.selectContact"}}:</label>
+        <div class="contact-cards-container">
+            {{#each contacts}}
+            <div class="contact-card {{#if this.isSelected}}selected{{/if}}" data-contact-id="{{this._id}}">
+                <img src="{{this.img}}" alt="{{this.name}}" class="contact-icon" data-contact-sheet-id="{{this._id}}"/>
+                <span class="contact-name">{{this.name}}</span>
+            </div>
+            {{else}}
+            <p><em>{{localize "SR5.Marketplace.noContactsFound"}}</em></p>
+            {{/each}}
+        </div>
+    </div>
+</div>
+
 <div class="basket-actions">
     <button id="send-request-button" class="send-request-button">{{localize 'SR5.Marketplace.SendRequest'}}</button>
     <button id="cancel-request-button" class="send-request-button cancel">{{localize 'SR5.Marketplace.CancelRequest'}}</button>

@@ -1017,6 +1017,111 @@ minus {
     justify-self: start;
     text-align: left;
 }
+/* --- STYLES FOR ACTOR/CONTACT SECTION --- */
+
+.actor-contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr; /* Left column for actor, right for contacts */
+    gap: 20px;
+    margin: 15px 0;
+    padding-top: 15px;
+    border-top: 1px solid #ccc;
+}
+
+.actor-info-col .actor-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2em;
+}
+
+.actor-info-col .actor-portrait {
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+    border: 1px solid #7a7971;
+    object-fit: cover;
+}
+
+.actor-info-col .actor-funds {
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+
+.funds-after-purchase {
+    color: #5a5a5a;
+}
+
+.contact-cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* --- NEW CONTACT CARD STYLES --- */
+
+.contact-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    padding: 8px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    position: relative; /* Required for the pseudo-checkbox */
+    width: 100px;
+    height: 120px;
+    box-sizing: border-box;
+}
+
+.contact-card:hover {
+    border-color: #b9a913;
+}
+
+/* The contact image is now also a clickable element */
+.contact-card .contact-icon {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 3px;
+    cursor: pointer; /* Indicates the image is clickable */
+}
+
+/* Allow contact name to wrap to prevent it from being cut off */
+.contact-card .contact-name {
+    font-size: 0.8em;
+    text-align: center;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.2;
+}
+
+/* Updated selected style with the new color */
+.contact-card.selected {
+    border-color: #b9a913;
+    box-shadow: 0 0 8px #b9a913;
+}
+
+/* The pure CSS pseudo-checkbox using the ::after element */
+.contact-card.selected::after {
+    font-family: "Font Awesome 5 Free";
+    content: '\f00c'; /* Font Awesome unicode for the check icon */
+    font-weight: 900;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    color: white;
+    background-color: #b9a913;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 @container (max-width: 900px) {
     .grid-container {
         grid-template-columns: repeat(3, minmax(150px, 1fr)) minmax(150px, 1fr);

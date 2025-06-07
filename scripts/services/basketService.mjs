@@ -64,6 +64,12 @@ export class BasketService {
             }
         }
         
+        let karmaCost = item.system.karma || item.flags?.['sr5-marketplace']?.Karma || 0;
+        if (item.type === "spell") {
+            karmaCost = game.settings.get("sr5-marketplace", "karmaCostForSpell");
+        } else if (item.type === "complex_form") {
+            karmaCost = game.settings.get("sr5-marketplace", "karmaCostForComplexForm");
+        }
         // Default behavior: Always add a new line item to the basket.
         const basketItem = {
             basketItemId: foundry.utils.randomID(), // A unique ID for this specific basket entry

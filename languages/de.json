@@ -12,10 +12,15 @@
                     "hint": "Dies ermöglicht es die Karma Werte und den Kosten und Verfügbarkeiten von Welt- und Kompendiumsartikeln, ihre Flags für Karma neu zu initialisieren. Wenn Sie diese Einstellung auf true setzen, werden alle Änderungen, die Sie an Karma, Kosten oder Verfügbarkeit der Items vorgenommen haben, rückgängig gemacht."
                 }
             },
+            "funds": "Budget",
             "YourOrderHasArrived": "Deine Bestellung ist angekommen!",
             "OrderReviewItems": "Artikel Liste für die Überprüfung",
             "YourItems": "Deine Artikel",
             "ConfirmTime": "Datum",
+            "aprroved": "genehmigt",
+            "rejected": "abgelehnt",
+            "allApproved": "alle genehmigt",
+            "allRejected": "alle abgelehnt",
             "of": "von",
             "each": "pro Stück",
             "Image": "Bild",
@@ -41,8 +46,12 @@
             "Search items...": "Gegenstand Suche",
             "shoppingListRequest": "Einkaufslisten Anfrage",
             "OrderRejected": "Entschuldigung, aber die folgenden Artikel können nicht bestätigt werden",
+            "noPurchaseRequests": "Es gibt keine Kaufanfragen",
+            "purchaseReview": "Kaufüberprüfung",
             "requestActor": "Von ",
             "Items": "Gegenstände",
+            "buyQuntity": "Kaufmenge",
+            "actions": "Aktionen",
             "system": {
                 "avail":{
                     "avail": "Verfg.",
