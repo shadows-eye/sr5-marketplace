@@ -28,7 +28,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
     static PARTS = {
         main: {
-            template: "modules/sr5-marketplace/templates/apps/inGameMarketplace/inGameMarketplace.hbs",
+            template: "modules/sr5-marketplace/templates/apps/inGameMarketplace/inGameMarketplace.html",
         },
     };
 
@@ -74,11 +74,11 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         if (this.tabGroups.main === "shoppingCart") {
             partialContext.items = basket.basketItems;
-            tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.hbs", partialContext);
+            tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.html", partialContext);
         } else if (this.tabGroups.main === "orderReview") {
             tabContent = `<h2>${game.i18n.localize("SR5.Marketplace.OrderReview")}</h2><p>Order review content goes here.</p>`;
         } else {
-            tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.hbs", partialContext);
+            tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.html", partialContext);
         }
 
         return { tabs, tabContent, tabGroups: this.tabGroups, isGM: game.user.isGM };

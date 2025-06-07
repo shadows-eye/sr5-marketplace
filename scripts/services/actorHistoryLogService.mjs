@@ -71,7 +71,7 @@ export class ActorHistoryLogService {
             };
     
             // Render the Handlebars template
-            const rawContent = await foundry.applications.handlebars.renderTemplate('modules/sr5-marketplace/templates/historyJournal.hbs', historyData);
+            const rawContent = await foundry.applications.handlebars.renderTemplate('modules/sr5-marketplace/templates/historyJournal.html', historyData);
             console.log(historyData)
             // Use TextEditor.enrichHTML to enrich @UUID links and make them clickable
             //console.log(rawContent)

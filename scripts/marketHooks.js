@@ -9,10 +9,10 @@ const initializeTemplates = () => {
     registerBasicHelpers();
 
     loadTemplates([
-        "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.hbs",
-        "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/orderReview.hbs",
-        "modules/sr5-marketplace/templates/item/libraryItem.hbs",
-        "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.hbs",
+        "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.html",
+        "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/orderReview.html",
+        "modules/sr5-marketplace/templates/item/libraryItem.html",
+        "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.html",
     ]);
 };
 

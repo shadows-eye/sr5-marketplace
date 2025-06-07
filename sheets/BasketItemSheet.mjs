@@ -5,7 +5,7 @@ export class BasketItemSheet extends ItemSheet {
      */
     static get defaultOptions() {
         return foundry.utils.mergeObject(super.defaultOptions, {
-            template: "modules/sr5-marketplace/templates/item/basketItem.hbs",
+            template: "modules/sr5-marketplace/templates/item/basketItem.html",
             classes: ["sr5-marketplace", "sheet", "item"],
             width: 600,
             height: 500,

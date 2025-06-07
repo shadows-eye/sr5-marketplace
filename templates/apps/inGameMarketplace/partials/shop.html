@@ -52,7 +52,7 @@
 
 <div class="grid-container">
     <div id="marketplace-items" class="marketplace-items">
-        {{> 'modules/sr5-marketplace/templates/item/libraryItem.hbs' items=selectedItems }}
+        {{> 'modules/sr5-marketplace/templates/item/libraryItem.html' items=selectedItems }}
     </div>
     <div class="basket-toggle-bar">
         <div class="circle">
@@ -63,7 +63,7 @@
     <div class="basket-content hidden">
         <h3>{{localize "SR5.Marketplace.ShoppingBasket"}}</h3>
         <div id="basket-items" class="SR5-marketplace grid-basket">
-            {{> 'modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.hbs' }}
+            {{> 'modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.html' }}
         </div>
     </div>   
 </div>
