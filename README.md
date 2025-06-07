@@ -9,7 +9,7 @@
 
 # Shadowrun 5e Marketplace
 
-![Foundry Version](https://img.shields.io/badge/Foundry-v12-informational)
+![Foundry Version](https://img.shields.io/badge/Foundry-v13-informational)
 ![Shadowrun 5e System](https://img.shields.io/badge/System-Shadowrun%205e-green)
 
 ## Overview
@@ -28,7 +28,6 @@ The Shadowrun 5e Marketplace is a module for Foundry Virtual Tabletop (Foundry V
 - **Automatic Cost Calculations**: Calculates Karma and Nuyen costs for items, factoring in item ratings, availability, and any custom modifiers.
 - **Actor Inventory Integration**: Purchased items are automatically added to the selected actor's inventory, whether it's your character or a selected token in the scene.
 - **GM Approval Workflow**: Optionally enable a purchase approval system where GMs can review and approve player purchase requests before items are added to inventories.
-- **Socket Communication with SocketLib**: Utilizes SocketLib for smooth communication between clients and the server, ensuring data consistency.
 - **Customizable Shop Actor**: GMs can designate any actor as the shop, allowing full control over the items available in the marketplace.
 - **Language Support**: Includes localization files for English and German, with the ability to add more languages.
 
@@ -37,9 +36,8 @@ The Shadowrun 5e Marketplace is a module for Foundry Virtual Tabletop (Foundry V
 ### Dependencies
 
 This module requires the following:
-- Foundry VTT version 12
+- Foundry VTT version 13
 - Shadowrun 5e game system
-- SocketLib module
 
 ### Installing the Module
 
@@ -89,13 +87,6 @@ This module requires the following:
 #### Configuring Module Settings:
 - Access **Module Settings** to enable or disable features like GM approvals, reset item data, or adjust other preferences.
 
-## Helpers and Utilities
-
-- **GlobalHelper**: Manages global settings and purchase review requests.
-- **BasketHelper**: Handles adding and removing items from player baskets.
-- **MarketplaceHelper**: Initializes purchase screen settings and manages shop actor data.
-- **ItemData**: Fetches and processes items, calculates costs, availability, and handles item-specific data.
-- **ActorItemData**: Manages item interactions on actors, including creating items and adjusting skills.
 
 ## Localization
 
@@ -119,5 +110,4 @@ Contributions, issues, and feature requests are welcome! Please submit them thro
 
 ## Acknowledgements
 
-- **SocketLib** by Manuel Voß for providing essential socket communication functionality.
 - The Foundry VTT community for their continuous support and contributions.
