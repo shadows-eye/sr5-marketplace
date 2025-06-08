@@ -1,0 +1,50 @@
+<form autocomplete="off">
+    <p class="notes">
+        Click on an item type in any column to assign it to that behavior category. Changes are saved instantly.
+    </p>
+
+    <div class="settings-layout">
+
+        <div class="category-column">
+            <header class="column-header">
+                <h3>Unique Items</h3>
+            </header>
+            <div class="item-type-list">
+                {{#each typeSettings}}
+                <div class="item-type-card {{#if (eq this.behavior 'unique')}}active{{else}}inactive{{/if}}" 
+                     data-type="{{this.key}}" data-target-behavior="unique" title="Set '{{this.label}}' to Unique">
+                    <span class="type-label">{{this.label}}</span>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+
+        <div class="category-column">
+            <header class="column-header">
+                <h3>Stacking Items</h3>
+            </header>
+            <div class="item-type-list">
+                {{#each typeSettings}}
+                <div class="item-type-card {{#if (eq this.behavior 'stack')}}active{{else}}inactive{{/if}}"
+                     data-type="{{this.key}}" data-target-behavior="stack" title="Set '{{this.label}}' to Stacking">
+                    <span class="type-label">{{this.label}}</span>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+
+        <div class="category-column">
+            <header class="column-header">
+                <h3>Single Items</h3>
+            </header>
+            <div class="item-type-list">
+                {{#each typeSettings}}
+                <div class="item-type-card {{#if (eq this.behavior 'single')}}active{{else}}inactive{{/if}}"
+                     data-type="{{this.key}}" data-target-behavior="single" title="Set '{{this.label}}' to Single">
+                    <span class="type-label">{{this.label}}</span>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+</form>
