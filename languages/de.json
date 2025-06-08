@@ -10,6 +10,23 @@
                 "ResetItemLoad":{
                     "name": "Item Verbesserung landen zurücksetzen",
                     "hint": "Dies ermöglicht es die Karma Werte und den Kosten und Verfügbarkeiten von Welt- und Kompendiumsartikeln, ihre Flags für Karma neu zu initialisieren. Wenn Sie diese Einstellung auf true setzen, werden alle Änderungen, die Sie an Karma, Kosten oder Verfügbarkeit der Items vorgenommen haben, rückgängig gemacht."
+                },
+                "notes": "Klicke auf einen Artikeltyp in einer Spalte, um ihn dieser Verhaltenskategorie zuzuordnen. Änderungen werden sofort gespeichert.",
+                "CategoryUnique": "Einzigartige Artikel",
+                "StackingItems": "Stapelfähige Artikel",
+                "SingleItems": "Einzelne Artikel",
+                "Menu":{
+                    "name": "Artikeltyp Menü",
+                    "hint": "Dieses Menü ermöglicht es Ihnen, Artikeltypen verschiedenen Verhaltensweisen zuzuordnen.",
+                    "buttonLabel": "Artikeltyp Einstellungen öffnen"
+                },
+                "KarmaSpell": {
+                    "name": "Karma Zauberkosten",
+                    "hint": "Diese Einstellung ermöglicht es Ihnen, die Karma Kosten für Zauber festzulegen. Der Wert wird verwendet, um Zauber zu bezahlen."
+                },
+                "KarmaComplexForm": {
+                    "name": "Karma Komplexe Form Kosten",
+                    "hint": "Diese Einstellung ermöglicht es Ihnen, die Karma Kosten für komplexe Formen festzulegen. Wenn auf true gesetzt, werden die Karma Kosten anstelle der Essenzkosten verwendet."
                 }
             },
             "funds": "Budget",
