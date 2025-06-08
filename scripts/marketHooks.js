@@ -3,7 +3,7 @@
 import { inGameMarketplace } from "./apps/inGameMarketplace.mjs";
 import { registerBasicHelpers } from "./lib/helpers.js";
 import ItemDataServices from './services/ItemDataServices.mjs';
-
+import { MarketplaceSettingsApp } from "./apps/MarketplaceSettingsApp.mjs";
 // Register helpers and templates
 const initializeTemplates = () => {
     console.log("SR5 Marketplace | Registering templates and helpers...");
@@ -14,6 +14,8 @@ const initializeTemplates = () => {
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/orderReview.html",
         "modules/sr5-marketplace/templates/item/libraryItem.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.html",
+        "modules/sr5-marketplace/templates/apps/marketplace-settings/marketplace-settings.html",
+        "modules/sr5-marketplace/templates/apps/marketplace-settings/partials/settings-card.html"
     ]);
 };
 
@@ -66,7 +68,73 @@ const initializeSettings = () => {
         default: 5,
         restricted: true,
     });
+    game.settings.register("sr5-marketplace", "itemTypeBehaviors", {
+        name: "Item Type Purchase Behaviors",
+        scope: "world",
+        config: false, // Hidden from the default menu
+        type: Object,
+        default: {}
+    });
+    game.settings.register("sr5-marketplace", "openSettingsMenu", {
+        name: "SR5.Marketplace.Settings.Menu.name",
+        hint: "SR5.Marketplace.Settings.Menu.hint",
+        scope: "world",
+        config: true, // This makes the setting appear in the menu
+        restricted: true,
+        type: Object, // Use a simple type
+        default: {
+        "armor": "single",
+        "ammo": "stack",
+        "action": "unique",
+        "adept_power": "unique",
+        "complex_form": "unique",
+        "critter_power": "unique",
+        "cyberware": "unique",
+        "echo": "unique",
+        "modification": "stack",
+        "quality": "unique",
+        "spell": "unique",
+        "sprite_power": "unique"
+    }  
+    });
 };
+
+/**
+ * This hook injects our custom button into the settings menu using standard JavaScript.
+ */
+Hooks.on("renderSettingsConfig", (app, html, data) => {
+    // Note: 'html' is a standard HTMLElement, not a jQuery object.
+
+    // Find our placeholder setting's input element using querySelector
+    const settingInput = html.querySelector(`[name="sr5-marketplace.openSettingsMenu"]`);
+    
+    if (settingInput) {
+        const settingGroup = settingInput.closest(".form-group");
+        if (!settingGroup) return;
+
+        // Hide the original text input field
+        settingInput.style.display = "none";
+
+        // Create our new button programmatically
+        const button = document.createElement("button");
+        button.type = "button";
+        button.innerHTML = `<i class="fas fa-cogs"></i> ${game.i18n.localize("SR5.Marketplace.Settings.Menu.buttonLabel")}`;
+        
+        // Find the element to append the button to
+        const formFields = settingGroup.querySelector(".form-fields");
+        if (formFields) {
+            // Check if our button already exists to prevent duplicates on re-render
+            if (!formFields.querySelector("button")) {
+                formFields.appendChild(button);
+            }
+        }
+
+        // Add a click listener to our new button
+        button.addEventListener("click", () => {
+            new MarketplaceSettingsApp().render(true);
+        });
+    }
+});
 
 // Initialize the module on startup
 Hooks.once("init", () => {
@@ -155,5 +223,3 @@ Hooks.on("preCreateItem", async (item, data, options, userId) => {
         console.log("SR5 Marketplace | Default BasketModel schema applied.");
     }
 });
-
-

@@ -1,0 +1,17 @@
+<div class="item-type-card">
+    <span class="type-label">{{this.label}}</span>
+    <div class="radio-button-group">
+        <label title="Unique (Allow Only One)">
+            <input type="radio" name="{{this.key}}" value="unique" {{#if (eq this.behavior 'unique')}}checked{{/if}}>
+            <span>U</span>
+        </label>
+        <label title="Stack Quantity">
+            <input type="radio" name="{{this.key}}" value="stack" {{#if (eq this.behavior 'stack')}}checked{{/if}}>
+            <span>St</span>
+        </label>
+        <label title="Add as Single Item">
+            <input type="radio" name="{{this.key}}" value="single" {{#if (eq this.behavior 'single')}}checked{{/if}}>
+            <span>S</span>
+        </label>
+    </div>
+</div>
