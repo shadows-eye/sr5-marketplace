@@ -27,7 +27,7 @@ export class MarketplaceSettingsApp extends HandlebarsApplicationMixin(Applicati
     static get DEFAULT_OPTIONS() {
         return foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
             id: "sr5-marketplace-settings",
-            title: "Marketplace Item Behavior Settings",
+            title: game.i18n.localize("SR5.Marketplace.Settings.WindowTitle"),
             classes: ["sr5-marketplace", "sr5-marketplace-settings-app"],
             position: { width: 800, height: 650, top: 100, left: 150 },
             // The 'template' property is now correctly handled by static PARTS.
@@ -44,6 +44,7 @@ export class MarketplaceSettingsApp extends HandlebarsApplicationMixin(Applicati
         const allTypes = [...new Set(allItems.map(item => item.type))].sort();
         const behaviors = game.settings.get("sr5-marketplace", "itemTypeBehaviors");
 
+        // First, create the single, unified list of all types
         const typeSettings = allTypes.map(type => {
             return {
                 key: type,
@@ -52,7 +53,17 @@ export class MarketplaceSettingsApp extends HandlebarsApplicationMixin(Applicati
             };
         });
 
-        return { typeSettings };
+        // Now, create the categorized lists needed for the counts in the header
+        const categorizedTypes = { single: [], stack: [], unique: [] };
+        for (const type of typeSettings) {
+            // Use the behavior property we just determined
+            if (categorizedTypes[type.behavior]) {
+                categorizedTypes[type.behavior].push(type);
+            }
+        }
+        
+        // Return both objects to the template
+        return { typeSettings, categorizedTypes };
     }
     
     /**
@@ -99,7 +110,7 @@ export class MarketplaceSettingsApp extends HandlebarsApplicationMixin(Applicati
         const newBehaviors = formData.object;
         
         await game.settings.set("sr5-marketplace", "itemTypeBehaviors", newBehaviors);
-        ui.notifications.info("Marketplace item behaviors saved.");
+        ui.notifications.info(game.i18n.localize("SR5.Marketplace.Notifications.BehaviorsSaved"));
         this.close();
     }
 }

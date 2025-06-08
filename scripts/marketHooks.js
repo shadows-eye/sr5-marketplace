@@ -69,15 +69,15 @@ const initializeSettings = () => {
         restricted: true,
     });
     game.settings.register("sr5-marketplace", "itemTypeBehaviors", {
-        name: "Item Type Purchase Behaviors",
+        name: game.i18n.localize("SR5.Marketplace.Settings.ItemTypeBehaviors.name"),
         scope: "world",
         config: false, // Hidden from the default menu
         type: Object,
         default: {}
     });
     game.settings.register("sr5-marketplace", "openSettingsMenu", {
-        name: "SR5.Marketplace.Settings.Menu.name",
-        hint: "SR5.Marketplace.Settings.Menu.hint",
+        name: game.i18n.localize("SR5.Marketplace.Settings.Menu.name"),
+        hint: game.i18n.localize("SR5.Marketplace.Settings.Menu.hint"),
         scope: "world",
         config: true, // This makes the setting appear in the menu
         restricted: true,
@@ -103,36 +103,77 @@ const initializeSettings = () => {
  * This hook injects our custom button into the settings menu using standard JavaScript.
  */
 Hooks.on("renderSettingsConfig", (app, html, data) => {
-    // Note: 'html' is a standard HTMLElement, not a jQuery object.
-
-    // Find our placeholder setting's input element using querySelector
+    // 'html' is a standard HTMLElement.
     const settingInput = html.querySelector(`[name="sr5-marketplace.openSettingsMenu"]`);
+    if (!settingInput) return;
+
+    const settingGroup = settingInput.closest(".form-group");
+    if (!settingGroup) return;
+
+    const formFields = settingGroup.querySelector(".form-fields");
+    if (!formFields) return;
+
+    // Hide the placeholder's original input element.
+    settingInput.style.display = "none";
     
-    if (settingInput) {
-        const settingGroup = settingInput.closest(".form-group");
-        if (!settingGroup) return;
-
-        // Hide the original text input field
-        settingInput.style.display = "none";
-
-        // Create our new button programmatically
+    // --- Button Injection ---
+    const buttonClass = "sr5-marketplace-settings-button";
+    if (!formFields.querySelector(`.${buttonClass}`)) {
         const button = document.createElement("button");
         button.type = "button";
+        button.classList.add(buttonClass);
         button.innerHTML = `<i class="fas fa-cogs"></i> ${game.i18n.localize("SR5.Marketplace.Settings.Menu.buttonLabel")}`;
         
-        // Find the element to append the button to
-        const formFields = settingGroup.querySelector(".form-fields");
-        if (formFields) {
-            // Check if our button already exists to prevent duplicates on re-render
-            if (!formFields.querySelector("button")) {
-                formFields.appendChild(button);
-            }
-        }
-
-        // Add a click listener to our new button
         button.addEventListener("click", () => {
             new MarketplaceSettingsApp().render(true);
         });
+
+        formFields.appendChild(button);
+    }
+
+    // --- CORRECTED Tag Display Logic ---
+
+    // Remove any existing summary to prevent it from duplicating on re-render.
+    const existingSummary = settingGroup.parentElement.querySelector('.behavior-summary');
+    if (existingSummary) existingSummary.remove();
+
+    // 1. Get ALL types from the indexed item data, just like the settings app does.
+    const allItems = game.sr5marketplace.itemData.getItems();
+    const allTypes = [...new Set(allItems.map(item => item.type))].sort();
+
+    // 2. Get the saved behaviors.
+    const behaviors = game.settings.get("sr5-marketplace", "itemTypeBehaviors");
+
+    if (allTypes.length > 0) {
+        const summaryContainer = document.createElement("div");
+        summaryContainer.classList.add("behavior-summary");
+        
+        // 3. Loop through the COMPLETE list of all types.
+        for (const type of allTypes) {
+            // Filter out internal types that we don't want to show.
+            if (["base"].includes(type)) continue;
+
+            const behavior = behaviors[type] || 'single'; // Default to 'single'
+            
+            const tag = document.createElement("span");
+            tag.classList.add("behavior-tag", behavior);
+            tag.textContent = type; // The CSS will handle capitalizing.
+            switch (behavior) {
+                case "unique":
+                    tag.title = game.i18n.localize("SR5.Marketplace.Settings.CategoryUnique");
+                    break;
+                case "stack":
+                    tag.title = game.i18n.localize("SR5.Marketplace.Settings.StackingItems");
+                    break;
+                case "single":
+                    tag.title = game.i18n.localize("SR5.Marketplace.Settings.SingleItems");
+                    break;
+            }
+            summaryContainer.appendChild(tag);
+        }
+        
+        // Place the summary container after the entire form group for correct layout.
+        settingGroup.after(summaryContainer);
     }
 });
 
@@ -179,7 +220,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
 
   tokenControls.tools["sr5-marketplace"] = {
     name: "sr5-marketplace",
-    title: "Open Marketplace",
+    title: game.i18n.localize("SR5.Marketplace.Title"),
     icon: "fas fa-shopping-cart",
     visible: true,
     toggle: true,

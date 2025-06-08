@@ -10,8 +10,24 @@
                 "ResetItemLoad":{
                     "name": "Reset Item Enhancement Load",
                     "hint": "This will allow the karma values and cost/availability of world and compendium items to get their flags reinitialized. Setting this setting to true will undo any changes you made to Karma, cost, or Availability of the items."
+                },
+                "notes": "Click on an item type in any column to assign it to that behavior category. Changes are saved instantly.",
+                "CategoryUnique": "Unique Items",
+                "StackingItems": "Stacking Items",
+                "SingleItems": "Single Items",
+                "Menu":{
+                    "name": "Item Type Menu",
+                    "hint": "This menu allows you to assign item types to different behaviors.",
+                    "buttonLabel": "Open Item Type Settings"
+                },
+                "KarmaSpell": {
+                    "name": "Karma Spell Cost",
+                    "hint": "This setting allows you to set the karma cost for spells. Value will be used to pay for spells."
+                },
+                "KarmaComplexForm": {
+                    "name": "Karma Complex Form Cost",
+                    "hint": "This setting allows you to set the karma cost for complex forms. Value will be used to pay for Complex Forms."
                 }
-
             },
             "funds": "Funds",
             "YourOrderHasArrived": "Your order has arrived!",

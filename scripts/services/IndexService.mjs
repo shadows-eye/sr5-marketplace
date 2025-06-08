@@ -10,10 +10,8 @@ export class IndexService {
         Object.assign(progressContainer.style, {
         position: "fixed",
         top: "80px",
-        // --- THIS IS THE FIX ---
         left: "50%",                     // Position the left edge at the center of the screen
         transform: "translateX(-50%)",    // Translate the element left by half of its own width
-        // --- END FIX ---
         width: "1200px",
         backgroundColor: "rgba(0, 0, 0, 0.8)",
         color: "white",
@@ -42,7 +40,7 @@ export class IndexService {
         const plainItemData = allItems.map(item => item.toObject());
         
         progressContainer.remove();
-        ui.notifications.info("Marketplace item indexing complete!");
+        ui.notifications.info(game.i18n.localize("SR5.Marketplace.Notifications.IndexComplete"));
         console.log(`SR5 Marketplace | Indexed ${plainItemData.length} items for the session.`);
         
         return plainItemData;
