@@ -2,6 +2,7 @@
 // Import necessary classes and helpers
 import { inGameMarketplace } from "./apps/inGameMarketplace.mjs";
 import { registerBasicHelpers } from "./lib/helpers.js";
+import ItemDataServices from './services/ItemDataServices.mjs';
 
 // Register helpers and templates
 const initializeTemplates = () => {
@@ -72,24 +73,31 @@ Hooks.once("init", () => {
     console.log("SR5 Marketplace | Initializing module...");
     initializeTemplates();
     initializeSettings();
+    game.sr5marketplace = {
+        itemData: new ItemDataServices() // Initialize the item data service
+    };
 });
 
-// Actions to perform when the module is ready
-Hooks.on("ready", () => {
+/**
+ * A hook that runs when the game is fully ready and all data is loaded.
+ * This is the perfect place to run our one-time item indexing.
+ */
+Hooks.on("ready", async () => {
     console.log("SR5 Marketplace | Module is ready!");
-    // Log the data model schema
+
+    // This will show the progress bar on first load.
+    await game.sr5marketplace.itemData.initialize();
+
+    // The logic from your previous 'ready' hook is preserved here.
+    // If you are no longer using a 'basket' Item type, this can be removed.
     console.log("BasketModel Schema:", CONFIG.Item.dataModels?.basket?.defineSchema());
-    // Check and log the current item types
     const itemTypes = game.system.documentTypes?.Item || {};
     console.log("Current allowed item types:", Object.keys(itemTypes));
 
-    // Safely add 'basket' if it's not already present
     if (!itemTypes.basket) {
-        itemTypes.basket = {}; // Add your type with default configuration
+        itemTypes.basket = {};
         console.log("Added 'basket' to the allowed item types.");
     }
-
-    // Log the updated item types
     console.log("Updated allowed item types:", Object.keys(itemTypes));
 });
 

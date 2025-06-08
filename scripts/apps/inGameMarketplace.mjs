@@ -33,7 +33,10 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     };
 
     async _prepareContext(options = {}) {
-        await this.itemData.fetchItems();
+        // This is the key change. We no longer 'await' a slow fetch.
+        // We instantly get the pre-indexed and categorized data from our global service.
+        const itemsByType = game.sr5marketplace.itemData.itemsByType;
+        
         const basket = await this.basketService.getBasket();
         const basketItemCount = basket.basketItems?.length ?? 0;
 
@@ -63,7 +66,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                     nuyen: actor.system.nuyen,
                     karma: actor.system.karma.value,
                     nuyenAfterPurchase: actor.system.nuyen - basket.totalCost,
-                    karmaAfterPurchase: actor.system.karma.value - basket.totalKarma // Corrected property name
+                    karmaAfterPurchase: actor.system.karma.value - basket.totalKarma
                 };
                 partialContext.contacts = actor.items.filter(i => i.type === "contact").map(contact => {
                     const contactData = contact.toObject(false);
@@ -85,10 +88,10 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/orderReview.html", partialContext);
         } else {
             this.tabGroups.main = "shop";
-            partialContext.itemsByType = this.itemData.itemsByType;
+            partialContext.itemsByType = itemsByType; // Use the cached data
             partialContext.selectedKey = this.selectedKey || "rangedWeapons";
             this.selectedKey = partialContext.selectedKey;
-            partialContext.selectedItems = this.itemData.itemsByType[partialContext.selectedKey]?.items || [];
+            partialContext.selectedItems = itemsByType[partialContext.selectedKey]?.items || [];
             tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.html", partialContext);
         }
 

@@ -1,7 +1,3 @@
-/**
- * A service class to manage the user's shopping basket,
- * which is stored as a flag on the User object.
- */
 export class BasketService {
 
     constructor() {
@@ -41,7 +37,6 @@ export class BasketService {
 
     /**
      * Adds an item to the shopping basket.
-     * Default behavior is to add a new, unique entry for each click.
      * @param {string} itemUuid - The UUID of the item to add.
      */
     async addToBasket(itemUuid) {
@@ -64,31 +59,38 @@ export class BasketService {
             }
         }
         
+        // --- THIS SECTION IS CORRECTED ---
+        // 1. Correctly determine karma cost based on settings
         let karmaCost = item.system.karma || item.flags?.['sr5-marketplace']?.Karma || 0;
         if (item.type === "spell") {
             karmaCost = game.settings.get("sr5-marketplace", "karmaCostForSpell");
         } else if (item.type === "complex_form") {
             karmaCost = game.settings.get("sr5-marketplace", "karmaCostForComplexForm");
         }
-        // Default behavior: Always add a new line item to the basket.
+
+        // 2. Correctly get the item's rating
+        const itemRating = item.system.technology?.rating || 1;
+
         const basketItem = {
-            basketItemId: foundry.utils.randomID(), // A unique ID for this specific basket entry
+            basketItemId: foundry.utils.randomID(),
             itemUuid: item.uuid,
-            buyQuantity: 1, // Default quantity is always 1 for new non-stacking items
+            buyQuantity: 1,
             name: item.name,
             img: item.img,
             cost: item.system.technology?.cost || 0,
-            karma: item.system.karma || item.flags?.['sr5-marketplace']?.Karma || 0,
+            karma: karmaCost, // Use the correctly determined karma cost
             availability: item.system.technology?.availability || "0",
             essence: item.system.essence || 0,
             itemQuantity: item.system.quantity || 1,
-            rating: item.system.rating || 1,
-            selectedRating: item.system.rating || 1, // Default to item's rating
+            rating: itemRating, // Use the correct rating
+            selectedRating: itemRating,
         };
+        // --- END CORRECTION ---
+
         basket.basketItems.push(basketItem);
 
         const updatedBasket = this._recalculateTotals(basket);
-        console.log("SR5 Marketplace | Basket updated:", updatedBasket); // Log the object as requested
+        console.log("SR5 Marketplace | Basket updated:", updatedBasket);
         await this.saveBasket(updatedBasket);
 
         ui.notifications.info(`'${item.name}' added to basket.`);
@@ -96,12 +98,11 @@ export class BasketService {
 
     /**
      * Removes a specific item entry from the basket using its unique basket ID.
-     * @param {string} basketItemId - The unique ID of the basket entry to remove.
+     * @param {string} basketItemId
      */
     async removeFromBasket(basketItemId) {
         if (!basketItemId) return;
         const basket = await this.getBasket();
-        
         const itemToRemove = basket.basketItems.find(i => i.basketItemId === basketItemId);
         if (!itemToRemove) return;
 
@@ -115,9 +116,9 @@ export class BasketService {
     }
 
     /**
-     * Updates the quantity of a stackable item.
-     * @param {string} basketItemId - The unique ID of the basket entry to update.
-     * @param {number} change - The amount to change the quantity by (e.g., 1 to increment, -1 to decrement).
+     * Updates the quantity of an item in the basket.
+     * @param {string} basketItemId
+     * @param {number} change - The amount to change the quantity by.
      */
     async updateItemQuantity(basketItemId, change) {
         if (!basketItemId || !change) return;
@@ -129,6 +130,7 @@ export class BasketService {
         basketItem.buyQuantity += change;
 
         if (basketItem.buyQuantity <= 0) {
+            // If quantity is zero or less, remove the item entirely.
             await this.removeFromBasket(basketItemId);
         } else {
             const updatedBasket = this._recalculateTotals(basket);
@@ -138,10 +140,8 @@ export class BasketService {
 
     /**
      * Updates the rating of an item in the basket.
-     * NOTE: For now, this only updates the rating. A future step would be to recalculate
-     * cost and other properties based on the new rating.
-     * @param {string} basketItemId - The unique ID of the basket entry to update.
-     * @param {number} rating - The new rating value.
+     * @param {string} basketItemId
+     * @param {number} rating
      */
     async updateItemRating(basketItemId, rating) {
         if (!basketItemId) return;
@@ -151,7 +151,6 @@ export class BasketService {
         if (basketItem) {
             basketItem.selectedRating = rating;
             // TODO: Recalculate cost/availability based on new rating.
-            // For now, we just save the new rating.
             await this.saveBasket(basket);
             console.log(`Updated rating for ${basketItem.name} to ${rating}`);
         }
@@ -162,18 +161,18 @@ export class BasketService {
      * @private
      */
     _recalculateTotals(basket) {
-        basket.totalCost = basket.basketItems.reduce((acc, item) => acc + (item.cost * item.buyQuantity), 0);
-        basket.totalKarma = basket.basketItems.reduce((acc, item) => acc + (item.karma * item.buyQuantity), 0);
-        basket.totalEssenceCost = basket.basketItems.reduce((acc, item) => acc + (item.essence * item.buyQuantity), 0);
+        basket.totalCost = basket.basketItems.reduce((acc, item) => acc + ((item.cost || 0) * (item.buyQuantity || 0)), 0);
+        basket.totalKarma = basket.basketItems.reduce((acc, item) => acc + ((item.karma || 0) * (item.buyQuantity || 0)), 0);
+        basket.totalEssenceCost = basket.basketItems.reduce((acc, item) => acc + ((item.essence || 0) * (item.buyQuantity || 0)), 0);
 
-        const allAvailabilities = basket.basketItems.flatMap(item => Array(item.buyQuantity).fill(item.availability));
+        const allAvailabilities = basket.basketItems.flatMap(item => Array(item.buyQuantity || 1).fill(item.availability));
         basket.totalAvailability = this._combineAvailabilities(allAvailabilities);
 
         return basket;
     }
 
     /**
-     * Combines multiple availability strings (e.g., "6R", "4F") into a single string.
+     * Combines multiple availability strings into a single representative string.
      * @private
      */
     _combineAvailabilities(availStrings) {
