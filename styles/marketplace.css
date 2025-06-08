@@ -1245,23 +1245,26 @@ minus {
 }
 
 .behavior-tag {
-    padding: 2px 8px; /* Make tags a bit smaller */
-    border-radius: 10px; /* Rounded pill shape */
-    font-size: 11px; /* Smaller font */
+    padding: 3px 9px;
+    border-radius: 10px;
+    font-size: 11px;
     border: 1px solid rgba(0,0,0,0.2);
+    font-weight: bold;
     color: #232323;
     white-space: nowrap;
     text-transform: capitalize;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+
+    /* This line creates the smooth animation */
+    transition: all 0.2s ease-in-out;
 }
 
-.behavior-tag .tag-type {
-    text-transform: capitalize;
-    margin-right: 6px;
-}
-
-.behavior-tag .tag-behavior {
-    font-weight: normal;
-    opacity: 0.9;
+/* This new rule defines the hover effect */
+.behavior-tag:hover {
+    cursor: help;
+    filter: brightness(95%); /* Slightly darken the background */
+    transform: translateY(-1px); /* Add a subtle "lift" effect */
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.2);
 }
 
 /* Color coding for each behavior type */

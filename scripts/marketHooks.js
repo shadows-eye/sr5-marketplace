@@ -158,7 +158,17 @@ Hooks.on("renderSettingsConfig", (app, html, data) => {
             const tag = document.createElement("span");
             tag.classList.add("behavior-tag", behavior);
             tag.textContent = type; // The CSS will handle capitalizing.
-            
+            switch (behavior) {
+                case "unique":
+                    tag.title = game.i18n.localize("SR5.Marketplace.Settings.CategoryUnique");
+                    break;
+                case "stack":
+                    tag.title = game.i18n.localize("SR5.Marketplace.Settings.StackingItems");
+                    break;
+                case "single":
+                    tag.title = game.i18n.localize("SR5.Marketplace.Settings.SingleItems");
+                    break;
+            }
             summaryContainer.appendChild(tag);
         }
         
