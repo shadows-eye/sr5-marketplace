@@ -2,9 +2,12 @@
     <header class="marketplace-header">
         <nav class="marketplace-tabs" data-group="main">
             {{#each tabs}}
-            <button id="id-{{this.id}}" class="marketplace-tab {{this.cssClass}}" data-tab="{{this.id}}" type="button">
+            <button id="id-{{this.id}}" class="marketplace-tab {{this.cssClass}}" data-tab="{{this.id}}" type="button" title="{{this.tooltip}}">
                 <i class="fas {{this.icon}}"></i>
-                <span>{{this.label}}</span>
+                {{#if this.label}}
+                    <span>{{this.label}}</span>
+                {{/if}}
+                
                 {{#if (and this.count (gt this.count 0) (not (eq ../tabGroups.main this.id)))}}
                     <span class="basket-count">{{this.count}}</span>
                 {{/if}}

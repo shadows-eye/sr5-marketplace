@@ -41,6 +41,12 @@ button#id-orderReview.marketplace-tab {
     width: 60px;
     display: block;
 }
+.application .marketplace-tab {
+    /* This is the crucial property that allows the badge to be positioned on top */
+    position: relative;
+    /* You may not need the padding, but it can help ensure there's space */
+    padding-right: 10px;
+}
 .application.sr5-marketplace .marketplace-tab.active {
     font-weight: bold;
     color: #333; /* Active tab styling */
@@ -364,18 +370,24 @@ button.cancel-request-button:hover, button.send-request-button:hover {
 /* Style for the basket count number */
 .basket-count {
     position: absolute;
-    top: -5px;
-    right: -10px;
+    /* This new combination of properties will center the badge on its parent */
+    top: 30%;
+    left: 80%;
+    transform: translate(-50%, -50%);
+
+    /* These properties style the appearance of the badge */
     background-color: rgb(109, 2, 2);
     color: rgb(207, 171, 7);
     font-size: 12px;
-    width: 13px;
-    height: 13px;
+    font-weight: bold;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 2;
+    border: 1px solid #333;
 }
 .basket-grid {
     display: grid;

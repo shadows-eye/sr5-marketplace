@@ -30,7 +30,8 @@ export class BasketService {
      * @param {object | null} cart - The cart object to save, or null to clear it.
      */
     async saveBasket(cart) {
-        const state = game.user.getFlag(this.flagScope, this.flagKey) || {};
+        // We get the whole state, modify just the activeCart part, and save the whole state back.
+        const state = game.user.getFlag(this.flagScope, this.flagKey) || { pendingRequests: [] };
         state.activeCart = cart;
         return game.user.setFlag(this.flagScope, this.flagKey, state);
     }

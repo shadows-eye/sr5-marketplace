@@ -3,9 +3,14 @@ import { PurchaseService } from '../services/purchaseService.mjs';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
+/**
+ * The main application window for the SR5 Marketplace.
+ * This class handles all UI rendering and user interaction.
+ */
 export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2) {
     constructor(options = {}) {
         super(options);
+        // Use the single, globally initialized instance of ItemDataServices
         this.itemData = game.sr5marketplace.itemData;
         this.tabGroups = { main: "shop" };
         this.basketService = new BasketService();
@@ -23,7 +28,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             title: game.i18n.localize("SR5.Marketplace.Title"),
             classes: ["sr5-marketplace", "sr5-market"],
             position: { width: 910, height: 800, top: 50, left: 120 },
-            resizable: true, // Make window resizable
+            resizable: true,
             reactive: false
         });
     }
@@ -34,38 +39,38 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
     async _prepareContext(options = {}) {
         const itemsByType = this.itemData.itemsByType;
-        // The basket service now correctly gets only the active, non-pending cart.
         const basket = await this.basketService.getBasket();
         const basketItemCount = basket.basketItems?.length ?? 0;
 
-        // --- Complete Tab Generation Logic ---
         const tabs = [{ 
             id: "shop", 
             label: game.i18n.localize("SR5.Marketplace.Tab.Shop"), 
             icon: "fa-store", 
-            cssClass: this.tabGroups.main === "shop" ? "active" : "" 
+            cssClass: this.tabGroups.main === "shop" ? "active" : "",
+            tooltip: game.i18n.localize("SR5.Marketplace.Tab.Shop")
         }];
 
         if (game.user.isGM) {
-            // The count now comes from our service, which correctly checks all users' pending requests.
             const pendingCount = PurchaseService.getPendingRequestCount();
             tabs.push({ 
                 id: "orderReview", 
                 label: game.i18n.localize("SR5.Marketplace.Tab.OrderReview"), 
                 icon: "fa-list-check", 
                 cssClass: this.tabGroups.main === "orderReview" ? "active" : "",
-                count: pendingCount 
+                count: pendingCount,
+                tooltip: game.i18n.localize("SR5.Marketplace.Tab.OrderReview")
             });
         }
 
-        // This logic now correctly shows the cart tab ONLY if the player has an active cart.
         if (basketItemCount > 0) {
+            // --- This object is now corrected to match your requirement ---
             tabs.push({ 
                 id: "shoppingCart", 
-                label: game.i18n.localize("SR5.Marketplace.ShoppingBasket"), 
+                label: "", // The label is now empty to hide the text.
                 icon: "fa-shopping-cart", 
                 cssClass: this.tabGroups.main === "shoppingCart" ? "active" : "", 
-                count: basketItemCount 
+                count: basketItemCount, // The item count is included.
+                tooltip: game.i18n.localize("SR5.Marketplace.ShoppingBasket") // The full name is now a tooltip.
             });
         }
         
@@ -92,7 +97,6 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.html", partialContext);
         
         } else if (this.tabGroups.main === "orderReview" && game.user.isGM) {
-            // This logic now correctly iterates through all users and their pendingRequests array.
             const pendingRequests = [];
             for (const user of game.users) {
                 const state = user.getFlag("sr5-marketplace", "marketplaceState");
@@ -101,7 +105,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                         const actor = request.createdForActor ? await fromUuid(request.createdForActor) : null;
                         pendingRequests.push({ 
                             user: user.toJSON(), 
-                            basket: request, // Pass the specific pending basket
+                            basket: request,
                             actor: actor ? { name: actor.name, nuyen: actor.system.nuyen, karma: actor.system.karma.value } : null 
                         });
                     }
@@ -135,11 +139,6 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         html.addEventListener("change", this._onChange);
     }
 
-    /**
-     * Handles all delegated click events inside the application.
-     * This is the full, complete version of the method.
-     * @private
-     */
     async _onClick(event) {
         event.preventDefault();
         const target = event.target;
@@ -150,24 +149,46 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             return;
         }
 
+        const entityLink = target.closest("a[data-entity-link]");
+        if (entityLink) {
+            const uuid = entityLink.dataset.uuid;
+            if (uuid) fromUuid(uuid).then(doc => doc?.sheet.render(true));
+            return;
+        }
+
         let actionTaken = false;
         
+        // --- All button handlers are now declared and included ---
         const cartButton = target.closest("button.add-to-cart");
+        const removeButton = target.closest(".remove-from-basket-btn");
+        const plusButton = target.closest(".plus");
+        const minusButton = target.closest(".minus");
         const sendRequestButton = target.closest("#send-request-button");
-        const approveAllButton = target.closest(".approve-all-btn"); // Note: This logic needs updating for multi-requests
-        const rejectAllButton = target.closest(".reject-all-btn");   // Note: This logic needs updating for multi-requests
+        const approveAllButton = target.closest(".approve-all-btn");
+        const rejectAllButton = target.closest(".reject-all-btn");
+        const approveItemButton = target.closest(".approve-item-btn");
+        const rejectItemButton = target.closest(".reject-item-btn");
 
         if (cartButton) {
             await this.basketService.addToBasket(cartButton.dataset.itemId);
-            // This forces the UI to switch to the shopping cart after adding an item.
             this.tabGroups.main = "shoppingCart";
+            actionTaken = true;
+        } else if (removeButton) {
+            const basketItemId = removeButton.closest("[data-basket-item-id]")?.dataset.basketItemId;
+            if (basketItemId) await this.basketService.removeFromBasket(basketItemId);
+            actionTaken = true;
+        } else if (plusButton) {
+            const basketItemId = plusButton.closest("[data-basket-item-id]")?.dataset.basketItemId;
+            if (basketItemId) await this.basketService.updateItemQuantity(basketItemId, 1);
+            actionTaken = true;
+        } else if (minusButton) {
+            const basketItemId = minusButton.closest("[data-basket-item-id]")?.dataset.basketItemId;
+            if (basketItemId) await this.basketService.updateItemQuantity(basketItemId, -1);
             actionTaken = true;
         } else if (sendRequestButton) {
             if (game.settings.get("sr5-marketplace", "approvalWorkflow")) {
-                // The new service method correctly moves the active cart to the pending array.
                 await PurchaseService.submitForReview(game.user);
             } else {
-                // This logic is for direct purchase and remains the same.
                 const basket = await this.basketService.getBasket();
                 const actor = basket.createdForActor ? await fromUuid(basket.createdForActor) : null;
                 if (actor) {
@@ -177,25 +198,32 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             }
             actionTaken = true;
         } else if (approveAllButton) {
-            // This button now needs to know which user and which specific basket to approve.
-            const userId = approveAllButton.dataset.userId;
-            const basketUUID = approveAllButton.closest(".pending-request-block").dataset.basketUuid;
+            const requestBlock = approveAllButton.closest(".pending-request-block");
+            const userId = requestBlock.dataset.userId;
+            const basketUUID = requestBlock.dataset.basketUuid;
             await PurchaseService.approveBasket(userId, basketUUID);
             actionTaken = true;
         } else if (rejectAllButton) {
-            const userId = rejectAllButton.dataset.userId;
-            const basketUUID = rejectAllButton.closest(".pending-request-block").dataset.basketUuid;
+            const requestBlock = rejectAllButton.closest(".pending-request-block");
+            const userId = requestBlock.dataset.userId;
+            const basketUUID = requestBlock.dataset.basketUuid;
             await PurchaseService.rejectBasket(userId, basketUUID);
             actionTaken = true;
         } else if (approveItemButton) {
-            const userId = approveItemButton.closest(".pending-request-block").dataset.userId;
-            const basketItemId = approveItemButton.closest("[data-basket-item-id]").dataset.basketItemId;
-            await PurchaseService.approveSingleItem(userId, basketItemId);
+            const requestBlock = approveItemButton.closest(".pending-request-block");
+            const itemRow = approveItemButton.closest(".item-row");
+            const userId = requestBlock.dataset.userId;
+            const basketUUID = requestBlock.dataset.basketUuid;
+            const basketItemId = itemRow.dataset.basketItemId;
+            await PurchaseService.approveSingleItem(userId, basketUUID, basketItemId);
             actionTaken = true;
         } else if (rejectItemButton) {
-            const userId = rejectItemButton.closest(".pending-request-block").dataset.userId;
-            const basketItemId = rejectItemButton.closest("[data-basket-item-id]").dataset.basketItemId;
-            await PurchaseService.rejectSingleItem(userId, basketItemId);
+            const requestBlock = rejectItemButton.closest(".pending-request-block");
+            const itemRow = rejectItemButton.closest(".item-row");
+            const userId = requestBlock.dataset.userId;
+            const basketUUID = requestBlock.dataset.basketUuid;
+            const basketItemId = itemRow.dataset.basketItemId;
+            await PurchaseService.rejectSingleItem(userId, basketUUID, basketItemId);
             actionTaken = true;
         }
 
@@ -217,13 +245,15 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             this.selectedKey = target.value;
             actionTaken = true;
         } else if (target.matches(".gm-review-input")) {
+            const requestBlock = target.closest(".pending-request-block");
             const itemRow = target.closest(".item-row");
-            const userId = target.closest(".pending-request-block").dataset.userId;
+            const userId = requestBlock.dataset.userId;
+            const basketUUID = requestBlock.dataset.basketUuid;
             const basketItemId = itemRow.dataset.basketItemId;
             const property = target.dataset.property;
             const value = (target.type === "number") ? Number(target.value) : target.value;
-            await PurchaseService.updatePendingItem(userId, basketItemId, property, value);
-            return; 
+            await PurchaseService.updatePendingItem(userId, basketUUID, basketItemId, property, value);
+            actionTaken = true;
         }
 
         if (actionTaken) {
@@ -235,7 +265,6 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const data = TextEditor.getDragEventData(event);
         if (data.type === "Actor") {
             const actor = game.actors.get(data.id);
-            // This is a placeholder for actor drop logic, which can be expanded later
         }
     }
 }
