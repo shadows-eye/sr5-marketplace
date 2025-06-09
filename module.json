@@ -25,6 +25,7 @@
       }
     ]
   },
+  "socket": true,
   "styles": [
     "styles/marketplace.css"
   ],

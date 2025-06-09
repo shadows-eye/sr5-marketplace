@@ -37,7 +37,11 @@ export class IndexService {
             progressContainer.innerHTML = `<span>Indexing: ${pack.metadata.label} (${packsProcessed}/${itemPacks.length})</span><progress value="${progress}" max="100" style="width: 100%;"></progress>`;
         }
         
-        const plainItemData = allItems.map(item => item.toObject());
+        const plainItemData = allItems.map(item => {
+            const data = item.toObject(); // Get the plain data object
+            data.uuid = item.uuid;        // Manually add the uuid from the document getter
+            return data;
+        });
         
         progressContainer.remove();
         ui.notifications.info(game.i18n.localize("SR5.Marketplace.Notifications.IndexComplete"));

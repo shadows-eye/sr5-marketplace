@@ -6,12 +6,11 @@ export class BasketService {
     }
 
     /**
-     * Gets the basket object for the current user.
-     * If no basket exists, it returns a new, empty basket structure.
-     * @returns {Promise<object>} The user's basket object.
+     * Gets the active shopping cart for the current user.
+     * @returns {Promise<object>} The user's active cart object.
      */
     async getBasket() {
-        const defaultBasket = {
+        const defaultCart = {
             basketUUID: foundry.utils.randomID(),
             creationTime: new Date().toISOString(),
             createdForActor: null,
@@ -22,21 +21,22 @@ export class BasketService {
             basketItems: []
         };
 
-        const existingBasket = game.user.getFlag(this.flagScope, this.flagKey);
-        return foundry.utils.mergeObject(defaultBasket, existingBasket || {});
+        const state = game.user.getFlag(this.flagScope, this.flagKey) || {};
+        return foundry.utils.mergeObject(defaultCart, state.activeCart || {});
     }
 
     /**
-     * Saves the basket object to the current user's flags.
-     * @param {object} basket - The basket object to save.
-     * @returns {Promise<object>} The saved basket object.
+     * Saves the active shopping cart to the user's flags.
+     * @param {object | null} cart - The cart object to save, or null to clear it.
      */
-    async saveBasket(basket) {
-        return game.user.setFlag(this.flagScope, this.flagKey, basket);
+    async saveBasket(cart) {
+        const state = game.user.getFlag(this.flagScope, this.flagKey) || {};
+        state.activeCart = cart;
+        return game.user.setFlag(this.flagScope, this.flagKey, state);
     }
 
     /**
-     * Adds an item to the shopping basket.
+     * Adds an item to the shopping cart.
      * @param {string} itemUuid - The UUID of the item to add.
      */
     async addToBasket(itemUuid) {
@@ -59,40 +59,23 @@ export class BasketService {
             }
         }
         
-        // --- THIS SECTION IS CORRECTED ---
-        // 1. Correctly determine karma cost based on settings
         let karmaCost = item.system.karma || item.flags?.['sr5-marketplace']?.Karma || 0;
-        if (item.type === "spell") {
-            karmaCost = game.settings.get("sr5-marketplace", "karmaCostForSpell");
-        } else if (item.type === "complex_form") {
-            karmaCost = game.settings.get("sr5-marketplace", "karmaCostForComplexForm");
-        }
+        if (item.type === "spell") karmaCost = game.settings.get("sr5-marketplace", "karmaCostForSpell");
+        else if (item.type === "complex_form") karmaCost = game.settings.get("sr5-marketplace", "karmaCostForComplexForm");
 
-        // 2. Correctly get the item's rating
         const itemRating = item.system.technology?.rating || 1;
 
         const basketItem = {
-            basketItemId: foundry.utils.randomID(),
-            itemUuid: item.uuid,
-            buyQuantity: 1,
-            name: item.name,
-            img: item.img,
-            cost: item.system.technology?.cost || 0,
-            karma: karmaCost, // Use the correctly determined karma cost
-            availability: item.system.technology?.availability || "0",
-            essence: item.system.essence || 0,
-            itemQuantity: item.system.quantity || 1,
-            rating: itemRating, // Use the correct rating
-            selectedRating: itemRating,
+            basketItemId: foundry.utils.randomID(), itemUuid: item.uuid, buyQuantity: 1,
+            name: item.name, img: item.img, cost: item.system.technology?.cost || 0,
+            karma: karmaCost, availability: item.system.technology?.availability || "0",
+            essence: item.system.essence || 0, itemQuantity: item.system.quantity || 1,
+            rating: itemRating, selectedRating: itemRating,
         };
-        // --- END CORRECTION ---
 
         basket.basketItems.push(basketItem);
-
         const updatedBasket = this._recalculateTotals(basket);
-        console.log("SR5 Marketplace | Basket updated:", updatedBasket);
         await this.saveBasket(updatedBasket);
-
         ui.notifications.info(`'${item.name}' added to basket.`);
     }
 
@@ -109,7 +92,6 @@ export class BasketService {
         basket.basketItems = basket.basketItems.filter(i => i.basketItemId !== basketItemId);
         
         const updatedBasket = this._recalculateTotals(basket);
-        console.log("SR5 Marketplace | Basket updated after removal:", updatedBasket);
         await this.saveBasket(updatedBasket);
 
         ui.notifications.info(`'${itemToRemove.name}' removed from basket.`);
@@ -130,7 +112,6 @@ export class BasketService {
         basketItem.buyQuantity += change;
 
         if (basketItem.buyQuantity <= 0) {
-            // If quantity is zero or less, remove the item entirely.
             await this.removeFromBasket(basketItemId);
         } else {
             const updatedBasket = this._recalculateTotals(basket);
@@ -151,8 +132,8 @@ export class BasketService {
         if (basketItem) {
             basketItem.selectedRating = rating;
             // TODO: Recalculate cost/availability based on new rating.
-            await this.saveBasket(basket);
-            console.log(`Updated rating for ${basketItem.name} to ${rating}`);
+            const updatedBasket = this._recalculateTotals(basket);
+            await this.saveBasket(updatedBasket);
         }
     }
 
