@@ -14,7 +14,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         this.itemData = game.sr5marketplace.itemData;
         this.tabGroups = { main: "shop" };
         this.basketService = new BasketService();
-        this.selectedContactId = null;
+        this.selectedContactId = game.user.getFlag("sr5-marketplace", "selectedContactId") || null;
         this.purchasingActor = null;
         
         this._onClick = this._onClick.bind(this);
@@ -139,26 +139,54 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         html.addEventListener("change", this._onChange);
     }
 
+    /**
+     * Handles all delegated click events inside the application.
+     * This is the full, complete, and corrected version of the method.
+     * @private
+     */
     async _onClick(event) {
         event.preventDefault();
         const target = event.target;
         
+        // --- Tab Navigation ---
         const tabButton = target.closest(".marketplace-tab");
         if (tabButton) {
             this.changeTab(tabButton.closest(".marketplace-tabs").dataset.group, tabButton.dataset.tab);
             return;
         }
 
+        // --- Document Link Handling ---
         const entityLink = target.closest("a[data-entity-link]");
         if (entityLink) {
             const uuid = entityLink.dataset.uuid;
             if (uuid) fromUuid(uuid).then(doc => doc?.sheet.render(true));
             return;
         }
+        
+        // --- Contact Card Selection & Sheet Opening ---
+        const contactCard = target.closest(".contact-card");
+        if (contactCard) {
+            const clickedId = contactCard.dataset.contactId;
+            if (target.matches(".contact-icon")) {
+                // If the icon specifically is clicked, open the contact's sheet
+                if (this.purchasingActor) {
+                    const purchasingActorDoc = await fromUuid(this.purchasingActor.uuid);
+                    const contactItem = purchasingActorDoc?.items.get(clickedId);
+                    contactItem?.sheet.render(true);
+                }
+            } else {
+                // Otherwise, handle selection/deselection for the whole card
+                this.selectedContactId = (this.selectedContactId === clickedId) ? null : clickedId;
+                // Save the selection state for persistence
+                await game.user.setFlag("sr5-marketplace", "selectedContactId", this.selectedContactId);
+                this.render(false);
+            }
+            return; // Stop further processing after handling the contact card
+        }
 
         let actionTaken = false;
         
-        // --- All button handlers are now declared and included ---
+        // --- All Button Handlers ---
         const cartButton = target.closest("button.add-to-cart");
         const removeButton = target.closest(".remove-from-basket-btn");
         const plusButton = target.closest(".plus");
@@ -186,10 +214,10 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             if (basketItemId) await this.basketService.updateItemQuantity(basketItemId, -1);
             actionTaken = true;
         } else if (sendRequestButton) {
+            const basket = await this.basketService.getBasket();
             if (game.settings.get("sr5-marketplace", "approvalWorkflow")) {
-                await PurchaseService.submitForReview(game.user);
+                await PurchaseService.submitForReview(game.user, basket);
             } else {
-                const basket = await this.basketService.getBasket();
                 const actor = basket.createdForActor ? await fromUuid(basket.createdForActor) : null;
                 if (actor) {
                     await PurchaseService.directPurchase(actor, basket);
@@ -247,13 +275,19 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         } else if (target.matches(".gm-review-input")) {
             const requestBlock = target.closest(".pending-request-block");
             const itemRow = target.closest(".item-row");
+
+            // Gather all necessary IDs to find the exact item to update
             const userId = requestBlock.dataset.userId;
             const basketUUID = requestBlock.dataset.basketUuid;
             const basketItemId = itemRow.dataset.basketItemId;
+            
             const property = target.dataset.property;
             const value = (target.type === "number") ? Number(target.value) : target.value;
+
             await PurchaseService.updatePendingItem(userId, basketUUID, basketItemId, property, value);
-            actionTaken = true;
+            
+            // Re-render the view so the GM can see updated totals immediately
+            actionTaken = true; 
         }
 
         if (actionTaken) {

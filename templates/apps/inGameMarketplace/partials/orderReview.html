@@ -2,7 +2,7 @@
     <h2>{{localize "SR5.Marketplace.OrderReviewItems"}}</h2>
 
     {{#each pendingRequests}}
-    <div class="pending-request-block" data-user-id="{{this.user._id}}">
+    <div class="pending-request-block" data-user-id="{{this.user._id}}" data-basket-uuid="{{this.basket.basketUUID}}">
         <h3 class="actor-request-header">
             <span>{{localize "SR5.Marketplace.RequestFor"}} <strong>{{this.actor.name}}</strong></span>
             <span class="actor-funds">

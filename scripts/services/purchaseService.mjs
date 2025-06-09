@@ -85,22 +85,25 @@ export class PurchaseService {
     }
 
     /**
-     * Submits the user's active cart for GM review.
-     * This moves the active cart into the pendingRequests array.
+     * Submits a basket for GM review.
      * @param {User} user The user submitting the request.
+     * @param {object} basket The user's active shopping cart object.
      */
-    static async submitForReview(user) {
-        const state = user.getFlag(this.flagScope, this.flagKey) || {};
-        const cart = state.activeCart;
+    static async submitForReview(user, basket) {
+        if (!user || !basket) return false;
 
-        if (!cart || cart.basketItems.length === 0) {
+        // This now correctly checks the basket that was passed from the application.
+        if (!basket.basketItems || basket.basketItems.length === 0) {
             ui.notifications.warn("Your shopping cart is empty.");
             return false;
         }
 
-        cart.status = "pending"; // Mark as pending
+        const state = user.getFlag(this.flagScope, this.flagKey) || {};
+        const cartToSubmit = basket;
+
+        cartToSubmit.status = "pending";
         state.pendingRequests = state.pendingRequests || [];
-        state.pendingRequests.push(cart); // Add to the pending array
+        state.pendingRequests.push(cartToSubmit);
         state.activeCart = null; // Clear the active cart
 
         await user.setFlag(this.flagScope, this.flagKey, state);
@@ -162,26 +165,36 @@ export class PurchaseService {
     }
 
     /**
-     * GM action to update a single item within a pending basket.
+     * GM action to update a single item within a specific pending basket.
      * @param {string} userId - The ID of the user who owns the basket.
+     * @param {string} basketUUID - The unique ID of the pending basket to find.
      * @param {string} basketItemId - The unique ID of the item within the basket.
      * @param {string} property - The property of the item to update (e.g., 'buyQuantity', 'cost').
      * @param {*} value - The new value for the property.
      */
-    static async updatePendingItem(userId, basketItemId, property, value) {
+    static async updatePendingItem(userId, basketUUID, basketItemId, property, value) {
         const user = game.users.get(userId);
         if (!user) return;
 
-        const basket = user.getFlag("sr5-marketplace", "basket");
-        if (!basket || basket.status !== "pending") return;
+        const state = user.getFlag(this.flagScope, this.flagKey) || {};
+        if (!state.pendingRequests) return;
 
-        const itemToUpdate = basket.basketItems.find(item => item.basketItemId === basketItemId);
+        // Find the specific pending request in the array by its UUID
+        const requestToUpdate = state.pendingRequests.find(r => r.basketUUID === basketUUID);
+        if (!requestToUpdate) return;
+
+        // Find the specific item within that request's item list
+        const itemToUpdate = requestToUpdate.basketItems.find(i => i.basketItemId === basketItemId);
         if (!itemToUpdate) return;
 
+        // Set the property on the specific item object
         foundry.utils.setProperty(itemToUpdate, property, value);
 
-        const updatedBasket = this._recalculateTotals(basket);
-        await user.setFlag("sr5-marketplace", "basket", updatedBasket);
+        // Recalculate the totals for just this modified basket
+        this._recalculateTotals(requestToUpdate);
+
+        // Save the entire updated state (with the modified pending request) back to the user's flag
+        await user.setFlag(this.flagScope, this.flagKey, state);
     }
     
     /**
