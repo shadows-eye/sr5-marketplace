@@ -8,13 +8,15 @@ import { PurchaseService } from "./services/purchaseService.mjs";
 
 
 /**
- * Draws the badge on the scene control button.
+ * Draws the notification badge on the scene control button.
+ * This function is called by the 'renderSceneControls' hook.
  * @param {JQuery} html The jQuery object for the scene controls container.
  */
 function drawBadge(html) {
+    // This guard clause prevents errors if the hook fires at an unexpected time.
     if (!html || !html.length || !game.user.isGM) return;
 
-    // Get the count directly from the service when the UI is rendered.
+    // Get the latest count directly from the service every time the controls are rendered.
     const pendingCount = PurchaseService.getPendingRequestCount();
     
     const controlButton = html.find('[data-tool="sr5-marketplace"]');
@@ -216,10 +218,12 @@ Hooks.once("init", () => {
     game.sr5marketplace = { itemData: new ItemDataServices() };
 
     Hooks.on("updateUser", (user, changes) => {
-        // The flag key has been updated to reflect the new data structure.
-        if (game.user.isGM && foundry.utils.hasProperty(changes, "flags.sr5-marketplace.marketplaceState")) {
-            // A relevant flag changed, just trigger a re-draw of the controls.
-            if (ui.controls) ui.controls.render(true);
+        // This now correctly checks for changes to the 'basket' flag.
+        if (game.user.isGM && foundry.utils.hasProperty(changes, "flags.sr5-marketplace.basket")) {
+            // A relevant flag changed, so just ask the UI to redraw the controls.
+            setTimeout(() => {
+                if (ui.controls) ui.controls.render(true);
+            }, 250);
         }
     });
 });

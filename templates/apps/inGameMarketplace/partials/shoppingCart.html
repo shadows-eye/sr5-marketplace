@@ -9,7 +9,7 @@
         <div class="grid-item header"><i class="fas fa-trash"></i></div>
     </div>
 
-    {{#each items}}
+    {{#each basket.shoppingCartItems}}
     <div class="basket-grid item-row seven-columns" data-basket-item-id="{{this.basketItemId}}">
         <a class="basket-item item-name" data-entity-link="Item" data-uuid="{{this.itemUuid}}">
             <img class="mini-img" src="{{this.img}}" alt="{{this.name}}">
