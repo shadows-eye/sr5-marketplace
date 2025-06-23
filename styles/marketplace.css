@@ -1,1372 +1,355 @@
 @import url('https://kit.fontawesome.com/b315973576.css');
 
+/* ==================================================================
+//
+// SR5 Marketplace Stylesheet - v2.2 (Definitive Version)
+//
+// - Merges all original module styles with the new layout structure.
+// - Restores all necessary styles for the shopping basket and other UI elements.
+// - Corrects item card display logic.
+// - Centralizes all colors in :root variables for easy theming.
+//
+// ==================================================================
+*/
+
+/* --------------------------------------
+   1. Theme & Color Variables
+   -------------------------------------- */
 :root {
-    --basket-bar-width: 12px; /* Width of the basket bar */
-    --basket-content-width: 0; /* Initially hidden basket content */
-    --bar-width: 25px
-}
-.application h4 , .application h4:first-child.marketplace_h4{
-    margin: 0rem 0 0.2rem;
-    margin-top: -0.3rem;
-    line-height: 1;
-    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-    font-size: 1.1vw;
-    color: #a10e0e;
-    text-shadow: 1px 1px 3px #b9a913;
-}
-.fa-doutone .sr5-marketplace-yen:before, 
-.sr5-marketplace-yen{
-    color: #c50000;
-}
-.sr5-marketplace-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #2b2b2b;
-    color: #ffffff;
-    border: none;
-    padding: 5px;
-    margin-top: 5px;
-    width: 100%;
-    cursor: pointer;
-}
-.SR5-marketplace.grid-basket{
-    display: grid;;
-}
-nav.marketplace-tabs {
-    display: flex;
-    margin-bottom: 10px;
-}
-button#id-orderReview.marketplace-tab {
-    width: 60px;
-    display: block;
-}
-.application .marketplace-tab {
-    /* This is the crucial property that allows the badge to be positioned on top */
-    position: relative;
-    /* You may not need the padding, but it can help ensure there's space */
-    padding-right: 10px;
-}
-.application.sr5-marketplace .marketplace-tab.active {
-    font-weight: bold;
-    color: #333; /* Active tab styling */
-}
-.application a.button, .application.sr5-marketplace #id-shop.marketplace-tab{
-    font-weight: bold;
-    color: #333; /* Active tab styling */
-    width: 60px;
-    display: block;
-}
-.application.sr5-marketplace #id-shop.marketplace-tab.active {
-    font-weight: bold;
-    color: #333; /* Active tab styling */
-    width: 60px;
-}
-.tab-content {
-    display: none; /* Hide all tab contents initially */
+    /* Primary & Accent Colors */
+    --color-primary-red-dark: #770808;
+    --color-primary-red: #a10e0e;
+    --color-primary-red-bright: #c50000;
+    --color-primary-red-very-dark: rgb(90, 5, 5);
+    --color-primary-yellow: #e7c93e;
+    --color-primary-yellow-hover: #fbde6e;
+    --color-primary-gold: #b9a913;
+    --color-accent-green: green;
+    --color-accent-green-button: #4CAF50;
+
+    /* Background Colors */
+    --bg-main: url(/modules/sr5-marketplace/assets/light-page.webp);
+    --bg-dark-overlay: rgba(0, 0, 0, 0.8);
+    --bg-light-overlay: rgba(170, 170, 170, 0.51);
+    --bg-dark-section: #2b2b2b;
+    --bg-dark-section-hover: #3d3d3d;
+    --bg-tab-active: #555;
+    --bg-tab-inactive: #333;
+    --bg-item-card: #e7c93ee0;
+    --bg-item-card-hover: var(--color-primary-red-dark);
+    --bg-filter-bar: #00000017;
+    --bg-basket-content: #aaaaaa83;
+    --bg-basket-summary: #a3a3a3;
+    --bg-settings-unique: #d1e7dd;
+    --bg-settings-stack: #d1ecf1;
+    --bg-settings-single: #fff3cd;
+
+    /* Text Colors */
+    --text-light: #F5F5F5;
+    --text-dark: #333;
+    --text-header: var(--color-primary-red);
+    --text-link: var(--color-primary-yellow);
+    --text-button-dark: #414141;
+    --text-button-light: rgb(215 239 210);
+    --text-button-hover: var(--color-primary-yellow-hover);
+    --text-yellow: #f4cf0e;
+
+    /* Border Colors */
+    --border-dark: #444;
+    --border-light: #ccc;
+    --border-medium: #666;
+    --border-tab: #555;
+    --border-highlight-red: #5d142b;
+    --border-highlight-yellow: rgb(209, 189, 11);
+    --border-inset-top: rgba(67, 32, 1, 0.93);
+    --border-inset-bottom: rgb(33 16 1);
+    --border-settings-unique: #a3cfbb;
+    --border-settings-stack: #bee5eb;
+    --border-settings-single: #ffeeba;
+
+    /* Shadow Colors */
+    --shadow-text: 1px 1px 3px var(--color-primary-gold);
+    --shadow-text-button: -1px 2px 2px #800422;
+    --shadow-box-glow: 0 0 10px rgba(245, 245, 245, 0.897), 0 0 5px rgba(255, 255, 255, 0.897);
+    --shadow-inset-dark: inset 0 0 8px rgba(0, 0, 0, 0.5);
 }
 
-.tab-content.active {
-    display: block; /* Show active tab */
-}
-.SR5-marketplace & .marketplace-tab.active {
-    font-weight: bold;
-    color: #333; /* Style for active tab */
-}
-.sr5-marketplace-btn:hover {
-    background-color: #3d3d3d;
-}
-.section.marketplace-tab-content {
-    margin-right: 40px;
-}
-.sr5-marketplace-btn i {
-    margin-right: 5px;
-}
-
-.marketplace-search {
-    padding: 5px;
-    margin: 10px 0;
-    width: calc(100% - 20px); /* Adjust to fit your layout */
-    box-sizing: border-box;
-}
-
-.sr5-market {
-    container-type: inline-size;
-    min-width: 305px;
-    background-color: rgb(102, 5, 5);
-    color: rgb(231, 190, 4);
-}
-
+/* --------------------------------------
+   2. Base Application & Typography
+   -------------------------------------- */
 .application.sr5-marketplace .window-content {
-    max-width: 100%;
-    max-height: 100%;
-    background: url(/modules/sr5-marketplace/assets/light-page.webp) repeat;
+    background: var(--bg-main) repeat;
     padding: 20px;
     border-radius: 10px;
     overflow: hidden;
+    position: relative;
     display: flex;
     flex-direction: column;
-    position: relative; /* Important for pseudo-elements positioning */
-    z-index: 2; /* Set above the diagonal stripes */
-}
-/* Styling for the new actor and item placeholder boxes */
-.SR5ActorSelected-box,
-.SR5ShopActor-box,
-.SR5ConnectionLink-box {
-    width: 50px;
-    height: 40px;
-    background-color: #bdbdbd;
-    border: 1px solid #d5d5d5;
-    border-radius: 5px;
-    display: inline-flex;
-    vertical-align: top;
-    text-align: left;
-    padding: 5px;
-    margin-left: 10px;
 }
 
-.actor-icon, .item-icon{
-    max-width: 45px;
-    max-height: 30px;
-    object-fit: cover;
-    border-radius: 3px;
+.application h4, .application h4:first-child.marketplace_h4 {
+    margin: -0.3rem 0 0.2rem;
+    line-height: 1;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 1.1vw;
+    color: var(--text-header);
+    text-shadow: var(--shadow-text);
 }
 
-/* Adjust anchor tags containing images */
-.SR5ActorSelected-box a,
-.SR5ShopActor-box a,
-.SR5ConnectionLink-box a {
-    display: block;
-    width: 100%;
-    height: 100%;
-    border-radius: 3px;
-    overflow: hidden; /* Ensure content fits within border-radius */
-}
-
-/* Ensure the image itself fits within the anchor tag */
-.SR5ActorSelected-box img,
-.SR5ShopActor-box img,
-.SR5ConnectionLink-box img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;  /* Crop the image to fit proportionally */
-    border: none;
-}
-
-span.remove-link {
-    margin-left: -6px;
-    margin-top: -10px;
-    z-index: 2;
-    color: brown;
-    cursor: pointer;
-    width: 5px;
-    height: 5px;
-}
-
-/* Red border with white break around window-content */
-.sr5-market > section.window-content::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border-top-width: 3px;
-    border-right-width: 3px;
-    border-bottom-width: 3px;
-    border-left-width: 3px;
-    border-top-style: inset;
-    border-right-style: inset;
-    border-bottom-style: inset;
-    border-left-style: inset;
-    border-top-color: rgba(67, 32, 1, 0.93);
-    border-right-color: rgba(67, 32, 1, 0.93);
-    border-bottom-color: rgb(33 16 1);
-    border-left-color: rgb(67 32 1 / 92%);
-    border-image-source: initial;
-    border-image-slice: initial;
-    border-image-width: initial;
-    border-image-outset: initial;
-    border-radius: 10px;
-    box-sizing: border-box;
-    pointer-events: none;
-    z-index: 0;
-    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.5);
-}
-
-/* red border */
-.sr5-market > section.window-content::after {
-    content: '';
-    position: absolute;
-    width: calc(100% - 4px);
-    height: calc(100% - 2px);
-    margin-top: -19px;
-    margin-left: -18px;
-    border: 3px solid #5d142b;
-    border-radius: 8px;
-    box-sizing: border-box;
-    pointer-events: none;
-    z-index: 2;
-}
-
-/* Marketplace container */
-.marketplace-container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    position: relative;
-}
-
-.marketplace-header {
-    flex-shrink: 0;
-    z-index: 10;
-    background-color: inherit;
-}
-
-.marketplace-filter {
-    margin-bottom: 10px;
-    margin-right: 42px;
-    height: auto;
-    padding: 10px;
-    background-color: #00000017;
-    border-bottom: 1px solid #ccc;
-    position: relative;
-    flex-shrink: 0;
-    z-index: 2;
-}
-input#item-search {
-    max-width: 120px; /* Set the max width to 120px */
-    padding: 5px;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
+/* --------------------------------------
+   3. Main Layout Structure
+   -------------------------------------- */
+.marketplace-container { display: flex; flex-direction: column; height: 100%; }
+.marketplace-header { flex-shrink: 0; }
+.shop-container, .marketplace-body, .marketplace-tab-content { flex-grow: 1; overflow-y: auto; }
+.shop-container { display: flex; flex-direction: column; height: 100%; }
 .grid-container {
     flex-grow: 1;
     display: grid;
-    grid-template-columns: 1.2fr 0fr 1fr 1fr 1fr;
+    grid-template-columns: repeat(5, 1fr) 25px auto; /* Adapted for basket toggle */
     gap: 15px;
-    height: 100%;
-    padding: 0 0 0.1em 0.2em;
-    box-sizing: border-box;
+}
+
+/* --------------------------------------
+   NEW: Header User Actor Display
+   -------------------------------------- */
+/* --------------------------------------
+   Definitive Header User Actor Display CSS
+   -------------------------------------- */
+.marketplace-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-right {
+    position: relative; /* For positioning the details dropdown */
+}
+
+/* The main container is the positioning parent and defines the hover area */
+.marketplace-user-actor {
     position: relative;
-    z-index: 3;
-    margin-right: 41px;
-}
-.marketplace-items {
-    grid-column: 1 / span 6;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 4 columns by default */
-    gap: 0.4em;
-    overflow-y: auto;
-    max-height: 630px;
-}
-.basket-toggle-bar {
-    grid-column: 7;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #2b2b2b;
-    color: white;
-    width: var(--bar-width);
     cursor: pointer;
-    transition: all 0.3s ease;
-    z-index: 1000;
-}
-/* Container for the animated gradient */
-.circle {
-    position: relative;
-    width: 13px; /* Restrict the size of the circle */
-    height: 13px; /* Match the circle size with the icon */
-    border-radius: 50%; /* Ensures it's round */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Shopping cart icon */
-.circle i {
-    font-size: 12px; /* Size the icon smaller to fit inside the circle */
-    color: white;
-    z-index: 1; /* Ensure the icon is above the gradient */
-}
-
-/* Gradient animation around the icon */
-.circle::before,
-.circle::after {
-    position: absolute;
-    z-index: -1;
-    content: "";
-    inset: -5px; /* Creates a small ring around the icon */
-    border-radius: inherit;
-    background-image: conic-gradient(#c7a406, #a1051f, #c7a406);
-    animation: rotate 8s linear infinite;
-}
-
-.circle::after {
-    filter: blur(4px); /* Adds a blur effect to the gradient */
-    opacity: 0.7;
-}
-
-/* Pause animation on hover */
-.circle:hover::before,
-.circle:hover::after {
-    animation-play-state: paused;
-}
-
-/* Keyframes for rotating gradient */
-@keyframes rotate {
-    to {
-        rotate: 360deg;
-    }
-}
-.basket-expanded .marketplace-items {
-    grid-column: 1 / span 1; /* Only one column for marketplace items */
-    grid-template-columns: 1fr; /* Single column layout */
-}
-.basket-expanded .basket-toggle-bar {
-    grid-column: 2; /* Toggle bar moves left */
-}
-.basket-content {
-    grid-column: 3 / span 4;
-    width: auto;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
-    overflow-y: auto;
-    padding: 10px 10px 10px 10px;
-    border-radius: 8px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-    z-index: 1;
-    transition: all 0.3s ease;
-    background-color: #aaaaaa83;
-    /* border: 10px double #ddd; */
-    border-radius: 6px;
-}
-.basket-content h3 {
-    font-weight: bold;
-    padding: 2em 0.6em;
-    border-bottom: none;
-}
-.basket-content h3::after {
-    content: "";
-    display: block;
-    width: 100%;
-    height: 0px;
-    border: 1px solid #ccc;
-}
-.basket-toggle-bar:hover {
-    background-image: radial-gradient(circle, #c7a40673, #a1051f42, #c7a40673);
-    background-color: #2b2b2b;
-}
-button.cancel-request-button:hover, button.send-request-button:hover {
-    box-shadow: 2px 2px 2px 0px #870f0f;
-    color: #fbde6e;
-}
-/* Style for the basket count number */
-.basket-count {
-    position: absolute;
-    /* This new combination of properties will center the badge on its parent */
-    top: 30%;
-    left: 80%;
-    transform: translate(-50%, -50%);
-
-    /* These properties style the appearance of the badge */
-    background-color: rgb(109, 2, 2);
-    color: rgb(207, 171, 7);
-    font-size: 12px;
-    font-weight: bold;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
-    border: 1px solid #333;
-}
-.basket-grid {
-    display: grid;
-    grid-template-columns: 4fr 0.4fr 0.4fr 0.4fr  0.4fr 0.1fr; /* Adjust based on your needs */
-    gap: 10px;
-    align-items: center;
-    padding-bottom: 10px;
-}
-.sr5-marketplaceTotal {
-    padding-top: 0.5em;
-}
-.sr5-marketplaceTotalCost, .sr5-marketplaceTotalAvail, .sr5-marketplaceTotalKarma {
-    padding-left: 1em;
-}
-.sr5-marketplaceTotalCost {
-    padding-top: 0.2em;
-}
-i.fa-duotone.fa-solid.fa-circle-star.sr5-marketplace-karma{
-    color: #c50000;
-}
-.basket-frame {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none; /* Prevent frame from interfering with interactions */
-    background-image: url('/modules/sr5-marketplace/assets/frames/SR5-Frame.svg');
-    background-size: 100% 100%; /* Scale the SVG to fit the size of the basket-content */
-    background-repeat: no-repeat; /* Ensure the frame only appears once */
-    background-position: center; /* Center the SVG frame */
-    z-index: 2; /* Frame sits above the basket content */
-}
-.basket-grid .header {
-    font-weight: bold;
-    padding: 0 1.6em;
-}
-.basket-summary {
-    grid-row: 2;
-    font-weight: bold;
-    margin-inline: 6px;
-    background-color: #a3a3a3;
-    grid-column: 1;
-}
-.end-row {
-    grid-column: 1 / -1;
-    padding: 0 0.5em;
-    align-self: end;
-}
-.basket-item.item-name{
-    padding: 0 1.6em;
-    grid-column: 1;
-    tag.item-tag {
-        /* text-anchor: start; */
-        /* text-align: center; */
-        margin-left: 5px;
-    }
-    img.mini-img {
-        width: 20px;
-        margin-top: 2px;
-        border: none;
-    }
-}
-.basket-item.item-pack-quantity {
-    padding: 0 1.6em;
-    grid-column: 2;
-    display: flex;
-}
-.basket-item.item-quantity{
-    padding: 0 1.6em;
-    grid-column: 3;
-    display: flex;
-}
-.SR5-marketplace-plus-minus{
-    padding-left: 2px;
-    padding-right: 2px;
-}
-.fa-circle-minus.SR5-marketplace.minus{
-    color: red;
-    cursor: pointer;
-}
-.fa-circle-plus.SR5-marketplace.plus{
-    color: green;
-    cursor: pointer;
-}
-.basket-item.item-rating{
-    padding: 0 1.6em;
-    grid-column: 4;
-}
-.basket-item.item-cost{
-    padding: 0 1.4em;
-    grid-column: 5;
-}
-.basket-item.item-karma {
-    padding: 0 1.6em;
-    grid-column: 6;
-}
-.basket-item.remove-item{
-    padding: 0 1.6em;
-    grid-column: 7;
-}
-/* Hidden class */
-.hidden {
-    display: none;
-}
-.grid-container.expanded .marketplace-items {
-    grid-column: 1 / span 1; /* Collapse to one column */
-    grid-template-columns: 1fr; /* Single column */
-}
-.grid-container.expanded .basket-toggle-bar {
-    grid-column: 2; /* Toggle bar moves left */
-}
-.grid-container.expanded .basket-content {
-    grid-column: 3 / span 4; /* Basket content occupies 4 columns */
-    width: auto;
-}
-.marketplace-item.grid-item {
-    display: flex;
-    flex-direction: column;
-    background-color: #e7c93ee0;
-    padding: 0.7em;
-    border: 0.2em solid #590f0f26;
-    border-radius: 0.7em;
-    box-sizing: border-box;
-    width: 98%;
-    height: 10.5em;
-    margin-left: 3px;
-}
-:hover.marketplace-item.grid-item {
-
-    background-color: #770808;
-    color: #e7c93e;
-}
-:hover.marketplace-item.grid-item h4 {
-
-    background-color: #770808;
-    color: #e7c93e;
-}
-
-.grid-show {
-    display: grid;
-    grid-template-columns: 6em 2em auto; /* Two columns: one for image and one for button */
-    gap: 10px;
-    align-items: center;
-    margin-bottom: 10px; /* Space between image/button and item details */
-}
-.item-image {
-    max-width: 62px;
-    background-color: #5f5f5f46;
-    border-radius: 10px;
-    border: 3px;
-    border-style: outset;
-}
-.item-name {
-    text-align: left;
-}
-.item-rating-section {
-    text-align: center;
-}
-.item-cost-section {
-    text-align: center;
-}
-.remove-item{
-    background:none;
-    cursor: pointer;
-}
-.rating-label:hover {
-    display: flex;
-}
-.item-availability-section {
-    text-align: center;
-}
-.item-image img {
-    max-width: 60px;
-    max-height: 60px;
-    object-fit: contain;
-    border: none; /* Remove any borders from the image */
-    margin-left: 0.1em;
-}
-.order-review-grid {
-    display: grid;
-    grid-template-columns: 5em 3fr 0.9fr 0.9fr 0.7fr 5em;  /* Define column widths explicitly */
-    grid-gap: 10px;
-    align-items: center;
-    justify-items: start;
-    width: 100%;
-    position: relative; /* Ensures the pseudo-element works */
-}
-.order-review-grid::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2.5em; /* Adjust this to the actual height of the row */
-    background-color: #8a8a8a;  /* Background color for the first row */
-    z-index: 1;  /* Send the background behind the content */
-}
-/* Ensure each column header spans its own space */
-.order-review-grid > .marketplace.item-header:nth-child(1),
-.order-review-grid > .marketplace.item-header:nth-child(2),
-.order-review-grid > .marketplace.item-header:nth-child(3),
-.order-review-grid > .marketplace.item-header:nth-child(4),
-.order-review-grid > .marketplace.item-header:nth-child(5),
-.order-review-grid > .marketplace.item-header:nth-child(6) {
-    background-color: transparent; /* Remove the background from individual elements */
-    padding-top: 0.8em;
-    color: #414141;
-    font-weight: bold;
-    text-align: center;
-    text-size-adjust: 1.5em;
-    z-index: 2;
-}
-.order-review-grid > .marketplace.item-header:nth-child(1){
-    padding-left: 0.5em;
-}
-.order-review-grid > .marketplace.item-header:nth-child(6){
-    background-color: transparent; /* Remove the background from individual elements */
-    color: #303030;
-    font-weight: bold;
-    text-align: center;
-    text-size-adjust: 1.5em;
-    z-index: 2;
-    padding-right: 0.1em;
-    padding-left: 1.7em;
-}
-.order-review-grid > .marketplace.item-header:hover {
-    /*text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3);*/
-    box-shadow: 0 0 10px rgba(245, 245, 245, 0.897), 0 0 5px rgba(255, 255, 255, 0.897);  /* Glow effect */
-    padding: 0 0 0 0;
-    border-radius: 3px;
-    padding-inline: 2px;
-}
-
-/* Glow effect on hover */
-.marketplace.item-header:hover::before {
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3);  /* Glow effect */
-}
-.order-review-item {
-    display: contents; /* So the individual grid items take up their respective places */
-}
-.order-review-summary{
-    padding-top: 2em;
-}
-.item-details {
-    font-size: 0.9em;
-    text-align: left;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    display: grid;
-    grid-template-columns: 10em auto; /* Two columns: one flexible and one auto-sized */
-    gap: 5px; /* Adjust the gap between elements as needed */
-    padding-top: 5px;
-}
-.hidden{
-    display: none;
-}
-.item-rating-section,
-.item-cost-section,
-.item-availability-section,
-.item-remove-section {
-    text-align: center;
-}
-.item-essence, .item-all {
-    grid-column: 1; /* Place in the first column */
-    margin-top: -4px;
-    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-    font-size: 1.0vw;
-}
-.item-right {
-    grid-column: 2; /* Place in the second column, always on the right */
-    justify-self: end; /* Align this item to the right within its grid cell */
-}
-.rating{
-    margin-top: -4px;
-    font-size: 1.0vw;
-}
-
-.item-action {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    max-width: 22px;
-    padding-bottom: 2px;
-}
-
-.item-action .add-to-cart {
-    background-color: #4CAF50;
-    color:rgb(215 239 210);
-    border: none;    
-    padding: 0px 5px; /* Smaller padding for button */
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.8em; /* Smaller font size */
-    max-width: fit-content;
-    display: block;
-}
-.marketplace-item{
-    margin-top: 3px;
-    color: #000;
-    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-    font-size: medium;
-}
-
-.add-to-cart i {
-    font-size: 1em;
-}
-.add-to-cart .fas.fa-plus {
-    color: rgb(255, 255, 255);
-    position: relative;
-    top: -8px;
-    font-size: 0.9em;
-}
-
-button.remove-item {
-    i.fas.fa-trash{
-        color: rgb(134, 3, 3);
-    }
-    max-width: fit-content;
-    margin: 0.1em;
-    border: 0px;
-    padding: 0 1.6em;
-}
-.send-request-button{
-    max-width: 60px;
-    padding-inline: 5px;
-    background-image: url(/modules/sr5-marketplace/assets/icons/button_red_60_34.svg);
-    background-size: 103% 110%;
-    background-repeat: no-repeat;
-    z-index: 2;
-    background-color: #ffec1900;
-    line-height: 38px;
-    border-radius: 4px;
-    border: 1px solid #00000000;
-    color: #f4cf0e;
-    text-shadow: #800422 -1px 2px 2px;
-    padding-top: 0.5em;
-}
-.review-request-button{
-    max-width: 12em;
-    background-color: #25221d;
-    color: #bb4f3d;
-    border-color: #782e22;
-}
-.review-request-button.hide-for-non-gm{
-    display: none;
-}
-.marketplace-tab{
-    max-width: 60px;
-    margin-bottom: 5px;
-}
-.item-search-box {
-    width: 100%;
-    padding: 5px;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-.application select:focus, .application select .item-type-selector {
-    border: solid;
-    border-color: rgb(209, 189, 11);
-    border-width: 2px;
-    background-color: #cdbd1114;
-    width: min-content;
-    outline: 2px solid rgb(227 166 10);
-}
-
-select#item-type-selector {
-    width: min-content;
-    max-height: 1.3rem;
-    border: 1px solid #dfbd15;
-    background: #f7ca1e;
-    color: #770808;
-}
-
-.application select#item-type-selector option, .theme-light select #item-type-selector {
-    background-color: #770808;
-    color: #f7ca1e;
-    outline: none;
-}
-.application input[type="text"]#search-box.marketplace-search{
-    margin-top: 1.1em;
-    max-width: 200px;
-    max-height: 1.3rem;
-    border: solid;
-    border-color: rgb(209, 189, 11);
-    border-width: 2px;
-    background-color: #cdbd1114;
-}
-
-:hover.item-type-selector {
-    border: solid;
-    border-color: rgb(138, 20, 4);
-    border-width: 2px;
-    background-color: #8513130d;
-}
-:hover[type="text"]#search-box.marketplace-search{
-    margin-top: 1.1em;
-    max-width: 200px;
-    border: solid;
-    border-color: rgb(138, 20, 4);
-    border-width: 2px;
-    background-color: #8513130d;
-}
-/* Style for the karma field */
-.sr5.item .item-header .source .karma-field {
-    flex: 0.3;  /* Make the karma field take up the remaining space */
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    margin-left: 0.2em;
-}
-.sr5.item .item-header .source .karma-field label {
-    margin-right: 0.1em;
-    font-weight: bold;
-}
-.sr5.item .item-header .source .karma-field .karma-input {
-    width: 2.2em;
-    padding: 0.1em;
-    border: 1px solid #000;
-    color: #fff;
-    margin-right: 0.1em;
-    text-align: right;
-}
-.sr5-marketplace.actor-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;  /* Two equal columns for the second row */
-    grid-template-rows: auto 175px auto;  /* Three rows: header, content (desc and image), and form fields */
-    gap: 8px;  /* Spacing between the grid items */
-    padding: 8px;
-}
-/* Header occupies the full width in the first row */
-.sr5-marketplace.header {
-    grid-column: 1 / span 7;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-/* Form groups in the third row should each be in their own grid cell */
-.sr5-marketplace.form-group {
-    grid-column: span 1;
-    grid-row-start: 4;
-}
-.sr5-marketplace.form-group.attributes {
-    grid-column: span 1;
-    grid-row-start: 2;
-}
-.sr5-marketplace.form-group.attributes.physical {
-    grid-row-start: 1;
-}
-.sr5-marketplace.description-container {
-    margin-bottom: 1em;
-    grid-column: 1 / span 5;
-    grid-row-start: 2;
-    textarea.sr5-marketplace.description-edit{
-        min-height: 150px;
-    }
-}
-.sr5-marketplace.actor-image {
-    grid-column-start: 7;
-    grid-row-start: 2;
-    grid-row-end: 2;
-    img {
-            max-width: 100px;
-            max-height: 100px;
-            object-fit: contain;
-            border: none;
-    }
-}
-.sr5-marketplace.item-catalog{
-    min-width: 300px;
-}
-.sr5-marketplace.description-text {
-    padding: 0.5em;
-    background-color: #f0f0f0;
-    border: 1px solid #ccc;
-    min-height: 3em;
-}
-
-.sr5-marketplace.description-edit {
-    width: 100%;
-    height: 6em;
-    padding: 0.5em;
-}
-.sr5-marketplace.item-box{
-    grid-row: 5;
-    grid-column-start: 1;
-    grid-column-end: 8;
-    border: 1px solid var(--color-border-dark);
-}
-.sr5-marketplace.items-grid{
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1em;
-}
-.sr5-marketplace.items-grid.actor{
-    grid-row: 5;
-    grid-column-start: 1;
-    grid-column-end: 8;
-}
-.sr5-marketplace.edit-description, .sr5-marketplace.save-description {
-    margin-top: 0.5em;
-}
-/* Hide the default checkbox */
-.sr5-marketplace.toggle-switch {
-    display: none;
-}
-
-/* Container for the toggle switch */
-.sr5-marketplace.toggle-container {
-    display: flex;
-    align-items: center;
-}
-
-/* Styling the label to create the toggle background */
-.sr5-marketplace.toggle-label {
-    cursor: pointer;
-    width: 50px;
-    height: 26px;
-    background-color: grey;
-    border-radius: 15px;
-    position: relative;
-    transition: background-color 0.3s;
-}
-
-/* Set blue background when checked */
-.sr5-marketplace.toggle-switch:checked + .sr5-marketplace.toggle-label {
-    background-color: rgb(255, 0, 179);
-}
-
-/* Add the round slider (handle) inside the toggle */
-.sr5-marketplace.toggle-handle {
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 20px;
-    height: 20px;
-    background-color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.3s;
-}
-
-/* Move handle to the right when checked */
-.sr5-marketplace.toggle-switch:checked + .sr5-marketplace.toggle-label .sr5-marketplace.toggle-handle {
-    transform: translateX(24px);
-}
-
-/* Spanner Icon inside the handle */
-.sr5-marketplace.spanner-icon {
-    font-size: 16px;
-    color: grey;
-    transition: color 0.3s;
-}
-
-/* Change spanner color based on toggle state */
-.sr5-marketplace.toggle-switch:checked + .sr5-marketplace.toggle-label .sr5-marketplace.toggle-handle .sr5-marketplace.spanner-icon {
-    color: red;
-}
-.sr5-marketplace.attributes-grid{
-    grid-row: 3;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 1em;
-}
-/* Styles for linked connection display */
-.linked-connection-display {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.linked-connection-display .remove-linked-connection {
-    background: none;
-    border: none;
-    color: red;
-    cursor: pointer;
-}
-button.sr5-marketplace.remove-connection-button {
-    box-shadow: none;
-}
-
-button.sr5-marketplace.remove-connection-button {
-    background: none;
-    border: none;
-    width: 0.1em;
-    margin-left: -0.5em;
-}
-.linked-connection-display .remove-linked-connection i {
-    font-size: 1em;
-}
-plus {
-    display: inline-block;   /* Make it an inline element, similar to an icon */
-    cursor: pointer;         /* Pointer cursor on hover */
-    color: green;            /* Green color for the plus symbol */
-    font-size: 0.8em;          /* Standard size */
-    font-family: FontAwesome; /* Use FontAwesome to show the plus icon */
-    font-weight: 900;        /* Make the plus symbol bold */
-}
-
-/* Minus Element Styling */
-minus {
-    display: inline-block;   /* Make it an inline element, similar to an icon */
-    cursor: pointer;         /* Pointer cursor on hover */
-    color: red;              /* Red color for the minus symbol */
-    font-size: 0.8em;          /* Standard size */
-    font-family: FontAwesome; /* Use FontAwesome to show the minus icon */
-    font-weight: 900;        /* Make the minus symbol bold */
-}
-.green {
-    color: green;
-}
-.red{
-    color: red;
-}
-.darkred{
-    color: rgb(90, 5, 5);
-}
-/* New styles for the 7-column shopping cart grid */
-.basket-grid.seven-columns {
-    display: grid;
-    grid-template-columns: 3fr 1fr 1fr 1fr 1fr 1fr 0.5fr;
-    gap: 8px;
-    align-items: center;
-    padding-bottom: 5px;
-    border-bottom: 1px solid #ccc;
-}
-
-.basket-grid.seven-columns .grid-item,
-.basket-grid.seven-columns .basket-item {
-    text-align: center;
-}
-
-.basket-grid.seven-columns .item-name {
-    justify-self: start;
-    text-align: left;
-}
-/* --- STYLES FOR ACTOR/CONTACT SECTION --- */
-
-.actor-contact-grid {
-    display: grid;
-    grid-template-columns: 1fr 2fr; /* Left column for actor, right for contacts */
-    gap: 20px;
-    margin: 15px 0;
-    padding-top: 15px;
-    border-top: 1px solid #ccc;
-}
-
-.actor-info-col .actor-link {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1.2em;
-}
-
-.actor-info-col .actor-portrait {
     width: 50px;
     height: 50px;
-    border-radius: 5px;
-    border: 1px solid #7a7971;
-    object-fit: cover;
 }
 
-.actor-info-col .actor-funds {
-    margin-top: 10px;
-    font-size: 0.9em;
-}
-
-.funds-after-purchase {
-    color: #5a5a5a;
-}
-
-.contact-cards-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-/* --- NEW CONTACT CARD STYLES --- */
-
-.contact-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-around;
-    padding: 8px;
-    border: 2px solid #ccc;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    position: relative; /* Required for the pseudo-checkbox */
-    width: 100px;
-    height: 120px;
-    box-sizing: border-box;
-}
-
-.contact-card:hover {
-    border-color: #b9a913;
-}
-
-/* The contact image is now also a clickable element */
-.contact-card .contact-icon {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 3px;
-    cursor: pointer; /* Indicates the image is clickable */
-}
-
-/* Allow contact name to wrap to prevent it from being cut off */
-.contact-card .contact-name {
-    font-size: 0.8em;
-    text-align: center;
-    white-space: normal;
-    word-break: break-word;
-    line-height: 1.2;
-}
-
-/* Updated selected style with the new color */
-.contact-card.selected {
-    border-color: #b9a913;
-    box-shadow: 0 0 8px #b9a913;
-}
-
-/* The pure CSS pseudo-checkbox using the ::after element */
-.contact-card.selected::after {
-    font-family: "Font Awesome 5 Free";
-    content: '\f00c'; /* Font Awesome unicode for the check icon */
-    font-weight: 900;
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    color: white;
-    background-color: #b9a913;
+.user-avatar-container {
+    width: 100%; 
+    height: 100%;
     border-radius: 50%;
+    border: 2px solid var(--border-highlight-yellow);
+    overflow: hidden; /* This is needed to keep the scaled image within the circle */
+    background-color: var(--text-dark);
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    /* We remove the transform from the container to fix the bug */
+}
+
+/* This is the module-specific container for the icon button */
+.sr5-marketplace .remove-selected-actor {
+    position: absolute;
+    top: -5px;   
+    right: -5px;
     width: 20px;
     height: 20px;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    /* CRITICAL FIX: Ensure the button is on the highest visual layer */
+    z-index: 150; 
 }
 
-/* --- ALL SETTINGS UI --- */
-/* This makes the app's content use the full available height */
-.sr5-marketplace-settings-app .window-content {
-    display: flex;
-    height: 44vh;
+.sr5-marketplace .remove-selected-actor:hover {
+    transform: scale(1.2);
+}
+
+.sr5-marketplace .remove-selected-actor > .fa-circle-xmark {
+    font-size: 20px;
+    color: var(--color-primary-red-dark); 
+    background-color: white;
+    border-radius: 50%;
+    display: block;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.sr5-marketplace .remove-selected-actor:hover > .fa-circle-xmark {
+    color: var(--color-accent-red);
+}
+
+/* THE FIX: Apply the hover effect directly to the image, NOT the container */
+.marketplace-user-actor:hover .user-avatar {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px var(--color-primary-gold); /* Note: shadow may be clipped by overflow:hidden on the container */
+}
+
+.user-avatar { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+    transition: transform 0.2s ease; /* Smooth the scaling effect */
+    object-position: top;
+}
+
+/* This styles the dropdown box */
+.user-actor-details {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 250px; /* Wider to accommodate the actor list */
+    max-height: 400px;
+    background-color: var(--bg-dark-section);
+    border: 1px solid var(--border-dark);
+    border-radius: 5px;
     padding: 10px;
-    box-sizing: border-box;
+    z-index: 100; /* Below the 'x' button */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
 }
-.sr5-marketplace-settings.settings-wrapper {
-    display: flex;
-    height: 38.5vh;
-}
-.sr5-marketplace-settings-app .notes,
-.sr5-marketplace-settings-app .settings-header-grid {
-    flex-shrink: 0;
-}
-.sr5-marketplace-settings-app .sr5-marketplace-settings {
+
+.marketplace-user-actor.expanded .user-actor-details {
     display: flex;
     flex-direction: column;
-    height: 100%;
     gap: 10px;
 }
-.sr5-marketplace-settings-app .notes {
-    flex-shrink: 0;
-    margin-bottom: 10px;
-}
 
-/* This grid contains the THREE HEADER elements */
-.sr5-marketplace-settings-app .settings-header-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-    flex-shrink: 0;
-    padding-bottom: 5px;
-}
-.sr5-marketplace-settings-app .column-header {
-    padding: 8px;
+.user-actor-details .actor-name {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: var(--text-light);
+    margin: 0 0 8px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-dark);
     text-align: center;
-    border-radius: 3px;
-    border: 1px solid rgba(0,0,0,0.3);
-}
-.sr5-marketplace-settings-app .column-header h3 {
-    margin: 0;
-    font-size: 1.1em; /* Smaller header font */
-    color: #333;
-}
-.sr5-marketplace-settings-app .item-count {
-    font-size: 0.8em;
-    color: #555;
 }
 
-/* Color-code headers to match tags */
-.sr5-marketplace-settings-app .column-header.unique { 
-    background-color: #d1e7dd; border-color: #a3cfbb; 
-}
-.sr5-marketplace-settings-app .column-header.stack { 
-    background-color: #d1ecf1; border-color: #bee5eb; 
-}
-.sr5-marketplace-settings-app .column-header.single { 
-    background-color: #fff3cd; border-color: #ffeeba; 
-}
-
-/* This grid contains the THREE ITEM LISTS and makes them scrollable */
-.sr5-marketplace-settings-app .settings-content-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-    padding: 5px;
-    
-    flex-grow: 1;      /* Allows this element to take up all available vertical space */
-    overflow-y: auto;  /* Adds a scrollbar ONLY if the content is taller than that space */
-    min-height: 0;     /* A crucial flexbox rule that allows the container to shrink */
-}
-
-/* This is the list within each column */
-.sr5-marketplace-settings-app .item-type-list {
+.user-actor-details .actor-funds {
     display: flex;
-    flex-direction: column;
+    justify-content: space-around;
+    color: var(--text-light);
+}
+
+.user-actor-details .actor-funds span {
+    display: flex;
+    align-items: center;
     gap: 5px;
 }
 
-/* Individual cards */
-.sr5-marketplace-settings-app .item-type-card {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 8px;
-    border-radius: 3px;
-    border: 2px solid #ddd;
+/* --------------------------------------
+   4. Navigation Tabs & Filters
+   -------------------------------------- */
+nav.marketplace-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
+.marketplace-tab {
+    position: relative;
+    padding: 1em 2em;
+    border: 1px solid var(--border-tab);
+    border-bottom: none;
+    background-color: var(--bg-tab-inactive);
+    color: var(--text-light);
     cursor: pointer;
-    transition: all 0.2s ease-in-out;
     font-weight: bold;
+    /*clip-path: polygon(10% 0, 90% 0, 100% 100%, 0% 100%);*/
+    border-top-left-radius: 2em;
+    margin-right: -1.5em;
 }
-.sr5-marketplace-settings-app .item-type-card.inactive {
-    background-color: #f0f0f0;
-    color: #aaa;
-    border-color: #e0e0e0;
-    font-weight: normal;
+.marketplace-tab.active, .marketplace-tab:hover { background-color: var(--bg-tab-active); }
+.basket-count {
+    position: absolute; top: 50%; right: 5px; transform: translateY(-50%);
+    background-color: var(--color-primary-red-dark); color: var(--color-primary-yellow);
+    font-size: 12px; font-weight: bold; width: 18px; height: 18px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--text-dark);
 }
-.sr5-marketplace-settings-app .item-type-card.inactive:hover {
-    border-color: #b9a913;
-    color: #333;
+.marketplace-filter {
+    margin-bottom: 10px; padding: 10px; background-color: var(--bg-filter-bar);
+    border-bottom: 1px solid var(--border-light);
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
 }
-.sr5-marketplace-settings-app .item-type-card.active {
-    border-color: #b9a913;
-    box-shadow: 0 0 5px #b9a913;
-    background-color: #fff;
-    cursor: default;
+select#item-type-selector, input#search-box {
+    max-height: 1.3rem; border: 1px solid var(--border-highlight-yellow);
+    background: var(--color-primary-yellow); color: var(--color-primary-red-dark);
 }
+select#item-type-selector option { background-color: var(--color-primary-red-dark); color: var(--color-primary-yellow); }
 
-/* --- SETTINGS TAGS LAYOUT --- */
-.behavior-summary {
-    /* This container now sits below the setting, spanning the full width */
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px; /* A little space between tags */
-    padding: 0 10px 10px 10px; /* Add padding to align with settings content */
-    border-bottom: 1px solid #ddd; /* A subtle separator line */
-    margin-bottom: 10px;
+/* --------------------------------------
+   5. Item Card Grid & Layout (Refined)
+   -------------------------------------- */
+.marketplace-items-grid, .marketplace-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
 }
+.marketplace-item.grid-item, .item-card {
+    background-color: var(--bg-item-card);
+    padding: 0.7em;
+    border: 0.2em solid rgba(89, 15, 15, 0.15);
+    border-radius: 0.7em;
+    display: flex; flex-direction: column;
+}
+.marketplace-item.grid-item:hover, .item-card:hover { background-color: var(--bg-item-card-hover); color: var(--color-primary-yellow); }
+.marketplace-item.grid-item:hover h4, .item-card:hover h4 { color: var(--color-primary-yellow); }
+.grid-show { display: grid; grid-template-columns: 6em 2em auto; gap: 10px; align-items: center; margin-bottom: 10px; }
+.item-image {
+    max-width: 62px; background-color: rgba(95, 95, 95, 0.27);
+    border-radius: 10px; border: 3px outset;
+}
+.item-image img { max-width: 60px; max-height: 60px; object-fit: contain; border: none; }
+.item-details, .card-body { flex-grow: 1; } /* Key for alignment */
+.item-details { display: grid; grid-template-columns: 10em auto; gap: 5px; }
 
-.behavior-tag {
-    padding: 3px 9px;
-    border-radius: 10px;
-    font-size: 11px;
-    border: 1px solid rgba(0,0,0,0.2);
-    font-weight: bold;
-    color: #232323;
-    white-space: nowrap;
-    text-transform: capitalize;
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
-
-    /* This line creates the smooth animation */
-    transition: all 0.2s ease-in-out;
+/* --------------------------------------
+   6. Shopping Basket (Restored & Integrated)
+   -------------------------------------- */
+.basket-content { background-color: var(--bg-basket-content); padding: 10px; border-radius: 6px; }
+.SR5-marketplace.grid-basket, .basket-grid {
+    display: grid;
+    gap: 10px; align-items: center; padding-bottom: 10px;
 }
-
-/* This new rule defines the hover effect */
-.behavior-tag:hover {
-    cursor: help;
-    filter: brightness(95%); /* Slightly darken the background */
-    transform: translateY(-1px); /* Add a subtle "lift" effect */
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.2);
-}
-
-/* Color coding for each behavior type */
-.behavior-tag.unique { 
-    background-color: #d1e7dd; /* Light green */
-    border-color: #a3cfbb; 
-}
-.behavior-tag.stack { 
-    background-color: #d1ecf1; /* Light blue */
-    border-color: #bee5eb; 
-}
-.behavior-tag.single { 
-    background-color: #fff3cd; /* Light yellow */
-    border-color: #ffeeba; 
-}
-
-/* For wider columns, allow multiple cards per row */
-@container (min-width: 200px) {
-    .sr5-marketplace-settings-app .item-type-card {
-        flex-basis: calc(50% - 4px); /* Two cards per row, accounting for gap */
-    }
+.basket-grid.headers, .basket-grid.item-row { grid-template-columns: 3fr 1fr 1fr 1fr 1fr 1fr 0.5fr; }
+.basket-grid .header { font-weight: bold; text-align: center; }
+.basket-item { text-align: center; }
+.basket-item.item-name { display: flex; align-items: center; gap: 5px; text-align: left; }
+.basket-item img.mini-img { width: 20px; border: none; }
+.basket-summary { font-weight: bold; padding: 10px; background-color: var(--bg-basket-summary); border-top: 1px solid var(--border-light); }
+.actor-contact-grid {
+    display: grid; grid-template-columns: 1fr 2fr; gap: 20px;
+    margin: 15px 0; padding-top: 15px; border-top: 1px solid var(--border-light);
 }
 
-.sr5-marketplace-settings-app .item-type-card.inactive {
-    background-color: #f0f0f0;
-    color: #aaa;
-    border-color: #e0e0e0;
+/* --------------------------------------
+   7. Buttons & Icons
+   -------------------------------------- */
+.item-action .add-to-cart {
+    background-color: var(--color-accent-green-button); color: var(--text-button-light);
+    border: none; padding: 5px; border-radius: 5px; cursor: pointer;
 }
-
-.sr5-marketplace-settings-app .item-type-card.inactive:hover {
-    background-color: #e9e9e9;
-    border-color: #ccc;
-    color: #333;
+.send-request-button {
+    background-image: url(/modules/sr5-marketplace/assets/icons/button_red_60_34.svg);
+    background-size: 103% 110%; background-repeat: no-repeat; background-color: transparent;
+    line-height: 38px; border: none; color: var(--text-yellow); text-shadow: var(--shadow-text-button);
 }
+.review-request-button { background-color: var(--text-dark); color: var(--color-primary-red-dark); border-color: var(--color-primary-red-dark); }
+.fa-circle-minus { color: var(--color-primary-red-bright); cursor: pointer; }
+.fa-circle-plus { color: var(--color-accent-green); cursor: pointer; }
+.fa-trash { color: var(--color-primary-red-dark); }
+.sr5-marketplace-yen { color: var(--color-primary-red-bright); }
+.fa-circle-star, .sr5-marketplace-karma { color: var(--color-primary-yellow); }
 
-.sr5-marketplace-settings-app .item-type-card.active {
-    border-color: #b9a913;
-    box-shadow: 0 0 5px #b9a913;
-    background-color: #fff;
-    font-weight: bold;
-    cursor: default;
-}
+/* --------------------------------------
+   8. Responsive Container Queries
+   -------------------------------------- */
+@container (max-width: 900px) { .marketplace-items, .marketplace-items-grid { grid-template-columns: repeat(3, 1fr); } }
+@container (max-width: 600px) { .marketplace-items, .marketplace-items-grid { grid-template-columns: repeat(2, 1fr); } }
+@container (max-width: 400px) { .marketplace-items, .marketplace-items-grid { grid-template-columns: 1fr; } }
 
-@container (max-width: 900px) {
-    .grid-container {
-        grid-template-columns: repeat(3, minmax(150px, 1fr)) minmax(150px, 1fr);
-    }
-
-    .marketplace-items {
-        grid-column: 1 / 4;
-        grid-template-columns: repeat(3, minmax(100px, 1fr));
-    }
-
-    .basket-content {
-        grid-column: 4 / 5;
-        padding: 8px;
-        min-width: 170px;
-    }
-}
-
-@container (max-width: 600px) {
-    .grid-container {
-        grid-template-columns: repeat(2, minmax(100px, 1fr)) minmax(120px, 1fr);
-    }
-
-    .marketplace-items {
-        grid-column: 1 / 3;
-        grid-template-columns: repeat(2, minmax(90px, 1fr));
-    }
-
-    .basket-content {
-        grid-column: 3 / 4;
-        padding: 6px;
-        min-width: 140px;
-    }
-}
-
-@container (max-width: 400px) {
-    .grid-container {
-        grid-template-columns: 1fr minmax(100px, 1fr);
-    }
-
-    .marketplace-items {
-        grid-column: 1 / 2;
-        grid-template-columns: minmax(85px, 1fr);
-    }
-
-    .basket-content {
-        grid-column: 2 / 3;
-        padding: 5px;
-        min-width: 120px;
-    }
-}
+/* --------------------------------------
+   9. Settings UI
+   -------------------------------------- */
+.sr5-marketplace-settings-app .window-content { flex-direction: column; }
+.settings-header-grid, .settings-content-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+.settings-content-grid { flex-grow: 1; overflow-y: auto; }
+.column-header, .item-type-card { padding: 8px; text-align: center; border-radius: 3px; border: 1px solid var(--border-dark); }
+.column-header.unique { background-color: var(--bg-settings-unique); border-color: var(--border-settings-unique); }
+.column-header.stack { background-color: var(--bg-settings-stack); border-color: var(--border-settings-stack); }
+.column-header.single { background-color: var(--bg-settings-single); border-color: var(--border-settings-single); }

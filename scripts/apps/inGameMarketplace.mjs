@@ -2,7 +2,10 @@ import { BasketService } from '../services/basketService.mjs';
 import { PurchaseService } from '../services/purchaseService.mjs';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
-
+// --- DEDICATED FLAG FOR UI STATE ---
+// This is separate from the 'basket' flag and only tracks the selected actor for the UI.
+const FLAG_SCOPE = "sr5-marketplace";
+const FLAG_KEY_SELECTED_ACTOR = "selectedActorUuid";
 /**
  * The main application window for the SR5 Marketplace.
  * This class handles all UI rendering and user interaction.
@@ -14,7 +17,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         this.itemData = game.sr5marketplace.itemData;
         this.tabGroups = { main: "shop" };
         this.basketService = new BasketService();
-        this.purchasingActor = null;
+        this.selectedActorUuid = game.user.getFlag(FLAG_SCOPE, FLAG_KEY_SELECTED_ACTOR) || null;
+        this.purchasingActor = null; // This will be set from the UUID in _prepareContext.
         // The selectedContactId is now loaded as part of the basket state in _prepareContext.
         this.selectedContactId = null; 
         
@@ -38,74 +42,88 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         main: { template: "modules/sr5-marketplace/templates/apps/inGameMarketplace/inGameMarketplace.html" },
     };
 
+    /**
+     * Prepares all data needed for rendering the application template.
+     */
     async _prepareContext(options = {}) {
+        // --- DEFINITIVE ACTOR LOGIC USING FLAGS ---
+        let actorForDisplay = null;
+        
+        // 1. Read the dedicated flag to see if an actor was previously selected.
+        const selectedActorUuid = game.user.getFlag(FLAG_SCOPE, FLAG_KEY_SELECTED_ACTOR);
+        if (selectedActorUuid) {
+            actorForDisplay = await fromUuid(selectedActorUuid);
+        }
+
+        // 2. If no flag is set (e.g., first open), fall back to defaults.
+        if (!actorForDisplay) {
+            actorForDisplay = game.user.character || canvas.tokens.controlled[0]?.actor || null;
+        }
+        
+        // 3. Set the instance property for use in other methods during this render cycle.
+        this.purchasingActor = actorForDisplay;
+
+        let purchasingActorData = null;
+        if (this.purchasingActor) {
+            purchasingActorData = {
+                uuid: this.purchasingActor.uuid,
+                name: this.purchasingActor.name,
+                img: this.purchasingActor.img,
+                nuyen: this.purchasingActor.system.nuyen,
+                karma: this.purchasingActor.system.karma.value
+            };
+        }
+        // --- END DEFINITIVE ACTOR LOGIC ---
+
+        const ownedActors = game.actors.filter(a => a.isOwner).map(a => ({
+            uuid: a.uuid, name: a.name, img: a.img
+        }));
+
         const itemsByType = this.itemData.itemsByType;
         const basket = await this.basketService.getBasket();
         const basketItemCount = basket.shoppingCartItems.length;
         this.selectedContactId = basket.selectedContactId;
 
         const tabs = [{ 
-            id: "shop", 
-            label: game.i18n.localize("SR5.Marketplace.Tab.Shop"), 
-            icon: "fa-store", 
-            cssClass: this.tabGroups.main === "shop" ? "active" : "" 
+            id: "shop", label: game.i18n.localize("SR5.Marketplace.Tab.Shop"), icon: "fa-store", cssClass: this.tabGroups.main === "shop" ? "active" : "" 
         }];
 
         if (game.user.isGM) {
             const pendingCount = PurchaseService.getPendingRequestCount();
             tabs.push({ 
-                id: "orderReview", 
-                label: game.i18n.localize("SR5.Marketplace.Tab.OrderReview"), 
-                icon: "fa-list-check", 
-                cssClass: this.tabGroups.main === "orderReview" ? "active" : "",
-                count: pendingCount 
+                id: "orderReview", label: game.i18n.localize("SR5.Marketplace.Tab.OrderReview"), icon: "fa-list-check", cssClass: this.tabGroups.main === "orderReview" ? "active" : "", count: pendingCount 
             });
         }
 
         if (basketItemCount > 0) {
-            // This is the corrected object for the Shopping Cart tab.
             tabs.push({ 
-                id: "shoppingCart",
-                label: "", // Label is empty to hide the text.
-                icon: "fa-shopping-cart", 
-                cssClass: this.tabGroups.main === "shoppingCart" ? "active" : "", 
-                count: basketItemCount, // The count data is still provided for the badge.
-                tooltip: game.i18n.localize("SR5.Marketplace.ShoppingBasket") // The full name is now the tooltip.
+                id: "shoppingCart", label: "", icon: "fa-shopping-cart", cssClass: this.tabGroups.main === "shoppingCart" ? "active" : "", count: basketItemCount, tooltip: game.i18n.localize("SR5.Marketplace.ShoppingBasket")
             });
         }
         
-        if (this.tabGroups.main === "shoppingCart" && basketItemCount === 0) {
-            this.tabGroups.main = "shop";
-        }
-
+        if (this.tabGroups.main === "shoppingCart" && basketItemCount === 0) { this.tabGroups.main = "shop"; }
+        
         let tabContent;
-        const partialContext = { basket, isGM: game.user.isGM };
+        const partialContext = { basket, isGM: game.user.isGM, purchasingActor: purchasingActorData };
 
         if (this.tabGroups.main === "shoppingCart") {
-            partialContext.items = basket.basketItems;
-            const actor = basket.createdForActor ? await fromUuid(basket.createdForActor) : null;
-            if (actor) {
-                this.purchasingActor = partialContext.purchasingActor = {
-                    doc: actor, name: actor.name, img: actor.img, uuid: actor.uuid,
-                    nuyen: actor.system.nuyen, karma: actor.system.karma.value,
-                    nuyenAfterPurchase: actor.system.nuyen - (basket.totalCost || 0),
-                    karmaAfterPurchase: actor.system.karma.value - (basket.totalKarma || 0)
-                };
-                partialContext.contacts = actor.items.filter(i => i.type === "contact").map(c => ({...c.toObject(false), isSelected: c.id === this.selectedContactId}));
+            const actorForBasket = basket.createdForActor ? await fromUuid(basket.createdForActor) : null;
+            if (actorForBasket) {
+                partialContext.purchasingActor.nuyenAfterPurchase = actorForBasket.system.nuyen - (basket.totalCost || 0);
+                partialContext.purchasingActor.karmaAfterPurchase = actorForBasket.system.karma.value - (basket.totalKarma || 0);
+                partialContext.contacts = actorForBasket.items.filter(i => i.type === "contact").map(c => ({...c.toObject(false), isSelected: c.id === this.selectedContactId}));
             }
             tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.html", partialContext);
         
         } else if (this.tabGroups.main === "orderReview" && game.user.isGM) {
             const allPendingRequests = [];
             for (const user of game.users) {
-                const basketState = await user.getFlag("sr5-marketplace", "basket");
+                const basketState = await user.getFlag(FLAG_SCOPE, "basket");
                 if (basketState?.orderReviewItems?.length > 0) {
                     for (const request of basketState.orderReviewItems) {
                         const actor = request.createdForActor ? await fromUuid(request.createdForActor) : null;
                         allPendingRequests.push({ 
-                            user: user.toJSON(), 
-                            basket: request,
-                            actor: actor ? { name: actor.name, nuyen: actor.system.nuyen, karma: actor.system.karma.value } : null 
+                            user: user.toJSON(), basket: request, actor: actor ? { name: actor.name, nuyen: actor.system.nuyen, karma: actor.system.karma.value } : null 
                         });
                     }
                 }
@@ -122,7 +140,11 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.html", partialContext);
         }
 
-        return { tabs, tabContent, tabGroups: this.tabGroups };
+        return { 
+            tabs, tabContent, tabGroups: this.tabGroups, 
+            actor: purchasingActorData,
+            ownedActors
+        };
     }
 
     async changeTab(group, tab) {
@@ -146,19 +168,52 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     async _onClick(event) {
         event.preventDefault();
         const target = event.target;
-        
-        // --- Tab Navigation & Link Handling ---
+
+        // --- HEADER LOGIC ---
+        const clearButton = target.closest(".remove-selected-actor");
+        if (clearButton) {
+
+            await game.user.unsetFlag("sr5-marketplace", "selectedActorUuid");
+
+            this.purchasingActor = null;
+
+            await this.render(true);
+            return;
+        }
+
+        const selectableActor = target.closest(".selectable-actor");
+        if (selectableActor) {
+            const actorUuid = selectableActor.dataset.actorUuid;
+            await game.user.setFlag("sr5-marketplace", "selectedActorUuid", actorUuid);
+            await this.render(true);
+            return;
+        }
+
+
+        const userActorArea = target.closest(".marketplace-user-actor");
+        if (userActorArea) {
+            userActorArea.classList.toggle('expanded');
+            return;
+        }
+        // --- END OF HEADER LOGIC ---
+
+        // --- TAB LOGIC ---
         const tabButton = target.closest(".marketplace-tab");
         if (tabButton) {
             this.changeTab(tabButton.closest(".marketplace-tabs").dataset.group, tabButton.dataset.tab);
             return;
         }
+        // --- END OF TAB LOGIC ---
+
+        // --- ITEM INTERACTION LOGIC ---
         const entityLink = target.closest("a[data-entity-link]");
         if (entityLink) {
             const uuid = entityLink.dataset.uuid;
             if (uuid) fromUuid(uuid).then(doc => doc?.sheet.render(true));
             return;
         }
+
+
         const contactCard = target.closest(".contact-card");
         if (contactCard) {
             const clickedId = contactCard.dataset.contactId;
@@ -168,10 +223,9 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             this.render(false);
             return;
         }
-
+        
         let actionTaken = false;
         
-        // --- Button Handlers ---
         const cartButton = target.closest("button.add-to-cart");
         const removeButton = target.closest(".remove-from-basket-btn");
         const plusButton = target.closest(".plus");
@@ -181,7 +235,12 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const rejectAllButton = target.closest(".reject-all-btn");
 
         if (cartButton) {
-            await this.basketService.addToBasket(cartButton.dataset.itemId);
+            if (!this.purchasingActor) {
+                ui.notifications.warn(game.i18n.localize("SR5.Marketplace.noActorAssociated"));
+                this.element.querySelector('.marketplace-user-actor')?.classList.add('expanded');
+                return;
+            }
+            await this.basketService.addToBasket(cartButton.dataset.itemId, this.purchasingActor.uuid);
             this.tabGroups.main = "shoppingCart";
             actionTaken = true;
         } else if (removeButton) {
@@ -195,10 +254,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             actionTaken = true;
         } else if (sendRequestButton) {
             if (game.settings.get("sr5-marketplace", "approvalWorkflow")) {
-                // This now correctly passes the user's ID string instead of the whole object.
-                let userId = game.user._id;
-                console.log(`SR5 Marketplace | Submitting purchase request for user ID: ${userId}`);
-                await PurchaseService.submitForReview(userId);
+                await PurchaseService.submitForReview(game.user._id);
             } else {
                 const basket = await this.basketService.getBasket();
                 const actor = basket.createdForActor ? await fromUuid(basket.createdForActor) : null;
@@ -221,6 +277,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         if (actionTaken) {
             this.render(false);
         }
+        // --- END OF ITEM INTERACTION LOGIC ---
     }
     
     async _onChange(event) {

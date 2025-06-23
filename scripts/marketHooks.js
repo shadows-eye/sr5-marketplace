@@ -45,6 +45,7 @@ const initializeTemplates = () => {
     loadTemplates([
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/orderReview.html",
+        "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/marketplaceUserActor.html",
         "modules/sr5-marketplace/templates/item/libraryItem.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.html",
         "modules/sr5-marketplace/templates/apps/marketplace-settings/marketplace-settings.html",

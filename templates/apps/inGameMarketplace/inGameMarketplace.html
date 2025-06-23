@@ -7,17 +7,19 @@
                 {{#if this.label}}
                     <span>{{this.label}}</span>
                 {{/if}}
-                
-                {{#if (and this.count (gt this.count 0) (not (eq ../tabGroups.main this.id)))}}
-                    <span class="basket-count">{{this.count}}</span>
+                {{#if (and this.count (gt this.count 0))}}
+                    <span class="notification-badge">{{this.count}}</span>
                 {{/if}}
             </button>
             {{/each}}
         </nav>
+
+        <div class="header-right">
+            {{> 'modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/marketplaceUserActor.html' actor=actor ownedActors=ownedActors}}
+        </div>
     </header>
       
-      <!-- Render the content for the active tab -->
-      <section class="marketplace-tab-content">
+      <section class="marketplace-body">
         {{{tabContent}}}
       </section>
 </div>
