@@ -4,6 +4,39 @@ import { inGameMarketplace } from "./apps/inGameMarketplace.mjs";
 import { registerBasicHelpers } from "./lib/helpers.js";
 import ItemDataServices from './services/ItemDataServices.mjs';
 import { MarketplaceSettingsApp } from "./apps/MarketplaceSettingsApp.mjs";
+import { PurchaseService } from "./services/purchaseService.mjs";
+
+
+/**
+ * Draws the notification badge on the scene control button.
+ * This function is called by the 'renderSceneControls' hook.
+ * @param {JQuery} html The jQuery object for the scene controls container.
+ */
+function drawBadge(html) {
+    // This guard clause prevents errors if the hook fires at an unexpected time.
+    if (!html || !html.length || !game.user.isGM) return;
+
+    // Get the latest count directly from the service every time the controls are rendered.
+    const pendingCount = PurchaseService.getPendingRequestCount();
+    
+    const controlButton = html.find('[data-tool="sr5-marketplace"]');
+    if (!controlButton.length) return;
+
+    let badge = controlButton.find(".notification-badge");
+    if (!badge.length) {
+        badge = $('<span class="notification-badge"></span>');
+        controlButton.append(badge);
+    }
+
+    if (pendingCount > 0) {
+        badge.text(pendingCount).show();
+    } else {
+        badge.hide();
+    }
+}
+
+// --- HOOKS SECTION ---
+
 // Register helpers and templates
 const initializeTemplates = () => {
     console.log("SR5 Marketplace | Registering templates and helpers...");
@@ -12,6 +45,7 @@ const initializeTemplates = () => {
     loadTemplates([
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/orderReview.html",
+        "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/marketplaceUserActor.html",
         "modules/sr5-marketplace/templates/item/libraryItem.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.html",
         "modules/sr5-marketplace/templates/apps/marketplace-settings/marketplace-settings.html",
@@ -182,9 +216,17 @@ Hooks.once("init", () => {
     console.log("SR5 Marketplace | Initializing module...");
     initializeTemplates();
     initializeSettings();
-    game.sr5marketplace = {
-        itemData: new ItemDataServices() // Initialize the item data service
-    };
+    game.sr5marketplace = { itemData: new ItemDataServices() };
+
+    Hooks.on("updateUser", (user, changes) => {
+        // This now correctly checks for changes to the 'basket' flag.
+        if (game.user.isGM && foundry.utils.hasProperty(changes, "flags.sr5-marketplace.basket")) {
+            // A relevant flag changed, so just ask the UI to redraw the controls.
+            setTimeout(() => {
+                if (ui.controls) ui.controls.render(true);
+            }, 250);
+        }
+    });
 });
 
 /**
@@ -193,29 +235,24 @@ Hooks.once("init", () => {
  */
 Hooks.on("ready", async () => {
     console.log("SR5 Marketplace | Module is ready!");
-
-    // This will show the progress bar on first load.
     await game.sr5marketplace.itemData.initialize();
 
-    // The logic from your previous 'ready' hook is preserved here.
-    // If you are no longer using a 'basket' Item type, this can be removed.
-    console.log("BasketModel Schema:", CONFIG.Item.dataModels?.basket?.defineSchema());
-    const itemTypes = game.system.documentTypes?.Item || {};
-    console.log("Current allowed item types:", Object.keys(itemTypes));
-
-    if (!itemTypes.basket) {
-        itemTypes.basket = {};
-        console.log("Added 'basket' to the allowed item types.");
+    if (game.user.isGM) {
+        game.socket.on("module.sr5-marketplace", () => {
+            // A real-time event was received. Trigger a re-draw after a short delay.
+            setTimeout(() => {
+                if (ui.controls) ui.controls.render(true);
+            }, 250);
+        });
+        // On first load, render the controls to set the initial badge state.
+        setTimeout(() => { if (ui.controls) ui.controls.render(true); }, 1000);
     }
-    console.log("Updated allowed item types:", Object.keys(itemTypes));
 });
 
 // Add a control button for opening the Marketplace
 Hooks.on("getSceneControlButtons", (controls) => {
   const tokenControls = controls["tokens"];
   if (!tokenControls) return;
-
-  // Prevent overwriting existing tool
   if (tokenControls.tools["sr5-marketplace"]) return;
 
   tokenControls.tools["sr5-marketplace"] = {
@@ -224,14 +261,19 @@ Hooks.on("getSceneControlButtons", (controls) => {
     icon: "fas fa-shopping-cart",
     visible: true,
     toggle: true,
-    onChange: () => {
-      try {
-        new inGameMarketplace().render(true);
-      } catch (e) {
-        console.error("Failed to render inGameMarketplace:", e);
+    active: Object.values(ui.windows).some(app => app.id === "inGameMarketplace"),
+    onChange: (toggled) => {
+      const app = Object.values(ui.windows).find(app => app.id === "inGameMarketplace");
+      if (toggled) {
+        if (!app) new inGameMarketplace().render(true);
+      } else {
+        if (app) app.close();
       }
     }
   };
+});
+Hooks.on("renderSceneControls", (app, html) => {
+    drawBadge(html);
 });
 
 Hooks.on("preCreateItem", async (item, data, options, userId) => {

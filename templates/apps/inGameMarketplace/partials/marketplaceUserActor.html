@@ -1,0 +1,32 @@
+<div class="marketplace-user-actor" title="{{#if actor.name}}{{actor.name}}{{else}}{{localize 'SR5.Marketplace.selectActorTooltip'}}{{/if}}">
+    <div class="user-avatar-container">
+        <img src="{{#if actor.img}}{{actor.img}}{{else}}icons/svg/mystery-man.svg{{/if}}" alt="{{actor.name}}" class="user-avatar">
+        
+        {{#if actor}}
+            {{#ifgt ownedActors.length 1}}
+                <span class="remove-selected-actor" title="{{localize 'SR5.Marketplace.RemoveItem'}}">
+                    <i class="fa-solid fa-circle-xmark" id="userActorUuidDelete"></i>
+                </span>
+            {{/ifgt}}
+        {{/if}}
+    </div>
+
+    <div class="user-actor-details">
+        {{#if actor}}
+            <div class="actor-name"><strong>{{actor.name}}</strong></div>
+            <div class="actor-funds">
+                <span><i class="fa-duotone fa-solid fa-circle-yen"></i> {{actor.nuyen}}</span>
+                <span><i class="fa-duotone fa-solid fa-circle-star"></i> {{actor.karma}}</span>
+            </div>
+        {{else}}
+            <h4 class="actor-selection-title">{{localize "SR5.Marketplace.selectAnActor"}}</h4>
+            <div class="actor-selection-grid">
+                {{#each ownedActors as |ownedActor|}}
+                    <div class="selectable-actor" data-actor-uuid="{{ownedActor.uuid}}" title="{{ownedActor.name}}">
+                        <img src="{{ownedActor.img}}" alt="{{ownedActor.name}}" class="selectable-actor-img">
+                    </div>
+                {{/each}}
+            </div>
+        {{/if}}
+    </div>
+</div>

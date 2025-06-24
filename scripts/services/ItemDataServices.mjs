@@ -41,7 +41,7 @@ export default class ItemDataServices {
         
         // Filter out excluded items before categorizing
         const filteredItems = allItems.filter(item => 
-            !["adept_power", "call_in_action", "critter_power", "echo", "host", "metamagic", "sprite_power", "contact"].includes(item.type)
+            !["call_in_action", "critter_power", "host", "sprite_power", "contact"].includes(item.type)
         );
 
         // Helper functions that now correctly operate on the filtered list
@@ -49,6 +49,7 @@ export default class ItemDataServices {
         const getItemsByCategory = (type, cat) => filteredItems.filter(i => i.type === type && i.system.category === cat);
 
         return {
+            filteredItems: { label: "SR5.Marketplace.ItemTypes.AllItems", items: filteredItems },
             rangedWeapons: { label: "SR5.Marketplace.ItemTypes.RangedWeapons", items: getItemsByCategory("weapon", "range") },
             meleeWeapons: { label: "SR5.Marketplace.ItemTypes.MeleeWeapons", items: getItemsByCategory("weapon", "melee") },
             armor: { label: "SR5.Marketplace.ItemTypes.Armor", items: getItemsByType("armor") },
@@ -57,6 +58,9 @@ export default class ItemDataServices {
             devices: { label: "SR5.Marketplace.ItemTypes.Devices", items: getItemsByType("device") },
             equipment: { label: "SR5.Marketplace.ItemTypes.Equipment", items: getItemsByType("equipment") },
             spells: {label: "SR5.Marketplace.ItemTypes.Spells", items: getItemsByType("spell")},
+            metamagic: {label: "SR5.Marketplace.ItemTypes.Metamagic", items: getItemsByType("metamagic")},
+            adeptPower: {label: "SR5.Marketplace.ItemTypes.AdeptPowers", items: getItemsByType("adept_power")},
+            echo: {label: "SR5.Marketplace.ItemTypes.Echo", items: getItemsByType("echo")},
             qualitys: {label: "SR5.Marketplace.ItemTypes.Qualitys", items: getItemsByType("qualitys")},
             complex_form: {label: "SR5.Marketplace.ItemTypes.complex_form", items: getItemsByType("complex_form")},
         };
