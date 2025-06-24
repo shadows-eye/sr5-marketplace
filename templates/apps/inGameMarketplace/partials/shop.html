@@ -13,7 +13,7 @@
         
         <label for="search-box">{{localize "SR5.Marketplace.Search"}}:</label>
         <input type="text" id="search-box" placeholder='{{localize "SR5.Marketplace.Search items..."}}' class="marketplace-search">
-    
+        <div id="filter-tags-container"></div>
         <div class="sr5-marketplace SR5ShopActor-box" id="shopActorDropzone">
             {{#if shopActorBox.shopId}}
                 <a data-entity-link="Actor" data-uuid="{{shopActorBox.shopUuid}}">
@@ -41,6 +41,6 @@
     </div>
     
     <div id="marketplace-items" class="marketplace-items-grid">
-        {{> 'modules/sr5-marketplace/templates/item/libraryItem.html' items=selectedItems }}
+        {{> 'modules/sr5-marketplace/templates/item/libraryItem.html' items=selectedItems purchasingActor=purchasingActor }}
     </div>
 </div>

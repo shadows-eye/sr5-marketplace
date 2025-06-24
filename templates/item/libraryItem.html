@@ -43,26 +43,25 @@
 
         <div class="item-details">
             <h4 class="marketplace_h4">{{this.name}}</h4>
-
-            <!-- Spell-specific logic: show drain instead of rating or availability -->
+            
+            <!-- This details display logic is also now correct -->
             {{#if (eq this.type "spell")}}
                 <div class="item-drain">{{localize "SR5.Marketplace.system.spell.drain"}}: {{this.system.drain}}</div>
-
-            <!-- For qualities, adept powers, and complex forms, show Karma and skip availability -->
-            {{else if (or (eq this.type "quality") (eq this.type "adept_power") (eq this.type "complex_form"))}}
-                <!-- Skip showing availability or rating for these types -->
-
-            <!-- For other types, show availability and rating -->
+            {{else if (eq this.type "quality")}}<!-- Intentionally empty -->
+            {{else if (eq this.type "adept_power")}}<!-- Intentionally empty -->
+            {{else if (eq this.type "complex_form")}}<!-- Intentionally empty -->
+            {{else if (eq this.type "metamagic")}}<!-- Intentionally empty -->
+            {{else if (eq this.type "echo")}}<!-- Intentionally empty -->
             {{else}}
                 <div class="item-all">{{localize "SR5.Marketplace.system.avail.avail"}}: {{this.system.technology.availability}}</div>
-                <div class="item rating">{{localize "SR5.Marketplace.system.technology.rating"}}: {{this.system.technology.rating}}</div>
+                <div class="item-rating">{{localize "SR5.Marketplace.system.technology.rating"}}: {{this.system.technology.rating}}</div>
             {{/if}}
 
-            <!-- Show essence for bioware and cyberware -->
             {{#if (eq this.type "bioware")}}
-            <div class="item-essence">{{localize "SR5.Marketplace.system.essence"}}: {{this.system.essence}}</div>
-            {{else if (eq this.type "cyberware")}}
-            <div class="item-essence">{{localize "SR5.Marketplace.system.essence"}}: {{this.system.essence}}</div>
+                <div class="item-essence">{{localize "SR5.Marketplace.system.essence"}}: {{this.system.essence}}</div>
+            {{/if}}
+            {{#if (eq this.type "cyberware")}}
+                <div class="item-essence">{{localize "SR5.Marketplace.system.essence"}}: {{this.system.essence}}</div>
             {{/if}}
         </div>
 </div>

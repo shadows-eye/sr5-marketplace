@@ -1,5 +1,6 @@
 import { BasketService } from '../services/basketService.mjs';
 import { PurchaseService } from '../services/purchaseService.mjs';
+import { SearchService } from '../services/searchTag.mjs';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 // --- DEDICATED FLAG FOR UI STATE ---
@@ -18,9 +19,9 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         this.tabGroups = { main: "shop" };
         this.basketService = new BasketService();
         this.selectedActorUuid = game.user.getFlag(FLAG_SCOPE, FLAG_KEY_SELECTED_ACTOR) || null;
-        this.purchasingActor = null; // This will be set from the UUID in _prepareContext.
-        // The selectedContactId is now loaded as part of the basket state in _prepareContext.
+        this.purchasingActor = null;
         this.selectedContactId = null; 
+        this.searchService = null;
         
         this._onClick = this._onClick.bind(this);
         this._onChange = this._onChange.bind(this);
@@ -136,7 +137,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             partialContext.itemsByType = itemsByType;
             partialContext.selectedKey = this.selectedKey || "rangedWeapons";
             this.selectedKey = partialContext.selectedKey;
-            partialContext.selectedItems = itemsByType[this.selectedKey]?.items || [];
+            partialContext.selectedItems = itemsByType[this.selectedKey]?.items || [];           
             tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.html", partialContext);
         }
 
@@ -152,12 +153,26 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         await this.render(false);
     }
     
+    /**
+     * This method is called after the application is rendered.
+     * It's the correct place to add event listeners and initialize helper services.
+     */
     _onRender(context, options) {
         const html = this.element;
+        // Main application listeners
         html.removeEventListener("click", this._onClick);
         html.removeEventListener("change", this._onChange);
         html.addEventListener("click", this._onClick);
         html.addEventListener("change", this._onChange);
+        
+        if (this.tabGroups.main === "shop") {
+            // We pass 'this.element' which is the application's root HTML element.
+            this.searchService = new SearchService(this.element);
+            this.searchService.initialize();
+        } else {
+            // Ensure the service is cleaned up if we switch away from the shop tab.
+            this.searchService = null;
+        }
     }
 
     /**
@@ -172,11 +187,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         // --- HEADER LOGIC ---
         const clearButton = target.closest(".remove-selected-actor");
         if (clearButton) {
-
             await game.user.unsetFlag("sr5-marketplace", "selectedActorUuid");
-
             this.purchasingActor = null;
-
             await this.render(true);
             return;
         }
@@ -188,7 +200,6 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             await this.render(true);
             return;
         }
-
 
         const userActorArea = target.closest(".marketplace-user-actor");
         if (userActorArea) {
@@ -212,7 +223,6 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             if (uuid) fromUuid(uuid).then(doc => doc?.sheet.render(true));
             return;
         }
-
 
         const contactCard = target.closest(".contact-card");
         if (contactCard) {
@@ -279,16 +289,27 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         }
         // --- END OF ITEM INTERACTION LOGIC ---
     }
+
     
+    /**
+     * Handles all delegated change events inside the application.
+     * This can include changing the item category dropdown, updating an item's rating,
+     * or updating values in the GM's order review screen.
+     * @param {Event} event The triggering change event from the DOM.
+     * @private
+     */
     async _onChange(event) {
         const target = event.target;
         let actionTaken = false;
         
+        // --- LOGIC RESTORED: Handle changes to the item rating dropdown ---
         if (target.matches(".item-rating-select")) {
             const basketItemId = target.dataset.basketItemId;
             const newRating = parseInt(target.value, 10);
             if (basketItemId) {
-                const state = await this.basketService.getFullBasketState();
+                // This logic is from your original file and is now correctly restored.
+                // It requires a getFullBasketState method on the basketService.
+                const state = await this.basketService.getFullBasketState(); 
                 const item = state.shoppingCartItems.find(i => i.basketItemId === basketItemId);
                 if (item) item.selectedRating = newRating;
                 await this.basketService.saveFullBasketState(state);
@@ -296,6 +317,10 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             }
         } else if (target.matches("#item-type-selector")) {
             this.selectedKey = target.value;
+            // Use the service to clear filters when changing categories
+            if (this.searchService) {
+                this.searchService.clearAllFilters();
+            }
             actionTaken = true;
         } else if (target.matches(".gm-review-input")) {
             const requestBlock = target.closest(".pending-request-block");
