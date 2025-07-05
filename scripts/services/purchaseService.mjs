@@ -17,7 +17,6 @@ export class PurchaseService {
         if (!user) return;
 
         const basketService = new BasketService();
-        // This now correctly gets the basket for the specific user.
         const basket = await basketService.getBasket(userId); 
 
         if (!basket.shoppingCartItems || basket.shoppingCartItems.length === 0) {
@@ -45,7 +44,6 @@ export class PurchaseService {
         basket.selectedContactId = null;
         this._recalculateTotals(basket); // Recalculate totals to zero them out
         
-        // This now correctly saves the basket for the specific user.
         await basketService.saveBasket(basket, userId);
         ui.notifications.info("Your purchase request has been submitted to the GM for review.");
         game.socket.emit("module.sr5-marketplace", { type: "new_request", senderId: user.id, basketUUID: newRequest.basketUUID });
@@ -55,7 +53,9 @@ export class PurchaseService {
         const user = game.users.get(userId);
         if (!user) return;
         const basketService = new BasketService();
-        const basket = await basketService.getBasket.call({user});
+        
+        // --- FIX: Pass userId as an argument instead of using .call() ---
+        const basket = await basketService.getBasket(userId);
 
         if (!basket?.orderReviewItems) return;
 
@@ -68,21 +68,25 @@ export class PurchaseService {
         foundry.utils.setProperty(item, property, value);
         this._recalculateTotals(request);
 
-        await basketService.saveBasket.call({user}, basket);
+        // --- FIX: Pass userId as an argument instead of using .call() ---
+        await basketService.saveBasket(basket, userId);
     }
 
     static async rejectBasket(userId, basketUUID) {
         const user = game.users.get(userId);
         if (!user) return;
         const basketService = new BasketService();
-        const basket = await basketService.getBasket.call({user});
+        
+        // --- FIX: Pass userId as an argument instead of using .call() ---
+        const basket = await basketService.getBasket(userId);
         if (!basket?.orderReviewItems) return;
 
         const initialCount = basket.orderReviewItems.length;
         basket.orderReviewItems = basket.orderReviewItems.filter(r => r.basketUUID !== basketUUID);
 
         if (basket.orderReviewItems.length < initialCount) {
-            await basketService.saveBasket.call({user}, basket);
+            // --- FIX: Pass userId as an argument instead of using .call() ---
+            await basketService.saveBasket(basket, userId);
             ui.notifications.warn(`Purchase request for ${user.name} has been rejected.`);
             game.socket.emit("module.sr5-marketplace", { type: "request_resolved", userId });
         }
@@ -92,22 +96,30 @@ export class PurchaseService {
         const user = game.users.get(userId);
         if (!user) return;
         const basketService = new BasketService();
-        const basket = await basketService.getBasket.call({user});
+        
+        // --- FIX: Pass userId as an argument instead of using .call() ---
+        const basket = await basketService.getBasket(userId);
         const requestIndex = basket.orderReviewItems?.findIndex(r => r.basketUUID === basketUUID);
         if (requestIndex === undefined || requestIndex === -1) return;
 
         const [requestToProcess] = basket.orderReviewItems.splice(requestIndex, 1);
         const actor = await fromUuid(requestToProcess.createdForActor);
-        if (!actor) return;
+        if (!actor) {
+            ui.notifications.error(`Could not find the actor associated with this request.`);
+            return;
+        }
 
         const success = await this.directPurchase(actor, requestToProcess);
         if (success) {
-            await basketService.saveBasket.call({user}, basket);
+            // After a successful purchase, save the updated basket (with the request removed).
+            // --- FIX: Pass userId as an argument instead of using .call() ---
+            await basketService.saveBasket(basket, userId);
             ui.notifications.info(`Purchase approved for ${user.name}.`);
             game.socket.emit("module.sr5-marketplace", { type: "request_resolved", userId });
         } else {
+            // If the purchase fails (e.g., not enough funds), add the request back to the queue.
             basket.orderReviewItems.splice(requestIndex, 0, requestToProcess);
-            await basketService.saveBasket.call({user}, basket);
+            await basketService.saveBasket(basket, userId);
         }
     }
 
@@ -132,9 +144,10 @@ export class PurchaseService {
 
         const itemsToCreate = [];
         for (const basketItem of basket.basketItems) {
-            const sourceItem = await fromUuid(basketItem.itemUuid);
+            const sourceItem = await fromUuid(basketItem.basketItemUuid);
             if (sourceItem) {
                 const itemData = sourceItem.toObject();
+                // Ensure quantity is handled correctly, especially for items that don't stack.
                 itemData.system.quantity = basketItem.buyQuantity * (itemData.system.quantity || 1);
                 itemData.system.technology.rating = basketItem.selectedRating;
                 itemData.system.technology.cost = basketItem.cost;

@@ -65,7 +65,7 @@ export class BasketService {
         }
         
         const basketItem = {
-            basketItemId: item.uuid, 
+            basketItemUuid: item.uuid,
             buyQuantity: 1,
             name: item.name, 
             img: item.img, 
@@ -81,11 +81,11 @@ export class BasketService {
         ui.notifications.info(`'${item.name}' added to basket.`);
     }
     
-    async removeFromBasket(basketItemId) {
-        if (!basketItemId) return;
+    async removeFromBasket(basketItemUuid) {
+        if (!basketItemUuid) return;
         const basket = await this.getBasket();
         const initialCount = basket.shoppingCartItems.length;
-        basket.shoppingCartItems = basket.shoppingCartItems.filter(i => i.basketItemId !== basketItemId);
+        basket.shoppingCartItems = basket.shoppingCartItems.filter(i => i.basketItemUuid !== basketItemUuid);
 
         if (basket.shoppingCartItems.length < initialCount) {
             const updatedBasket = this._recalculateTotals(basket);
@@ -94,15 +94,15 @@ export class BasketService {
         }
     }
 
-    async updateItemQuantity(basketItemId, change) {
-        if (!basketItemId || !change) return;
+    async updateItemQuantity(basketItemUuid, change) {
+        if (!basketItemUuid || !change) return;
         const basket = await this.getBasket();
-        const basketItem = basket.shoppingCartItems.find(i => i.basketItemId === basketItemId);
+        const basketItem = basket.shoppingCartItems.find(i => i.basketItemUuid === basketItemUuid);
         if (!basketItem) return;
 
         basketItem.buyQuantity += change;
         if (basketItem.buyQuantity <= 0) {
-            basket.shoppingCartItems = basket.shoppingCartItems.filter(i => i.basketItemId !== basketItemId);
+            basket.shoppingCartItems = basket.shoppingCartItems.filter(i => i.basketItemUuid !== basketItemUuid);
         }
         
         const updatedBasket = this._recalculateTotals(basket);
