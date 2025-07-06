@@ -257,7 +257,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
 
   tokenControls.tools["sr5-marketplace"] = {
     name: "sr5-marketplace",
-    title: game.i18n.localize("SR5.Marketplace.Title"),
+    title: game.i18n.localize("SR5.PurchaseScreen"),
     icon: "fas fa-shopping-cart",
     visible: true,
     toggle: true,

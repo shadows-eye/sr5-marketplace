@@ -10,7 +10,7 @@
     </div>
 
     {{#each basket.shoppingCartItems}}
-    <div class="basket-grid item-row seven-columns" data-basket-item-id="{{this.basketItemId}}">
+    <div class="basket-grid item-row seven-columns" data-basket-item-id="{{this.basketItemUuid}}">
         <a class="basket-item item-name" data-entity-link="Item" data-uuid="{{this.itemUuid}}">
             <img class="mini-img" src="{{this.img}}" alt="{{this.name}}">
             <span class="item-tag">{{this.name}}</span>
@@ -27,7 +27,7 @@
         </div>
         <div class="basket-item item-rating">
             {{#if this.rating}}
-            <select class="item-rating-select" data-basket-item-id="{{this.basketItemId}}">
+            <select class="item-rating-select" data-basket-item-id="{{this.basketItemUuid}}">
                 {{#range 1 12}}
                 <option value="{{this}}" {{#ifeq this ../selectedRating}}selected{{/ifeq}}>{{this}}</option>
                 {{/range}}

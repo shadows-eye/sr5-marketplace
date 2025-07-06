@@ -2,11 +2,8 @@
 
 /* ==================================================================
 //
-// SR5 Marketplace Stylesheet - v2.2 (Definitive Version)
+// SR5 Marketplace Stylesheet - v1.0
 //
-// - Merges all original module styles with the new layout structure.
-// - Restores all necessary styles for the shopping basket and other UI elements.
-// - Corrects item card display logic.
 // - Centralizes all colors in :root variables for easy theming.
 //
 // ==================================================================
@@ -76,6 +73,102 @@
     --shadow-inset-dark: inset 0 0 8px rgba(0, 0, 0, 0.5);
 }
 
+/* ======================================
+   Custom Foundry Application Window Header Styling
+   ====================================== */
+
+/* This targets the header bar of ONLY your marketplace application */
+.sr5-marketplace .window-header {
+    background: var(--bg-basket-content);
+    /*border-bottom: 2px solid #5d142b; A dark red separator line */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* This targets the title text within your specific header */
+.sr5-marketplace .window-header .window-title {
+    color: black;
+    /* We remove the text-shadow as it won't look good on a white background */
+    text-shadow: none; 
+}
+
+/* This targets the close 'X' button specifically */
+.sr5-marketplace .window-header button.header-control[data-action="close"] {
+    background-color: var(--border-light); 
+    color: var(--border-highlight-red); 
+    border-radius: 50%; 
+    padding: 1px;
+    border: 1px solid #b5b5b5;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Add a nice hover effect to the close button */
+.sr5-marketplace .window-header button.header-control[data-action="close"]:hover {
+    background-color: #c8c8c8;
+    color: var(--color-primary-yellow-hover);
+    text-shadow: 0 0 5px var(--color-primary-yellow);
+    transform: scale(1.1);
+}
+
+/* 1. Main Header Container */
+/* This rule modifies your existing header to act as a positioning layer. */
+.sr5-marketplace .marketplace-header {
+    position: relative; /* This is crucial for layering child elements. */
+    display: flex;
+    justify-content: space-between;
+    
+    padding: 0; /* Padding will be handled by child elements. */
+    background-color: #000; /* The black base background you requested. */
+    border-bottom: 2px solid var(--color-primary-gold);
+    min-height: 4em; /* Ensures the header has a consistent height. */
+    max-height: 4.5em;
+}
+
+/* 2. The Background Image Layer (using ::before) */
+/* This adds the background image behind all other header content. */
+.sr5-marketplace .marketplace-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Make sure this path to your background image is correct. */
+    background-image: url('../assets/header-bg.webp'); 
+    background-size: cover;
+    background-position: center;
+    opacity: 0.3; /* Makes the image subtle. */
+    z-index: 1; /* Sits just above the black background. */
+}
+
+/* 3. The Gradient Layer (using ::after) */
+/* This adds the red gradient on top of the background image. */
+.sr5-marketplace .marketplace-header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 70%; /* Controls how far the gradient extends from the left. */
+    height: 100%;
+    background: linear-gradient(to right, #55101e 30%, rgba(85, 16, 30, 0) 100%);
+    z-index: 2; /* Sits on top of the image. */
+    /* This allows clicks to pass through the gradient to the tabs below. */
+    pointer-events: none; 
+}
+
+/* 4. Ensure Header Content (Tabs & Icon) is on the Top Layer */
+.sr5-marketplace .marketplace-header > * {
+    position: relative;
+    z-index: 3; /* Places all direct children of the header above the pseudo-elements. */
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+}
+
+/* 5. Add Padding to Align Tabs */
+/* This adds some space so the tabs aren't right against the edge. */
+.sr5-marketplace .marketplace-tabs {
+    padding-top: 2.3em;
+}
+
 /* --------------------------------------
    2. Base Application & Typography
    -------------------------------------- */
@@ -110,22 +203,6 @@
     display: grid;
     grid-template-columns: repeat(5, 1fr) 25px auto; /* Adapted for basket toggle */
     gap: 15px;
-}
-
-/* --------------------------------------
-   NEW: Header User Actor Display
-   -------------------------------------- */
-/* --------------------------------------
-   Definitive Header User Actor Display CSS
-   -------------------------------------- */
-.marketplace-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.header-right {
-    position: relative; /* For positioning the details dropdown */
 }
 
 /* The main container is the positioning parent and defines the hover area */
@@ -288,13 +365,13 @@ nav.marketplace-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
     border: 1px solid var(--text-dark);
 }
 .marketplace-filter {
-    margin-bottom: 10px; 
-    padding: 10px; 
-    background-color: var(--bg-filter-bar);
-    border-bottom: 1px solid var(--border-light);
-    display: flex; 
-    align-items: center; 
-    gap: 10px; 
+    margin-bottom: 10px;
+    padding: 10px;
+    /* background-color: var(--bg-filter-bar); */
+    /* border-bottom: 1px solid var(--border-light); */
+    display: flex;
+    align-items: center;
+    column-gap: 10px;
     flex-wrap: wrap;
 }
 .marketplace-filter label {
@@ -453,6 +530,8 @@ select#item-type-selector option {
     gap: 15px;
     flex-shrink: 0; /* Prevents the header from shrinking */
     padding-bottom: 5px;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: medium;
 }
 
 /* The content grid is now the ONLY element that scrolls, which fixes the click issue */
@@ -559,6 +638,9 @@ select#item-type-selector option {
     color: rgba(0, 0, 0, 0.7); /* A darker text color for readability */
     margin-top: 5px; /* Adds some space below the h3 */
     border: 1px solid rgba(0,0,0,0.2);
+}
+.column-header.unique, .column-header.stack, .column-header.single {
+    padding-left: 2em;
 }
 
 /* Apply specific colors based on the parent header's class */

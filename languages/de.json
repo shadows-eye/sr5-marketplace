@@ -11,7 +11,8 @@
                     "name": "Item Verbesserung landen zurücksetzen",
                     "hint": "Dies ermöglicht es die Karma Werte und den Kosten und Verfügbarkeiten von Welt- und Kompendiumsartikeln, ihre Flags für Karma neu zu initialisieren. Wenn Sie diese Einstellung auf true setzen, werden alle Änderungen, die Sie an Karma, Kosten oder Verfügbarkeit der Items vorgenommen haben, rückgängig gemacht."
                 },
-                "notes": "Klicke auf einen Artikeltyp in einer Spalte, um ihn dieser Verhaltenskategorie zuzuordnen. Änderungen werden sofort gespeichert.",
+                "title": "Marktplatz Einstellungen",
+                "description": "Klicke auf einen Artikeltyp in einer Spalte, um ihn der Verhaltenskategorie zuzuordnen. Änderungen werden sofort gespeichert. Einzigartige Artikel können nur einmal pro Charakter gekauft werden, stapelbare Artikel werden im selben Artikel gestapelt und einzelne Artikel können mehrmals pro Bestellung als eine Artikelinstanz bestellt werden.",
                 "CategoryUnique": "Einzigartige Artikel",
                 "StackingItems": "Stapelfähige Artikel",
                 "SingleItems": "Einzelne Artikel",
