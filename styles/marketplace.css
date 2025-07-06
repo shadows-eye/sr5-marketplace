@@ -34,7 +34,7 @@
     --bg-dark-section-hover: #3d3d3d;
     --bg-tab-active: #555;
     --bg-tab-inactive: #333;
-    --bg-item-card: #e7c93ee0;
+    --bg-item-card: #d3af0cd6;
     --bg-item-card-hover: var(--color-primary-red-dark);
     --bg-filter-bar: #00000017;
     --bg-basket-content: #aaaaaa83;
@@ -91,22 +91,46 @@
     text-shadow: none; 
 }
 
-/* This targets the close 'X' button specifically */
+/* ======================================
+   "Glossy Metal" Close X Button Style
+   ====================================== */
 .sr5-marketplace .window-header button.header-control[data-action="close"] {
-    background-color: var(--border-light); 
-    color: var(--border-highlight-red); 
-    border-radius: 50%; 
+    background: none;
+    border: 1px solid rgba(0, 0, 0, 0.6);
+    min-width: unset !important;
+    min-height: unset !important;
+    max-width: 14px !important;
+    height: 14px !important;
+    line-height: 12px !important;
+    font-size: 7px !important;
     padding: 1px;
-    border: 1px solid #b5b5b5;
-    transition: all 0.2s ease-in-out;
+    border-radius: 50%;
+    padding: 0;
+    /* margin-right: 0px; */
+    background-color: #2d0404;
+    background-image: /* 1. Top-down glossy sheen */ linear-gradient(to bottom, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.2) 45%, transparent 55%), /* 2. Radial highlight to give it a convex, metallic look */ radial-gradient(circle at 50% 40%, #e70000, var(--color-primary-red-dark) 80%);
+    box-shadow: inset 0 1px 0px rgba(255, 255, 255, 0.4), 0 1px 2px rgba(0, 0, 0, 0.4);
+    color: white;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
+    transition: all 0.1s ease-in-out;
 }
 
-/* Add a nice hover effect to the close button */
+/* Hover state adds the "glow" effect */
 .sr5-marketplace .window-header button.header-control[data-action="close"]:hover {
-    background-color: #c8c8c8;
-    color: var(--color-primary-yellow-hover);
-    text-shadow: 0 0 5px var(--color-primary-yellow);
-    transform: scale(1.1);
+    background-color: var(--color-primary-red); /* Slightly brighter red on hover */
+    color: white;
+
+    /* The Glow Effect */
+    box-shadow: 
+        inset 0 1px 0px rgba(255, 255, 255, 0.4),
+        0 1px 2px rgba(0, 0, 0, 0.3),
+        0 0 10px var(--color-primary-red-bright);
+}
+
+/* Active (pressed) state gives a satisfying click effect */
+.sr5-marketplace .window-header button.header-control[data-action="close"]:active {
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+    transform: translateY(1px); /* Pushes the button down slightly */
 }
 
 /* 1. Main Header Container */
@@ -384,7 +408,7 @@ select#item-type-selector {
     max-height: 1.8rem;
     padding: 2px 5px;
     border: 1px solid var(--border-highlight-yellow);
-    background: var(--color-primary-yellow);
+    background: var(--bg-item-card);
     color: var(--color-primary-red-dark);
 }
 
