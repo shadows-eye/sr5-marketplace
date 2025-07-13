@@ -6,6 +6,7 @@ export const MARKETPLACE_SETTINGS_TEMPLATE = "modules/sr5-marketplace/templates/
 export class MarketplaceSettingsApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     constructor(options = {}) {
+        options.classes = [...(options.classes || []), "sr5-marketplace", "sr5-marketplace-settings-app"];
         super(options);
     }
 
@@ -27,11 +28,11 @@ export class MarketplaceSettingsApp extends HandlebarsApplicationMixin(Applicati
     static get DEFAULT_OPTIONS() {
         return foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
             id: "sr5-marketplace-settings",
-            title: game.i18n.localize("SR5.Marketplace.Settings.WindowTitle"),
-            classes: ["sr5-marketplace", "sr5-marketplace-settings-app"],
             position: { width: 800, height: 650, top: 100, left: 150 },
-            // The 'template' property is now correctly handled by static PARTS.
-            resizable: true
+            window: {
+                title: "SR5.Marketplace.Settings.WindowTitle",
+                resizable: true
+            }
         });
     }
 

@@ -13,6 +13,7 @@ const FLAG_KEY_SELECTED_ACTOR = "selectedActorUuid";
  */
 export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2) {
     constructor(options = {}) {
+        options.classes = [...(options.classes || []), "sr5-marketplace", "sr5-market"];
         super(options);
         // Use the single, globally initialized instance of ItemDataServices
         this.itemData = game.sr5marketplace.itemData;
@@ -31,14 +32,20 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     static get DEFAULT_OPTIONS() {
         return foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
             id: "inGameMarketplace",
-            title: game.i18n.localize("SR5.Marketplace.Title"),
-            classes: ["sr5-marketplace", "sr5-market"],
             position: { width: 910, height: 800, top: 50, left: 120 },
-            resizable: true,
-            reactive: false
+            
+            // This is the corrected structure for window properties in ApplicationV2
+            window: {
+                title: "SR5.PurchaseScreen", // The localization key
+                resizable: true              // This makes the window resizable
+            }
         });
     }
 
+    /**
+     * @override
+     * This defines the main template for the application.
+     */
     static PARTS = {
         main: { template: "modules/sr5-marketplace/templates/apps/inGameMarketplace/inGameMarketplace.html" },
     };
@@ -174,7 +181,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             this.searchService = null;
         }
     }
-
+    
     /**
      * Handles all delegated click events inside the application.
      * This is the final, complete version with all fixes implemented.
@@ -183,47 +190,50 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     async _onClick(event) {
         event.preventDefault();
         const target = event.target;
-
-        // --- HEADER LOGIC ---
-        const clearButton = target.closest(".remove-selected-actor");
-        if (clearButton) {
-            await game.user.unsetFlag("sr5-marketplace", "selectedActorUuid");
-            this.purchasingActor = null;
-            await this.render(true);
-            return;
-        }
-
-        const selectableActor = target.closest(".selectable-actor");
-        if (selectableActor) {
-            const actorUuid = selectableActor.dataset.actorUuid;
-            await game.user.setFlag("sr5-marketplace", "selectedActorUuid", actorUuid);
-            await this.render(true);
-            return;
-        }
-
+        
+        // --- HEADER & ACTOR SELECTION LOGIC ---
+        // This block handles all clicks within the actor selection dropdown in the header.
         const userActorArea = target.closest(".marketplace-user-actor");
         if (userActorArea) {
+            // If a specific actor in the dropdown list is clicked, select it.
+            const selectableActor = target.closest(".selectable-actor");
+            if (selectableActor) {
+                const actorUuid = selectableActor.dataset.actorUuid;
+                // Save the explicit selection to a flag for persistence.
+                await game.user.setFlag("sr5-marketplace", "selectedActorUuid", actorUuid);
+                userActorArea.classList.remove('expanded'); // Close the dropdown.
+                this.render(false); // Re-render to show the new selection.
+                return;
+            }
+
+            // If the 'x' button is clicked, clear the selection.
+            const clearButton = target.closest(".remove-selected-actor");
+            if (clearButton) {
+                await game.user.unsetFlag("sr5-marketplace", "selectedActorUuid");
+                this.render(false);
+                return;
+            }
+
+            // If the main avatar area is clicked, just toggle the dropdown.
             userActorArea.classList.toggle('expanded');
             return;
         }
-        // --- END OF HEADER LOGIC ---
 
-        // --- TAB LOGIC ---
+        // --- TAB NAVIGATION ---
         const tabButton = target.closest(".marketplace-tab");
         if (tabButton) {
             this.changeTab(tabButton.closest(".marketplace-tabs").dataset.group, tabButton.dataset.tab);
             return;
         }
-        // --- END OF TAB LOGIC ---
 
-        // --- ITEM INTERACTION LOGIC ---
+        // --- Document and Contact Link Handling ---
         const entityLink = target.closest("a[data-entity-link]");
         if (entityLink) {
             const uuid = entityLink.dataset.uuid;
             if (uuid) fromUuid(uuid).then(doc => doc?.sheet.render(true));
             return;
         }
-
+        
         const contactCard = target.closest(".contact-card");
         if (contactCard) {
             const clickedId = contactCard.dataset.contactId;
@@ -233,9 +243,10 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             this.render(false);
             return;
         }
-        
+
         let actionTaken = false;
         
+        // --- All Other Button Handlers ---
         const cartButton = target.closest("button.add-to-cart");
         const removeButton = target.closest(".remove-from-basket-btn");
         const plusButton = target.closest(".plus");
@@ -246,31 +257,32 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         if (cartButton) {
             if (!this.purchasingActor) {
-                ui.notifications.warn(game.i18n.localize("SR5.Marketplace.noActorAssociated"));
-                this.element.querySelector('.marketplace-user-actor')?.classList.add('expanded');
+                //ui.notifications.warn("Please select an actor before adding items.");
+                this.element.querySelector('.marketplace-user-actor')?.click();
                 return;
             }
             await this.basketService.addToBasket(cartButton.dataset.itemId, this.purchasingActor.uuid);
             this.tabGroups.main = "shoppingCart";
             actionTaken = true;
         } else if (removeButton) {
-            await this.basketService.removeFromBasket(removeButton.closest("[data-basket-item-id]")?.dataset.basketItemId);
+            // This now correctly reads 'data-basket-item-uuid'
+            await this.basketService.removeFromBasket(removeButton.closest("[data-basket-item-uuid]")?.dataset.basketItemUuid, this.purchasingActor.uuid);
             actionTaken = true;
         } else if (plusButton) {
-            await this.basketService.updateItemQuantity(plusButton.closest("[data-basket-item-id]")?.dataset.basketItemId, 1);
+            await this.basketService.updateItemQuantity(plusButton.closest("[data-basket-item-uuid]")?.dataset.basketItemUuid, this.purchasingActor.uuid, 1);
             actionTaken = true;
         } else if (minusButton) {
-            await this.basketService.updateItemQuantity(minusButton.closest("[data-basket-item-id]")?.dataset.basketItemId, -1);
+            await this.basketService.updateItemQuantity(minusButton.closest("[data-basket-item-uuid]")?.dataset.basketItemUuid, this.purchasingActor.uuid, -1);
             actionTaken = true;
         } else if (sendRequestButton) {
             if (game.settings.get("sr5-marketplace", "approvalWorkflow")) {
-                await PurchaseService.submitForReview(game.user._id);
+                await PurchaseService.submitForReview(game.user.id);
             } else {
                 const basket = await this.basketService.getBasket();
                 const actor = basket.createdForActor ? await fromUuid(basket.createdForActor) : null;
                 if (actor) {
                     await PurchaseService.directPurchase(actor, basket);
-                    await this.basketService.saveBasket({ shoppingCartItems: [] });
+                    await this.basketService.saveBasket(this.basketService._getDefaultBasketState());
                 }
             }
             actionTaken = true;
@@ -287,7 +299,6 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         if (actionTaken) {
             this.render(false);
         }
-        // --- END OF ITEM INTERACTION LOGIC ---
     }
 
     

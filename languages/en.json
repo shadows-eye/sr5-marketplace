@@ -11,7 +11,8 @@
                     "name": "Reset Item Enhancement Load",
                     "hint": "This will allow the karma values and cost/availability of world and compendium items to get their flags reinitialized. Setting this setting to true will undo any changes you made to Karma, cost, or Availability of the items."
                 },
-                "notes": "Click on an item type in any column to assign it to that behavior category. Changes are saved instantly.",
+                "title": "Marketplace Settings",
+                "description": "Click on an item type in any column to assign it to that behavior category. Changes are saved instantly. Unique items can only be purchased once per character, stacking items will be stacked in the same item, and single items can be ordered multiple times per order as one Item Instance.",
                 "CategoryUnique": "Unique Items",
                 "StackingItems": "Stacking Items",
                 "SingleItems": "Single Items",
@@ -65,9 +66,11 @@
             "OrderRejected": "Sorry but the following items can not be confirmed",
             "noPurchaseRequests": "There are no purchase requests",
             "purchaseReview": "purchase review",
-            "requestActor": "From ",
+            "requestActor": "Request From",
+            "selectContact": "Select a contact to Order with",
             "Items": "Items",
-            "buyQuntity": "Buy Quantity",
+            "buyQuantity": "Buy Quantity",
+            "quantityPerPack": "Quantity / Pack",
             "actions": "Actions",
             "system": {
                 "avail":{
