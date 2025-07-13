@@ -257,8 +257,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         if (cartButton) {
             if (!this.purchasingActor) {
-                ui.notifications.warn("Please select an actor before adding items.");
-                this.element.find('.marketplace-user-actor').addClass('expanded');
+                //ui.notifications.warn("Please select an actor before adding items.");
+                this.element.querySelector('.marketplace-user-actor')?.click();
                 return;
             }
             await this.basketService.addToBasket(cartButton.dataset.itemId, this.purchasingActor.uuid);
