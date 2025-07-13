@@ -1,4 +1,5 @@
-<div class="marketplace-user-actor" title="{{#if actor.name}}{{actor.name}}{{else}}{{localize 'SR5.Marketplace.selectActorTooltip'}}{{/if}}">
+<div class="marketplace-user-actor" title="{{#if actor.name}}{{actor.name}}{{else}}{{localize 'SR5.Marketplace.selectActorTooltip'}}{{/if}}" 
+    data-actor-uuid="{{actor.uuid}}">
     <div class="user-avatar-container">
         <img src="{{#if actor.img}}{{actor.img}}{{else}}icons/svg/mystery-man.svg{{/if}}" alt="{{actor.name}}" class="user-avatar">
         

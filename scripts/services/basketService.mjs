@@ -51,40 +51,69 @@ export class BasketService {
     /**
      * Adds an item to the current user's active shopping cart.
      * @param {string} itemUuid The UUID of the item to add.
+     * @param {string} actorUuid The UUID of the actor this basket is for.
      */
-    async addToBasket(itemUuid) {
-        if (!itemUuid) return;
-        const basket = await this.getBasket(); // Gets current user's basket
+    async addToBasket(itemUuid, actorUuid) {
+        if (!itemUuid || !actorUuid) {
+            ui.notifications.error("Cannot add item to cart without a purchasing actor.");
+            return;
+        }
+
+        const basket = await this.getBasket();
+        // This is the fix: The createdForActor is now always set from the actorUuid passed by the application.
+        basket.createdForActor = actorUuid;
+
         const item = await fromUuid(itemUuid);
         if (!item) return ui.notifications.warn(`Item with UUID ${itemUuid} not found.`);
 
-        if (!basket.createdForActor) {
-            const actor = game.user.character || canvas.tokens.controlled[0]?.actor;
-            if (actor) basket.createdForActor = actor.uuid;
-            else return ui.notifications.warn("Please select a token or assign a character to your user.");
+        const itemBehaviors = game.settings.get("sr5-marketplace", "itemTypeBehaviors") || {};
+        const behavior = itemBehaviors[item.type] || 'single';
+        const existingItemInCart = basket.shoppingCartItems.find(i => i.itemUuid === item.uuid);
+
+        if (behavior === 'unique') {
+            if (existingItemInCart) {
+                return ui.notifications.warn(`'${item.name}' is a unique item and is already in your cart.`);
+            }
+            const actor = await fromUuid(basket.createdForActor);
+            if (actor && actor.items.some(i => i.name === item.name && i.type === item.type)) {
+                return ui.notifications.warn(`Your character, ${actor.name}, already possesses the unique item: '${item.name}'.`);
+            }
+        }
+
+        if (behavior === 'stack' && existingItemInCart) {
+            existingItemInCart.buyQuantity += 1;
+        } else {
+            const basketItem = {
+                basketItemUuid: "basket." + foundry.utils.randomID(),
+                itemUuid: item.uuid,
+                buyQuantity: 1,
+                name: item.name, 
+                img: item.img, 
+                cost: item.system.technology?.cost || 0,
+                karma: item.system.karma || 0, 
+                availability: item.system.technology?.availability || "0",
+                essence: item.system.essence || 0, 
+                itemQuantity: behavior === 'stack' ? 10 : (item.system.quantity || 1),
+                rating: item.system.technology?.rating || 1, 
+                selectedRating: item.system.technology?.rating || 1,
+            };
+            basket.shoppingCartItems.push(basketItem);
         }
         
-        const basketItem = {
-            basketItemUuid: item.uuid,
-            buyQuantity: 1,
-            name: item.name, 
-            img: item.img, 
-            cost: item.system.technology?.cost || 0,
-            karma: item.system.karma || 0, availability: item.system.technology?.availability || "0",
-            essence: item.system.essence || 0, itemQuantity: item.system.quantity || 1,
-            rating: item.system.technology?.rating || 1, selectedRating: item.system.technology?.rating || 1,
-        };
-
-        basket.shoppingCartItems.push(basketItem);
-        this._recalculateTotals(basket);
-        await this.saveBasket(basket);
-        ui.notifications.info(`'${item.name}' added to basket.`);
+        const updatedBasket = this._recalculateTotals(basket);
+        await this.saveBasket(updatedBasket);
+        //ui.notifications.info(`'${item.name}' added to basket.`);
     }
     
+    /**
+     * Removes an item from the active shopping cart using its unique instance ID.
+     * @param {string} basketItemUuid The unique ID of the item instance in the cart.
+     */
     async removeFromBasket(basketItemUuid) {
         if (!basketItemUuid) return;
         const basket = await this.getBasket();
         const initialCount = basket.shoppingCartItems.length;
+        
         basket.shoppingCartItems = basket.shoppingCartItems.filter(i => i.basketItemUuid !== basketItemUuid);
 
         if (basket.shoppingCartItems.length < initialCount) {
@@ -94,17 +123,50 @@ export class BasketService {
         }
     }
 
-    async updateItemQuantity(basketItemUuid, change) {
+    /**
+     * Updates the quantity of an item in the basket based on its behavior setting.
+     * @param {string} basketItemUuid The unique ID of the item instance to act upon.
+     * @param {number} change The amount to change by (+1 or -1).
+     */
+    async updateItemQuantity(basketItemUuid, actorUuid,change) {
         if (!basketItemUuid || !change) return;
-        const basket = await this.getBasket();
-        const basketItem = basket.shoppingCartItems.find(i => i.basketItemUuid === basketItemUuid);
-        if (!basketItem) return;
 
-        basketItem.buyQuantity += change;
-        if (basketItem.buyQuantity <= 0) {
-            basket.shoppingCartItems = basket.shoppingCartItems.filter(i => i.basketItemUuid !== basketItemUuid);
-        }
+        const basket = await this.getBasket();
+        const itemBehaviors = game.settings.get("sr5-marketplace", "itemTypeBehaviors") || {};
         
+        const targetItem = basket.shoppingCartItems.find(i => i.basketItemUuid === basketItemUuid);
+        if (!targetItem) return;
+
+        const sourceItem = await fromUuid(targetItem.itemUuid);
+        if (!sourceItem) return;
+
+        const behavior = itemBehaviors[sourceItem.type] || 'single';
+
+        switch (behavior) {
+            case 'stack':
+                targetItem.buyQuantity += change;
+                if (targetItem.buyQuantity <= 0) {
+                    await this.removeFromBasket(basketItemUuid);
+                    return; // Exit as removeFromBasket already saves and updates.
+                }
+                break;
+
+            case 'single':
+                if (change > 0) {
+                    // For "single" items, adding quantity means adding a new, separate instance of that item.
+                    await this.addToBasket(targetItem.itemUuid, actorUuid);
+                    return; // Exit as addToBasket already saves and updates.
+                } else {
+                    // The minus button on a single item just removes that one instance.
+                    await this.removeFromBasket(basketItemUuid, actorUuid);
+                    return; // Exit as removeFromBasket already saves and updates.
+                }
+
+            case 'unique':
+                // The UI should prevent this, but we do nothing here for safety.
+                return;
+        }
+
         const updatedBasket = this._recalculateTotals(basket);
         await this.saveBasket(updatedBasket);
     }

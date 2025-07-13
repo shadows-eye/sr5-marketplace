@@ -66,9 +66,11 @@
             "OrderRejected": "Sorry but the following items can not be confirmed",
             "noPurchaseRequests": "There are no purchase requests",
             "purchaseReview": "purchase review",
-            "requestActor": "From ",
+            "requestActor": "Request From",
+            "selectContact": "Select a contact to Order with",
             "Items": "Items",
-            "buyQuntity": "Buy Quantity",
+            "buyQuantity": "Buy Quantity",
+            "quantityPerPack": "Quantity / Pack",
             "actions": "Actions",
             "system": {
                 "avail":{

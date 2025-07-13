@@ -66,9 +66,11 @@
             "OrderRejected": "Entschuldigung, aber die folgenden Artikel können nicht bestätigt werden",
             "noPurchaseRequests": "Es gibt keine Kaufanfragen",
             "purchaseReview": "Kaufüberprüfung",
-            "requestActor": "Von ",
+            "requestActor": "Anfrage von",
+            "selectContact": "Wählen Sie einen Kontakt der die Bestellung besorgt",
             "Items": "Gegenstände",
-            "buyQuntity": "Kaufmenge",
+            "buyQuantity": "Kaufmenge",
+            "quantityPerPack": "Menge / Packung",
             "actions": "Aktionen",
             "system": {
                 "avail":{
