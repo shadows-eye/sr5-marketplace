@@ -12,7 +12,8 @@ export class IndexService {
         top: "80px",
         left: "50%",                     // Position the left edge at the center of the screen
         transform: "translateX(-50%)",    // Translate the element left by half of its own width
-        width: "1200px",
+        width: "90vw",                      // Use 90% of the viewport width
+        maxWidth: "1200px",                 // But don't go wider than 1200px
         backgroundColor: "rgba(0, 0, 0, 0.8)",
         color: "white",
         padding: "10px",
