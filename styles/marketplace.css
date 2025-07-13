@@ -14,6 +14,7 @@
    -------------------------------------- */
 :root {
     /* Primary & Accent Colors */
+    --header: #2b0000;
     --color-primary-red-dark: #770808;
     --color-primary-red: #a10e0e;
     --color-primary-red-bright: #c50000;
@@ -77,16 +78,21 @@
    Custom Foundry Application Window Header Styling
    ====================================== */
 
+/* This targets the entire marketplace application */
+.sr5-marketplace {
+    box-shadow: 0 0 10px var(--text-yellow);
+}
+
 /* This targets the header bar of ONLY your marketplace application */
 .sr5-marketplace .window-header {
-    background: var(--bg-basket-content);
+    background: var(--header);
     /*border-bottom: 2px solid #5d142b; A dark red separator line */
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    max-height: 2em;
 }
 
 /* This targets the title text within your specific header */
 .sr5-marketplace .window-header .window-title {
-    color: black;
     /* We remove the text-shadow as it won't look good on a white background */
     text-shadow: none; 
 }
