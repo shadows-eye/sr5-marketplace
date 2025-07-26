@@ -34,9 +34,9 @@
   "esmodules": [
     "scripts/marketHooks.js",
     "scripts/services/actorItemServices.mjs",
-    "scripts/services/itemDataServices.mjs",
-    "main.mjs"
+    "scripts/services/itemDataServices.mjs"
   ],
+
   "includes": [
     "./assets/**",
     "./packs/**",

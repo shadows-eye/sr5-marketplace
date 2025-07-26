@@ -8,7 +8,7 @@ export class ShopActorSheet extends ActorSheet {
     static get defaultOptions() {
         return foundry.utils.mergeObject(super.defaultOptions, {
             classes: ["sr5", "sheet", "actor", "shop", "sr5-marketplace-shop"],
-            template: "modules/sr5-marketplace/templates/actors/shop-actor-sheet.html",
+            template: "modules/sr5-marketplace/templates/actor/shop-actor-sheet.html",
             width: 600,
             height: 650,
             tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "main" }]
@@ -24,7 +24,7 @@ export class ShopActorSheet extends ActorSheet {
         context.system = this.actor.system;
         
         // Prepare the employees array as a string for the textarea.
-        context.shopEmployees = this.actor.system.shop?.employees?.join('\n') || "";
+        //context.shopEmployees = this.actor.system.shop?.employees?.join('\n') || "";
 
         return context;
     }

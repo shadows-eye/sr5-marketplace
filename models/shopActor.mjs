@@ -1,28 +1,28 @@
-const { fields } = foundry.data;
+
 
 /**
  * Defines and returns the custom ShopActor classes.
  * This must be called during the 'ready' hook.
  * @returns {{ShopActor: typeof Actor, ShopActorData: typeof foundry.abstract.TypeDataModel}}
  */
-export function defineShopActorClasses() {
+export function defineShopActorClass() {
     const SR5Actor = CONFIG.Actor.documentClass;
     const CharacterData = CONFIG.Actor.dataModels.character;
-
+    const SHOP_ACTOR_TYPE = "sr5-marketplace.shop";
     class ShopActorData extends CharacterData {
         static defineSchema() {
             const parentSchema = super.defineSchema();
-            const shopSchema = {
-                owner: new fields.StringField({ initial: "" }),
-                employees: new fields.ArrayField(new fields.StringField()),
-                connection: new fields.StringField({ initial: "" }),
-                modifierValue: new fields.NumberField({ initial: 0 }),
-                modifierType: new fields.StringField({ initial: "discount", choices: ["discount", "fee"] })
-            };
-            return { ...parentSchema, shop: new fields.SchemaField(shopSchema) };
+            const shopSchema = () => ({
+                owner: new foundry.data.fields.StringField({ initial: "" }),
+                employees: new foundry.data.fields.ArrayField(new foundry.data.fields.StringField()),
+                connection: new foundry.data.fields.StringField({ initial: "" }),
+                modifierValue: new foundry.data.fields.NumberField({ initial: 0 }),
+                modifierType: new foundry.data.fields.StringField({ initial: "discount", choices: ["discount", "fee"] })
+            });
+            return { ...parentSchema, shop: new foundry.data.fields.SchemaField(shopSchema()) };
         }
     }
-
+    CONFIG.Actor.dataModels[SHOP_ACTOR_TYPE] = ShopActorData;
     // --- Define the Actor Class ---
     // This class inherits all methods from the base SR5Actor.
     class ShopActor extends SR5Actor {

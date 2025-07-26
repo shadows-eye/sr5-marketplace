@@ -5,6 +5,11 @@ import { registerBasicHelpers } from "./lib/helpers.js";
 import ItemDataServices from './services/ItemDataServices.mjs';
 import { MarketplaceSettingsApp } from "./apps/MarketplaceSettingsApp.mjs";
 import { PurchaseService } from "./services/purchaseService.mjs";
+import { ShopActorSheet } from '../sheets/ShopActorSheet.mjs';
+import { defineShopActorClass } from '../models/shopActor.mjs';
+
+// --- CONSTANTS ---
+const SHOP_ACTOR_TYPE = "sr5-marketplace.shop";
 
 
 /**
@@ -52,7 +57,6 @@ const initializeTemplates = () => {
         "modules/sr5-marketplace/templates/apps/marketplace-settings/partials/settings-card.html"
     ]);
 };
-
 // Initialize module settings
 const initializeSettings = () => {
     console.log("SR5 Marketplace | Initializing settings...");
@@ -216,6 +220,16 @@ Hooks.once("init", () => {
     console.log("SR5 Marketplace | Initializing module...");
     initializeTemplates();
     initializeSettings();
+    // Register the custom ShopActor class
+    defineShopActorClass();
+    // Register the custom ShopActorSheet
+    Actors.registerSheet("sr5-marketplace", ShopActorSheet, {
+            types: [SHOP_ACTOR_TYPE],
+            makeDefault: true,
+            label: "SR5.Marketplace.Shop.SheetName"
+        });
+
+
     game.sr5marketplace = { itemData: new ItemDataServices() };
 
     Hooks.on("updateUser", (user, changes) => {
