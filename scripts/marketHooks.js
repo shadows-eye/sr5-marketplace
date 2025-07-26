@@ -289,34 +289,3 @@ Hooks.on("getSceneControlButtons", (controls) => {
 Hooks.on("renderSceneControls", (app, html) => {
     drawBadge(html);
 });
-
-Hooks.on("preCreateItem", async (item, data, options, userId) => {
-    if (item.type === "sr5-marketplace.basket") {
-        console.log("SR5 Marketplace | Ensuring BasketModel is applied...");
-
-        // Assign an ID if missing (before Foundry processes it)
-        if (!data._id) {
-            data._id = foundry.utils.randomID();
-            console.warn(`SR5 Marketplace | Assigned new ID: ${data._id}`);
-        }
-
-        // Apply default values from the model
-        const defaultData = {
-            description: { long: "Default long description", short: "Default short description" },
-            marketbasket: { 
-                basketQuantity: 1, 
-                basketPrice: 0, 
-                basketAvailability: "0", 
-                basketItems: [] 
-            },
-            totalCost: 0,
-            totalEssence: 0,
-            totalKarma: 0
-        };
-
-        // Merge default data into the new item
-        foundry.utils.mergeObject(data, { system: defaultData }, { overwrite: false });
-
-        console.log("SR5 Marketplace | Default BasketModel schema applied.");
-    }
-});
