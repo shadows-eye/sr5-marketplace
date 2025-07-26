@@ -1,48 +1,50 @@
 /**
- * Defines and returns the custom ShopActorSheet class using ApplicationV2.
- * This must be called during the 'init' hook.
- * @returns {typeof ActorSheetV2}
+ * A custom V1 Actor Sheet for the ShopActor type.
+ * It extends the base Foundry ActorSheet to provide a unique, compatible interface.
  */
-export function defineShopActorSheetClass() {
-    const { ActorSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
+export class ShopActorSheet extends ActorSheet {
 
-    class ShopActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
-        /** @override */
-        static get DEFAULT_OPTIONS() {
-            return {
-                ...super.DEFAULT_OPTIONS,
-                id: "sr5-marketplace-shop-sheet",
-                classes: ["sr5-marketplace", "sheet", "actor", "shop"],
-                template: "modules/sr5-marketplace/templates/actors/shop-actor-sheet.html",
-                width: 600,
-                height: 650,
-                tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "main" }],
-                events: {
-                    "change input, change select, change textarea": "_onChangeInput"
-                }
-            };
-        }
-
-        /** @override */
-        async _prepareContext(options) {
-            const context = await super._prepareContext(options);
-            context.system = this.document.system;
-            context.shopEmployees = this.document.system.shop.employees.join('\n');
-            return context;
-        }
-
-        /** @override */
-        async _onChangeInput(event) {
-            const input = event.currentTarget;
-            let value = input.value;
-            const name = input.name;
-
-            if (name === "system.shop.employees") {
-                value = value.split('\n').map(e => e.trim()).filter(e => e);
-            }
-            await this.document.update({ [name]: value });
-        }
+    /** @override */
+    static get defaultOptions() {
+        return foundry.utils.mergeObject(super.defaultOptions, {
+            classes: ["sr5", "sheet", "actor", "shop", "sr5-marketplace-shop"],
+            template: "modules/sr5-marketplace/templates/actors/shop-actor-sheet.html",
+            width: 600,
+            height: 650,
+            tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "main" }]
+        });
     }
 
-    return ShopActorSheet;
+    /**
+     * @override
+     * Prepare the data context for rendering the sheet.
+     */
+    async getData(options) {
+        const context = await super.getData(options);
+        context.system = this.actor.system;
+        
+        // Prepare the employees array as a string for the textarea.
+        context.shopEmployees = this.actor.system.shop?.employees?.join('\n') || "";
+
+        return context;
+    }
+
+    /**
+     * @override
+     * Handle form submissions to update the actor.
+     */
+    _updateObject(event, formData) {
+        const expandedData = foundry.utils.expandObject(formData);
+        
+        // Convert the 'employees' textarea string back into an array of UUIDs.
+        if (expandedData.system?.shop?.employees) {
+            expandedData.system.shop.employees = expandedData.system.shop.employees
+                .split('\n')
+                .map(e => e.trim())
+                .filter(e => e); // Remove any empty lines
+        }
+
+        const finalData = foundry.utils.flattenObject(expandedData);
+        return this.document.update(finalData);
+    }
 }

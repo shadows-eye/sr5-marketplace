@@ -1,67 +1,100 @@
 console.debug("SR5 Marketplace | Loading module into FoundryVTT");
 import { BasketModel } from "./models/basketModel.mjs";
 import { BasketItemSheet } from "./sheets/BasketItemSheet.mjs";
-import { defineShopActorSheetClass } from './sheets/ShopActorSheet.mjs';
-import { shopSchema, shopActorMethods } from './scripts/actors/shopActor.mjs';
+import { ShopActorSheet } from './sheets/ShopActorSheet.mjs';
+import { shopSchema } from './scripts/actors/shopActor.mjs';
 
-// --- Placeholders ---
-class ShopActorData extends foundry.abstract.TypeDataModel {}
-class ShopActor extends Actor {}
+// --- CONSTANTS ---
+const SHOP_ACTOR_TYPE = "sr5-marketplace.shop";
+const BASKET_ITEM_TYPE = "sr5-marketplace.basket";
+
+// --- REGISTRATION FUNCTIONS ---
 
 /**
- * Hook for Phase 1: Registration of placeholders.
+ * Function to register custom Item types and their data models.
  */
-Hooks.once("init", () => {
-    console.log("SR5 Marketplace | Phase 1: Initializing Module...");
-    const actorType = "sr5-marketplace.shop";
+const registerItemTypes = () => {
+    console.log("SR5 Marketplace | Registering custom Item Data Models...");
+    CONFIG.Item.dataModels[BASKET_ITEM_TYPE] = BasketModel;
+};
 
-    CONFIG.Actor.dataModels[actorType] = ShopActorData;
-    CONFIG.Actor.documentClass[actorType] = ShopActor;
-    CONFIG.Item.dataModels["sr5-marketplace.basket"] = BasketModel;
+/**
+ * Function to register all custom document sheets.
+ */
+const registerSheets = () => {
+    console.log("SR5 Marketplace | Registering Document Sheets...");
     
-    const ShopActorSheet = defineShopActorSheetClass();
+    // Register the custom sheet for the Shop actor type
     Actors.registerSheet("sr5-marketplace", ShopActorSheet, {
-        types: [actorType],
+        types: [SHOP_ACTOR_TYPE],
         makeDefault: true,
         label: "SR5.Marketplace.Shop.SheetName"
     });
+
+    // Register the custom sheet for the Basket item type
     Items.registerSheet("sr5-marketplace", BasketItemSheet, {
-        types: ["sr5-marketplace.basket"],
+        types: [BASKET_ITEM_TYPE],
         makeDefault: true,
         label: "SR5.Marketplace.Basket.SheetName"
     });
+};
+
+// --- HOOK-BASED LOGIC ---
+
+/**
+ * Main initialization hook. Runs once when the module is initialized.
+ */
+const onInit = () => {
+    console.log("SR5 Marketplace | Initializing Module...");
+    registerItemTypes();
+    registerSheets();
+};
+
+/**
+ * Main ready hook. Runs once when the game is ready.
+ */
+const onReady = () => {
+    console.log("SR5 Marketplace | Module is ready!");
+};
+
+/**
+ * THE BAIT: Runs BEFORE any actor is created.
+ * We trick the system into thinking our "shop" is a "character".
+ */
+Hooks.on("preCreateActor", (document, data, options, userId) => {
+    if (data.type !== SHOP_ACTOR_TYPE) return;
+    
+    console.log(`SR5 Marketplace | BAIT: Intercepting creation of "${data.name}".`);
+    
+    // Flag this creation so we can identify it in the next hook.
+    options.isMarketplaceShop = true; 
+    
+    // Temporarily change the type to "character".
+    document.updateSource({ type: "character" });
 });
 
 /**
- * Hook for Phase 2: Finalize classes by re-wiring their inheritance.
+ * THE SWITCH: Runs AFTER an actor has been created.
+ * We switch the type back and add our custom data.
  */
-Hooks.once("ready", () => {
-    console.log("SR5 Marketplace | Phase 2: Finalizing ShopActor Classes...");
+Hooks.on("createActor", async (actor, options, userId) => {
+    if (!options.isMarketplaceShop) return;
 
-    // --- THE FIX: Use the correct key "character" ---
-    const RealBaseDataModel = CONFIG.Actor.dataModels.character;
-    const RealBaseActor = CONFIG.Actor.documentClass; // This is the _SR5Actor class
+    console.log(`SR5 Marketplace | SWITCH: Finalizing "${actor.name}".`);
 
-    if (!RealBaseDataModel || !RealBaseActor) {
-        console.error("SR5 Marketplace | SR5 base classes not found. Cannot finalize ShopActor.");
-        return;
+    // Create the default data for our custom 'shop' section.
+    const shopDefaults = {};
+    for (const [name, field] of Object.entries(shopSchema)) {
+        shopDefaults[name] = field.getInitialValue();
     }
-
-    // Re-wire the prototype chain.
-    Object.setPrototypeOf(ShopActorData.prototype, RealBaseDataModel.prototype);
-    Object.setPrototypeOf(ShopActor.prototype, RealBaseActor.prototype);
-
-    // Redefine the schema on our now-correctly-extended data model.
-    ShopActorData.defineSchema = function() {
-        const parentSchema = RealBaseDataModel.defineSchema();
-        return {
-            ...parentSchema,
-            shop: new foundry.data.fields.SchemaField(shopSchema)
-        };
-    };
     
-    // Add our custom methods to the ShopActor's prototype.
-    Object.assign(ShopActor.prototype, shopActorMethods);
-
-    console.log("SR5 Marketplace | ShopActor successfully extended from SR5 system.");
+    // Update the actor to its final state.
+    await actor.update({
+        "type": SHOP_ACTOR_TYPE,
+        "system.shop": shopDefaults
+    });
 });
+
+// Register the main lifecycle hooks
+Hooks.once("init", onInit);
+Hooks.once("ready", onReady);
