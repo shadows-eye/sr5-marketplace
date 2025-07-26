@@ -20,8 +20,10 @@
     "systems": [
       {
         "id": "shadowrun5e",
-        "type": "system",
-        "compatibility": {}
+        "type": "required",
+        "compatibility": {
+          "minimum": "0.27.0"
+        }
       }
     ]
   },
@@ -60,6 +62,9 @@
   "documentTypes": {
     "Item": {
       "basket": {}
+    },
+    "Actor": {
+      "shop": {}
     }
   },
   "url": "#{URL}#",
