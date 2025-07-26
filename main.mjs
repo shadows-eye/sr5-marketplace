@@ -16,7 +16,7 @@ Hooks.once("init", () => {
     const actorType = "sr5-marketplace.shop";
 
     CONFIG.Actor.dataModels[actorType] = ShopActorData;
-    CONFIG.Actor.documentClasses[actorType] = ShopActor;
+    CONFIG.Actor.documentClass[actorType] = ShopActor;
     CONFIG.Item.dataModels["sr5-marketplace.basket"] = BasketModel;
     
     const ShopActorSheet = defineShopActorSheetClass();
