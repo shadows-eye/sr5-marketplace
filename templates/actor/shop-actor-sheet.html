@@ -1,36 +1,69 @@
-<fieldset class="sr5-marketplace-shop-fields">
-    <legend>{{localize "SR5.Marketplace.Shop.Title"}}</legend>
+{{!-- The entire content is now wrapped in a <form> tag --}}
+<form class="{{cssClass}}" autocomplete="off">
 
-    <div class="form-group">
-        <label>{{localize "SR5.Marketplace.Shop.OwnerUuid"}}</label>
-        <div class="form-fields">
-            <input type="text" name="system.shop.owner" value="{{system.shop.owner}}" placeholder="Actor UUID of the owner"/>
+    {{!-- Sheet Header --}}
+    <header class="sheet-header">
+        <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}"/>
+        <div class="header-fields">
+            <h1 class="charname"><input name="name" type="text" value="{{actor.name}}" placeholder="Name"/></h1>
         </div>
-    </div>
+    </header>
 
-    <div class="form-group">
-        <label>{{localize "SR5.Marketplace.Shop.ConnectionUuid"}}</label>
-        <div class="form-fields">
-            <input type="text" name="system.shop.connection" value="{{system.shop.connection}}" placeholder="Item UUID of the connection"/>
-        </div>
-    </div>
-    
-    <div class="form-group">
-        <label>{{localize "SR5.Marketplace.Shop.Modifier"}}</label>
-        <div class="form-fields">
-            <input type="number" name="system.shop.modifierValue" value="{{system.shop.modifierValue}}" class="modifier-value"/>
-            <select name="system.shop.modifierType">
-                {{#select system.shop.modifierType}}
-                <option value="discount">{{localize "SR5.Marketplace.Shop.Discount"}}</option>
-                <option value="fee">{{localize "SR5.Marketplace.Shop.Fee"}}</option>
-                {{/select}}
-            </select>
-        </div>
-    </div>
+    {{!-- Sheet Tab Navigation --}}
+    <nav class="sheet-tabs tabs" data-group="primary">
+        <a class="item" data-tab="shop-details">Shop Details</a>
+        <a class="item" data-tab="biography">Biography</a>
+    </nav>
 
-    <div class="form-group stacked">
-        <label>{{localize "SR5.Marketplace.Shop.Employees"}} <span>({{localize "SR5.Marketplace.Shop.OneUuidPerLine"}})</span></label>
-        {{!-- Using a textarea is a simple way to manage an array of strings --}}
-        
-    </div>
-</fieldset>
+    {{!-- Sheet Body --}}
+    <section class="sheet-body">
+
+        {{!-- Shop Details Tab --}}
+        <div class="tab" data-tab="shop-details">
+            <fieldset class="sr5-marketplace-shop-fields">
+                <legend>{{localize "SR5.Marketplace.Shop.Title"}}</legend>
+            
+                <div class="form-group">
+                    <label>{{localize "SR5.Marketplace.Shop.OwnerUuid"}}</label>
+                    <div class="form-fields">
+                        <input type="text" name="system.shop.owner" value="{{system.shop.owner}}" placeholder="Actor UUID of the owner"/>
+                    </div>
+                </div>
+            
+                <div class="form-group">
+                    <label>{{localize "SR5.Marketplace.Shop.ConnectionUuid"}}</label>
+                    <div class="form-fields">
+                        <input type="text" name="system.shop.connection" value="{{system.shop.connection}}" placeholder="Item UUID of the connection"/>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>{{localize "SR5.Marketplace.Shop.Modifier"}}</label>
+                    <div class="form-fields">
+                        <input type="number" name="system.shop.modifierValue" value="{{system.shop.modifierValue}}" class="modifier-value"/>
+                        {{!-- We will fix the select helper in the next step --}}
+                        <select name="system.shop.modifierType">
+                            {{#select system.shop.modifierType}}
+                            <option value="discount">{{localize "SR5.Marketplace.Shop.Discount"}}</option>
+                            <option value="fee">{{localize "SR5.Marketplace.Shop.Fee"}}</option>
+                            {{/select}}
+                        </select>
+                    </div>
+                </div>
+            
+                <div class="form-group stacked">
+                    <label>{{localize "SR5.Marketplace.Shop.Employees"}} <span>({{localize "SR5.Marketplace.Shop.OneUuidPerLine"}})</span></label>
+                    <textarea name="system.shop.employees">{{shopEmployees}}</textarea>
+                </div>
+            </fieldset>
+        </div>
+
+        {{!-- Biography Tab (to show inherited data) --}}
+        <div class="tab" data-tab="biography">
+            <h3>Biography (Inherited from Character)</h3>
+            {{editor biographyHTML target="system.description.value" button=true
+            editable=true engine="prosemirror" collaborate=false}}
+        </div>
+
+    </section>
+</form>

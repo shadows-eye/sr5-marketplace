@@ -22,13 +22,42 @@ export class ShopActorSheet extends ActorSheet {
     async getData(options) {
         const context = await super.getData(options);
         context.system = this.actor.system;
-        
-        // Prepare the employees array as a string for the textarea.
-        //context.shopEmployees = this.actor.system.shop?.employees?.join('\n') || "";
+        context.flags = this.actor.flags;
+
+        // Prepare employees string for the textarea.
+        context.shopEmployees = this.actor.system.shop?.employees?.join('\n') || "";
+
+        // **THE FIX:** Use enrichHTML to prepare the biography content, just like the core system does.
+        if (context.system.description) {
+            context.biographyHTML = await TextEditor.enrichHTML(context.system.description.value, {
+                secrets: this.actor.isOwner,
+                rollData: this.actor.getRollData(),
+                async: true,
+                relativeTo: this.actor
+            });
+        }
 
         return context;
     }
+    /**
+     * @override
+     * Add event listeners for sheet interactivity.
+     */
+    activateListeners(html) {
+        super.activateListeners(html);
 
+        // Make the rich text editor clickable to open the full editor window.
+        html.find('.editor-edit').click(ev => {
+            const editor = $(ev.currentTarget).siblings('.editor-content');
+            const target = editor.data('edit');
+            TextEditor.create({
+                target: target,
+                html: this.actor.system.description.value,
+                document: this.actor
+            }).then(editor => editor.render(true));
+        });
+    }
+    
     /**
      * @override
      * Handle form submissions to update the actor.
@@ -36,12 +65,11 @@ export class ShopActorSheet extends ActorSheet {
     _updateObject(event, formData) {
         const expandedData = foundry.utils.expandObject(formData);
         
-        // Convert the 'employees' textarea string back into an array of UUIDs.
         if (expandedData.system?.shop?.employees) {
             expandedData.system.shop.employees = expandedData.system.shop.employees
                 .split('\n')
                 .map(e => e.trim())
-                .filter(e => e); // Remove any empty lines
+                .filter(e => e);
         }
 
         const finalData = foundry.utils.flattenObject(expandedData);
