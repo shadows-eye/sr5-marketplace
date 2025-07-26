@@ -46,8 +46,6 @@ const registerSheets = () => {
  */
 const onInit = () => {
     console.log("SR5 Marketplace | Initializing Module...");
-    registerItemTypes();
-    registerSheets();
 };
 
 /**
@@ -55,6 +53,8 @@ const onInit = () => {
  */
 const onReady = () => {
     console.log("SR5 Marketplace | Module is ready!");
+    registerItemTypes();
+    registerSheets();
 };
 
 /**
