@@ -41,12 +41,8 @@
                     <label>{{localize "SR5.Marketplace.Shop.Modifier"}}</label>
                     <div class="form-fields">
                         <input type="number" name="system.shop.modifierValue" value="{{system.shop.modifierValue}}" class="modifier-value"/>
-                        {{!-- We will fix the select helper in the next step --}}
                         <select name="system.shop.modifierType">
-                            {{#select system.shop.modifierType}}
-                            <option value="discount">{{localize "SR5.Marketplace.Shop.Discount"}}</option>
-                            <option value="fee">{{localize "SR5.Marketplace.Shop.Fee"}}</option>
-                            {{/select}}
+                            {{selectOptions modifierTypes selected=system.shop.modifierType}}
                         </select>
                     </div>
                 </div>

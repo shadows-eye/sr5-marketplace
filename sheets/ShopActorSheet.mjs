@@ -27,9 +27,15 @@ export class ShopActorSheet extends ActorSheet {
         // Prepare employees string for the textarea.
         context.shopEmployees = this.actor.system.shop?.employees?.join('\n') || "";
 
-        // **THE FIX:** Use enrichHTML to prepare the biography content, just like the core system does.
+        // Prepare the options for the modifierType select dropdown.
+        context.modifierTypes = {
+            discount: game.i18n.localize("SR5.Marketplace.Shop.Discount"),
+            fee: game.i18n.localize("SR5.Marketplace.Shop.Fee")
+        };
+
+        // Use the namespaced TextEditor implementation to prepare the biography content.
         if (context.system.description) {
-            context.biographyHTML = await TextEditor.enrichHTML(context.system.description.value, {
+            context.biographyHTML = await foundry.applications.ux.TextEditor.implementation.enrichHTML(context.system.description.value, {
                 secrets: this.actor.isOwner,
                 rollData: this.actor.getRollData(),
                 async: true,
@@ -39,6 +45,7 @@ export class ShopActorSheet extends ActorSheet {
 
         return context;
     }
+    
     /**
      * @override
      * Add event listeners for sheet interactivity.
@@ -50,7 +57,8 @@ export class ShopActorSheet extends ActorSheet {
         html.find('.editor-edit').click(ev => {
             const editor = $(ev.currentTarget).siblings('.editor-content');
             const target = editor.data('edit');
-            TextEditor.create({
+            // Use the namespaced TextEditor implementation to create an editor instance.
+            foundry.applications.ux.TextEditor.implementation.create({
                 target: target,
                 html: this.actor.system.description.value,
                 document: this.actor
