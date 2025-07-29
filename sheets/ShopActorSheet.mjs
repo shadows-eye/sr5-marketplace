@@ -20,7 +20,6 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         actions: {
             ...super.DEFAULT_OPTIONS.actions,
             // We use a custom action name to call our custom in-place editor logic.
-            editBiography: this.#onEditBiography 
         }
     };
 
@@ -56,78 +55,28 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     };
 
     /**
-     * Handles creating the in-place ProseMirror editor.
-     * @param {Event} event     The originating click event.
-     * @param {HTMLElement} target The element with the data-action attribute.
-     * @private
-     */
-    static async #onEditBiography(event, target) {
-        // In a static action handler, 'this' is the application instance.
-        if (this._editor) return;
-
-        // CORRECTED: Use 'target.closest()', which is the clicked link itself.
-        const container = target.closest(".prosemirror-container");
-
-        // This check will now pass, but it's good practice to keep it for debugging.
-        if (!container) {
-            console.error("Could not find '.prosemirror-container' ancestor.", {target});
-            ui.notifications.error("Could not find the editor container element.");
-            return;
-        }
-
-        const editorContent = container.querySelector(".editor-content");
-        const fieldName = "system.description.value";
-        const content = foundry.utils.getProperty(this.document, fieldName);
-
-        container.classList.add("active");
-
-        this._editor = await ProseMirrorEditor.create(editorContent, content, {
-            document: this.document,
-            fieldName: fieldName,
-            relativeLinks: true,
-            plugins: {
-                menu: ProseMirror.ProseMirrorMenu.build(ProseMirror.defaultSchema, {
-                    onSave: this.#onSaveEditor.bind(this, fieldName)
-                }),
-                keyMaps: ProseMirror.ProseMirrorKeyMaps.build(ProseMirror.defaultSchema, {
-                    onSave: this.#onSaveEditor.bind(this, fieldName)
-                })
-            }
-        });
-    }
-
-    /**
-     * Handles saving the content from the in-place editor.
-     * @private
-     */
-    static async #onSaveEditor(target) {
-        if (!this._editor) return; // Use _editor
-        const html = await this._editor.getData(); // Use _editor
-        
-        this._editor.destroy(); // Use _editor
-        this._editor = null; // Use _editor
-        this.element.querySelector(".prosemirror-container").classList.remove("active");
-
-        this.document.update({ [target]: html });
-    }
-
-    /**
      * @override
-     * Prepares the base context for the application, primarily setting up tab data.
+     * Prepares the context object for rendering the template.
      */
     async _prepareContext(options) {
-        const context = await super._prepareContext(options);
-        context.tabs = this._prepareTabs("primary");
-        return context;
+    const context = await super._prepareContext(options);
+    
+    // Add common data useful for all sheets.
+    context.actor = this.document;
+    context.system = this.document.system;
+    context.flags = this.document.flags;
+    context.isOwner = this.document.isOwner;
+    context.isEditable = this.isEditable;
+    
+    // ADD THIS LINE: Create a shortcut to the system's data model fields.
+    context.systemFields = this.document.system.schema.fields;
+    
+    return context;
     }
 
-    /**
-     * @override
-     * Prepares context data specific to each rendered PART. This is the ideal
-     * place for performance-critical logic that should only run for the visible tab.
-     */
+    /** @override */
     async _preparePartContext(partId, context) {
-        context.tab = context.tabs[partId]; // Sets which tab is active for the template
+        context.tab = context.tabs[partId];
         
         switch (partId) {
             case "shop-details":
@@ -147,19 +96,14 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         return context;
     }
 
-    /**
-     * @override
-     * This handler is called when a form within the sheet is submitted. It processes
-     * the form data and updates the actor document.
-     */
+    /** @override */
     _processFormData(event, form, formData) {
-      const data = formData.object;
-      // Convert the employees textarea string back into a clean array.
-      if (data.system?.shop?.employees) {
-        data.system.shop.employees = data.system.shop.employees
-          .split('\n').map(e => e.trim()).filter(e => e);
-      }
-      this.document.update(data);
-      return data;
+        const data = formData.object;
+        if (data.system?.shop?.employees) {
+            data.system.shop.employees = data.system.shop.employees
+                .split('\n').map(e => e.trim()).filter(e => e);
+        }
+        this.document.update(data);
+        return data;
     }
 }

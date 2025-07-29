@@ -108,85 +108,54 @@ export function defineShopActorClass() {
     }
 
     CONFIG.Actor.dataModels[SHOP_ACTOR_TYPE] = ShopActorData;
-    // --- Define the Actor Class ---
-    // This class inherits all methods from the base SR5Actor.
+
+    /**
+     * The custom Actor class for Shops.
+     */
     class ShopActor extends SR5Actor {
-        /**
-         * A convenience getter for the shop-specific data.
-         * @returns {object} The shop data object from the system data.
-         */
         get shop() {
             return this.system.shop;
         }
 
-        /**
-         * Retrieves the Actor document for the shop's owner.
-         * @returns {Promise<Actor|null>} The owner actor, or null if not set.
-         */
         async getOwner() {
             if (!this.shop.owner) return null;
             return fromUuid(this.shop.owner);
         }
 
-        /**
-         * Retrieves an array of Actor documents for the shop's employees.
-         * @returns {Promise<Actor[]>} An array of employee actors.
-         */
         async getEmployees() {
             if (!this.shop.employees?.length) return [];
             const employeeUuids = this.shop.employees.filter(uuid => uuid);
             return fromUuid.multi(employeeUuids);
         }
-        
-        /**
-         * Retrieves the Item document for the shop's connection.
-         * @returns {Promise<Item|null>} The connection item, or null if not set.
-         */
+
         async getConnection() {
             if (!this.shop.connection) return null;
             return fromUuid(this.shop.connection);
         }
 
-        // --- NEW INVENTORY MANAGEMENT METHODS ---
+        // --- INVENTORY MANAGEMENT METHODS ---
 
         /**
-         * Finds a specific item within the shop's inventory by its UUID.
-         * @param {string} itemUuid The UUID of the item to find.
-         * @returns {object|undefined} The inventory entry object if found, otherwise undefined.
-         */
-        findInventoryItem(itemUuid) {
-            return this.shop.inventory.find(i => i.itemUuid === itemUuid);
-        }
-
-        /**
-         * Finds a specific item within the shop's inventory by its UUID.
-         * Note: Since inventory is now an object, this returns the [key, value] pair.
-         * @param {string} itemUuid The UUID of the item to find.
-         * @returns {Array|undefined} The [inventoryEntryId, inventoryEntryObject] if found.
+         * Finds an inventory entry by the source item's UUID.
+         * @param {string} itemUuid The UUID of the source item.
+         * @returns {[string, object]|undefined} The [inventoryId, itemObject] if found.
          */
         findInventoryItem(itemUuid) {
             return Object.entries(this.shop.inventory).find(([id, item]) => item.itemUuid === itemUuid);
         }
 
         /**
-         * Adds a new item to the shop's inventory.
-         * @param {object} itemData - The data for the item to add, must include a 'uuid'.
-         * @param {object} [shopData={}] - Shop-specific data for the item.
-         * @param {number} [shopData.qty=1] - The quantity to add.
-         * @param {number} [shopData.sellPrice=itemData.system.technology.cost || 0] - The base selling price.
-         * @param {number} [shopData.buyPrice=0] - The base buying price.
-         * @param {string} [shopData.availability="1R"] - The base availability string.
-         * @param {object} [shopData.buyTime={value: 24, unit: "hours"}] - The delivery time.
-         * @returns {Promise<Document>} The promise from the actor update.
+         * Adds an item to the inventory.
+         * @param {Item} itemData The full Item document to add.
+         * @param {object} [shopData={}] Shop-specific data.
+         * @returns {Promise<Actor>}
          */
         async addItemToInventory(itemData, shopData = {}) {
             if (!itemData?.uuid) throw new Error("Item data must include a UUID.");
             if (this.findInventoryItem(itemData.uuid)) {
-                ui.notifications.warn("This item is already in the shop's inventory.");
-                return;
+                return ui.notifications.warn("This item is already in the shop's inventory.");
             }
-
-            const newItemId = foundry.utils.randomID(); // Generate a simple, safe ID for the key
+            const newItemId = foundry.utils.randomID();
             const newInventoryItem = {
                 itemUuid: itemData.uuid,
                 qty: shopData.qty ?? 1,
@@ -196,19 +165,16 @@ export function defineShopActorClass() {
                 buyTime: shopData.buyTime ?? { value: 24, unit: "hours" },
                 comments: ""
             };
-
-            // This is the atomic update you were looking for!
             return this.update({
                 [`system.shop.inventory.${newItemId}`]: newInventoryItem
             });
         }
 
         /**
-         * Updates an existing item in the shop's inventory.
-         * This becomes much simpler with an object structure.
-         * @param {string} inventoryEntryId - The unique ID of the inventory entry (NOT the item's UUID).
-         * @param {object} updateData - An object with the data to change, e.g., { qty: 5, "sellPrice.value": 150 }.
-         * @returns {Promise<Document>} The promise from the actor update.
+         * Updates an item in the inventory.
+         * @param {string} inventoryEntryId The unique ID of the inventory entry.
+         * @param {object} updateData Data to change, e.g., { qty: 5, "sellPrice.value": 150 }.
+         * @returns {Promise<Actor>}
          */
         async updateInventoryItem(inventoryEntryId, updateData) {
             const expandedUpdateData = {};
@@ -219,15 +185,16 @@ export function defineShopActorClass() {
         }
 
         /**
-         * Removes an item from the shop's inventory.
-         * @param {string} inventoryEntryId - The unique ID of the inventory entry to remove.
-         * @returns {Promise<Document>} The promise from the actor update.
+         * Removes an item from the inventory.
+         * @param {string} inventoryEntryId The unique ID of the inventory entry.
+         * @returns {Promise<Actor>}
          */
         async removeItemFromInventory(inventoryEntryId) {
-            // To remove a key from an object, we update it to be deleted.
-            const keyToRemove = `system.shop.inventory.${inventoryEntryId}`;
-            return this.update({ [keyToRemove]: foundry.utils.DELETE });
+            return this.update({
+                [`system.shop.inventory.${inventoryEntryId}`]: foundry.utils.DELETE
+            });
         }
     }
+
     return { ShopActor, ShopActorData };
 }
