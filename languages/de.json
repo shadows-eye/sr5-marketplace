@@ -30,6 +30,9 @@
                     "hint": "Diese Einstellung ermöglicht es Ihnen, die Karma Kosten für komplexe Formen festzulegen. Wenn auf true gesetzt, werden die Karma Kosten anstelle der Essenzkosten verwendet."
                 }
             },
+            "Shop": {
+                "SheetName": "Geschäft"
+            },
             "funds": "Budget",
             "YourOrderHasArrived": "Deine Bestellung ist angekommen!",
             "OrderReviewItems": "Artikel Liste für die Überprüfung",

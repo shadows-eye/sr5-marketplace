@@ -30,6 +30,9 @@
                     "hint": "This setting allows you to set the karma cost for complex forms. Value will be used to pay for Complex Forms."
                 }
             },
+            "Shop": {
+                "SheetName": "Shop"
+            },
             "funds": "Funds",
             "YourOrderHasArrived": "Your order has arrived!",
             "OrderReviewItems": "Items List for the Review",

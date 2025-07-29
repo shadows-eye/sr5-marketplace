@@ -32,8 +32,13 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     static get DEFAULT_OPTIONS() {
         return foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
             id: "inGameMarketplace",
-            position: { width: 910, height: 800, top: 50, left: 120 },
-            
+            position: { 
+                width: 910, 
+                height: 800, 
+                top: 50, 
+                left: 120 
+            },
+
             // This is the corrected structure for window properties in ApplicationV2
             window: {
                 title: "SR5.PurchaseScreen", // The localization key

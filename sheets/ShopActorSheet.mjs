@@ -1,86 +1,165 @@
+import MarketplaceDocumentSheetMixin from "../scripts/apps/marketplace-document-sheet-mixin.mjs";
+import enrichHTML from '../scripts/services/enricher.mjs';
+// We get the base ActorSheet class from Foundry's API.
+const { ActorSheet } = foundry.applications.sheets;
+
 /**
- * A custom V1 Actor Sheet for the ShopActor type.
- * It extends the base Foundry ActorSheet to provide a unique, compatible interface.
+ * A custom V13 Actor Sheet for the ShopActor type, using ApplicationV2.
+ * It is built by applying our custom mixin to the base ActorSheet.
  */
-export class ShopActorSheet extends ActorSheet {
+export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
+    #editor = null;
 
     /** @override */
-    static get defaultOptions() {
-        return foundry.utils.mergeObject(super.defaultOptions, {
-            classes: ["sr5", "sheet", "actor", "shop", "sr5-marketplace-shop"],
-            template: "modules/sr5-marketplace/templates/actor/shop-actor-sheet.html",
-            width: 600,
-            height: 650,
-            tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "main" }]
+    static DEFAULT_OPTIONS = {
+        classes: ["sr5", "shop", "sr5-marketplace-shop"],
+        position: {
+            width: 900,
+            height: 650
+        },
+        actions: {
+            ...super.DEFAULT_OPTIONS.actions,
+            // We use a custom action name to call our custom in-place editor logic.
+            editBiography: this.#onEditBiography 
+        }
+    };
+
+    /**
+     * The layout is defined by the order of parts: header, then tabs, then tab content.
+     */
+    static PARTS = {
+        header: {
+            template: "modules/sr5-marketplace/templates/actor/partials/shop-header.html"
+        },
+        tabs: {
+            template: "templates/generic/tab-navigation.hbs"
+        },
+        "shop-details": {
+            template: "modules/sr5-marketplace/templates/actor/partials/shop-details.html"
+        },
+        biography: {
+            template: "modules/sr5-marketplace/templates/actor/partials/shop-biography.html"
+        }
+    };
+
+    /**
+     * This configures our tab group. The 'initial' property sets the default tab.
+     */
+    static TABS = {
+        primary: {
+            tabs: [
+                { id: "shop-details", label: "Shop Details" },
+                { id: "biography", label: "Biography" }
+            ],
+            initial: "shop-details"
+        }
+    };
+
+    /**
+     * Handles creating the in-place ProseMirror editor.
+     * @param {Event} event     The originating click event.
+     * @param {HTMLElement} target The element with the data-action attribute.
+     * @private
+     */
+    static async #onEditBiography(event, target) {
+        // In a static action handler, 'this' is the application instance.
+        if (this._editor) return;
+
+        // CORRECTED: Use 'target.closest()', which is the clicked link itself.
+        const container = target.closest(".prosemirror-container");
+
+        // This check will now pass, but it's good practice to keep it for debugging.
+        if (!container) {
+            console.error("Could not find '.prosemirror-container' ancestor.", {target});
+            ui.notifications.error("Could not find the editor container element.");
+            return;
+        }
+
+        const editorContent = container.querySelector(".editor-content");
+        const fieldName = "system.description.value";
+        const content = foundry.utils.getProperty(this.document, fieldName);
+
+        container.classList.add("active");
+
+        this._editor = await ProseMirrorEditor.create(editorContent, content, {
+            document: this.document,
+            fieldName: fieldName,
+            relativeLinks: true,
+            plugins: {
+                menu: ProseMirror.ProseMirrorMenu.build(ProseMirror.defaultSchema, {
+                    onSave: this.#onSaveEditor.bind(this, fieldName)
+                }),
+                keyMaps: ProseMirror.ProseMirrorKeyMaps.build(ProseMirror.defaultSchema, {
+                    onSave: this.#onSaveEditor.bind(this, fieldName)
+                })
+            }
         });
     }
 
     /**
-     * @override
-     * Prepare the data context for rendering the sheet.
+     * Handles saving the content from the in-place editor.
+     * @private
      */
-    async getData(options) {
-        const context = await super.getData(options);
-        context.system = this.actor.system;
-        context.flags = this.actor.flags;
+    static async #onSaveEditor(target) {
+        if (!this._editor) return; // Use _editor
+        const html = await this._editor.getData(); // Use _editor
+        
+        this._editor.destroy(); // Use _editor
+        this._editor = null; // Use _editor
+        this.element.querySelector(".prosemirror-container").classList.remove("active");
 
-        // Prepare employees string for the textarea.
-        context.shopEmployees = this.actor.system.shop?.employees?.join('\n') || "";
+        this.document.update({ [target]: html });
+    }
 
-        // Prepare the options for the modifierType select dropdown.
-        context.modifierTypes = {
-            discount: game.i18n.localize("SR5.Marketplace.Shop.Discount"),
-            fee: game.i18n.localize("SR5.Marketplace.Shop.Fee")
-        };
-
-        // Use the namespaced TextEditor implementation to prepare the biography content.
-        if (context.system.description) {
-            context.biographyHTML = await foundry.applications.ux.TextEditor.implementation.enrichHTML(context.system.description.value, {
-                secrets: this.actor.isOwner,
-                rollData: this.actor.getRollData(),
-                async: true,
-                relativeTo: this.actor
-            });
-        }
-
+    /**
+     * @override
+     * Prepares the base context for the application, primarily setting up tab data.
+     */
+    async _prepareContext(options) {
+        const context = await super._prepareContext(options);
+        context.tabs = this._prepareTabs("primary");
         return context;
     }
-    
-    /**
-     * @override
-     * Add event listeners for sheet interactivity.
-     */
-    activateListeners(html) {
-        super.activateListeners(html);
 
-        // Make the rich text editor clickable to open the full editor window.
-        html.find('.editor-edit').click(ev => {
-            const editor = $(ev.currentTarget).siblings('.editor-content');
-            const target = editor.data('edit');
-            // Use the namespaced TextEditor implementation to create an editor instance.
-            foundry.applications.ux.TextEditor.implementation.create({
-                target: target,
-                html: this.actor.system.description.value,
-                document: this.actor
-            }).then(editor => editor.render(true));
-        });
-    }
-    
     /**
      * @override
-     * Handle form submissions to update the actor.
+     * Prepares context data specific to each rendered PART. This is the ideal
+     * place for performance-critical logic that should only run for the visible tab.
      */
-    _updateObject(event, formData) {
-        const expandedData = foundry.utils.expandObject(formData);
+    async _preparePartContext(partId, context) {
+        context.tab = context.tabs[partId]; // Sets which tab is active for the template
         
-        if (expandedData.system?.shop?.employees) {
-            expandedData.system.shop.employees = expandedData.system.shop.employees
-                .split('\n')
-                .map(e => e.trim())
-                .filter(e => e);
+        switch (partId) {
+            case "shop-details":
+                context.shopEmployees = this.document.system.shop?.employees?.join('\n') || "";
+                context.modifierTypes = {
+                    discount: game.i18n.localize("SR5.Marketplace.Shop.Discount"),
+                    fee: game.i18n.localize("SR5.Marketplace.Shop.Fee")
+                };
+                break;
+            case "biography":
+                context.biographyHTML = await enrichHTML(this.document.system.description.value, {
+                    async: true,
+                    relativeTo: this.document
+                });
+                break;
         }
+        return context;
+    }
 
-        const finalData = foundry.utils.flattenObject(expandedData);
-        return this.document.update(finalData);
+    /**
+     * @override
+     * This handler is called when a form within the sheet is submitted. It processes
+     * the form data and updates the actor document.
+     */
+    _processFormData(event, form, formData) {
+      const data = formData.object;
+      // Convert the employees textarea string back into a clean array.
+      if (data.system?.shop?.employees) {
+        data.system.shop.employees = data.system.shop.employees
+          .split('\n').map(e => e.trim()).filter(e => e);
+      }
+      this.document.update(data);
+      return data;
     }
 }

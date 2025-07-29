@@ -1,0 +1,21 @@
+/* Style for the container of the in-place editor */
+.prosemirror-container {
+  position: relative;
+}
+
+/* Hide the editor content area by default */
+.prosemirror-container .editor-content {
+  display: none;
+}
+
+/* When the container is active, hide the static display */
+.prosemirror-container.active .editor-display {
+  display: none;
+}
+
+/* When the container is active, show the editor content area */
+.prosemirror-container.active .editor-content {
+  display: block;
+  border: 1px solid #999;
+  min-height: 300px; /* Adjust as needed */
+}
