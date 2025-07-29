@@ -8,7 +8,7 @@ const { ActorSheet } = foundry.applications.sheets;
  * It is built by applying our custom mixin to the base ActorSheet.
  */
 export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
-    #editor = null;
+    _isEditingBiography = false;
 
     /** @override */
     static DEFAULT_OPTIONS = {
@@ -77,7 +77,6 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     /** @override */
     async _preparePartContext(partId, context) {
         context.tab = context.tabs[partId];
-        
         switch (partId) {
             case "shop-details":
                 context.shopEmployees = this.document.system.shop?.employees?.join('\n') || "";
@@ -87,6 +86,9 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                 };
                 break;
             case "biography":
+                // Pass the editing state to the template for the {{#if}} helper
+                context.isEditing = this._isEditingBiography;
+                // We still need to prepare the enriched HTML for the static display
                 context.biographyHTML = await enrichHTML(this.document.system.description.value, {
                     async: true,
                     relativeTo: this.document
