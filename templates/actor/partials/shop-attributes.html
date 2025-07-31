@@ -1,0 +1,51 @@
+{{#if system.attributes}}
+<div class="sr5-marketplace-attributes">
+
+    {{!-- Physical Attributes --}}
+    <div class="attribute-group physical">
+        <h4>{{localize "SR5.LimitPhysical"}}</h4>
+        <div class="attribute-list">
+            {{#each system.attributes.physicalAttributes as |attr name|}}
+                <div class="sr5-marketplace-attribute" data-attribute="{{name}}">
+                    <label>{{localize (concat "SR5.Attr" (capitalize name))}}</label>
+                    <span class="value">{{attr.value}}</span>
+                </div>
+            {{/each}}
+        </div>
+    </div>
+
+    {{!-- Mental Attributes --}}
+    <div class="attribute-group mental">
+        <h4>{{localize "SR5.LimitMental"}}</h4>
+        <div class="attribute-list">
+            {{#each system.attributes.mentalAttributes as |attr name|}}
+                <div class="sr5-marketplace-attribute" data-attribute="{{name}}">
+                    <label>{{localize (concat "SR5.Attr" (capitalize name))}}</label>
+                    <span class="value">{{attr.value}}</span>
+                </div>
+            {{/each}}
+        </div>
+    </div>
+
+    {{!-- Special Attributes --}}
+    <div class="attribute-group special">
+        <h4>{{localize "SR5.SpecialAttributes"}}</h4>
+        <div class="attribute-list">
+             {{#each system.attributes.specialAttributes as |attr name|}}
+                <div class="sr5-marketplace-attribute" data-attribute="{{name}}">
+                    <label>
+                        {{!-- Handle special cases for Initiation and Submersion --}}
+                        {{#if (or (eq name "initiation") (eq name "submersion"))}}
+                            {{localize (concat "SR5." (capitalize name))}}
+                        {{else}}
+                            {{localize (concat "SR5.Attr" (capitalize name))}}
+                        {{/if}}
+                    </label>
+                    <span class="value">{{attr.value}}</span>
+                </div>
+            {{/each}}
+        </div>
+    </div>
+
+</div>
+{{/if}}

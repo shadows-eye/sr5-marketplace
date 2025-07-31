@@ -123,6 +123,11 @@
                 "complex_form": "Complex Forms"
             }
         }
+    },
+    "TYPES":{
+        "Actor": {
+            "sr5-marketplace.shop": "Marketplace Shop"
+        }
     }
 }
 

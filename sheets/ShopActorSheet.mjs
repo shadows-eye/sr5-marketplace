@@ -6,6 +6,8 @@ const { ActorSheet } = foundry.applications.sheets;
 /**
  * A custom V13 Actor Sheet for the ShopActor type, using ApplicationV2.
  * It is built by applying our custom mixin to the base ActorSheet.
+ * @param {typeof ActorSheet} base The base ActorSheet class to extend.
+ * @returns {typeof ShopActorSheet} The extended ShopActorSheet class.
  */
 export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     _isEditingBiography = false;
@@ -17,6 +19,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             width: 900,
             height: 650
         },
+        template: "modules/sr5-marketplace/templates/actor/actor-shop.html",
         actions: {
             ...super.DEFAULT_OPTIONS.actions,
             // We use a custom action name to call our custom in-place editor logic.
@@ -24,15 +27,23 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     };
 
     /**
-     * The layout is defined by the order of parts: header, then tabs, then tab content.
+     * @type {Object.<string, {template: string}>}
+     * This defines the parts of the layout that can be reused in different contexts.
      */
     static PARTS = {
+        // ADDED: The header is now a defined part of the layout.
         header: {
             template: "modules/sr5-marketplace/templates/actor/partials/shop-header.html"
         },
+        // ADDED: The attributes section is also a part.
+        attributes: {
+            template: "modules/sr5-marketplace/templates/actor/partials/shop-attributes.html"
+        },
+        // The tab navigation bar.
         tabs: {
             template: "templates/generic/tab-navigation.hbs"
         },
+        // The content for the tabs.
         "shop-details": {
             template: "modules/sr5-marketplace/templates/actor/partials/shop-details.html"
         },
@@ -42,7 +53,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     };
 
     /**
-     * This configures our tab group. The 'initial' property sets the default tab.
+     * @type {Object.<string, {tabs: Array<{id: string, label: string}>, initial: string}>}
      */
     static TABS = {
         primary: {
@@ -57,6 +68,20 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     /**
      * @override
      * Prepares the context object for rendering the template.
+     * @param {object} options The options for preparing the context.
+     * @returns {Promise<object>} The prepared context object.
+     * @property {object} context.actor The actor being displayed.
+     * @property {object} context.system The system data of the actor.
+     * @property {object} context.flags The flags of the actor.
+     * @property {boolean} context.isOwner Whether the user has ownership of the actor.
+     * @property {boolean} context.isEditable Whether the actor is editable by the user.
+     * @property {boolean} context.isGM Whether the user is a Game Master.
+     * @property {object} context.systemFields A shortcut to the system's data model fields.
+     * @property {object} context.system.attributes Grouped attributes for easier access.
+     * @property {object} context.tab The current tab context.
+     * @property {string} context.biographyHTML The enriched HTML for the biography.
+     * @property {boolean} context._isEditingBiography Whether the biography is currently being edited.
+     * @protected
      */
     async _prepareContext(options) {
     const context = await super._prepareContext(options);
@@ -67,14 +92,53 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     context.flags = this.document.flags;
     context.isOwner = this.document.isOwner;
     context.isEditable = this.isEditable;
-    
+    context.isGM = game.user.isGM;
     // ADD THIS LINE: Create a shortcut to the system's data model fields.
     context.systemFields = this.document.system.schema.fields;
+
+    // Group attributes for the template
+        if ( context.system.attributes ) {
+            context.system.attributes.physicalAttributes = {
+                body: context.system.attributes.body,
+                agility: context.system.attributes.agility,
+                reaction: context.system.attributes.reaction,
+                strength: context.system.attributes.strength
+            };
+            context.system.attributes.mentalAttributes = {
+                willpower: context.system.attributes.willpower,
+                logic: context.system.attributes.logic,
+                intuition: context.system.attributes.intuition,
+                charisma: context.system.attributes.charisma
+            };
+            context.system.attributes.specialAttributes = {
+                magic: context.system.attributes.magic,
+                resonance: context.system.attributes.resonance,
+                essence: context.system.attributes.essence,
+                edge: context.system.attributes.edge,
+                initiation: context.system.attributes.initiation,
+                submersion: context.system.attributes.submersion
+            };
+        }
     
     return context;
     }
 
-    /** @override */
+    /** 
+     * @override 
+     * Prepares the context for a specific part of the sheet.
+     * @param {string} partId The ID of the part to prepare.
+     * @param {object} context The context object to prepare.
+     * @return {Promise<object>} The prepared context for the part.
+     * @property {object} context.tab The tab context for the part.
+     * @property {object} context.shopEmployees The shop employees list.
+     * @property {object} context.modifierTypes The types of modifiers available for the shop.
+     * @property {boolean} context.isEditing Whether the biography is being edited.
+     * @property {string} context.biographyHTML The enriched HTML for the biography.
+     * @property {object} context.activeSkills The list of active skills for the shop.
+     * @property {object} context.knowledgeSkills The list of knowledge skills for the shop.
+     * @property {object} context.languageSkills The list of language skills for the shop.
+     * @protected
+     */
     async _preparePartContext(partId, context) {
         context.tab = context.tabs[partId];
         switch (partId) {
@@ -84,11 +148,42 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                     discount: game.i18n.localize("SR5.Marketplace.Shop.Discount"),
                     fee: game.i18n.localize("SR5.Marketplace.Shop.Fee")
                 };
+
+                // MOVED: Prepare skills data here, since the partial is inside this tab.
+                const skills = this.document.system.skills;
+                
+                // Prepare Active Skills
+                context.activeSkills = Object.entries(skills.active).map(([key, data]) => {
+                    const locKey = CONFIG.SR5.activeSkills[key];
+                    return {
+                        name: game.i18n.localize(locKey),
+                        rating: data.value
+                    };
+                });
+
+                // Prepare Knowledge Skills
+                context.knowledgeSkills = Object.entries(skills.knowledge).map(([name, data]) => {
+                    return {
+                        name: name,
+                        rating: data.value
+                    };
+                });
+
+                // Prepare Language Skills
+                context.languageSkills = Object.entries(skills.language).map(([name, data]) => {
+                    return {
+                        name: name,
+                        rating: data.value
+                    };
+                });
                 break;
+
+            // This case is no longer needed unless you create a separate skills tab again.
+            case "skills":
+                break;
+                
             case "biography":
-                // Pass the editing state to the template for the {{#if}} helper
                 context.isEditing = this._isEditingBiography;
-                // We still need to prepare the enriched HTML for the static display
                 context.biographyHTML = await enrichHTML(this.document.system.description.value, {
                     async: true,
                     relativeTo: this.document

@@ -1,0 +1,36 @@
+<section class="tab skills {{tab.cssClass}}" data-group="primary" data-tab="skills">
+    <div class="skills-list">
+
+        <h3>{{localize "SR5.ActiveSkills"}}</h3>
+        <div class="active-skills">
+            {{#each activeSkills as |skill|}}
+                <div class="skill-entry">
+                    <label class="skill-name">{{skill.name}}</label>
+                    <span class="skill-rating">{{skill.rating}}</span>
+                </div>
+            {{/each}}
+        </div>
+
+
+        <h3>{{localize "SR5.KnowledgeSkillInterests"}}</h3>
+        <div class="knowledge-skills">
+            {{#each knowledgeSkills as |skill|}}
+                <div class="skill-entry">
+                    <label class="skill-name">{{skill.name}}</label>
+                    <span class="skill-rating">{{skill.rating}}</span>
+                </div>
+            {{/each}}
+        </div>
+
+        <h3>{{localize "SR5.Languages"}}</h3>
+        <div class="language-skills">
+            {{#each languageSkills as |skill|}}
+                <div class="skill-entry">
+                    <label class="skill-name">{{skill.name}}</label>
+                    <span class="skill-rating">{{skill.rating}}</span>
+                </div>
+            {{/each}}
+        </div>
+
+    </div>
+</section>

@@ -19,3 +19,51 @@
   border: 1px solid #999;
   min-height: 300px; /* Adjust as needed */
 }
+
+/* Make the sheet's content area scrollable while the header stays fixed */
+.sr5-marketplace-shop .window-content {
+    height: calc(100% - 32px); /* Adjust 32px to match your header height */
+}
+
+/* Create the 3-column grid for attribute groups */
+.sr5-marketplace-attributes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1em;
+    padding: 5px;
+}
+
+/* Style for each attribute group (Physical, Mental, Special) */
+.attribute-group {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 8px;
+}
+
+.attribute-group h4 {
+    margin-top: 0;
+    text-align: center;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 5px;
+}
+
+/* Style for each individual attribute to stack them vertically */
+.sr5-marketplace-attribute {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 5px;
+}
+
+/* --- GM-Only Editing --- */
+/* By default, hide edit controls from players */
+.play-mode .editor-control {
+    display: none;
+}
+/* GMs can always see the edit controls */
+.gm.edit-mode .editor-control {
+    display: block;
+}
+.tab.shop-details.active {
+    overflow-y: auto;
+}

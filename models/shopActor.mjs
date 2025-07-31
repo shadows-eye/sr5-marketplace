@@ -82,6 +82,7 @@ export function defineShopActorClass() {
                     base: new foundry.data.fields.NumberField({ initial: 0 })
                 }),
                 modifierType: new foundry.data.fields.StringField({ initial: "discount", choices: ["discount", "fee"] }),
+                shopRadius: new foundry.data.fields.NumberField({ initial: 1, min: 1, integer: true }),
                 
                 // Validating the inventory as an object with dynamic keys
                 // Each key is an inventory entry ID, and each value is an inventory item object.

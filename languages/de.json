@@ -124,5 +124,10 @@
                 "complex_form": "Komplexe Formen"
             }
         }
+    },
+    "TYPES": {
+        "Actor": {
+            "sr5-marketplace.shop": "Marktplatz Laden"
+        }
     }
 }
