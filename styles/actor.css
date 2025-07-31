@@ -1,53 +1,108 @@
-/* Style for the container of the in-place editor */
-.prosemirror-container {
-  position: relative;
+/* ==================================================================
+//
+// SR5 Marketplace - Actor Sheet Styles
+//
+// ==================================================================
+*/
+
+/* --- Base Application Theme --- */
+
+/* Apply marketplace theme to the entire sheet window */
+.sr5-marketplace-shop {
+    box-shadow: 0 0 10px var(--text-yellow);
 }
 
-/* Hide the editor content area by default */
-.prosemirror-container .editor-content {
-  display: none;
+/* Style the main window header to match the marketplace */
+.sr5-marketplace-shop .window-header {
+    background: var(--header);
+    border-bottom: 2px solid var(--border-highlight-red);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
-/* When the container is active, hide the static display */
-.prosemirror-container.active .editor-display {
-  display: none;
+/* Style the title in the window header */
+.sr5-marketplace-shop .window-header .window-title {
+    color: var(--text-light);
+    text-shadow: none;
 }
 
-/* When the container is active, show the editor content area */
-.prosemirror-container.active .editor-content {
-  display: block;
-  border: 1px solid #999;
-  min-height: 300px; /* Adjust as needed */
-}
-
-/* Make the sheet's content area scrollable while the header stays fixed */
+/* Set the background for the main content area */
 .sr5-marketplace-shop .window-content {
-    height: calc(100% - 32px); /* Adjust 32px to match your header height */
+    background: var(--bg-main) repeat;
+    color: var(--text-light);
 }
 
-/* Create the 3-column grid for attribute groups */
-.sr5-marketplace-attributes {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1em;
+/* --- Layout: Sticky Header & Scrolling Content --- */
+
+/* Main layout container from actor-shop.html */
+.sr5-marketplace-shop-actor {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Container for the static header, attributes, and tabs */
+.sheet-top-content {
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg-dark-overlay); /* Semi-transparent dark background */
+    border-bottom: 1px solid var(--border-highlight-yellow);
     padding: 5px;
 }
 
-/* Style for each attribute group (Physical, Mental, Special) */
+/* The main scrollable area for tab content */
+.sheet-body {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+
+/* --- Tab Navigation Styling --- */
+
+.sr5-marketplace-shop .sheet-tabs {
+    border-bottom: none;
+    margin: 5px 0;
+}
+
+.sr5-marketplace-shop .sheet-tabs .item {
+    background: var(--bg-tab-inactive);
+    border: 1px solid var(--border-medium);
+    border-bottom: none;
+    color: var(--text-light);
+}
+
+.sr5-marketplace-shop .sheet-tabs .item.active {
+    background: var(--bg-tab-active);
+    text-shadow: 0 0 5px var(--color-primary-yellow-hover);
+}
+
+/* --- Attributes Section --- */
+.sr5-marketplace-attributes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border-medium);
+    margin-top: 10px;
+}
+
 .attribute-group {
-    border: 1px solid #ccc;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--border-dark);
     border-radius: 5px;
     padding: 8px;
 }
 
 .attribute-group h4 {
-    margin-top: 0;
+    margin: 0 0 8px 0;
     text-align: center;
-    border-bottom: 1px solid #ccc;
+    color: var(--color-primary-yellow);
+    border-bottom: 1px solid var(--border-medium);
     padding-bottom: 5px;
 }
 
-/* Style for each individual attribute to stack them vertically */
 .sr5-marketplace-attribute {
     display: flex;
     justify-content: space-between;
@@ -55,15 +110,100 @@
     padding: 2px 5px;
 }
 
-/* --- GM-Only Editing --- */
-/* By default, hide edit controls from players */
-.play-mode .editor-control {
-    display: none;
+/* --- In-Place Editor Styling --- */
+.prosemirror-container.active .editor-content {
+    border: 1px solid var(--border-highlight-yellow);
 }
-/* GMs can always see the edit controls */
-.gm.edit-mode .editor-control {
-    display: block;
-}
-.tab.shop-details.active {
+section.tab.shop-details.active{
     overflow-y: auto;
+}
+
+/* Main container for the entire skills list */
+.skills-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Space between skill categories */
+}
+
+/* The grid layout for skill entries */
+.sr5-grid-3c {
+    display: grid;
+    /* Icon (40px), Name (flex), Rating (auto) */
+    grid-template-columns: 40px 1fr auto;
+    gap: 5px 10px; /* Row and column gap */
+    align-items: center;
+}
+
+/* Styling for each skill group (Active, Knowledge, etc.) */
+.skill-group {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--border-dark);
+    border-radius: 5px;
+    padding: 8px;
+}
+
+/* Styling for the header row */
+.skill-header {
+    font-weight: bold;
+    color: var(--color-primary-yellow);
+    border-bottom: 1px solid var(--border-medium);
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+}
+
+/* Align the rating column to the right */
+.skill-header .skill-rating,
+.skill-entry .skill-rating {
+    text-align: right;
+}
+
+/* Inventory Item Styles */
+/* Defines the 9-column grid for the inventory */
+.sr5-grid-c9 {
+    display: grid;
+    /* Defines the size of each of the 9 columns */
+    grid-template-columns: 30px 2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    gap: 5px 10px; /* Row and column gap */
+    align-items: center;
+    text-align: center;
+}
+
+/* Styles the header row of the inventory grid */
+.inventory-header {
+    font-weight: bold;
+    color: var(--color-primary-yellow);
+    border-bottom: 1px solid var(--border-medium);
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+}
+
+/* Styles individual item rows */
+.inventory-item {
+    border-bottom: 1px solid var(--border-dark);
+    padding: 2px 0;
+}
+
+/* Ensures the item name is aligned to the left */
+.inventory-item .item-name {
+    text-align: left;
+}
+
+/* Styles the small image in the first column */
+.inventory-item .item-img img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+/* Styles for the input fields within the grid */
+.inventory-item input[type="number"] {
+    width: 100%;
+    text-align: center;
+    background: rgba(0,0,0,0.3);
+    color: var(--text-light);
+    border: 1px solid var(--border-dark);
+    border-radius: 3px;
 }

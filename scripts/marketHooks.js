@@ -56,7 +56,8 @@ const initializeTemplates = () => {
         "modules/sr5-marketplace/templates/apps/marketplace-settings/marketplace-settings.html",
         "modules/sr5-marketplace/templates/apps/marketplace-settings/partials/settings-card.html",
         "modules/sr5-marketplace/templates/actor/partials/shop-header.html",
-        "modules/sr5-marketplace/templates/actor/partials/shop-skills.html"
+        "modules/sr5-marketplace/templates/actor/partials/shop-skills.html",
+        "modules/sr5-marketplace/templates/actor/partials/shop-inventory.html"
     ]);
 };
 // Initialize module settings

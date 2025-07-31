@@ -1,35 +1,56 @@
 <section class="tab skills {{tab.cssClass}}" data-group="primary" data-tab="skills">
     <div class="skills-list">
 
+        <!-- Active Skills -->
         <h3>{{localize "SR5.ActiveSkills"}}</h3>
-        <div class="active-skills">
-            {{#each activeSkills as |skill|}}
-                <div class="skill-entry">
-                    <label class="skill-name">{{skill.name}}</label>
-                    <span class="skill-rating">{{skill.rating}}</span>
-                </div>
-            {{/each}}
+        <div class="active-skills skill-group">
+            <div class="skill-header sr5-grid-3c">
+                <span></span><span class="skill-name">{{localize "SR5.Name"}}</span><span class="skill-rating">{{localize "SR5.Rating"}}</span>
+            </div>
+            <div class="sr5-grid-3c">
+                {{#each activeSkills as |skill|}}
+                    <div class="skill-icon" data-id="{{skill.id}}"></div>
+                    <div class="skill-name" data-id="{{skill.id}}">{{skill.name}}</div>
+                    <div class="skill-rating">{{skill.value}}</div>
+                {{/each}}
+            </div>
         </div>
 
+        <!-- Knowledge Skills -->
+        <h4>{{localize "SR5.Skill.Skills"}} {{localize "SR5.KnowledgeSkillInterests"}}</h4>
+        <div class="knowledge-skills skill-group">
 
-        <h3>{{localize "SR5.KnowledgeSkillInterests"}}</h3>
-        <div class="knowledge-skills">
-            {{#each knowledgeSkills as |skill|}}
-                <div class="skill-entry">
-                    <label class="skill-name">{{skill.name}}</label>
-                    <span class="skill-rating">{{skill.rating}}</span>
-                </div>
-            {{/each}}
+            <div class="skill-header sr5-grid-3c">
+                <span></span><span class="skill-name">{{localize "SR5.Name"}}</span><span class="skill-rating">{{localize "SR5.Rating"}}</span>
+            </div>
+            <div class="sr5-grid-3c">
+                {{#each knowledgeSkillGroups as |group|}}
+                    {{#each group.skills as |skill|}}
+                        <div class="skill-icon" data-id="{{skill.id}}"></div>
+                        <div class="skill-name" data-id="{{skill.id}}">{{skill.name}}</div>
+                        <div class="skill-rating">{{skill.value}}</div>
+                    {{/each}}
+                {{/each}}
+            </div>
         </div>
 
+        <!-- Language Skills -->
         <h3>{{localize "SR5.Languages"}}</h3>
-        <div class="language-skills">
-            {{#each languageSkills as |skill|}}
-                <div class="skill-entry">
-                    <label class="skill-name">{{skill.name}}</label>
-                    <span class="skill-rating">{{skill.rating}}</span>
+        <div class="language-skills skill-group">
+
+            <div class="skill-header sr5-grid-3c">
+                <span></span><span class="skill-name">{{localize "SR5.Name"}}</span><span class="skill-rating">{{localize "SR5.Rating"}}</span>
+            </div>
+            {{!-- The list is only populated if skills exist. --}}
+            {{#if languageSkills}}
+                <div class="sr5-grid-3c">
+                    {{#each languageSkills as |skill|}}
+                        <div class="skill-icon" data-id="{{skill.id}}"></div>
+                        <div class="skill-name" data-id="{{skill.id}}">{{skill.name}}</div>
+                        <div class="skill-rating">{{skill.value}}</div>
+                    {{/each}}
                 </div>
-            {{/each}}
+            {{/if}}
         </div>
 
     </div>

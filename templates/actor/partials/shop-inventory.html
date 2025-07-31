@@ -1,0 +1,31 @@
+<div class="shop-inventory">
+    {{!-- Header Row for the Inventory Grid --}}
+    <div class="inventory-header sr5-grid-c9">
+        <div class="header-img"></div>
+        <div class="header-name">{{localize "SR5.Name"}}</div>
+        <div class="header-rating">{{localize "SR5.Rating"}}</div>
+        <div class="header-itemPrice">{{localize "SR5.Cost"}}</div>
+        <div class="header-sellPrice">{{localize "SR5.Marketplace.Shop.SellPrice"}}</div>
+        <div class="header-buyPrice">{{localize "SR5.Marketplace.Shop.BuyPrice"}}</div>
+        <div class="header-availability">{{localize "SR5.Availability"}}</div>
+        <div class="header-buyTime">{{localize "SR5.Marketplace.Shop.BuyTime"}}</div>
+        <div class="header-comment">{{localize "SR5.Marketplace.Shop.Comment"}}</div>
+    </div>
+
+    {{!-- Loop through each prepared inventory item --}}
+    <div class="inventory-list">
+        {{#each inventory as |item entryId|}}
+            <div class="inventory-item sr5-grid-c9">
+                <div class="item-img" data-entry-id="{{entryId}}"><img src="{{item.img}}" alt="{{item.name}}"/></div>
+                <div class="item-name" data-entry-id="{{entryId}}">{{item.name}}</div>
+                <div class="item-rating">{{item.rating}}</div>
+                <div class="item-itemPrice">{{item.itemPrice}} ¥</div>
+                <div class="item-sellPrice"><input type="number" name="system.shop.inventory.{{entryId}}.sellPrice.value" value="{{item.sellPrice.value}}"/></div>
+                <div class="item-buyPrice"><input type="number" name="system.shop.inventory.{{entryId}}.buyPrice.value" value="{{item.buyPrice.value}}"/></div>
+                <div class="item-availability">{{item.availability.value}}</div>
+                <div class="item-buyTime">{{item.buyTime.value}} {{item.buyTime.unit}}</div>
+                <div class="item-comment">{{item.comments}}</div>
+            </div>
+        {{/each}}
+    </div>
+</div>

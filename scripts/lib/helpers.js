@@ -13,6 +13,12 @@ export const registerBasicHelpers = () => {
         if (typeof string !== 'string' || !string) return '';
         return string.charAt(0).toUpperCase() + string.slice(1);
     });
+    Handlebars.registerHelper('hasKeys', function (obj, options) {
+        if (obj && Object.keys(obj).length > 0) {
+            return options.fn(this);
+        }
+        return options.inverse(this);
+    });
     // Add other helpers here if needed  
     Handlebars.registerHelper('for', function (from, to, options) {
             let accum = '';

@@ -31,7 +31,21 @@
                 }
             },
             "Shop": {
-                "SheetName": "Shop"
+                "SheetName": "Shop",
+                "Inventory": "Inventory",
+                "ItemName": "Name",
+                "ItemRating": "Rating",
+                "SellPrice": "Sell Price",
+                "BuyPrice": "Buy Price",
+                "BuyTime": "Buy Time",
+                "Comment": "Comment",
+                "Employees": "Employees",
+                "OneUuidPerLine": "One UUID per line",
+                "Discount": "Discount",
+                "Fee": "Fee",
+                "Modifier": "Price Modifier",
+                "ConnectionUuid": "Connection",
+                "Owner": "Shop Owner"
             },
             "funds": "Funds",
             "YourOrderHasArrived": "Your order has arrived!",

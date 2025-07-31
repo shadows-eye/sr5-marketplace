@@ -16,8 +16,10 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     static DEFAULT_OPTIONS = {
         classes: ["sr5", "shop", "sr5-marketplace-shop"],
         position: {
-            width: 900,
-            height: 650
+            left: 103.5,
+            top: 18,
+            width: 1080,
+            height: 900
         },
         template: "modules/sr5-marketplace/templates/actor/actor-shop.html",
         actions: {
@@ -143,47 +145,63 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         context.tab = context.tabs[partId];
         switch (partId) {
             case "shop-details":
+                const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
                 context.shopEmployees = this.document.system.shop?.employees?.join('\n') || "";
                 context.modifierTypes = {
                     discount: game.i18n.localize("SR5.Marketplace.Shop.Discount"),
                     fee: game.i18n.localize("SR5.Marketplace.Shop.Fee")
                 };
-
-                // MOVED: Prepare skills data here, since the partial is inside this tab.
                 const skills = this.document.system.skills;
                 
                 // Prepare Active Skills
                 context.activeSkills = Object.entries(skills.active).map(([key, data]) => {
                     const locKey = CONFIG.SR5.activeSkills[key];
                     return {
-                        name: game.i18n.localize(locKey),
-                        rating: data.value
+                        id: key, // Use the skill's key as its ID
+                        name: game.i18n.localize(locKey) || key,
+                        value: data.value
                     };
                 });
-
                 // Prepare Knowledge Skills
-                context.knowledgeSkills = Object.entries(skills.knowledge).map(([name, data]) => {
+                context.knowledgeSkillGroups = Object.entries(skills.knowledge).map(([groupKey, groupData]) => {
                     return {
-                        name: name,
-                        rating: data.value
+                        label: game.i18n.localize(`SR5.KnowledgeSkill${capitalize(groupKey)}`),
+                        skills: Object.entries(groupData.value).map(([skillId, skillData]) => ({
+                            id: skillId, // Use the skill's random key as its ID
+                            name: skillData.name,
+                            value: skillData.value
+                        }))
                     };
                 });
-
                 // Prepare Language Skills
-                context.languageSkills = Object.entries(skills.language).map(([name, data]) => {
-                    return {
-                        name: name,
-                        rating: data.value
-                    };
-                });
-                break;
+                context.languageSkills = Object.entries(skills.language.value).map(([skillId, skillData]) => ({
+                    id: skillId, // Use the skill's random key as its ID
+                    name: skillData.name,
+                    value: skillData.value
+                }));
+                // --- ADDED: Prepare Inventory Data ---
+                const inventory = this.document.system.shop.inventory;
+                const preparedInventory = {};
 
-            // This case is no longer needed unless you create a separate skills tab again.
-            case "skills":
+                for (const [entryId, itemData] of Object.entries(inventory)) {
+                    // Fetch the full item document from its UUID
+                    const sourceItem = await fromUuid(itemData.itemUuid);
+                    if (!sourceItem) continue;
+
+                    // Combine system data with your module's shop data
+                    preparedInventory[entryId] = {
+                        ...itemData, // Includes sellPrice, buyPrice, etc. from your data model
+                        img: sourceItem.img,
+                        name: sourceItem.name,
+                        rating: sourceItem.system.rating || 0,
+                        itemPrice: sourceItem.system.cost || 0,
+                        // Override availability.value with the system's if you want
+                        // availability: { value: sourceItem.system.availability, base: itemData.availability.base }
+                    };
+                }
+                context.inventory = preparedInventory;
                 break;
-                
             case "biography":
-                context.isEditing = this._isEditingBiography;
                 context.biographyHTML = await enrichHTML(this.document.system.description.value, {
                     async: true,
                     relativeTo: this.document

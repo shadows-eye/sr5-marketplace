@@ -31,7 +31,20 @@
                 }
             },
             "Shop": {
-                "SheetName": "Geschäft"
+                "SheetName": "Geschäft",
+                "ItemName": "Name",
+                "ItemRating": "Stufe",
+                "SellPrice": "Verkaufspreis",
+                "BuyPrice": "Kaufpreis",
+                "BuyTime": "Kaufzeit",
+                "Comment": "Kommentar",
+                "Employees": "Mitarbeiter",
+                "OneUuidPerLine": "Eine UUID pro Zeile",
+                "Discount": "Rabatt",
+                "Fee": "Gebühr",
+                "Modifier": "Preisänderung",
+                "ConnectionUuid": "Verbindung",
+                "Owner": "Geschäftsinhaber"
             },
             "funds": "Budget",
             "YourOrderHasArrived": "Deine Bestellung ist angekommen!",
