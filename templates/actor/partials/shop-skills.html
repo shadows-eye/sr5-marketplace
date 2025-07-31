@@ -1,48 +1,65 @@
-<section class="tab skills {{tab.cssClass}}" data-group="primary" data-tab="skills">
-    <div class="skills-list">
+<div class="skills-list">
 
-        <!-- Active Skills -->
-        <h3>{{localize "SR5.ActiveSkills"}}</h3>
-        <div class="active-skills skill-group">
-            <div class="skill-header sr5-grid-3c">
-                <span></span><span class="skill-name">{{localize "SR5.Name"}}</span><span class="skill-rating">{{localize "SR5.Rating"}}</span>
-            </div>
-            <div class="sr5-grid-3c">
-                {{#each activeSkills as |skill|}}
-                    <div class="skill-icon" data-id="{{skill.id}}"></div>
-                    <div class="skill-name" data-id="{{skill.id}}">{{skill.name}}</div>
-                    <div class="skill-rating">{{skill.value}}</div>
-                {{/each}}
-            </div>
-        </div>
-
-        <!-- Knowledge Skills -->
-        <h4>{{localize "SR5.Skill.Skills"}} {{localize "SR5.KnowledgeSkillInterests"}}</h4>
-        <div class="knowledge-skills skill-group">
-
-            <div class="skill-header sr5-grid-3c">
-                <span></span><span class="skill-name">{{localize "SR5.Name"}}</span><span class="skill-rating">{{localize "SR5.Rating"}}</span>
-            </div>
-            <div class="sr5-grid-3c">
-                {{#each knowledgeSkillGroups as |group|}}
-                    {{#each group.skills as |skill|}}
+    {{!-- Active Skills --}}
+    <div class="collapsible-section">
+        <input type="checkbox" id="toggle-active-skills" class="toggle" checked>
+        <label for="toggle-active-skills" class="toggle-label">
+            <h3>{{localize "SR5.ActiveSkills"}}</h3>
+        </label>
+        <div class="toggle-content">
+            <div class="active-skills skill-group">
+                <div class="skill-header sr5-grid-3c">
+                    <span></span><span class="skill-name">{{localize "SR5.Name"}}</span><span class="skill-rating">{{localize "SR5.Rating"}}</span>
+                </div>
+                <div class="sr5-grid-3c">
+                    {{#each activeSkills as |skill|}}
                         <div class="skill-icon" data-id="{{skill.id}}"></div>
                         <div class="skill-name" data-id="{{skill.id}}">{{skill.name}}</div>
                         <div class="skill-rating">{{skill.value}}</div>
                     {{/each}}
-                {{/each}}
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Language Skills -->
-        <h3>{{localize "SR5.Languages"}}</h3>
-        <div class="language-skills skill-group">
-
-            <div class="skill-header sr5-grid-3c">
-                <span></span><span class="skill-name">{{localize "SR5.Name"}}</span><span class="skill-rating">{{localize "SR5.Rating"}}</span>
+    {{!-- Knowledge Skills (Reworked to show sub-categories directly) --}}
+    {{#each knowledgeSkillGroups as |group|}}
+        <div class="collapsible-section">
+            <input type="checkbox" id="toggle-knowledge-{{group.label}}" class="toggle">
+            <label for="toggle-knowledge-{{group.label}}" class="toggle-label">
+                <h3>{{group.label}}</h3>
+            </label>
+            <div class="toggle-content">
+                <div class="knowledge-skills skill-group">
+                    <div class="skill-header sr5-grid-3c">
+                        <span></span><span class="skill-name">{{localize "SR5.Name"}}</span><span class="skill-rating">{{localize "SR5.Rating"}}</span>
+                    </div>
+                    <div class="sr5-grid-3c">
+                        {{#each group.skills as |skill|}}
+                            <div class="skill-icon" data-id="{{skill.id}}"></div>
+                            <div class="skill-name" data-id="{{skill.id}}">{{skill.name}}</div>
+                            <div class="skill-rating">{{skill.value}}</div>
+                        {{/each}}
+                        {{#unless group.skills}}
+                            <div class="skill-entry-empty">No skills learned.</div>
+                        {{/unless}}
+                    </div>
+                </div>
             </div>
-            {{!-- The list is only populated if skills exist. --}}
-            {{#if languageSkills}}
+        </div>
+    {{/each}}
+
+    {{!-- Language Skills --}}
+    <div class="collapsible-section">
+        <input type="checkbox" id="toggle-language-skills" class="toggle">
+        <label for="toggle-language-skills" class="toggle-label">
+            <h3>{{localize "SR5.Languages"}}</h3>
+        </label>
+        <div class="toggle-content">
+            <div class="language-skills skill-group">
+                <div class="skill-header sr5-grid-3c">
+                    <span></span><span class="skill-name">{{localize "SR5.Name"}}</span><span class="skill-rating">{{localize "SR5.Rating"}}</span>
+                </div>
                 <div class="sr5-grid-3c">
                     {{#each languageSkills as |skill|}}
                         <div class="skill-icon" data-id="{{skill.id}}"></div>
@@ -50,8 +67,11 @@
                         <div class="skill-rating">{{skill.value}}</div>
                     {{/each}}
                 </div>
-            {{/if}}
+                {{#unless languageSkills}}
+                    <div class="skill-entry-empty">No languages learned.</div>
+                {{/unless}}
+            </div>
         </div>
-
     </div>
-</section>
+
+</div>

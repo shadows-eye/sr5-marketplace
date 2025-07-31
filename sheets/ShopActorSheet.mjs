@@ -21,10 +21,8 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             width: 1080,
             height: 900
         },
-        template: "modules/sr5-marketplace/templates/actor/actor-shop.html",
         actions: {
-            ...super.DEFAULT_OPTIONS.actions,
-            // We use a custom action name to call our custom in-place editor logic.
+            ...super.DEFAULT_OPTIONS.actions
         }
     };
 
@@ -46,8 +44,8 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             template: "templates/generic/tab-navigation.hbs"
         },
         // The content for the tabs.
-        "shop-details": {
-            template: "modules/sr5-marketplace/templates/actor/partials/shop-details.html"
+        actorShop: {
+            template: "modules/sr5-marketplace/templates/actor/actorShop.html",
         },
         biography: {
             template: "modules/sr5-marketplace/templates/actor/partials/shop-biography.html"
@@ -60,10 +58,10 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     static TABS = {
         primary: {
             tabs: [
-                { id: "shop-details", label: "Shop Details" },
+                { id: "actorShop", label: "Shop Details" },
                 { id: "biography", label: "Biography" }
             ],
-            initial: "shop-details"
+            initial: "actorShop"
         }
     };
 
@@ -144,7 +142,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     async _preparePartContext(partId, context) {
         context.tab = context.tabs[partId];
         switch (partId) {
-            case "shop-details":
+            case "actorShop":
                 const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
                 context.shopEmployees = this.document.system.shop?.employees?.join('\n') || "";
                 context.modifierTypes = {
@@ -220,5 +218,24 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         }
         this.document.update(data);
         return data;
+    }
+
+    /**
+     * @override
+     * Force the sheet to re-render when switching tabs.
+     * This ensures the context preparation is always run for the active tab.
+     * @param {MouseEvent} event    The originating click event.
+     * @param {string} group        The tab group name.
+     * @param {string} active       The slug of the tab being activated.
+     */
+    _onSwitchTab(event, group, active) {
+        // --- DEBUG LOG ---
+        console.log(`Tab switched. Active tab is now: ${active}`);
+
+        super._onSwitchTab(event, group, active);
+        
+        // --- DEBUG LOG ---
+        console.log("Forcing a re-render.");
+        this.render();
     }
 }

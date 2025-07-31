@@ -1,0 +1,52 @@
+<section class="tab actorShop {{tab.cssClass}}" data-group="primary" data-tab="actorShop">
+    <div class="sr5-grid-c2"> 
+        {{!-- Column 1: Shop Details & Inventory --}}
+        <div class="shop-column-1">
+            <fieldset class="sr5-marketplace-shop-fields">
+                <legend>{{"Shop"}}</legend>
+            
+                <div class="form-group">
+                    <label>{{localize "SR5.Marketplace.Shop.OwnerUuid"}}</label>
+                    <div class="form-fields">
+                        <input type="text" name="system.shop.owner" value="{{system.shop.owner}}" placeholder="Actor UUID of the owner" 
+                        {{#unless isGM}}disabled{{/unless}}/>
+                    </div>
+                </div>
+            
+                <div class="form-group">
+                    <label>{{localize "SR5.Marketplace.Shop.ConnectionUuid"}}</label>
+                    <div class="form-fields">
+                        <input type="text" name="system.shop.connection" value="{{system.shop.connection}}" placeholder="Item UUID of the connection"/>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>{{localize "SR5.Marketplace.Shop.Modifier"}}</label>
+                    <div class="form-fields">
+                        <input type="number" name="system.shop.modifierValue.base" value="{{system.shop.modifierValue.base}}" class="modifier-value"/>
+                        <select name="system.shop.modifierType">
+                            {{selectOptions modifierTypes selected=system.shop.modifierType}}
+                        </select>
+                    </div>
+                </div>
+            
+                <div class="form-group stacked">
+                    <label>{{localize "SR5.Marketplace.Shop.Employees"}} <span>({{localize "SR5.Marketplace.Shop.OneUuidPerLine"}})</span></label>
+                    <textarea name="system.shop.employees">{{shopEmployees}}</textarea>
+                </div>
+            </fieldset>
+
+            <fieldset class="sr5-marketplace-inventory-fields">
+                <legend>{{localize "SR5.Marketplace.Shop.Inventory"}}</legend>
+                {{> 'modules/sr5-marketplace/templates/actor/partials/shop-inventory.html' }}
+            </fieldset>
+        </div>
+
+        {{!-- Column 2: Skills --}}
+        <div class="shop-column-2">
+            <fieldset class="sr5-marketplace-skills-fields">
+                {{> 'modules/sr5-marketplace/templates/actor/partials/shop-skills.html' }}
+            </fieldset>
+        </div>
+    </div>
+</section>

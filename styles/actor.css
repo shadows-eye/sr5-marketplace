@@ -125,6 +125,8 @@ section.tab.shop-details.active{
     gap: 15px; /* Space between skill categories */
 }
 
+/* Grid Layouts
+
 /* The grid layout for skill entries */
 .sr5-grid-3c {
     display: grid;
@@ -133,6 +135,24 @@ section.tab.shop-details.active{
     gap: 5px 10px; /* Row and column gap */
     align-items: center;
 }
+/* Creates the 2-column grid for the shop details tab */
+.sr5-grid-c2 {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* First column is twice as wide as the second */
+    gap: 15px;
+    align-items: start; /* Aligns items to the top of their grid cell */
+}
+
+/* Defines the 9-column grid for the inventory */
+.sr5-grid-c9 {
+    display: grid;
+    /* Defines the size of each of the 9 columns */
+    grid-template-columns: 30px 2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    gap: 5px 10px; /* Row and column gap */
+    align-items: center;
+    text-align: center;
+}
+
 
 /* Styling for each skill group (Active, Knowledge, etc.) */
 .skill-group {
@@ -158,15 +178,6 @@ section.tab.shop-details.active{
 }
 
 /* Inventory Item Styles */
-/* Defines the 9-column grid for the inventory */
-.sr5-grid-c9 {
-    display: grid;
-    /* Defines the size of each of the 9 columns */
-    grid-template-columns: 30px 2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-    gap: 5px 10px; /* Row and column gap */
-    align-items: center;
-    text-align: center;
-}
 
 /* Styles the header row of the inventory grid */
 .inventory-header {
@@ -206,4 +217,63 @@ section.tab.shop-details.active{
     color: var(--text-light);
     border: 1px solid var(--border-dark);
     border-radius: 3px;
+}
+
+/* --- Skills Column & Collapsible Sections --- */
+
+/* Make the column a flex container that can grow. */
+.shop-column-2 {
+    display: flex;
+    flex-direction: column;
+    /* This prevents the column from overflowing the sheet body */
+    min-height: 0;
+}
+
+/* Make the fieldset containing the skills fill the column's space. */
+.sr5-marketplace-skills-fields {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    max-height:400px;
+}
+
+/* Make the skills-list itself the scrollable element. */
+.skills-list {
+    display: block;
+    overflow-y: auto; /* This makes the list scrollable */
+    padding-right: 5px; /* Adds space for the scrollbar */
+    flex-grow: 1; /* Allows the list to fill the available space */
+}
+
+/* --- Collapsible Logic --- */
+
+.skills-list input.toggle {
+    display: none;
+}
+
+.skills-list .toggle-label {
+    cursor: pointer;
+    display: block;
+    user-select: none;
+    padding: 2px 5px;
+    transition: background 0.2s ease;
+    /* Make headers sticky inside the scrolling list */
+    position: sticky;
+    z-index: 1;
+}
+
+.skills-list .toggle-label:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.skills-list .toggle-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    padding-left: 20px;
+}
+
+.skills-list input.toggle:checked ~ .toggle-content {
+    min-height: fit-content; /* Use a large value to allow content to expand fully */
+    transition: max-height 0.5s ease-in;
 }
