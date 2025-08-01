@@ -11,7 +11,7 @@
                     
                     {{!-- If in edit mode, show an input. Otherwise, show a span. --}}
                     {{#if @root.isEditMode}}
-                        <input type="number" name="system.attributes.{{name}}.base" value="{{attr.base}}" class="sr5-marketplace-input value-input" />
+                        <input type="number" name="system.attributes.{{name}}.value" value="{{attr.value}}" class="sr5-marketplace-input value-input" />
                     {{else}}
                         <span class="sr5-marketplace-input value">{{attr.value}}</span>
                     {{/if}}
@@ -29,7 +29,7 @@
                     <label>{{localize (concat "SR5.Attr" (capitalize name))}}</label>
 
                     {{#if @root.isEditMode}}
-                        <input type="number" name="system.attributes.{{name}}.base" value="{{attr.base}}" class="sr5-marketplace-input value-input" />
+                        <input type="number" name="system.attributes.{{name}}.value" value="{{attr.value}}" class="sr5-marketplace-input value-input" />
                     {{else}}
                         <span class="sr5-marketplace-input value">{{attr.value}}</span>
                     {{/if}}
@@ -53,7 +53,7 @@
                     </label>
 
                     {{#if @root.isEditMode}}
-                        <input type="number" name="system.attributes.{{name}}.base" value="{{attr.base}}" class="sr5-marketplace-input value-input" />
+                        <input type="number" name="system.attributes.{{name}}.value" value="{{attr.value}}" class="sr5-marketplace-input value-input" />
                     {{else}}
                         <span class="sr5-marketplace-input value">{{attr.value}}</span>
                     {{/if}}

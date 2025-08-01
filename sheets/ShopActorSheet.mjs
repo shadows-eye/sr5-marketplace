@@ -163,6 +163,9 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         context.isEditMode = this._mode === "edit";
         switch (partId) {
             case "actorShop":
+                context.owner = await this.document.getOwner();
+                context.connection = await this.document.getConnection();
+                context.employees = await this.document.getEmployees();
                 const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
                 context.shopEmployees = this.document.system.shop?.employees?.join('\n') || "";
                 context.modifierTypes = {
@@ -301,5 +304,44 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         // --- DEBUG LOG ---
         console.log("Forcing a re-render.");
         this.render();
+    }
+    /**
+     * @override
+     * Handle dropped data on the sheet.
+     * @param {DragEvent} event The concluding drag-and-drop event.
+     */
+    async _onDrop(event) {
+        // Prevent the default browser behavior.
+        event.preventDefault();
+
+        // Find the drop target element.
+        const dropTarget = event.target.closest(".drop-target");
+        if (!dropTarget || !this.isEditMode) return;
+
+        // Get the data from the drop event.
+        let data;
+        try {
+            data = JSON.parse(event.dataTransfer.getData('text/plain'));
+        } catch (err) {
+            return;
+        }
+
+        // Check if the dropped document type is valid for this target.
+        const expectedType = dropTarget.dataset.dropType;
+        if (data.type !== expectedType) {
+            ui.notifications.warn(`You can only drop a ${expectedType} here.`);
+            return;
+        }
+        
+        // Get the target field from the drop zone.
+        const targetField = dropTarget.dataset.targetField;
+        
+        if (targetField === "system.shop.employees") {
+            // Add the actor to the employees array.
+            this.document.addEmployee(data.uuid);
+        } else {
+            // For single fields like owner or connection, update the value.
+            this.document.update({ [targetField]: data.uuid });
+        }
     }
 }

@@ -4,35 +4,77 @@
         <div class="shop-column-1">
             <fieldset class="sr5-marketplace-shop-fields">
                 <legend>{{"Shop"}}</legend>
-            
+
+                <!-- Owner Field -->
                 <div class="form-group">
                     <label>{{localize "SR5.Marketplace.Shop.OwnerUuid"}}</label>
                     <div class="form-fields">
-                        <input type="text" name="system.shop.owner" value="{{system.shop.owner}}" placeholder="Actor UUID of the owner" 
-                        {{#unless isGM}}disabled{{/unless}}/>
+                        {{#if isEditMode}}
+                            <div class="drop-target" data-drop-type="Actor" data-target-field="system.shop.owner">
+                                {{#if owner}}
+                                    <img src="{{owner.img}}" width="36" height="36"/>
+                                    <span>{{owner.name}}</span>
+                                {{else}}
+                                    <span>Drag an Actor here</span>
+                                {{/if}}
+                            </div>
+                        {{else}}
+                            <span class="read-only">{{owner.name}}</span>
+                        {{/if}}
                     </div>
                 </div>
             
+                 <!-- Connection Field -->
                 <div class="form-group">
                     <label>{{localize "SR5.Marketplace.Shop.ConnectionUuid"}}</label>
                     <div class="form-fields">
-                        <input type="text" name="system.shop.connection" value="{{system.shop.connection}}" placeholder="Item UUID of the connection"/>
+                         {{#if isEditMode}}
+                            <div class="drop-target" data-drop-type="Item" data-target-field="system.shop.connection">
+                                {{#if connection}}
+                                    <img src="{{connection.img}}" width="36" height="36"/>
+                                    <span>{{connection.name}}</span>
+                                {{else}}
+                                    <span>Drag an Item here</span>
+                                {{/if}}
+                            </div>
+                        {{else}}
+                            <span class="read-only">{{connection.name}}</span>
+                        {{/if}}
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label>{{localize "SR5.Marketplace.Shop.Modifier"}}</label>
                     <div class="form-fields">
-                        <input type="number" name="system.shop.modifierValue.base" value="{{system.shop.modifierValue.base}}" class="modifier-value"/>
+                        <input type="number" name="system.shop.modifierValue.value" value="{{system.shop.modifierValue.value}}" class="modifier-value"/>
                         <select name="system.shop.modifierType">
                             {{selectOptions modifierTypes selected=system.shop.modifierType}}
                         </select>
                     </div>
                 </div>
             
+                <!-- Employees Field -->
                 <div class="form-group stacked">
-                    <label>{{localize "SR5.Marketplace.Shop.Employees"}} <span>({{localize "SR5.Marketplace.Shop.OneUuidPerLine"}})</span></label>
-                    <textarea name="system.shop.employees">{{shopEmployees}}</textarea>
+                    <label>{{localize "SR5.Marketplace.Shop.Employees"}}</label>
+                     {{#if isEditMode}}
+                        <div class="drop-target" data-drop-type="Actor" data-target-field="system.shop.employees">
+                            <ol class="employee-list">
+                                {{#each employees as |employee|}}
+                                    <li data-uuid="{{employee.uuid}}">
+                                        <img src="{{employee.img}}" width="24" height="24"/>
+                                        {{employee.name}}
+                                    </li>
+                                {{/each}}
+                                <li class="drop-hint">Drag Actors here to add them</li>
+                            </ol>
+                        </div>
+                    {{else}}
+                        <ol class="employee-list">
+                            {{#each employees as |employee|}}
+                                <li>{{employee.name}}</li>
+                            {{/each}}
+                        </ol>
+                    {{/if}}
                 </div>
             </fieldset>
 

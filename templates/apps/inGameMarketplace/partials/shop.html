@@ -1,6 +1,6 @@
 <div class="shop-container">
     <div class="marketplace-filter" id="marketplaceActorDropzone">
-        <label for="item-type-selector">{{localize "SR5.Marketplace.SelectItemType"}}:</label>
+        <div for="item-type-selector">{{localize "SR5.Marketplace.SelectItemType"}}:</div>
         <select id="item-type-selector" name="item-type-selector" class="item-type-selector" data-action="changeCategory">
             {{#each itemsByType as |category key|}}
               {{#if category.items.length}}
@@ -10,8 +10,8 @@
               {{/if}}
             {{/each}}
         </select>
-        
-        <label for="search-box">{{localize "SR5.Marketplace.Search"}}:</label>
+
+        <div for="search-box">{{localize "SR5.Marketplace.Search"}}:</div>
         <input type="text" id="search-box" placeholder='{{localize "SR5.Marketplace.Search items..."}}' class="marketplace-search">
         <div id="filter-tags-container"></div>
         <div class="sr5-marketplace SR5ShopActor-box" id="shopActorDropzone">
