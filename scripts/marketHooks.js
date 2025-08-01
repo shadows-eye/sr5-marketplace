@@ -224,7 +224,9 @@ Hooks.once("init", () => {
     initializeTemplates();
     initializeSettings();
     // Register the custom ShopActor class
-    defineShopActorClass();
+    const {shopActor, ShopActorSheet} = defineShopActorClass();
+    CONFIG.Actor.documentClass[SHOP_ACTOR_TYPE] = shopActor;
+
     // Register the custom ShopActorSheet
     Actors.registerSheet("sr5-marketplace", ShopActorSheet, {
         types: [SHOP_ACTOR_TYPE],
@@ -253,7 +255,6 @@ Hooks.once("init", () => {
 Hooks.on("ready", async () => {
     console.log("SR5 Marketplace | Module is ready!");
     await game.sr5marketplace.itemData.initialize();
-
     if (game.user.isGM) {
         game.socket.on("module.sr5-marketplace", () => {
             // A real-time event was received. Trigger a re-draw after a short delay.

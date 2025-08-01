@@ -45,7 +45,29 @@
                 "Fee": "Fee",
                 "Modifier": "Price Modifier",
                 "ConnectionUuid": "Connection",
-                "Owner": "Shop Owner"
+                "Owner": "Shop Owner",
+                "FIELDS": {
+                    "owner": {
+                        "label": "Shop Owner",
+                        "hint": "The UUID of the Actor who owns this shop."
+                    },
+                    "employees": {
+                        "label": "Employees",
+                        "hint": "A list of Actor UUIDs who are employees of this shop."
+                    },
+                    "connection": {
+                        "label": "Connection",
+                        "hint": "The UUID of an Item that represents the shop's primary Connection."
+                    },
+                    "modifierValue": {
+                        "label": "Modifier Value",
+                        "hint": "The numeric value of the fee or discount."
+                    },
+                    "modifierType": {
+                        "label": "Modifier Type",
+                        "hint": "Whether the modifier is a fee or a discount."
+                    }
+                }
             },
             "funds": "Funds",
             "YourOrderHasArrived": "Your order has arrived!",
@@ -142,6 +164,52 @@
         "Actor": {
             "sr5-marketplace.shop": "Marketplace Shop"
         }
-    }
+    },
+    "FIELDS": {
+            "description": {
+                "label": "Description"
+            },
+            "attributes": {
+                "label": "Attributes",
+                "body": { "label": "Body" },
+                "agility": { "label": "Agility" },
+                "reaction": { "label": "Reaction" },
+                "strength": { "label": "Strength" },
+                "willpower": { "label": "Willpower" },
+                "logic": { "label": "Logic" },
+                "intuition": { "label": "Intuition" },
+                "charisma": { "label": "Charisma" },
+                "magic": { "label": "Magic" },
+                "resonance": { "label": "Resonance" },
+                "essence": { "label": "Essence" },
+                "edge": { "label": "Edge" },
+                "initiation": { "label": "Initiation" },
+                "submersion": { "label": "Submersion" }
+            },
+            "skills": {
+                "label": "Skills"
+            },
+            "limits": {
+                "label": "Limits",
+                "social": { "label": "Social Limit" },
+                "mental": { "label": "Mental Limit" },
+                "physical": { "label": "Physical Limit" },
+                "astral": { "label": "Astral Limit" }
+            },
+            "track": {
+                "label": "Condition Tracks",
+                "physical": { "label": "Physical" },
+                "stun": { "label": "Stun" }
+            },
+            "movement": {
+                "label": "Movement",
+                "walk": { "label": "Walk" },
+                "run": { "label": "Run" }
+            },
+            "nuyen": { "label": "Nuyen" },
+            "karma": { "label": "Karma" 
+        }
+    }  
+    
 }
 

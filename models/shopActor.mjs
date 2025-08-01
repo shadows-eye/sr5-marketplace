@@ -41,6 +41,9 @@ export function defineShopActorClass() {
      * Defines the custom data model for a Shop Actor, extending the base CharacterData from Shadowrun5e system.
      */
     class ShopActorData extends CharacterData {
+        static get LOCALIZATION_PREFIXES() {
+            return super.LOCALIZATION_PREFIXES.concat("SR5" ,"SR5.Marketplace.Shop");
+        }
         static defineSchema() {
             const parentSchema = super.defineSchema();
             const fields = foundry.data.fields;
@@ -82,8 +85,12 @@ export function defineShopActorClass() {
                     base: new foundry.data.fields.NumberField({ initial: 0 })
                 }),
                 modifierType: new foundry.data.fields.StringField({ initial: "discount", choices: ["discount", "fee"] }),
-                shopRadius: new foundry.data.fields.NumberField({ initial: 1, min: 1, integer: true }),
-                
+                shopRadius: new foundry.data.fields.SchemaField({
+                        value: new foundry.data.fields.NumberField({ initial: 0, min: 0 }),
+                        base: new foundry.data.fields.NumberField({ initial: 0, min: 0 })
+                    }),
+                tokenInRadius: new foundry.data.fields.ObjectField({ initial: {} }),
+
                 // Validating the inventory as an object with dynamic keys
                 // Each key is an inventory entry ID, and each value is an inventory item object.
                 inventory: new foundry.data.fields.ObjectField({
@@ -111,30 +118,179 @@ export function defineShopActorClass() {
     CONFIG.Actor.dataModels[SHOP_ACTOR_TYPE] = ShopActorData;
 
     /**
-     * The custom Actor class for Shops.
+     * The custom Actor class for Shops, with a full API for data management.
      */
     class ShopActor extends SR5Actor {
+        /**
+         * A convenience getter for the shop-specific data.
+         * @type {object}
+         */
         get shop() {
             return this.system.shop;
         }
 
+        /**
+         * @override
+         * This method is called after the Actor's data has been updated. We use it to trigger
+         * a rescan for tokens in the shop's radius if the radius has changed.
+         * @param {object} data         The data that was changed.
+         * @param {object} options      Options for the update.
+         * @param {string} userId       The ID of the user who triggered the update.
+         */
+        _onUpdate(data, options, userId) {
+            super._onUpdate(data, options, userId);
+            if (foundry.utils.hasProperty(data, "system.shop.shopRadius")) {
+                this._updateTokensInRadius();
+            }
+        }
+
+        // --- Owner Management ---
+
+        /**
+         * Retrieves the Actor document for the shop's owner.
+         * @returns {Promise<Actor5e|null>} The owner actor document, or null if not set.
+         */
         async getOwner() {
             if (!this.shop.owner) return null;
             return fromUuid(this.shop.owner);
         }
 
-        async getEmployees() {
-            if (!this.shop.employees?.length) return [];
-            const employeeUuids = this.shop.employees.filter(uuid => uuid);
-            return fromUuid.multi(employeeUuids);
+        /**
+         * Sets the owner of the shop.
+         * @param {string} actorUuid The UUID of the actor to set as the owner.
+         * @returns {Promise<this>} The updated ShopActor document.
+         */
+        async updateOwner(actorUuid) {
+            return this.update({ "system.shop.owner": actorUuid });
         }
 
+        /**
+         * Removes the owner from the shop.
+         * @returns {Promise<this>} The updated ShopActor document.
+         */
+        async removeOwner() {
+            return this.update({ "system.shop.owner": "" });
+        }
+
+        // --- Employee Management ---
+
+        /**
+         * Retrieves an array of Actor documents for the shop's employees.
+         * @returns {Promise<Actor5e[]>} An array of employee actor documents.
+         */
+        async getEmployees() {
+            if (!this.shop.employees?.length) return [];
+            return fromUuid.multi(this.shop.employees.filter(uuid => uuid));
+        }
+
+        /**
+         * Adds an employee to the shop.
+         * @param {string} actorUuid The UUID of the actor to add as an employee.
+         * @returns {Promise<this>|void} The updated ShopActor document, or void if the employee already exists.
+         */
+        async addEmployee(actorUuid) {
+            const employees = this.shop.employees;
+            if (employees.includes(actorUuid)) return;
+            return this.update({ "system.shop.employees": [...employees, actorUuid] });
+        }
+
+        /**
+         * Removes an employee from the shop.
+         * @param {string} actorUuid The UUID of the actor to remove.
+         * @returns {Promise<this>} The updated ShopActor document.
+         */
+        async removeEmployee(actorUuid) {
+            const employees = this.shop.employees.filter(uuid => uuid !== actorUuid);
+            return this.update({ "system.shop.employees": employees });
+        }
+
+        // --- Connection Management ---
+
+        /**
+         * Retrieves the Item document for the shop's connection.
+         * @returns {Promise<Item5e|null>} The connection item document, or null if not set.
+         */
         async getConnection() {
             if (!this.shop.connection) return null;
             return fromUuid(this.shop.connection);
         }
 
-        // --- INVENTORY MANAGEMENT METHODS ---
+        /**
+         * Sets the connection item for the shop.
+         * @param {string} itemUuid The UUID of the item to set as the connection.
+         * @returns {Promise<this>} The updated ShopActor document.
+         */
+        async updateConnection(itemUuid) {
+            return this.update({ "system.shop.connection": itemUuid });
+        }
+
+        /**
+         * Removes the connection from the shop.
+         * @returns {Promise<this>} The updated ShopActor document.
+         */
+        async removeConnection() {
+            return this.update({ "system.shop.connection": "" });
+        }
+
+        // --- Modifier Management ---
+
+        /**
+         * Updates the shop's global price modifier.
+         * @param {object} [modifierData={}] The data to update.
+         * @param {number} [modifierData.value] The new base value for the modifier.
+         * @param {string} [modifierData.type]  The new type of modifier ('discount' or 'fee').
+         * @returns {Promise<this>} The updated ShopActor document.
+         */
+        async updateModifier({ value, type } = {}) {
+            const updateData = {};
+            if ( value !== undefined ) updateData["system.shop.modifierValue.base"] = value;
+            if ( type !== undefined ) updateData["system.shop.modifierType"] = type;
+            return this.update(updateData);
+        }
+
+        // --- Shop Radius & Token Detection ---
+
+        /**
+         * Updates the base radius of the shop for detecting nearby tokens.
+         * @param {number} baseRadius The new radius.
+         * @returns {Promise<this>} The updated ShopActor document.
+         */
+        async updateShopRadius(baseRadius) {
+            return this.update({ "system.shop.shopRadius.base": baseRadius });
+        }
+
+        /**
+         * Retrieves the Token documents for all tokens currently within the shop's radius.
+         * @returns {Promise<TokenDocument[]>} An array of TokenDocuments.
+         */
+        async getTokensInRadius() {
+            if (!this.shop.tokenInRadius) return [];
+            const tokenUuids = Object.values(this.shop.tokenInRadius).map(data => data.uuid);
+            return fromUuid.multi(tokenUuids);
+        }
+
+        /**
+         * Finds all tokens on the current canvas within the shop's radius and updates the actor's data.
+         * @private
+         */
+        async _updateTokensInRadius() {
+            if (!canvas.ready || !this.token) return;
+            const shopToken = this.token;
+            const radius = this.system.shop.shopRadius.value;
+            const tokensInRange = {};
+            const otherTokens = canvas.tokens.placeables.filter(t => t.id !== shopToken.id);
+
+            for (const token of otherTokens) {
+                const distance = canvas.grid.measureDistance(shopToken, token);
+                if (distance <= radius) {
+                    tokensInRange[token.id] = { uuid: token.uuid, x: token.x, y: token.y };
+                }
+            }
+            await this.update({ "system.shop.tokenInRadius": tokensInRange });
+            console.log(`Found ${Object.keys(tokensInRange).length} tokens within the shop's radius.`);
+        }
+
+        // --- Inventory Management ---
 
         /**
          * Finds an inventory entry by the source item's UUID.
@@ -149,7 +305,7 @@ export function defineShopActorClass() {
          * Adds an item to the inventory.
          * @param {Item} itemData The full Item document to add.
          * @param {object} [shopData={}] Shop-specific data.
-         * @returns {Promise<Actor>}
+         * @returns {Promise<this>}
          */
         async addItemToInventory(itemData, shopData = {}) {
             if (!itemData?.uuid) throw new Error("Item data must include a UUID.");
@@ -172,10 +328,10 @@ export function defineShopActorClass() {
         }
 
         /**
-         * Updates an item in the inventory.
+         * A generic method to update any properties of an item in the inventory.
          * @param {string} inventoryEntryId The unique ID of the inventory entry.
          * @param {object} updateData Data to change, e.g., { qty: 5, "sellPrice.value": 150 }.
-         * @returns {Promise<Actor>}
+         * @returns {Promise<this>}
          */
         async updateInventoryItem(inventoryEntryId, updateData) {
             const expandedUpdateData = {};
@@ -186,9 +342,9 @@ export function defineShopActorClass() {
         }
 
         /**
-         * Removes an item from the inventory.
+         * Removes an item from the shop's inventory.
          * @param {string} inventoryEntryId The unique ID of the inventory entry.
-         * @returns {Promise<Actor>}
+         * @returns {Promise<this>}
          */
         async removeItemFromInventory(inventoryEntryId) {
             return this.update({
