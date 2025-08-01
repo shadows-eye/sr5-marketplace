@@ -3,9 +3,9 @@
     {{!-- Active Skills --}}
     <div class="collapsible-section">
         <input type="checkbox" id="toggle-active-skills" class="toggle" checked>
-        <label for="toggle-active-skills" class="toggle-label">
+        <div for="toggle-active-skills" class="toggle-label">
             <div class="marketplace-collapsible-header">{{localize "SR5.ActiveSkills"}}</div>
-        </label>
+        </div>
         <div class="toggle-content">
             <div class="active-skills skill-group">
                 <div class="skill-header sr5-grid-3c">
@@ -30,9 +30,9 @@
     {{#each knowledgeSkillGroups as |group|}}
         <div class="collapsible-section">
             <input type="checkbox" id="toggle-knowledge-{{group.label}}" class="toggle">
-            <label for="toggle-knowledge-{{group.label}}" class="toggle-label">
+            <div for="toggle-knowledge-{{group.label}}" class="toggle-label">
                 <div class="marketplace-collapsible-header">{{group.label}}</div>
-            </label>
+            </div>
             <div class="toggle-content">
                 <div class="knowledge-skills skill-group">
                     <div class="skill-header sr5-grid-3c">
@@ -57,9 +57,9 @@
     {{!-- Language Skills --}}
     <div class="collapsible-section">
         <input type="checkbox" id="toggle-language-skills" class="toggle">
-        <label for="toggle-language-skills" class="toggle-label">
+        <div for="toggle-language-skills" class="toggle-label">
             <div class="marketplace-collapsible-header">{{localize "SR5.Languages"}}</div>
-        </label>
+        </div>
         <div class="toggle-content">
             <div class="language-skills skill-group">
                 <div class="skill-header sr5-grid-3c">

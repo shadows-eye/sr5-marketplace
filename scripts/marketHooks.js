@@ -224,8 +224,7 @@ Hooks.once("init", () => {
     initializeTemplates();
     initializeSettings();
     // Register the custom ShopActor class
-    const {shopActor, ShopActorSheet} = defineShopActorClass();
-    CONFIG.Actor.documentClass[SHOP_ACTOR_TYPE] = shopActor;
+    defineShopActorClass();
 
     // Register the custom ShopActorSheet
     Actors.registerSheet("sr5-marketplace", ShopActorSheet, {

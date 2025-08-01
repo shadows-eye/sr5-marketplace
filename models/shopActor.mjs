@@ -116,7 +116,6 @@ export function defineShopActorClass() {
     }
 
     CONFIG.Actor.dataModels[SHOP_ACTOR_TYPE] = ShopActorData;
-
     /**
      * The custom Actor class for Shops, with a full API for data management.
      */
@@ -351,7 +350,8 @@ export function defineShopActorClass() {
                 [`system.shop.inventory.${inventoryEntryId}`]: foundry.utils.DELETE
             });
         }
+    
     }
-
+    CONFIG.Actor.documentClass[SHOP_ACTOR_TYPE] = ShopActor;
     return { ShopActor, ShopActorData };
 }
