@@ -8,7 +8,13 @@
             {{#each system.attributes.physicalAttributes as |attr name|}}
                 <div class="sr5-marketplace-attribute" data-attribute="{{name}}">
                     <label>{{localize (concat "SR5.Attr" (capitalize name))}}</label>
-                    <span class="value">{{attr.value}}</span>
+                    
+                    {{!-- If in edit mode, show an input. Otherwise, show a span. --}}
+                    {{#if @root.isEditMode}}
+                        <input type="number" name="system.attributes.{{name}}.base" value="{{attr.base}}" class="sr5-marketplace-input value-input" />
+                    {{else}}
+                        <span class="sr5-marketplace-input value">{{attr.value}}</span>
+                    {{/if}}
                 </div>
             {{/each}}
         </div>
@@ -21,7 +27,12 @@
             {{#each system.attributes.mentalAttributes as |attr name|}}
                 <div class="sr5-marketplace-attribute" data-attribute="{{name}}">
                     <label>{{localize (concat "SR5.Attr" (capitalize name))}}</label>
-                    <span class="value">{{attr.value}}</span>
+
+                    {{#if @root.isEditMode}}
+                        <input type="number" name="system.attributes.{{name}}.base" value="{{attr.base}}" class="sr5-marketplace-input value-input" />
+                    {{else}}
+                        <span class="sr5-marketplace-input value">{{attr.value}}</span>
+                    {{/if}}
                 </div>
             {{/each}}
         </div>
@@ -34,18 +45,21 @@
              {{#each system.attributes.specialAttributes as |attr name|}}
                 <div class="sr5-marketplace-attribute" data-attribute="{{name}}">
                     <label>
-                        {{!-- Handle special cases for Initiation and Submersion --}}
                         {{#if (or (eq name "initiation") (eq name "submersion"))}}
                             {{localize (concat "SR5." (capitalize name))}}
                         {{else}}
                             {{localize (concat "SR5.Attr" (capitalize name))}}
                         {{/if}}
                     </label>
-                    <span class="value">{{attr.value}}</span>
+
+                    {{#if @root.isEditMode}}
+                        <input type="number" name="system.attributes.{{name}}.base" value="{{attr.base}}" class="sr5-marketplace-input value-input" />
+                    {{else}}
+                        <span class="sr5-marketplace-input value">{{attr.value}}</span>
+                    {{/if}}
                 </div>
             {{/each}}
         </div>
     </div>
-
 </div>
 {{/if}}

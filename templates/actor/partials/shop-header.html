@@ -1,9 +1,25 @@
 <header class="sheet-header">
-    <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}"/>
+    {{#if isEditMode}}
+        {{!-- CORRECTED: Use data-action to call our custom JS function --}}
+        <div class="profile-img-edit" data-action="editImage" title="Click to change image">
+            <img class="profile-img" src="{{actor.img}}" title="{{actor.name}}"/>
+        </div>
+    {{else}}
+        <img class="profile-img" src="{{actor.img}}"/>
+    {{/if}}
     <div class="header-fields">
-        <h1 class="charname"><input name="name" type="text" value="{{actor.name}}" placeholder="Name" 
-            {{#unless isGM}}
-                disabled
-            {{/unless}}/></h1>
+        <h1 class="charname">
+            {{#if isEditMode}}
+                <input name="name" type="text" value="{{actor.name}}" placeholder="Name"/>
+            {{else}}
+                {{actor.name}}
+            {{/if}}
+        </h1>
     </div>
+
+    {{#if isGM}}
+    <a class="header-control icon" data-action="toggleMode" title="Toggle Edit Mode">
+        <i class="fa-solid fa-user-lock"></i>
+    </a>
+    {{/if}}
 </header>

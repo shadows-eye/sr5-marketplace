@@ -10,8 +10,24 @@ const { ActorSheet } = foundry.applications.sheets;
  * @returns {typeof ShopActorSheet} The extended ShopActorSheet class.
  */
 export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
-    _isEditingBiography = false;
+    /** Define the available sheet modes. */
+    static MODES = {
+        PLAY: "play",
+        EDIT: "edit"
+    };
 
+    _isEditingBiography = false;
+    _mode = ShopActorSheet.MODES.PLAY; // Default to play mode
+
+    /** A helper getter to check if the sheet is in Play mode. */
+    get isPlayMode() {
+        return this._mode === this.constructor.MODES.PLAY;
+    }
+
+    /** A helper getter to check if the sheet is in Edit mode. */
+    get isEditMode() {
+        return this._mode === this.constructor.MODES.EDIT;
+    }
     /** @override */
     static DEFAULT_OPTIONS = {
         classes: ["sr5", "shop", "sr5-marketplace-shop"],
@@ -22,7 +38,9 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             height: 900
         },
         actions: {
-            ...super.DEFAULT_OPTIONS.actions
+            ...super.DEFAULT_OPTIONS.actions,
+            toggleMode: this.#onToggleMode,
+            editImage: this.#onEditImage
         }
     };
 
@@ -85,7 +103,8 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
      */
     async _prepareContext(options) {
     const context = await super._prepareContext(options);
-    
+    context.isPlayMode = this.isPlayMode;
+    context.isEditMode = this.isEditMode;
     // Add common data useful for all sheets.
     context.actor = this.document;
     context.system = this.document.system;
@@ -141,6 +160,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
      */
     async _preparePartContext(partId, context) {
         context.tab = context.tabs[partId];
+        context.isEditMode = this._mode === "edit";
         switch (partId) {
             case "actorShop":
                 const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
@@ -218,6 +238,50 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         }
         this.document.update(data);
         return data;
+    }
+
+    /**
+     * Toggle Edit vs. Play mode.
+     *
+     * @this MarketplaceShopActorEditMode
+     * @param {PointerEvent} event   The originating click event.
+     * @param {HTMLElement} target   The capturing HTML element which defined a [data-action].
+     */
+    static async #onToggleMode(event, target) {
+        // 'this' in a static action handler refers to the sheet instance.
+        if (!this.isEditable) {
+            ui.notifications.warn("You do not have permission to edit this sheet.");
+            return;
+        }
+        this._mode = this.isPlayMode ? this.constructor.MODES.EDIT : this.constructor.MODES.PLAY;
+        this.render();
+    }
+
+    /**
+     * Handles the click on the profile image to open a FilePicker.
+     * @private
+     */
+    static #onEditImage(event, target) {
+        const filePicker = foundry.applications.apps.FilePicker.implementation;
+        const fp = new filePicker({
+            type: "image",
+            current: this.document.img,
+            callback: path => {
+                // Update the document with the new image path
+                this.document.update({img: path});
+            },
+            top: this.position.top + 40,
+            left: this.position.left + 10
+        });
+        return fp.browse();
+    }
+
+    /** @override */
+    _configureRenderOptions(options) {
+        super._configureRenderOptions(options);
+        if (!this.element) return;
+        this.element.classList.toggle("play-mode", this._mode === "play");
+        this.element.classList.toggle("edit-mode", this._mode === "edit");
     }
 
     /**
