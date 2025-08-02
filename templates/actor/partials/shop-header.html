@@ -1,6 +1,5 @@
 <header class="sheet-header">
     {{#if isEditMode}}
-        {{!-- CORRECTED: Use data-action to call our custom JS function --}}
         <div class="profile-img-edit" data-action="editImage" title="Click to change image">
             <img class="profile-img" src="{{actor.img}}" title="{{actor.name}}"/>
         </div>
@@ -10,7 +9,7 @@
     <div class="header-fields">
         <h1 class="charname">
             {{#if isEditMode}}
-                <input name="name" type="text" value="{{actor.name}}" placeholder="Name"/>
+                <input class= "marketplace name" name="name" type="text" value="{{actor.name}}" placeholder="Name"/>
             {{else}}
                 {{actor.name}}
             {{/if}}

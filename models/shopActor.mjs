@@ -1,3 +1,4 @@
+
 /**
  * Defines and returns the custom ShopActor classes.
  * This must be called during the 'ready' hook.
@@ -65,7 +66,7 @@ export function defineShopActorClass() {
                     base: new foundry.data.fields.StringField({ required: true, blank: false, initial: "", label: "Unmodified Availability" })
                 }),
                 buyTime: new foundry.data.fields.SchemaField({
-                    value: new foundry.data.fields.NumberField({ required: true, integer: true, min: 0, initial: 24 }),
+                    value: new foundry.data.fields.NumberField({ required: true, integer: true, min: 0, initial: 24, label: "Buy Time" }),
                     unit: new foundry.data.fields.StringField({
                         required: true,
                         choices: ["hours", "days", "weeks", "months"],
@@ -77,19 +78,19 @@ export function defineShopActorClass() {
 
             //@function shopSchema, this integrates the shema with the Shadowrun Actor without this wrapper it will not register the Data Model!!! Do not Touch!
             const shopSchema = () => ({
-                owner: new foundry.data.fields.StringField({ initial: "" }),
-                employees: new foundry.data.fields.ArrayField(new foundry.data.fields.StringField()),
-                connection: new foundry.data.fields.StringField({ initial: "" }),
+                owner: new foundry.data.fields.StringField({ initial: "", label: "Owner "}),
+                employees: new foundry.data.fields.ArrayField(new foundry.data.fields.StringField({initial: "", label: "Employees"})),
+                connection: new foundry.data.fields.StringField({ initial: "", label: "Connection"}),
                 modifierValue: new foundry.data.fields.SchemaField({
                     value: new foundry.data.fields.NumberField({ initial: 0 }),
                     base: new foundry.data.fields.NumberField({ initial: 0 })
                 }),
-                modifierType: new foundry.data.fields.StringField({ initial: "discount", choices: ["discount", "fee"] }),
+                modifierType: new foundry.data.fields.StringField({ initial: "discount", choices: ["discount", "fee"], label:"Modifier Type", hint: "does a discount or fee apply"}),
                 shopRadius: new foundry.data.fields.SchemaField({
-                        value: new foundry.data.fields.NumberField({ initial: 0, min: 0 }),
+                        value: new foundry.data.fields.NumberField({ initial: 0, min: 0, label: "Shop Radius", hint: "Used to detect if you buy from this Actor" }),
                         base: new foundry.data.fields.NumberField({ initial: 0, min: 0 })
                     }),
-                tokenInRadius: new foundry.data.fields.ObjectField({ initial: {} }),
+                tokenInRadius: new foundry.data.fields.ObjectField({ initial: {}, label: "Token in Radius" }),
 
                 // Validating the inventory as an object with dynamic keys
                 // Each key is an inventory entry ID, and each value is an inventory item object.
@@ -105,7 +106,7 @@ export function defineShopActorClass() {
                         }
                         return true;
                     },
-                    initial: {}
+                    initial: {}, label: "Inventory"
                 })
             });
             return {
@@ -175,11 +176,25 @@ export function defineShopActorClass() {
 
         /**
          * Retrieves an array of Actor documents for the shop's employees.
-         * @returns {Promise<Actor5e[]>} An array of employee actor documents.
+         * This version correctly handles fetching multiple documents from UUIDs.
+         * @returns {Promise<Actor[]>} An array of employee actor documents.
          */
         async getEmployees() {
+            // Return an empty array if there are no employee UUIDs to process.
             if (!this.shop.employees?.length) return [];
-            return fromUuid.multi(this.shop.employees.filter(uuid => uuid));
+
+            // Filter out any empty strings from the array before processing.
+            const employeeUuids = this.shop.employees.filter(uuid => uuid);
+            if (employeeUuids.length === 0) return [];
+
+            // Create an array of promises, one for each UUID lookup.
+            const promises = employeeUuids.map(uuid => fromUuid(uuid));
+
+            // Use Promise.all to wait for all lookups to complete.
+            const employees = await Promise.all(promises);
+
+            // Filter out any null results in case a UUID was invalid or the document was deleted.
+            return employees.filter(e => e);
         }
 
         /**
@@ -352,6 +367,7 @@ export function defineShopActorClass() {
         }
     
     }
-    CONFIG.Actor.documentClass[SHOP_ACTOR_TYPE] = ShopActor;
+    
+    CONFIG.Actor.documentClass = ShopActor;
     return { ShopActor, ShopActorData };
 }

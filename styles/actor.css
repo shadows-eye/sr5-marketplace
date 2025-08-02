@@ -328,3 +328,15 @@ section.tab.shop-details.active{
     text-align: center;
     margin-top: 5px;
 }
+
+.marketplace-header {
+    display: grid;
+    grid-template-columns: 1fr 6fr 20px;
+}
+input.marketplace.name {
+    width: 5em;
+    height: fit-content;
+    border: none;
+    background: #fbc61b42;
+    padding-left: 2px;
+}

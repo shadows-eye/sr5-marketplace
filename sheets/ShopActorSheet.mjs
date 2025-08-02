@@ -40,7 +40,8 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         actions: {
             ...super.DEFAULT_OPTIONS.actions,
             toggleMode: this.#onToggleMode,
-            editImage: this.#onEditImage
+            editImage: this.#onEditImage,
+            openDocumentLink: this.#onOpenDocumentLink
         }
     };
 
@@ -51,7 +52,8 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     static PARTS = {
         // ADDED: The header is now a defined part of the layout.
         header: {
-            template: "modules/sr5-marketplace/templates/actor/partials/shop-header.html"
+            template: "modules/sr5-marketplace/templates/actor/partials/shop-header.html",
+            classes: ["marketplace-header"]
         },
         // ADDED: The attributes section is also a part.
         attributes: {
@@ -241,6 +243,22 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         }
         this.document.update(data);
         return data;
+    }
+
+    /**
+     * Handles clicks on document links to open their respective sheets.
+     * @param {PointerEvent} event    The originating click event.
+     * @param {HTMLElement} target    The capturing HTML element which defined a [data-action].
+     * @private
+     */
+    static async #onOpenDocumentLink(event, target) {
+        const uuid = target.dataset.uuid;
+        if (!uuid) return;
+        
+        const doc = await fromUuid(uuid);
+        if (doc?.sheet) {
+            doc.sheet.render(true);
+        }
     }
 
     /**

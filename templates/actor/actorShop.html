@@ -1,6 +1,6 @@
 <section class="tab actorShop {{tab.cssClass}}" data-group="primary" data-tab="actorShop">
     <div class="sr5-grid-c2"> 
-        {{!-- Column 1: Shop Details & Inventory --}}
+        <!-- Column 1: Shop Details & Inventory -->
         <div class="shop-column-1">
             <fieldset class="sr5-marketplace-shop-fields">
                 <legend>{{"Shop"}}</legend>
@@ -12,23 +12,30 @@
                         {{#if isEditMode}}
                             <div class="drop-target" data-drop-type="Actor" data-target-field="system.shop.owner">
                                 {{#if owner}}
-                                    <img src="{{owner.img}}" width="36" height="36"/>
+                                    <img data-actor="{{owner.uuid}}" src="{{owner.img}}" width="36" height="36"/>
                                     <span>{{owner.name}}</span>
                                 {{else}}
                                     <span>Drag an Actor here</span>
                                 {{/if}}
                             </div>
                         {{else}}
-                            <span class="read-only">{{owner.name}}</span>
+                            {{#if owner}}
+                                <a class="document-link" data-uuid="{{owner.uuid}}" data-action="openDocumentLink">
+                                    <img src="{{owner.img}}" width="36" height="36" class="read-only"/>
+                                    <span class="read-only">{{owner.name}}</span>
+                                </a> <!-- FIXED: Was missing the '/' -->
+                            {{else}}
+                                <span class="read-only">None</span>
+                            {{/if}}
                         {{/if}}
                     </div>
                 </div>
             
-                 <!-- Connection Field -->
+                <!-- Connection Field -->
                 <div class="form-group">
                     <label>{{localize "SR5.Marketplace.Shop.ConnectionUuid"}}</label>
                     <div class="form-fields">
-                         {{#if isEditMode}}
+                        {{#if isEditMode}}
                             <div class="drop-target" data-drop-type="Item" data-target-field="system.shop.connection">
                                 {{#if connection}}
                                     <img src="{{connection.img}}" width="36" height="36"/>
@@ -38,11 +45,19 @@
                                 {{/if}}
                             </div>
                         {{else}}
-                            <span class="read-only">{{connection.name}}</span>
-                        {{/if}}
+                            {{#if connection}}
+                                <a class="document-link" data-uuid="{{connection.uuid}}" data-action="openDocumentLink">
+                                    <img src="{{connection.img}}" width="36" height="36" class="read-only"/>
+                                    <span class="read-only">{{connection.name}}</span>
+                                </a>
+                            {{else}}
+                                <span class="read-only">None</span>
+                            {{/if}}
+                        {{/if}} {{!-- FIXED: This was missing --}}
                     </div>
                 </div>
                 
+                <!-- Modifier Field -->
                 <div class="form-group">
                     <label>{{localize "SR5.Marketplace.Shop.Modifier"}}</label>
                     <div class="form-fields">
@@ -56,7 +71,7 @@
                 <!-- Employees Field -->
                 <div class="form-group stacked">
                     <label>{{localize "SR5.Marketplace.Shop.Employees"}}</label>
-                     {{#if isEditMode}}
+                    {{#if isEditMode}}
                         <div class="drop-target" data-drop-type="Actor" data-target-field="system.shop.employees">
                             <ol class="employee-list">
                                 {{#each employees as |employee|}}
@@ -71,7 +86,12 @@
                     {{else}}
                         <ol class="employee-list">
                             {{#each employees as |employee|}}
-                                <li>{{employee.name}}</li>
+                                <li>
+                                    <a class="document-link" data-uuid="{{employee.uuid}}" data-action="openDocumentLink">
+                                        <img src="{{employee.img}}" width="24" height="24">
+                                        {{employee.name}}
+                                    </a>
+                                </li>
                             {{/each}}
                         </ol>
                     {{/if}}
@@ -84,7 +104,7 @@
             </fieldset>
         </div>
 
-        {{!-- Column 2: Skills --}}
+        <!-- Column 2: Skills -->
         <div class="shop-column-2">
             <fieldset class="sr5-marketplace-skills-fields">
                 {{> 'modules/sr5-marketplace/templates/actor/partials/shop-skills.html' }}
