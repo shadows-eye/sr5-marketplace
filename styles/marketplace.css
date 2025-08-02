@@ -553,11 +553,11 @@ select#item-type-selector option {
     align-items: center; 
     margin-bottom: 10px; 
 }
-.item-image {
+.market-item-image {
     max-width: 62px; background-color: rgba(95, 95, 95, 0.27);
     border-radius: 10px; border: 3px outset;
 }
-.item-image img { 
+.market-item-image img { 
     max-width: 60px; 
     max-height: 60px; 
     object-fit: contain; 

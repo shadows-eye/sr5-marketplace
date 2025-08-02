@@ -87,8 +87,8 @@ export function defineShopActorClass() {
                 }),
                 modifierType: new foundry.data.fields.StringField({ initial: "discount", choices: ["discount", "fee"], label:"Modifier Type", hint: "does a discount or fee apply"}),
                 shopRadius: new foundry.data.fields.SchemaField({
-                        value: new foundry.data.fields.NumberField({ initial: 0, min: 0, label: "Shop Radius", hint: "Used to detect if you buy from this Actor" }),
-                        base: new foundry.data.fields.NumberField({ initial: 0, min: 0 })
+                        value: new foundry.data.fields.NumberField({ initial: 1, min: 1, label: "Shop Radius", hint: "Used to detect if you buy from this Actor" }),
+                        base: new foundry.data.fields.NumberField({ initial: 1, min: 1 })
                     }),
                 tokenInRadius: new foundry.data.fields.ObjectField({ initial: {}, label: "Token in Radius" }),
 
