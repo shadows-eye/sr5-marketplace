@@ -1,0 +1,267 @@
+:root {
+    /* ================================================================== */
+    /* 1. Base Color Palette                                              */
+    /* Raw color values, named by color, not by function.                 */
+    /* ================================================================== */
+
+    /* --- Reds --- */
+    --color-red-darkest: #2b0000;              /* Usage: .window-header (bg), .read-only.body-text, .drop-target (border) */
+    --color-red-deep: #5d142b;                 /* Usage: .window-header (border) */
+    --color-red-dark: #770808;                 /* Usage: .sr5-marketplace-attribute (text) */
+    --color-red-base: #a10e0e;                 /* Usage: (Not used in provided actor.css, but defined for semantic --text-color-header) */
+    --color-red-base-transparent: #a10e0e96;
+    --color-red-bright: #c50000;
+    --color-red-very-dark: rgb(90, 5, 5);
+
+    /* --- Yellows & Golds --- */
+    --color-yellow-base: #e7c93e;              /* Usage: .subHeading, .attribute-group h4, .skill-header, .inventory-header, .drop-target.drag-over, hint, .sr5-marketplace-shop (shadow) */
+    --color-yellow-light: #fbde6e;             /* Usage: .sheet-tabs .item.active (text-shadow), .marketplace-collapsible-header:hover, hint (shadow) */
+    --color-yellow-dark: rgb(209, 189, 11);    /* Usage: .sheet-top-content (border), .prosemirror-container.active .editor-content (border) */
+    --color-yellow-bright: #f4cf0e;
+    --color-gold-base: #b9a913;
+
+    /* --- Greys & Neutrals --- */
+    --color-black: #000;
+    --color-white: #fff;
+    --color-grey-text: #232323;
+    --color-grey-darkest: #2b2b2b;
+    --color-grey-dark: #333;                   /* Usage: .sheet-tabs .item (bg) */
+    --color-grey-medium: #444;                 /* Usage: .inventory-item (border), .employee-list li (border), .collapsible-content (border) */
+    --color-grey-medium-light: #666;           /* Usage: .sr5-marketplace-attributes (border), .attribute-group h4 (border), .sheet-tabs .item (border), .skill-header (border) */
+    --color-grey-light: #aaa;                  /* Usage: .employee-list .drop-hint */
+    --color-grey-divider: #ddd;
+    --color-grey-hr: #bfb4b4;
+    --color-grey-very-light: #ccc;
+    --color-grey-lightest: #F5F5F5;            /* Usage: .window-header .window-title, .window-content, .sheet-tabs .item, .inventory-item input (text) */
+    --color-grey-tab-active: #555;
+    --color-black-transparent-15: rgba(0,0,0,0.15); /* Usage: .employee-list .toggle-content (bg) */
+    --color-black-transparent-20: rgba(0,0,0,0.2);  /* Usage: .attribute-group, .shop-column-1, .shop-column-2 */
+    --color-black-transparent-30: rgba(0,0,0,0.3);  /* Usage: .inventory-item input (bg) */
+    --color-black-transparent-80: rgba(0, 0, 0, 0.8); /* Usage: .sheet-top-content (bg) */
+    --color-white-transparent-05: rgba(255, 255, 255, 0.05); /* Usage: .skills-list .toggle-label:hover, .employee-list .toggle-label:hover */
+    --color-white-transparent-10: rgba(255, 255, 255, 0.1);  /* Usage: .inventory-item .item-img img (bg) */
+
+    /* --- Greens --- */
+    --color-green-base: green;
+    --color-green-button: #4CAF50;
+    --color-green-text-light: rgb(215 239 210);
+
+    /* --- Oranges --- */
+    --color-orange-blend: #ab4c0c;
+
+    /* --- Settings & UI Tints --- */
+    --color-blue-info-bg: #d1ecf1;
+    --color-blue-info-border: #bee5eb;
+    --color-green-success-bg: #d1e7dd;
+    --color-green-success-border: #a3cfbb;
+    --color-yellow-warning-bg: #fff3cd;
+    --color-yellow-warning-border: #ffeeba;
+
+    /* --- Backgrounds --- */
+    --bg-main: url(/modules/sr5-marketplace/assets/light-page.webp);
+    --bg-dark-section-hover: #3d3d3d;
+    --bg-item-card: #d3af0cd6;
+    --bg-item-card-hover: var(--color-red-dark);
+    --bg-basket-content: #aaaaaa83;
+    --bg-basket-summary: #a3a3a3;
+    
+    /* --- SVGs & Images --- */
+    --headerClose: url("data:image/svg+xml,%3csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 16.4 17.7' style='enable-background:new 0 0 16.4 17.7;' xml:space='preserve'%3e%3cstyle type='text/css'%3e .st0{fill:%23D3AF0C;} .st1{fill:%23B00000;} %3c/style%3e%3cg%3e%3cg%3e%3cg%3e%3cpath class='st0' d='M8.2,17.3c-4.3,0-7.8-3.5-7.8-7.8c0-3.2,1.9-6,4.8-7.2c0,0,0,0,0,0c0,0,0,0,0.1,0c0,0,0.1,0.1,0.1,0.1v2.8 c0,0,0,0.1-0.1,0.1c-1.4,1-2.2,2.5-2.2,4.2c0,2.8,2.3,5.1,5.1,5.1s5.1-2.3,5.1-5.1c0-1.7-0.8-3.2-2.2-4.2c0,0-0.1-0.1-0.1-0.1 V2.3c0,0,0-0.1,0.1-0.1c0,0,0,0,0.1,0c0,0,0,0,0,0C14.2,3.5,16,6.3,16,9.5C16,13.8,12.5,17.3,8.2,17.3z'/%3e%3cpath class='st1' d='M11.2,2.3c2.8,1.2,4.7,3.9,4.7,7.1c0,4.3-3.5,7.7-7.7,7.7c-4.3,0-7.7-3.5-7.7-7.7c0-3.2,2-5.9,4.7-7.1v2.8 C3.9,6.1,3,7.7,3,9.5c0,2.9,2.4,5.2,5.2,5.2c2.9,0,5.2-2.3,5.2-5.2c0-1.8-0.9-3.4-2.3-4.3V2.3 M5.2,2.1C5.2,2.1,5.2,2.1,5.2,2.1 c-3.1,1.3-5,4.2-5,7.4c0,4.4,3.6,8,8,8s8-3.6,8-8c0-3.2-1.9-6.1-4.9-7.3c0,0-0.1,0-0.1,0c0,0-0.1,0-0.1,0c-0.1,0-0.1,0.1-0.1,0.2 v2.8c0,0.1,0,0.2,0.1,0.2c1.3,0.9,2.1,2.5,2.1,4.1c0,2.8-2.2,5-5,5c-2.8,0-5-2.2-5-5c0-1.6,0.8-3.2,2.1-4.1 c0.1,0,0.1-0.1,0.1-0.2V2.3c0-0.1,0-0.2-0.1-0.2C5.3,2.1,5.3,2.1,5.2,2.1L5.2,2.1z'/%3e%3c/g%3e%3cg%3e%3cpath class='st0' d='M8.2,10.8c-0.8,0-1.4-0.6-1.4-1.4V1.7c0-0.8,0.6-1.4,1.4-1.4C9,0.4,9.6,1,9.6,1.7v7.7 C9.6,10.2,9,10.8,8.2,10.8z'/%3e%3cpath class='st1' d='M8.2,0.5c0.7,0,1.2,0.6,1.2,1.2v7.7c0,0.7-0.6,1.2-1.2,1.2C7.5,10.7,7,10.1,7,9.5V1.7 C7,1.1,7.5,0.5,8.2,0.5 M8.2,0.3c-0.8,0-1.5,0.7-1.5,1.5v7.7c0,0.8,0.7,1.5,1.5,1.5c0.8,0,1.5-0.7,1.5-1.5V1.7 C9.7,0.9,9,0.3,8.2,0.3L8.2,0.3z'/%3e%3c/g%3e%3c/g%3e%3c/g%3e%3c/svg%3e");
+    --headerCloseHover: url("data:image/svg+xml,%3csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 16.4 17.7' style='enable-background:new 0 0 16.4 17.7;' xml:space='preserve'%3e%3cstyle type='text/css'%3e .st0{fill:%23E80505;} .st1{fill:%23D3AF0C;} %3c/style%3e%3cg%3e%3cg%3e%3cg%3e%3cpath class='st0' d='M8.2,17.3c-4.3,0-7.8-3.5-7.8-7.8c0-3.2,1.9-6,4.8-7.2c0,0,0,0,0,0c0,0,0,0,0.1,0c0,0,0.1,0.1,0.1,0.1v2.8 c0,0,0,0.1-0.1,0.1c-1.4,1-2.2,2.5-2.2,4.2c0,2.8,2.3,5.1,5.1,5.1s5.1-2.3,5.1-5.1c0-1.7-0.8-3.2-2.2-4.2c0,0-0.1-0.1-0.1-0.1 V2.3c0,0,0-0.1,0.1-0.1c0,0,0,0,0.1,0c0,0,0,0,0,0C14.2,3.5,16,6.3,16,9.5C16,13.8,12.5,17.3,8.2,17.3z'/%3e%3cpath class='st1' d='M11.2,2.3c2.8,1.2,4.7,3.9,4.7,7.1c0,4.3-3.5,7.7-7.7,7.7c-4.3,0-7.7-3.5-7.7-7.7c0-3.2,2-5.9,4.7-7.1v2.8 C3.9,6.1,3,7.7,3,9.5c0,2.9,2.4,5.2,5.2,5.2c2.9,0,5.2-2.3,5.2-5.2c0-1.8-0.9-3.4-2.3-4.3V2.3 M5.2,2.1C5.2,2.1,5.2,2.1,5.2,2.1 c-3.1,1.3-5,4.2-5,7.4c0,4.4,3.6,8,8,8s8-3.6,8-8c0-3.2-1.9-6.1-4.9-7.3c0,0-0.1,0-0.1,0c0,0-0.1,0-0.1,0c-0.1,0-0.1,0.1-0.1,0.2 v2.8c0,0.1,0,0.2,0.1,0.2c1.3,0.9,2.1,2.5,2.1,4.1c0,2.8-2.2,5-5,5c-2.8,0-5-2.2-5-5c0-1.6,0.8-3.2,2.1-4.1 c0.1,0,0.1-0.1,0.1-0.2V2.3c0-0.1,0-0.2-0.1-0.2C5.3,2.1,5.3,2.1,5.2,2.1L5.2,2.1z'/%3e%3c/g%3e%3cg%3e%3cpath class='st0' d='M8.2,10.8c-0.8,0-1.4-0.6-1.4-1.4V1.7c0-0.8,0.6-1.4,1.4-1.4C9,0.4,9.6,1,9.6,1.7v7.7 C9.6,10.2,9,10.8,8.2,10.8z'/%3e%3cpath class='st1' d='M8.2,0.5c0.7,0,1.2,0.6,1.2,1.2v7.7c0,0.7-0.6,1.2-1.2,1.2C7.5,10.7,7,10.1,7,9.5V1.7 C7,1.1,7.5,0.5,8.2,0.5 M8.2,0.3c-0.8,0-1.5,0.7-1.5,1.5v7.7c0,0.8,0.7,1.5,1.5,1.5c0.8,0,1.5-0.7,1.5-1.5V1.7 C9.7,0.9,9,0.3,8.2,0.3L8.2,0.3z'/%3e%3c/g%3e%3c/g%3e%3c/g%3e%3c/svg%3e");
+
+    /* --- Other --- */
+    --border-highlight-dark-yellow: rgb(209, 146, 11);
+    --shadow-text: 1px 1px 3px var(--color-gold-base);
+    --shadow-text-button: -1px 2px 2px #800422;
+}
+/* ================================================================== /
+/ 2. Semantic (UI Area) Variables                                    /
+/ Variables named for their purpose. They are assigned values in     /
+/ the theme class below.                                             /
+/ ================================================================== */
+
+/* --- App & Window --- */
+.sr5-marketplace-shop{
+--app-window-shadow: 0 0 10px var(--color-yellow-base);
+--app-window-header-bg: ;
+--app-window-header-border: ;
+--app-window-header-title-color: ;
+--app-window-content-bg: ;
+--app-window-content-color: ;
+--app-sticky-top-bg: ;
+--app-sticky-top-border: ;
+
+/* --- Text & Links --- */
+--text-color-primary: ;
+--text-color-header: ;
+--text-color-subheader: ;
+--text-color-link: ;
+--text-color-link-hover: ;
+--text-color-read-only: ;
+
+/* --- Borders --- */
+--border-color-medium: ;
+--border-color-dark: ;
+--border-color-highlight: ;
+
+/* --- Tabs --- */
+--tab-inactive-bg: ;
+--tab-inactive-border: ;
+--tab-inactive-color: ;
+--tab-active-bg: ;
+--tab-active-text-shadow: ;
+
+/* --- Attributes --- */
+--attribute-group-bg: ;
+--attribute-group-title-color: ;
+--attribute-group-border: ;
+--attribute-text-color: ;
+
+/* --- Skills & Lists --- */
+--skill-header-color: ;
+--skill-header-border: ;
+--collapsible-header-hover-bg: ;
+--collapsible-label-hover-bg: ;
+--collapsible-content-bg: ;
+
+/* --- Inputs & Forms --- */
+--input-bg-transparent: ;
+--input-color: ;
+--input-border-dark: ;
+--input-name-bg: ;
+--drop-target-border: ;
+--drop-target-border-hover: ;
+--drop-target-bg-hover: ;
+
+/* --- Inventory --- */
+--inventory-header-color: ;
+--inventory-item-border: ;
+--inventory-item-image-bg: ;
+
+/* --- Hint Tooltip --- */
+--hint-bg: #2b2b2b85;
+--hint-color: var(--color-yellow-base);
+--hint-shadow: 0 0 7px var(--color-yellow-light);
+
+/* Unchanged variables from original file */
+--marketplace-collapsible-header: colar: rgb(0 0 0 / 23%);
+--bg-item-card: #d3af0cd6;
+--bg-item-card-hover: var(--color-primary-red-dark);
+--bg-filter-bar: #00000017;
+--bg-basket-content: #aaaaaa83;
+--bg-basket-summary: #a3a3a3;
+--border-highlight-dark-yellow: rgb(209, 146, 11);
+--border-inset-top: rgba(67, 32, 1, 0.93);
+--border-inset-bottom: rgb(33 16 1);
+--shadow-text: 1px 1px 3px var(--color-gold-base);
+--shadow-text-button: -1px 2px 2px #800422;
+--shadow-box-glow: 0 0 10px rgba(245, 245, 245, 0.897), 0 0 5px rgba(255, 255, 255, 0.897);
+--shadow-inset-dark: inset 0 0 8px rgba(0, 0, 0, 0.5);
+}
+
+/* ================================================================== */
+/* 3. Theming                                                         */
+/* Assigns base colors to semantic variables to create a theme.       */
+/* ================================================================== \*/
+
+.themed.theme-light {
+--app-window-header-bg: var(--color-red-darkest);
+--app-window-header-border: var(--color-red-deep);
+--app-window-header-title-color: var(--color-grey-lightest);
+--app-window-content-bg: var(--app-background-image);
+--app-window-content-color: var(--color-grey-lightest);
+--app-sticky-top-bg: var(--color-black-transparent-80);
+--app-sticky-top-border: var(--color-yellow-dark);
+
+--text-color-primary: var(--color-grey-lightest);
+--text-color-header: var(--color-red-base);
+--text-color-subheader: var(--color-yellow-base);
+--text-color-link: var(--color-yellow-base);
+--text-color-link-hover: var(--color-yellow-light);
+--text-color-read-only: var(--color-red-darkest);
+
+--border-color-medium: var(--color-grey-medium-light);
+--border-color-dark: var(--color-grey-medium);
+--border-color-highlight: var(--color-yellow-dark);
+
+--tab-inactive-bg: var(--color-grey-dark);
+--tab-inactive-border: var(--border-color-medium);
+--tab-inactive-color: var(--color-grey-lightest);
+--tab-active-bg: #555; /* Note: This color was not in the original palette */
+--tab-active-text-shadow: 0 0 5px var(--color-yellow-light);
+
+--attribute-group-bg: var(--color-black-transparent-20);
+--attribute-group-title-color: var(--color-yellow-base);
+--attribute-group-border: var(--border-color-medium);
+--attribute-text-color: var(--color-red-dark);
+
+--skill-header-color: var(--color-yellow-base);
+--skill-header-border: var(--border-color-medium);
+--collapsible-header-hover-bg: rgb(0 0 0 / 23%);
+--collapsible-label-hover-bg: var(--color-white-transparent-05);
+--collapsible-content-bg: var(--color-black-transparent-15);
+
+--input-bg-transparent: rgba(0,0,0,0.3);
+--input-color: var(--text-color-primary);
+--input-border-dark: var(--border-color-dark);
+--input-name-bg: #fbc61b42;
+--drop-target-border: var(--app-window-header-bg);
+--drop-target-border-hover: var(--color-yellow-base);
+--drop-target-bg-hover: rgba(231, 201, 62, 0.2);
+
+--inventory-header-color: var(--color-yellow-base);
+--inventory-item-border: var(--border-color-dark);
+--inventory-item-image-bg: var(--color-white-transparent-10);
+
+}
+
+.sr5-marketplace-shop.themed.theme-dark {
+--app-window-header-bg: var(--color-red-darkest);
+--app-window-header-border: var(--color-red-deep);
+--app-window-header-title-color: var(--color-grey-lightest);
+--app-window-content-bg: var(--app-background-image);
+--app-window-content-color: var(--color-grey-lightest);
+--app-sticky-top-bg: var(--color-black-transparent-80);
+--app-sticky-top-border: var(--color-yellow-dark);
+
+--text-color-primary: var(--color-grey-lightest);
+--text-color-header: var(--color-red-base);
+--text-color-subheader: var(--color-yellow-base);
+--text-color-link: var(--color-yellow-base);
+--text-color-link-hover: var(--color-yellow-light);
+--text-color-read-only: var(--color-red-darkest);
+
+--border-color-medium: var(--color-grey-medium-light);
+--border-color-dark: var(--color-grey-medium);
+--border-color-highlight: var(--color-yellow-dark);
+
+--tab-inactive-bg: var(--color-grey-dark);
+--tab-inactive-border: var(--border-color-medium);
+--tab-inactive-color: var(--color-grey-lightest);
+--tab-active-bg: #555; /* Note: This color was not in the original palette */
+--tab-active-text-shadow: 0 0 5px var(--color-yellow-light);
+
+--attribute-group-bg: var(--color-black-transparent-20);
+--attribute-group-title-color: var(--color-yellow-base);
+--attribute-group-border: var(--border-color-medium);
+--attribute-text-color: var(--color-red-dark);
+
+--skill-header-color: var(--color-yellow-base);
+--skill-header-border: var(--border-color-medium);
+--collapsible-header-hover-bg: rgb(0 0 0 / 23%);
+--collapsible-label-hover-bg: var(--color-white-transparent-05);
+--collapsible-content-bg: var(--color-black-transparent-15);
+
+--input-bg-transparent: rgba(0,0,0,0.3);
+--input-color: var(--text-color-primary);
+--input-border-dark: var(--border-color-dark);
+--input-name-bg: #fbc61b42;
+--drop-target-border: var(--app-window-header-bg);
+--drop-target-border-hover: var(--color-yellow-base);
+--drop-target-bg-hover: rgba(231, 201, 62, 0.2);
+
+--inventory-header-color: var(--color-yellow-base);
+--inventory-item-border: var(--border-color-dark);
+--inventory-item-image-bg: var(--color-white-transparent-10);
+
+}

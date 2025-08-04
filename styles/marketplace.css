@@ -1,80 +1,6 @@
 @import url('https://kit.fontawesome.com/b315973576.css');
 @import "actor.css";
-
-/* ==================================================================
-//
-// SR5 Marketplace Stylesheet - v1.0
-//
-// - Centralizes all colors in :root variables for easy theming.
-//
-// ==================================================================
-*/
-
-/* --------------------------------------
-   1. Theme & Color Variables
-   -------------------------------------- */
-:root {
-    /* Primary & Accent Colors */
-    --header: #2b0000;
-    --color-primary-red-dark: #770808;
-    --color-primary-red: #a10e0e;
-    --color-primary-red-bright: #c50000;
-    --color-primary-red-hover: #a10e0e96;
-    --color-primary-red-very-dark: rgb(90, 5, 5);
-    --color-blend-orange: #ab4c0c;
-    --color-primary-yellow: #e7c93e;
-    --color-primary-yellow-hover: #fbde6e;
-    --color-primary-gold: #b9a913;
-    --color-accent-green: green;
-    --color-accent-green-button: #4CAF50;
-
-    /* Background Colors */
-    --bg-main: url(/modules/sr5-marketplace/assets/light-page.webp);
-    --bg-dark-overlay: rgba(0, 0, 0, 0.8);
-    --bg-light-overlay: rgba(170, 170, 170, 0.51);
-    --bg-dark-section: #2b2b2b;
-    --bg-dark-section-hover: #3d3d3d;
-    --bg-tab-active: #555;
-    --bg-tab-inactive: #333;
-    --bg-item-card: #d3af0cd6;
-    --bg-item-card-hover: var(--color-primary-red-dark);
-    --bg-filter-bar: #00000017;
-    --bg-basket-content: #aaaaaa83;
-    --bg-basket-summary: #a3a3a3;
-    --bg-settings-unique: #d1e7dd;
-    --bg-settings-stack: #d1ecf1;
-    --bg-settings-single: #fff3cd;
-
-    /* Text Colors */
-    --text-light: #F5F5F5;
-    --text-dark: #333;
-    --text-header: var(--color-primary-red);
-    --text-link: var(--color-primary-yellow);
-    --text-button-dark: #414141;
-    --text-button-light: rgb(215 239 210);
-    --text-button-hover: var(--color-primary-yellow-hover);
-    --text-yellow: #f4cf0e;
-
-    /* Border Colors */
-    --border-dark: #444;
-    --border-light: #ccc;
-    --border-medium: #666;
-    --border-tab: #555;
-    --border-highlight-red: #5d142b;
-    --border-highlight-yellow: rgb(209, 189, 11);
-    --border-highlight-dark-yellow: rgb(209, 146, 11);
-    --border-inset-top: rgba(67, 32, 1, 0.93);
-    --border-inset-bottom: rgb(33 16 1);
-    --border-settings-unique: #a3cfbb;
-    --border-settings-stack: #bee5eb;
-    --border-settings-single: #ffeeba;
-
-    /* Shadow Colors */
-    --shadow-text: 1px 1px 3px var(--color-primary-gold);
-    --shadow-text-button: -1px 2px 2px #800422;
-    --shadow-box-glow: 0 0 10px rgba(245, 245, 245, 0.897), 0 0 5px rgba(255, 255, 255, 0.897);
-    --shadow-inset-dark: inset 0 0 8px rgba(0, 0, 0, 0.5);
-}
+@import "variables.css";
 
 /* ======================================
    Custom Foundry Application Window Header Styling
@@ -82,20 +8,17 @@
 
 /* This targets the entire marketplace application */
 .sr5-marketplace {
-    box-shadow: 0 0 10px var(--text-yellow);
+    background-image: var(--bg-main);
+    box-shadow: 0 0 10px var(--color-yellow-bright);
 }
 
-/* This targets the header bar of ONLY your marketplace application */
 .sr5-marketplace .window-header {
-    background: var(--header);
-    /*border-bottom: 2px solid #5d142b; A dark red separator line */
+    background: var(--color-red-darkest);
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     max-height: 2em;
 }
 
-/* This targets the title text within your specific header */
 .sr5-marketplace .window-header .window-title {
-    /* We remove the text-shadow as it won't look good on a white background */
     text-shadow: none; 
 }
 
@@ -106,58 +29,43 @@
     margin-left: -100px;
 }
 
-
 /* ======================================
    Header SVG Close Button
    ====================================== */
 
-/* This rule styles the button in its normal, un-hovered state */
 .sr5-marketplace .window-header button.header-control[data-action="close"] {
-    /* 1. Set the size of the button */
     min-width: unset !important;
     min-height: unset !important;
     max-width: 14px !important;
     height: 14px !important;
     padding: 0 !important;
-    
-    /* 2. Hide the default Font Awesome icon */
     font-size: 0 !important;
     color: transparent;
-
-    /* 3. Set the normal state SVG as the background */
-    background-image: url("data:image/svg+xml,%3csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 16.4 17.7' style='enable-background:new 0 0 16.4 17.7;' xml:space='preserve'%3e%3cstyle type='text/css'%3e .st0{fill:%23D3AF0C;} .st1{fill:%23B00000;} %3c/style%3e%3cg%3e%3cg%3e%3cg%3e%3cpath class='st0' d='M8.2,17.3c-4.3,0-7.8-3.5-7.8-7.8c0-3.2,1.9-6,4.8-7.2c0,0,0,0,0,0c0,0,0,0,0.1,0c0,0,0.1,0.1,0.1,0.1v2.8 c0,0,0,0.1-0.1,0.1c-1.4,1-2.2,2.5-2.2,4.2c0,2.8,2.3,5.1,5.1,5.1s5.1-2.3,5.1-5.1c0-1.7-0.8-3.2-2.2-4.2c0,0-0.1-0.1-0.1-0.1 V2.3c0,0,0-0.1,0.1-0.1c0,0,0,0,0.1,0c0,0,0,0,0,0C14.2,3.5,16,6.3,16,9.5C16,13.8,12.5,17.3,8.2,17.3z'/%3e%3cpath class='st1' d='M11.2,2.3c2.8,1.2,4.7,3.9,4.7,7.1c0,4.3-3.5,7.7-7.7,7.7c-4.3,0-7.7-3.5-7.7-7.7c0-3.2,2-5.9,4.7-7.1v2.8 C3.9,6.1,3,7.7,3,9.5c0,2.9,2.4,5.2,5.2,5.2c2.9,0,5.2-2.3,5.2-5.2c0-1.8-0.9-3.4-2.3-4.3V2.3 M5.2,2.1C5.2,2.1,5.2,2.1,5.2,2.1 c-3.1,1.3-5,4.2-5,7.4c0,4.4,3.6,8,8,8s8-3.6,8-8c0-3.2-1.9-6.1-4.9-7.3c0,0-0.1,0-0.1,0c0,0-0.1,0-0.1,0c-0.1,0-0.1,0.1-0.1,0.2 v2.8c0,0.1,0,0.2,0.1,0.2c1.3,0.9,2.1,2.5,2.1,4.1c0,2.8-2.2,5-5,5c-2.8,0-5-2.2-5-5c0-1.6,0.8-3.2,2.1-4.1 c0.1,0,0.1-0.1,0.1-0.2V2.3c0-0.1,0-0.2-0.1-0.2C5.3,2.1,5.3,2.1,5.2,2.1L5.2,2.1z'/%3e%3c/g%3e%3cg%3e%3cpath class='st0' d='M8.2,10.8c-0.8,0-1.4-0.6-1.4-1.4V1.7c0-0.8,0.6-1.4,1.4-1.4C9,0.4,9.6,1,9.6,1.7v7.7 C9.6,10.2,9,10.8,8.2,10.8z'/%3e%3cpath class='st1' d='M8.2,0.5c0.7,0,1.2,0.6,1.2,1.2v7.7c0,0.7-0.6,1.2-1.2,1.2C7.5,10.7,7,10.1,7,9.5V1.7 C7,1.1,7.5,0.5,8.2,0.5 M8.2,0.3c-0.8,0-1.5,0.7-1.5,1.5v7.7c0,0.8,0.7,1.5,1.5,1.5c0.8,0,1.5-0.7,1.5-1.5V1.7 C9.7,0.9,9,0.3,8.2,0.3L8.2,0.3z'/%3e%3c/g%3e%3c/g%3e%3c/g%3e%3c/svg%3e");
-    /* 4. Final Styling */
+    background-image: var(--headerClose);
     background-color: transparent;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: contain; /* Ensures the SVG scales nicely */
+    background-size: contain;
     border: none;
     transition: transform 0.2s ease-in-out;
 }
 
-/* This rule styles the button when you hover over it */
 .sr5-marketplace .window-header button.header-control[data-action="close"]:hover {
-    /* Set the hover state SVG as the background */
-    background-image: url("data:image/svg+xml,%3csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 16.4 17.7' style='enable-background:new 0 0 16.4 17.7;' xml:space='preserve'%3e%3cstyle type='text/css'%3e .st0{fill:%23E80505;} .st1{fill:%23D3AF0C;} %3c/style%3e%3cg%3e%3cg%3e%3cg%3e%3cpath class='st0' d='M8.2,17.3c-4.3,0-7.8-3.5-7.8-7.8c0-3.2,1.9-6,4.8-7.2c0,0,0,0,0,0c0,0,0,0,0.1,0c0,0,0.1,0.1,0.1,0.1v2.8 c0,0,0,0.1-0.1,0.1c-1.4,1-2.2,2.5-2.2,4.2c0,2.8,2.3,5.1,5.1,5.1s5.1-2.3,5.1-5.1c0-1.7-0.8-3.2-2.2-4.2c0,0-0.1-0.1-0.1-0.1 V2.3c0,0,0-0.1,0.1-0.1c0,0,0,0,0.1,0c0,0,0,0,0,0C14.2,3.5,16,6.3,16,9.5C16,13.8,12.5,17.3,8.2,17.3z'/%3e%3cpath class='st1' d='M11.2,2.3c2.8,1.2,4.7,3.9,4.7,7.1c0,4.3-3.5,7.7-7.7,7.7c-4.3,0-7.7-3.5-7.7-7.7c0-3.2,2-5.9,4.7-7.1v2.8 C3.9,6.1,3,7.7,3,9.5c0,2.9,2.4,5.2,5.2,5.2c2.9,0,5.2-2.3,5.2-5.2c0-1.8-0.9-3.4-2.3-4.3V2.3 M5.2,2.1C5.2,2.1,5.2,2.1,5.2,2.1 c-3.1,1.3-5,4.2-5,7.4c0,4.4,3.6,8,8,8s8-3.6,8-8c0-3.2-1.9-6.1-4.9-7.3c0,0-0.1,0-0.1,0c0,0-0.1,0-0.1,0c-0.1,0-0.1,0.1-0.1,0.2 v2.8c0,0.1,0,0.2,0.1,0.2c1.3,0.9,2.1,2.5,2.1,4.1c0,2.8-2.2,5-5,5c-2.8,0-5-2.2-5-5c0-1.6,0.8-3.2,2.1-4.1 c0.1,0,0.1-0.1,0.1-0.2V2.3c0-0.1,0-0.2-0.1-0.2C5.3,2.1,5.3,2.1,5.2,2.1L5.2,2.1z'/%3e%3c/g%3e%3cg%3e%3cpath class='st0' d='M8.2,10.8c-0.8,0-1.4-0.6-1.4-1.4V1.7c0-0.8,0.6-1.4,1.4-1.4C9,0.4,9.6,1,9.6,1.7v7.7 C9.6,10.2,9,10.8,8.2,10.8z'/%3e%3cpath class='st1' d='M8.2,0.5c0.7,0,1.2,0.6,1.2,1.2v7.7c0,0.7-0.6,1.2-1.2,1.2C7.5,10.7,7,10.1,7,9.5V1.7 C7,1.1,7.5,0.5,8.2,0.5 M8.2,0.3c-0.8,0-1.5,0.7-1.5,1.5v7.7c0,0.8,0.7,1.5,1.5,1.5c0.8,0,1.5-0.7,1.5-1.5V1.7 C9.7,0.9,9,0.3,8.2,0.3L8.2,0.3z'/%3e%3c/g%3e%3c/g%3e%3c/g%3e%3c/svg%3e");
-    transform: scale(1.1); /* Make the button slightly larger on hover */
+    background-image: var(--headerCloseHover);
+    transform: scale(1.1);
 }
 
-/* 1. Main Header Container */
-/* This rule modifies your existing header to act as a positioning layer. */
 .sr5-marketplace .marketplace-header {
-    position: relative; /* This is crucial for layering child elements. */
+    position: relative;
     display: flex;
     justify-content: space-between;
-    
-    padding: 0; /* Padding will be handled by child elements. */
-    background-color: #000; /* The black base background you requested. */
-    border-bottom: 2px solid var(--color-primary-gold);
-    min-height: 4em; /* Ensures the header has a consistent height. */
+    padding: 0;
+    background-color: var(--color-black);
+    border-bottom: 2px solid var(--color-gold-base);
+    min-height: 4em;
     max-height: 4.5em;
 }
 
-/* 2. The Background Image Layer (using ::before) */
-/* This adds the background image behind all other header content. */
 .sr5-marketplace .marketplace-header::before {
     content: '';
     position: absolute;
@@ -165,39 +73,32 @@
     left: 0;
     width: 100%;
     height: 100%;
-    /* Make sure this path to your background image is correct. */
     background-image: url('../assets/header-bg.webp'); 
     background-size: cover;
     background-position: center;
-    opacity: 0.3; /* Makes the image subtle. */
-    z-index: 1; /* Sits just above the black background. */
+    opacity: 0.3;
+    z-index: 1;
 }
 
-/* 3. The Gradient Layer (using ::after) */
-/* This adds the red gradient on top of the background image. */
 .sr5-marketplace .marketplace-header::after {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
-    width: 70%; /* Controls how far the gradient extends from the left. */
+    width: 70%;
     height: 100%;
-    background: linear-gradient(to right, #55101e 30%, rgba(85, 16, 30, 0) 100%);
-    z-index: 2; /* Sits on top of the image. */
-    /* This allows clicks to pass through the gradient to the tabs below. */
+    background: linear-gradient(to right, var(--color-red-deep) 30%, rgba(85, 16, 30, 0) 100%);
+    z-index: 2;
     pointer-events: none; 
 }
 
-/* 4. Ensure Header Content (Tabs & Icon) is on the Top Layer */
 .sr5-marketplace .marketplace-header > * {
     position: relative;
-    z-index: 3; /* Places all direct children of the header above the pseudo-elements. */
+    z-index: 3;
     padding-top: 0.4em;
     padding-right: 0.4em;
 }
 
-/* 5. Add Padding to Align Tabs */
-/* This adds some space so the tabs aren't right against the edge. */
 .sr5-marketplace .marketplace-tabs {
     padding-top: 2.3em;
 }
@@ -219,92 +120,52 @@
     margin: -0.3rem 0 0.2rem;
     line-height: 1;
     font-size: 2vw;
-    color: var(--text-header);
+    color: var(--color-red-base);
     text-shadow: var(--shadow-text);
 }
 /* ======================================
    SVG Resize Handle Style
    ====================================== */
-
-/* This rule specifically targets the resize handle of ONLY marketplace app */
-
 .sr5-marketplace .window-resize-handle {
-    /* 1. Set the size of the handle area */
     width: 18px !important;
     height: 18px !important;
-    
-    /* 2. Hide the default content (the lines/dots) */
     content: "";
-
-    /* 3. Set your custom SVG as the background image */
     background-image: url("data:image/svg+xml,%3csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 16.5 17.3' style='enable-background:new 0 0 16.5 17.3;' xml:space='preserve'%3e%3cstyle type='text/css'%3e .st0{fill:%23D3AF0C;} %3c/style%3e%3cpath class='st0' d='M15,15V2.1L2.1,15H15z M12.3,12.2H8.7l3.5-3.5V12.2z M13.8,3.6L14.3,4c0,0,0,0.1-0.1,0.1L13.8,3.6 C13.7,3.6,13.8,3.5,13.8,3.6z M13.3,4c0,0,0.1-0.1,0.1,0l0.8,0.8c0,0,0,0.1,0,0.1c0,0-0.1,0.1-0.1,0l-0.8-0.8 C13.2,4.1,13.2,4.1,13.3,4z M12.9,4.5l0.5,0.5c0,0,0,0.1-0.1,0.1L12.9,4.5C12.8,4.5,12.8,4.4,12.9,4.5z M12.4,5c0,0,0.1-0.1,0.1,0l0.8,0.8c0,0,0,0.1,0,0.1c0,0-0.1,0.1-0.1,0l-0.8-0.8C12.3,5.1,12.3,5,12.4,5z M12,5.4l0.5,0.5c0,0,0,0.1-0.1,0.1L12,5.4 C11.8,5.4,11.9,5.4,12,5.4z M11.4,5.9c0,0,0.1-0.1,0.1,0l0.8,0.8c0,0,0,0.1,0,0.1c0,0-0.1,0.1-0.1,0L11.4,6 C11.4,6,11.4,5.9,11.4,5.9z M11,6.3l0.5,0.5c0,0,0,0.1-0.1,0.1L11,6.3C10.9,6.4,11,6.3,11,6.3z M10.5,6.8c0,0,0.1-0.1,0.1,0l0.8,0.8 c0,0,0,0.1,0,0.1c0,0-0.1,0.1-0.1,0l-0.8-0.8C10.5,6.9,10.5,6.8,10.5,6.8z M10.1,7.2l0.5,0.5c0,0,0,0.1-0.1,0.1L10.1,7.2 C10,7.3,10.1,7.2,10.1,7.2z M9.6,7.7c0,0,0.1-0.1,0.1,0l0.8,0.8c0,0,0,0.1,0,0.1c0,0-0.1,0.1-0.1,0L9.6,7.8C9.5,7.8,9.5,7.8,9.6,7.7 z M9.2,8.2l0.5,0.5c0,0,0,0.1-0.1,0.1L9.2,8.2C9.1,8.2,9.2,8.1,9.2,8.2z M8.7,8.6c0,0,0.1-0.1,0.1,0l0.8,0.8c0,0,0,0.1,0,0.1 c0,0-0.1,0.1-0.1,0L8.6,8.8C8.6,8.7,8.6,8.7,8.7,8.6z M8.3,9.1l0.5,0.5c0,0,0,0.1-0.1,0.1L8.3,9.1C8.2,9.1,8.2,9,8.3,9.1z M7.7,9.6 c0,0,0.1-0.1,0.1,0l0.8,0.8c0,0,0,0.1,0,0.1c0,0-0.1,0.1-0.1,0L7.7,9.7C7.7,9.7,7.7,9.6,7.7,9.6z M7.4,10l0.5,0.5c0,0,0,0.1-0.1,0.1 L7.4,10C7.2,10.1,7.3,10,7.4,10z M6.8,10.5c0,0,0.1-0.1,0.1,0l0.8,0.8c0,0,0,0.1,0,0.1c0,0-0.1,0.1-0.1,0l-0.8-0.8 C6.8,10.6,6.8,10.5,6.8,10.5z M6.4,10.9l0.5,0.5c0,0,0,0.1-0.1,0.1L6.4,10.9C6.3,11,6.4,10.9,6.4,10.9z M5.9,11.4c0,0,0.1-0.1,0.1,0 l0.8,0.8c0,0,0,0.1,0,0.1c0,0-0.1,0.1-0.1,0l-0.8-0.8C5.9,11.5,5.9,11.4,5.9,11.4z M5.5,11.8L6,12.3c0,0,0,0.1-0.1,0.1L5.5,11.8 C5.4,11.9,5.5,11.8,5.5,11.8z M5,12.3c0,0,0.1-0.1,0.1,0l0.8,0.8c0,0,0,0.1,0,0.1c0,0-0.1,0.1-0.1,0L5,12.4 C4.9,12.4,4.9,12.4,5,12.3z M4.6,12.8L5,13.2c0,0,0,0.1-0.1,0.1L4.6,12.8C4.5,12.8,4.6,12.7,4.6,12.8z M4.1,13.2c0,0,0.1-0.1,0.1,0 L5,14c0,0,0,0.1,0,0.1c0,0-0.1,0.1-0.1,0L4,13.4C4,13.3,4,13.3,4.1,13.2z M4,14.2l-0.5-0.5c0,0,0-0.1,0.1-0.1L4,14.2 C4.1,14.2,4.1,14.2,4,14.2C4.1,14.2,4.1,14.2,4,14.2z'/%3e%3c/svg%3e");
-
-    /* 4. Final Styling */
     background-color: transparent;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: contain; /* Ensures the SVG scales nicely within the button */
+    background-size: contain;
     border: none;
     transition: transform 0.2s ease-in-out;
 }
 
-/* 5. Add a simple hover effect */
 .sr5-marketplace .window-resize-handle:hover {
-    transform: scale(1.1); /* Make the handle slightly larger on hover */
+    transform: scale(1.1);
     filter: brightness(1.2);
 }
 
 /* --------------------------------------
    3. Main Layout Structure
    -------------------------------------- */
-.marketplace-container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-.marketplace-header {
-    flex-shrink: 0;
-}
-.marketplace-body, .marketplace-tab-content {
-    flex-grow: 1;
-    overflow-y: auto;
-}
-
-.shop-container { 
-    display: flex; 
-    flex-direction: column; 
-    height: 100%;
-    overflow: hidden;; 
-}
-.grid-container {
-    flex-grow: 1;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr) 25px auto; /* Adapted for basket toggle */
-    gap: 15px;
-}
-
-/* The main container is the positioning parent and defines the hover area */
-.marketplace-user-actor {
-    position: relative;
-    cursor: pointer;
-    width: 50px;
-    height: 50px;
-}
+.marketplace-container { display: flex; flex-direction: column; height: 100%; }
+.marketplace-header { flex-shrink: 0; }
+.marketplace-body, .marketplace-tab-content { flex-grow: 1; overflow-y: auto; }
+.shop-container { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+.grid-container { flex-grow: 1; display: grid; grid-template-columns: repeat(5, 1fr) 25px auto; gap: 15px; }
+.marketplace-user-actor { position: relative; cursor: pointer; width: 50px; height: 50px; }
 
 .user-avatar-container {
     width: 100%; 
     height: 100%;
     border-radius: 50%;
-    border: 2px solid var(--border-highlight-yellow);
-    overflow: hidden; /* This is needed to keep the scaled image within the circle */
-    background-color: var(--text-dark);
+    border: 2px solid var(--color-yellow-dark);
+    overflow: hidden;
+    background-color: var(--color-grey-dark);
     display: flex; 
     align-items: center; 
     justify-content: center;
-    /* We remove the transform from the container to fix the bug */
 }
 
-/* This is the module-specific container for the icon button */
 .sr5-marketplace .remove-selected-actor {
     position: absolute;
     top: -5px;   
@@ -313,18 +174,15 @@
     height: 20px;
     cursor: pointer;
     transition: all 0.2s ease;
-    /* CRITICAL FIX: Ensure the button is on the highest visual layer */
     z-index: 150; 
 }
 
-.sr5-marketplace .remove-selected-actor:hover {
-    transform: scale(1.2);
-}
+.sr5-marketplace .remove-selected-actor:hover { transform: scale(1.2); }
 
 .sr5-marketplace .remove-selected-actor > .fa-circle-xmark {
     font-size: 20px;
-    color: var(--color-primary-red-dark); 
-    background-color: white;
+    color: var(--color-red-dark); 
+    background-color: var(--color-white);
     border-radius: 50%;
     display: block;
     line-height: 1;
@@ -332,36 +190,34 @@
 }
 
 .sr5-marketplace .remove-selected-actor:hover > .fa-circle-xmark {
-    color: var(--color-accent-red);
+    color: var(--color-red-base);
 }
 
-/* THE FIX: Apply the hover effect directly to the image, NOT the container */
 .marketplace-user-actor:hover .user-avatar {
     transform: scale(1.1);
-    box-shadow: 0 0 10px var(--color-primary-gold); /* Note: shadow may be clipped by overflow:hidden on the container */
+    box-shadow: 0 0 10px var(--color-gold-base);
 }
 
 .user-avatar { 
     width: 100%; 
     height: 100%; 
     object-fit: cover; 
-    transition: transform 0.2s ease; /* Smooth the scaling effect */
+    transition: transform 0.2s ease;
     object-position: top;
 }
 
-/* This styles the dropdown box */
 .user-actor-details {
     display: none;
     position: absolute;
     top: 100%;
     right: 0;
-    width: 250px; /* Wider to accommodate the actor list */
+    width: 250px;
     max-height: 400px;
-    background-color: var(--bg-dark-section);
-    border: 1px solid var(--border-dark);
+    background-color: var(--color-grey-darkest);
+    border: 1px solid var(--color-grey-medium);
     border-radius: 5px;
     padding: 10px;
-    z-index: 100; /* Below the 'x' button */
+    z-index: 100;
     box-shadow: 0 4px 8px rgba(0,0,0,0.5);
 }
 .actor-selection-grid{
@@ -378,9 +234,8 @@
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
-.selectable-actor:hover {
-    background-color: var(--bg-dark-section-hover);
-}
+.selectable-actor:hover { background-color: var(--bg-dark-section-hover); }
+
 .selectable-actor img{
     width: 5em;
     height: 5em;
@@ -398,24 +253,20 @@
 .user-actor-details .actor-name {
     font-weight: bold;
     font-size: 1.1em;
-    color: var(--text-light);
+    color: var(--color-grey-lightest);
     margin: 0 0 8px 0;
     padding-bottom: 8px;
-    border-bottom: 1px solid var(--border-dark);
+    border-bottom: 1px solid var(--color-grey-medium);
     text-align: center;
 }
 
 .user-actor-details .actor-funds {
     display: flex;
     justify-content: space-around;
-    color: var(--text-light);
+    color: var(--color-grey-lightest);
 }
 
-.user-actor-details .actor-funds span {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
+.user-actor-details .actor-funds span { display: flex; align-items: center; gap: 5px; }
 
 /* --------------------------------------
    4. Navigation Tabs & Filters
@@ -424,46 +275,42 @@ nav.marketplace-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
 .marketplace-tab {
     position: relative;
     padding: 1em 2em;
-    border: 1px solid var(--border-tab);
+    border: 1px solid var(--color-grey-tab-active);
     border-bottom: none;
-    background-color: var(--bg-tab-inactive);
-    color: var(--text-light);
+    background-color: var(--color-grey-dark);
+    color: var(--color-grey-lightest);
     cursor: pointer;
     font-weight: bold;
-    /*clip-path: polygon(10% 0, 90% 0, 100% 100%, 0% 100%);*/
     border-top-left-radius: 2em;
     margin-right: -1.5em;
 }
-.marketplace-tab.active, .marketplace-tab:hover { background-color: var(--bg-tab-active); }
+.marketplace-tab.active, .marketplace-tab:hover { background-color: var(--color-grey-tab-active); }
 .basket-count {
     position: absolute; top: 50%; right: 5px; transform: translateY(-50%);
-    background-color: var(--color-primary-red-dark); color: var(--color-primary-yellow);
+    background-color: var(--color-red-dark); 
+    color: var(--color-yellow-base);
     font-size: 12px; font-weight: bold; width: 18px; height: 18px;
     border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    border: 1px solid var(--text-dark);
+    border: 1px solid var(--color-grey-dark);
 }
 .marketplace-filter {
     flex-shrink: 0;
     padding: 10px;
-    /* background-color: var(--bg-filter-bar); */
-    /* border-bottom: 1px solid var(--border-light); */
     display: flex;
     align-items: center;
     column-gap: 10px;
     flex-wrap: wrap;
 }
-.marketplace-filter label {
-    font-weight: bold;
-    flex-shrink: 0;
-}
+.marketplace-filter label { font-weight: bold; flex-shrink: 0; }
+
 select#item-type-selector {
-    width: auto; /* Let the dropdown size to its content */
-    flex-grow: 0; /* Prevent it from growing */
+    width: auto;
+    flex-grow: 0;
     max-height: 1.8rem;
     padding: 2px 5px;
     border: 1px solid var(--border-highlight-dark-yellow);
     background: var(--bg-item-card);
-    color: var(--color-primary-red-dark);
+    color: var(--color-red-dark);
 }
 
 input#search-box.marketplace-search {
@@ -475,18 +322,19 @@ input#search-box.marketplace-search {
 }
 select#item-type-selector option { 
     background-color: var(--bg-basket-content); 
-    color: var(--color-primary-red-very-dark); }
+    color: var(--color-red-very-dark); 
+}
 #filter-tags-container {
     display: flex;
     gap: 0.2em;
     flex-wrap: wrap;
-    width: 100%; /* Take up full width below inputs */
+    width: 100%;
 }
 
 .filter-tag {
     display: flex;
     align-items: center;
-    background-color: var(--color-primary-red-dark);
+    background-color: var(--color-red-dark);
     color: var(--bg-item-card);
     padding: 3px 8px;
     border-radius: 12px;
@@ -504,8 +352,8 @@ select#item-type-selector option {
 }
 
 .filter-tag .remove-tag:hover {
-    color: var(--color-primary-red);
-    background-color: var(--color-primary-gold);
+    color: var(--color-red-base);
+    background-color: var(--color-gold-base);
     border-radius: 50%;
     min-width: 0.8em;
     padding-left: 0.16em;
@@ -514,14 +362,8 @@ select#item-type-selector option {
 /* --------------------------------------
    5. Item Card Grid & Layout (Refined)
    -------------------------------------- */
-.marketplace-item {
-    font-family: sans-serif;
-    font-size: larger;
-}
-.item-all, .item-rating {
-    font-size: medium;
-    font-family: "Modesto Condensed", serif;
-}
+.marketplace-item { font-family: sans-serif; font-size: larger; }
+.item-all, .item-rating { font-size: medium; font-family: "Modesto Condensed", serif; }
 .marketplace-items-grid, .marketplace-items {
     flex-grow: 1;
     display: grid;
@@ -541,31 +383,16 @@ select#item-type-selector option {
 }
 .marketplace-item.grid-item:hover, .item-card:hover { 
     background-color: var(--bg-item-card-hover); 
-    color: var(--color-primary-yellow); 
+    color: var(--color-yellow-base); 
 }
-.marketplace-item.grid-item:hover h4, .item-card:hover h4 { 
-    color: var(--color-primary-yellow); 
-}
-.grid-show { 
-    display: grid; 
-    grid-template-columns: 6em 2em auto; 
-    gap: 10px; 
-    align-items: center; 
-    margin-bottom: 10px; 
-}
+.marketplace-item.grid-item:hover h4, .item-card:hover h4 { color: var(--color-yellow-base); }
+.grid-show { display: grid; grid-template-columns: 6em 2em auto; gap: 10px; align-items: center; margin-bottom: 10px; }
 .market-item-image {
     max-width: 62px; background-color: rgba(95, 95, 95, 0.27);
     border-radius: 10px; border: 3px outset;
 }
-.market-item-image img { 
-    max-width: 60px; 
-    max-height: 60px; 
-    object-fit: contain; 
-    border: none; 
-}
-.card-body { 
-    flex-grow: 1; 
-}
+.market-item-image img { max-width: 60px; max-height: 60px; object-fit: contain; border: none; }
+.card-body { flex-grow: 1; }
 .item-details {
     display: grid;
     grid-template-columns: 10em auto;
@@ -579,87 +406,52 @@ select#item-type-selector option {
 /* --------------------------------------
    6. Shopping Basket (Restored & Integrated)
    -------------------------------------- */
-.basket-content { 
-    background-color: var(--bg-basket-content); 
-    padding: 10px; 
-    border-radius: 6px; 
-}
-.SR5-marketplace.grid-basket, .basket-grid {
-    display: grid;
-    gap: 10px; align-items: center; padding-bottom: 10px;
-}
-.basket-grid.headers, .basket-grid.item-row { 
-    grid-template-columns: 3fr 1fr 1fr 1fr 1fr 1fr 0.5fr; 
-}
-.basket-grid .header { 
-    font-weight: bold; text-align: center; 
-}
-.basket-item { 
-    text-align: center; 
-}
-.basket-item.item-name { 
-    display: flex; align-items: center; gap: 5px; text-align: left; 
-}
-.basket-item img.mini-img { 
-    width: 20px; border: none; 
-}
+.basket-content { background-color: var(--bg-basket-content); padding: 10px; border-radius: 6px; }
+.SR5-marketplace.grid-basket, .basket-grid { display: grid; gap: 10px; align-items: center; padding-bottom: 10px; }
+.basket-grid.headers, .basket-grid.item-row { grid-template-columns: 3fr 1fr 1fr 1fr 1fr 1fr 0.5fr; }
+.basket-grid .header { font-weight: bold; text-align: center; }
+.basket-item { text-align: center; }
+.basket-item.item-name { display: flex; align-items: center; gap: 5px; text-align: left; }
+.basket-item img.mini-img { width: 20px; border: none; }
 .basket-summary { 
     font-weight: bold; 
     padding: 10px; 
     background-color: var(--bg-basket-summary); 
-    border-top: 1px solid var(--border-light); 
+    border-top: 1px solid var(--color-grey-light); 
 }
-.basket-actions{
-    display: flex; 
-    align-items: center; 
-    margin-top: 1em;
-}
-.actor-contact-grid {
-    display: grid; 
-    grid-template-columns: 1fr 2fr; 
-    gap: 20px;
-    margin: 15px 0; 
-    padding-top: 15px; 
-}
-.actor-info-col{
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-}
-.actor-funds{
-    grid-row-start: 2;
-}
-.actor-link-wrapper{
-    object-fit: contain;
-    width: 60px;
-    grid-row-start: 2;
-}
-.contact-cards-container {
-    display: grid;
-    grid-template-columns: repeat(5, 5em) auto;
-}
-.contact-card{
-    object-fit: contain;
-    width: 4em;
-}
+.basket-actions{ display: flex; align-items: center; margin-top: 1em; }
+.actor-contact-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin: 15px 0; padding-top: 15px; }
+.actor-info-col{ display: grid; grid-template-columns: 1fr 1fr; }
+.actor-funds{ grid-row-start: 2; }
+.actor-link-wrapper{ object-fit: contain; width: 60px; grid-row-start: 2; }
+.contact-cards-container { display: grid; grid-template-columns: repeat(5, 5em) auto; }
+.contact-card{ object-fit: contain; width: 4em; }
 
 /* --------------------------------------
    7. Buttons & Icons
    -------------------------------------- */
 .item-action .add-to-cart {
-    background-color: var(--color-accent-green-button); color: var(--text-button-light);
+    background-color: var(--color-green-button); 
+    color: var(--color-green-text-light);
     border: none; padding: 5px; border-radius: 5px; cursor: pointer;
 }
 .send-request-button {
     background-image: url(/modules/sr5-marketplace/assets/icons/button_red_60_34.svg);
     background-size: 103% 110%; background-repeat: no-repeat; background-color: transparent;
-    line-height: 38px; border: none; color: var(--text-yellow); text-shadow: var(--shadow-text-button);
+    line-height: 38px; border: none; 
+    color: var(--color-yellow-bright); 
+    text-shadow: var(--shadow-text-button);
 }
-.review-request-button { background-color: var(--text-dark); color: var(--color-primary-red-dark); border-color: var(--color-primary-red-dark); }
-.fa-circle-minus { color: var(--color-primary-red-bright); cursor: pointer; }
-.fa-circle-plus { color: var(--color-accent-green); cursor: pointer; }
-.fa-trash { color: var(--color-primary-red-dark); }
-.sr5-marketplace-yen { color: var(--color-primary-red-bright); }
-.fa-circle-star, .sr5-marketplace-karma { color: var(--color-primary-yellow); }
+.review-request-button { 
+    background-color: var(--color-grey-dark); 
+    color: var(--color-red-dark); 
+    border-color: var(--color-red-dark); 
+}
+.fa-circle-minus { color: var(--color-red-bright); cursor: pointer; }
+.fa-circle-plus { color: var(--color-green-base); cursor: pointer; }
+.fa-trash { color: var(--color-red-dark); }
+.sr5-marketplace-yen { color: var(--color-red-bright); }
+.fa-circle-star, .sr5-marketplace-karma { color: var(--color-yellow-base); }
 
 /* --------------------------------------
    8. Responsive Container Queries
@@ -672,15 +464,13 @@ select#item-type-selector option {
     9. Settings UI (Corrected & Clickable)
    -------------------------------------- */
 
-/* This rule makes the settings window a flex container that fills the space vertically */
 .sr5-marketplace-settings-app .window-content {
     display: flex;
     flex-direction: column;
     padding: 10px;
-    overflow: hidden; /* This is key to prevent double scrollbars */
+    overflow: hidden;
 }
 
-/* This is the main container for all settings content */
 .sr5-marketplace-settings-app .settings-wrapper {
     display: flex;
     flex-direction: column;
@@ -692,20 +482,19 @@ select#item-type-selector option {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 15px;
-    flex-shrink: 0; /* Prevents the header from shrinking */
+    flex-shrink: 0;
     padding-bottom: 5px;
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     font-size: medium;
 }
 
-/* The content grid is now the ONLY element that scrolls, which fixes the click issue */
 .sr5-marketplace-settings-app .settings-content-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 15px;
     padding: 5px;
-    flex-grow: 1; /* Takes up all remaining vertical space */
-    overflow-y: auto; /* Adds a vertical scrollbar ONLY if the content overflows */
+    flex-grow: 1;
+    overflow-y: auto;
 }
 
 .sr5-marketplace-settings-app .item-type-list {
@@ -720,42 +509,40 @@ select#item-type-selector option {
     align-items: center;
     padding: 8px;
     border-radius: 3px;
-    border: 2px solid #ddd;
+    border: 2px solid var(--color-grey-divider);
     cursor: pointer;
     transition: all 0.2s ease-in-out;
     font-weight: bold;
 }
 
 .sr5-marketplace-settings-app .item-type-card:hover {
-    border-color: var(--color-primary-gold);
-    box-shadow: inset 0 0 1.1em 0.1em var(--color-primary-red-hover);
-    background-color: var(--color-primary-gold);
+    border-color: var(--color-gold-base);
+    box-shadow: inset 0 0 1.1em 0.1em var(--color-red-base-transparent);
+    background-color: var(--color-gold-base);
 }
 
 .sr5-marketplace-settings-app .item-type-card.active {
-    border-color: var(--color-primary-gold);
-    box-shadow: inset 0 0 1.1em 0.1em var(--color-primary-gold);
-    background-color: var(--color-primary-red);
+    border-color: var(--color-gold-base);
+    box-shadow: inset 0 0 1.1em 0.1em var(--color-gold-base);
+    background-color: var(--color-red-base);
     cursor: default;
     color: var(--bg-item-card);
 }
 
 .sr5-marketplace-settings-app .item-type-card.active:hover {
-    border-color: var(--color-primary-gold);
-    box-shadow: inset 0 0 1.4em 0.4em var(--color-primary-gold);
-    background-color: var(--color-blend-orange);
+    border-color: var(--color-gold-base);
+    box-shadow: inset 0 0 1.4em 0.4em var(--color-gold-base);
+    background-color: var(--color-orange-blend);
     cursor: default;
-    color: var(--color-primary-red);
+    color: var(--color-red-base);
 }
 
-/* --- NEW: Added Missing Behavior Tag Styles --- */
-/* This container is added by the marketHooks.js file */
 .behavior-summary {
     display: flex;
     flex-wrap: wrap;
     gap: 5px;
     padding: 0 10px 10px 10px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--color-grey-divider);
     margin-bottom: 10px;
 }
 
@@ -765,26 +552,25 @@ select#item-type-selector option {
     font-size: 11px;
     border: 1px solid rgba(0,0,0,0.2);
     font-weight: bold;
-    color: #232323;
+    color: var(--color-grey-text);
     white-space: nowrap;
     text-transform: capitalize;
     box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
 }
 
-/* Color coding for each behavior type */
 .behavior-tag.unique { 
-    background-color: var(--bg-settings-unique);
-    border-color: var(--border-settings-unique); 
+    background-color: var(--color-green-success-bg);
+    border-color: var(--color-green-success-border); 
     cursor: pointer;
 }
 .behavior-tag.stack { 
-    background-color: var(--bg-settings-stack);
-    border-color: var(--border-settings-stack);
+    background-color: var(--color-blue-info-bg);
+    border-color: var(--color-blue-info-border);
     cursor: pointer;
 }
 .behavior-tag.single { 
-    background-color: var(--bg-settings-single);
-    border-color: var(--border-settings-single); 
+    background-color: var(--color-yellow-warning-bg);
+    border-color: var(--color-yellow-warning-border); 
     cursor: pointer;
 }
 
@@ -793,45 +579,43 @@ select#item-type-selector option {
    -------------------------------------- */
 
 .sr5-marketplace-settings-app .column-header .item-count {
-    /* Basic tag styling */
-    display: inline-block; /* Allows padding and margins */
+    display: inline-block;
     padding: 2px 8px;
     border-radius: 10px;
     font-size: 0.9em;
     font-weight: bold;
-    color: rgba(0, 0, 0, 0.7); /* A darker text color for readability */
-    margin-top: 5px; /* Adds some space below the h3 */
+    color: rgba(0, 0, 0, 0.7);
+    margin-top: 5px;
     border: 1px solid rgba(0,0,0,0.2);
 }
 .column-header.unique, .column-header.stack, .column-header.single {
     padding-left: 2em;
 }
 
-/* Apply specific colors based on the parent header's class */
 .sr5-marketplace-settings-app .column-header.unique .item-count {
-    background-color: var(--bg-settings-unique);
-    border-color: var(--border-settings-unique);
+    background-color: var(--color-green-success-bg);
+    border-color: var(--color-green-success-border);
     cursor: pointer; 
 }
 
 .sr5-marketplace-settings-app .column-header.stack .item-count {
-    background-color: var(--bg-settings-stack);
-    border-color: var(--border-settings-stack);
+    background-color: var(--color-blue-info-bg);
+    border-color: var(--color-blue-info-border);
     cursor: pointer;
 }
 
 .sr5-marketplace-settings-app .column-header.single .item-count {
-    background-color: var(--bg-settings-single);
-    border-color: var(--border-settings-single);
+    background-color: var(--color-yellow-warning-bg);
+    border-color: var(--color-yellow-warning-border);
     cursor: pointer;
 }
 hr.marketplace-settings-hr {
     height: 6px;
-    border: 2px solid #bfb4b4;
+    border: 2px solid var(--color-grey-hr);
     margin: 1em 0;
     border-top-width: 1px;
     border-bottom-width: 3px;
     border-radius: 4px;
-    background-color: var(--border-light);
-    background-image: repeating-linear-gradient(180deg, var(--color-primary-red), transparent 100px);
+    background-color: var(--color-grey-light);
+    background-image: repeating-linear-gradient(180deg, var(--color-red-base), transparent 100px);
 }

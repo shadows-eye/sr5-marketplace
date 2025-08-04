@@ -1,6 +1,6 @@
 <div class="shop-inventory">
     {{!-- Header Row for the Inventory Grid --}}
-    <div class="inventory-header sr5-grid-c9">
+    <div class="inventory-header sr5-grid c10">
         <div class="header-img"></div>
         <div class="header-name">{{localize "SR5.Name"}}</div>
         <div class="header-rating">{{localize "SR5.Rating"}}</div>
@@ -10,6 +10,11 @@
         <div class="header-availability">{{localize "SR5.Availability"}}</div>
         <div class="header-buyTime">{{localize "SR5.Marketplace.Shop.BuyTime"}}</div>
         <div class="header-comment">{{localize "SR5.Marketplace.Shop.Comment"}}</div>
+        <add data-action="addItem">
+            <i class="fa-solid fa-plus">
+                <hint>{{localize "SR5.Marketplace.Shop.AddItem"}}</hint>
+            </i>
+        </add>
     </div>
 
     {{!-- Loop through each prepared inventory item --}}
@@ -25,6 +30,7 @@
                 <div class="item-availability">{{item.availability.value}}</div>
                 <div class="item-buyTime">{{item.buyTime.value}} {{item.buyTime.unit}}</div>
                 <div class="item-comment">{{item.comments}}</div>
+                <remove data-action="removeItem" data-entry-id="{{entryId}}"></remove>
             </div>
         {{/each}}
     </div>

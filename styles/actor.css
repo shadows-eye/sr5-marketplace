@@ -5,338 +5,451 @@
 // ==================================================================
 */
 
-/* --- Base Application Theme --- */
-
 /* Apply marketplace theme to the entire sheet window */
 .sr5-marketplace-shop {
-    box-shadow: 0 0 10px var(--text-yellow);
+box-shadow: var(--app-window-shadow);
+}
+
+.read-only.body-text{
+color: var(--text-color-read-only);
+}
+
+/* Set the icon as the positioning context for the hint */
+add i {
+position: relative;
+display: inline-block;
+}
+
+/* Style the hint as a tooltip */
+hint {
+visibility: hidden;
+opacity: 0;
+transition: opacity 0.2s ease, visibility 0.2s ease;
+position: absolute;
+z-index: 200;
+top: 100%;
+right: 0%;
+transform: translateX(2%);
+margin-top: 5px;
+background-color: var(--hint-bg);
+color: var(--hint-color);
+padding: 0.5rem 0.3rem;
+border-radius: 0.3rem;
+white-space: nowrap;
+font-size: 0.9em;
+box-shadow: var(--hint-shadow);
+}
+
+/* Show the hint on hover */
+add i:hover > hint {
+visibility: visible;
+opacity: 1;
 }
 
 /* Style the main window header to match the marketplace */
 .sr5-marketplace-shop .window-header {
-    background: var(--header);
-    border-bottom: 2px solid var(--border-highlight-red);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+background: var(--app-window-header-bg);
+border-bottom: 2px solid var(--app-window-header-border);
+box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 /* Style the title in the window header */
 .sr5-marketplace-shop .window-header .window-title {
-    color: var(--text-light);
-    text-shadow: none;
+color: var(--app-window-header-title-color);
+text-shadow: none;
 }
 
 /* Set the background for the main content area */
 .sr5-marketplace-shop .window-content {
-    background: var(--bg-main) repeat;
-    color: var(--text-light);
+background: var(--app-window-content-bg) repeat;
+color: var(--app-window-content-color);
 }
 
 /* --- Layout: Sticky Header & Scrolling Content --- */
 
-/* Main layout container from actor-shop.html */
 .sr5-marketplace-shop-actor {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+display: flex;
+flex-direction: column;
+height: 100%;
 }
 
-/* Container for the static header, attributes, and tabs */
 .sheet-top-content {
-    flex-shrink: 0;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: var(--bg-dark-overlay); /* Semi-transparent dark background */
-    border-bottom: 1px solid var(--border-highlight-yellow);
-    padding: 5px;
+flex-shrink: 0;
+position: sticky;
+top: 0;
+z-index: 10;
+background: var(--app-sticky-top-bg);
+border-bottom: 1px solid var(--app-sticky-top-border);
+padding: 5px;
 }
 
-/* The main scrollable area for tab content */
+.sr5-marketplace-attribute{
+color: var(--attribute-text-color);
+}
+
 .sheet-body {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding: 10px;
+flex-grow: 1;
+overflow-y: auto;
+padding: 10px;
 }
-
 
 /* --- Tab Navigation Styling --- */
 
 .sr5-marketplace-shop .sheet-tabs {
-    border-bottom: none;
-    margin: 5px 0;
+border-bottom: none;
+margin: 5px 0;
 }
 
 .sr5-marketplace-shop .sheet-tabs .item {
-    background: var(--bg-tab-inactive);
-    border: 1px solid var(--border-medium);
-    border-bottom: none;
-    color: var(--text-light);
+background: var(--tab-inactive-bg);
+border: 1px solid var(--tab-inactive-border);
+border-bottom: none;
+color: var(--tab-inactive-color);
 }
 
 .sr5-marketplace-shop .sheet-tabs .item.active {
-    background: var(--bg-tab-active);
-    text-shadow: 0 0 5px var(--color-primary-yellow-hover);
+background: var(--tab-active-bg);
+text-shadow: var(--tab-active-text-shadow);
 }
 
 /* --- Attributes Section --- */
 .sr5-marketplace-attributes {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    padding: 10px 0;
-    border-top: 1px solid var(--border-medium);
-    margin-top: 10px;
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 10px;
+padding: 10px 0;
+border-top: 1px solid var(--border-color-medium);
+margin-top: 10px;
 }
 
 .attribute-group {
-    background: rgba(0,0,0,0.2);
-    border: 1px solid var(--border-dark);
-    border-radius: 5px;
-    padding: 8px;
+background: var(--attribute-group-bg);
+border-radius: 5px;
+padding: 8px;
 }
 
 .attribute-group h4 {
-    margin: 0 0 8px 0;
-    text-align: center;
-    color: var(--color-primary-yellow);
-    border-bottom: 1px solid var(--border-medium);
-    padding-bottom: 5px;
+margin: 0 0 8px 0;
+text-align: center;
+color: var(--attribute-group-title-color);
+border-bottom: 1px solid var(--attribute-group-border);
+padding-bottom: 5px;
 }
 
 .sr5-marketplace-attribute {
-    display: grid;
-    grid-template-columns: 3fr 1fr;
-    justify-content: space-between;
-    align-items: center;
-    padding: 2px 5px;
+display: grid;
+grid-template-columns: 3fr 1fr;
+justify-content: space-between;
+align-items: center;
+padding: 2px 5px;
 }
 
 /* --- In-Place Editor Styling --- */
 .prosemirror-container.active .editor-content {
-    border: 1px solid var(--border-highlight-yellow);
+border: 1px solid var(--border-color-highlight);
 }
+
 section.tab.shop-details.active{
-    overflow-y: auto;
+overflow-y: auto;
+}
+
+.shop-column-1, .shop-column-2{
+background: var(--attribute-group-bg);
 }
 
 /* Main container for the entire skills list */
 .skills-list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px; /* Space between skill categories */
+display: flex;
+flex-direction: column;
+gap: 15px;
 }
 
-/* Grid Layouts
-
-/* The grid layout for skill entries */
+/* Grid Layouts */
 .sr5-grid-3c {
-    display: grid;
-    /* Icon (40px), Name (flex), Rating (auto) */
-    grid-template-columns: 40px 1fr auto;
-    gap: 5px 10px; /* Row and column gap */
-    align-items: center;
+display: grid;
+grid-template-columns: 40px 1fr auto;
+gap: 5px 10px;
+align-items: center;
 }
-/* Creates the 2-column grid for the shop details tab */
+
 .sr5-grid-c2 {
-    display: grid;
-    grid-template-columns: 2fr 1fr; /* First column is twice as wide as the second */
-    gap: 15px;
-    align-items: start; /* Aligns items to the top of their grid cell */
+display: grid;
+grid-template-columns: 2fr 1fr;
+gap: 15px;
+align-items: stretch;
 }
 
-/* Defines the 9-column grid for the inventory */
-.sr5-grid-c9 {
-    display: grid;
-    /* Defines the size of each of the 9 columns */
-    grid-template-columns: 30px 2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-    gap: 5px 10px; /* Row and column gap */
-    align-items: center;
-    text-align: center;
+.sr5-marketplace-shop-fields {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 10px 15px;
+align-items: start;
+grid-template-areas:
+"owner      connection employees"
+"modifier  modifier  radius"
+"inventory  inventory inventory";
+margin-right: -1px;
+border: none;
+min-height: 100px;
+color: var(--text-color-subheader);
 }
 
+/* Assign grid areas to the form groups */
+.form-group.owner { grid-area: owner; min-height: inherit; }
+.form-group.connection { grid-area: connection; min-height: inherit; }
+.form-group.modifier { grid-area: modifier; }
+.form-group.radius { grid-area: radius; display: grid; grid-template-columns: 1fr 1fr; gap: 1em; align-items: center; }
+.form-group.employees { grid-area: employees; min-height: inherit; }
+.form-group.inventory { grid-area: inventory; border: none; height: 65%; width: 100%; display: block; overflow: hidden; }
+.form-group.subHeading, legend.subHeading, label.subHeading, .subHeading {
+color: var(--text-color-subheader);
+}
 
-/* Styling for each skill group (Active, Knowledge, etc.) */
+.sr5-grid.c10 {
+display: grid;
+grid-template-columns: 30px 2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1em;
+gap: 5px 10px;
+align-items: center;
+text-align: center;
+}
+
 .skill-group {
-    background: rgba(0,0,0,0.2);
-    border: 1px solid var(--border-dark);
-    border-radius: 5px;
-    padding: 8px;
+border-radius: 5px;
+padding: 8px;
 }
 
-/* Styling for the header row */
 .skill-header {
-    font-weight: bold;
-    color: var(--color-primary-yellow);
-    border-bottom: 1px solid var(--border-medium);
-    padding-bottom: 5px;
-    margin-bottom: 5px;
+font-weight: bold;
+color: var(--skill-header-color);
+border-bottom: 1px solid var(--skill-header-border);
+padding-bottom: 5px;
+margin-bottom: 5px;
 }
 
-/* Align the rating column to the right */
 .skill-header .skill-rating,
 .skill-entry .skill-rating {
-    text-align: right;
+text-align: right;
 }
 
 /* Inventory Item Styles */
-
-/* Styles the header row of the inventory grid */
 .inventory-header {
-    font-weight: bold;
-    color: var(--color-primary-yellow);
-    border-bottom: 1px solid var(--border-medium);
-    padding-bottom: 5px;
-    margin-bottom: 5px;
+font-weight: bold;
+color: var(--inventory-header-color);
+padding-bottom: 1px;
+margin-bottom: 5px;
 }
 
-/* Styles individual item rows */
+.inventory-list{
+overflow: auto;
+}
+
 .inventory-item {
-    border-bottom: 1px solid var(--border-dark);
-    padding: 2px 0;
+border-bottom: 1px solid var(--inventory-item-border);
+padding: 2px 0;
 }
 
-/* Ensures the item name is aligned to the left */
 .inventory-item .item-name {
-    text-align: left;
+text-align: left;
 }
 
-/* Styles the small image in the first column */
 .inventory-item .item-img img {
-    width: 28px;
-    height: 28px;
-    object-fit: contain;
-    border: none;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
+width: 28px;
+height: 28px;
+object-fit: contain;
+border: none;
+background: var(--inventory-item-image-bg);
+border-radius: 3px;
 }
 
-/* Styles for the input fields within the grid */
 .inventory-item input[type="number"] {
-    width: 100%;
-    text-align: center;
-    background: rgba(0,0,0,0.3);
-    color: var(--text-light);
-    border: 1px solid var(--border-dark);
-    border-radius: 3px;
+width: 100%;
+text-align: center;
+background: var(--input-bg-transparent);
+color: var(--input-color);
+border: 1px solid var(--input-border-dark);
+border-radius: 3px;
+}
+
+.sr5 .form-group input[type="number"].radius-input{
+width: 2.2em;
 }
 
 /* --- Skills Column & Collapsible Sections --- */
-
-/* Make the column a flex container that can grow. */
 .shop-column-2 {
-    display: flex;
-    flex-direction: column;
-    /* This prevents the column from overflowing the sheet body */
-    min-height: 0;
+display: flex;
+flex-direction: column;
+min-height: 0;
 }
 
-/* Make the fieldset containing the skills fill the column's space. */
 .sr5-marketplace-skills-fields {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    max-height:400px;
+display: flex;
+flex-direction: column;
+flex-grow: 1;
+max-height:400px;
+border: none;
 }
 
-/* Make the skills-list itself the scrollable element. */
 .skills-list {
-    display: block;
-    overflow-y: auto; /* This makes the list scrollable */
-    padding-right: 5px; /* Adds space for the scrollbar */
-    flex-grow: 1; /* Allows the list to fill the available space */
+display: block;
+overflow-y: auto;
+padding-right: 5px;
+flex-grow: 1;
 }
 
 /* --- Collapsible Logic --- */
-
 .skills-list input.toggle {
-    display: none;
+display: none;
 }
 
 .skills-list .toggle-label {
-    cursor: pointer;
-    display: block;
-    user-select: none;
-    padding: 2px 5px;
-    transition: background 0.2s ease;
-    /* Make headers sticky inside the scrolling list */
-    position: sticky;
-    z-index: 1;
+cursor: pointer;
+display: block;
+user-select: none;
+padding: 2px 5px;
+transition: background 0.2s ease;
+position: sticky;
+z-index: 1;
 }
 
 .skills-list .toggle-label:hover {
-    background: rgba(255, 255, 255, 0.05);
+background: var(--collapsible-label-hover-bg);
 }
 
 .skills-list .toggle-content {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-out;
-    padding-left: 20px;
+max-height: 0;
+overflow: hidden;
+transition: max-height 0.3s ease-out;
+padding-left: 20px;
 }
 
 .skills-list input.toggle:checked ~ .toggle-content {
-    min-height: fit-content; /* Use a large value to allow content to expand fully */
-    transition: max-height 0.5s ease-in;
+min-height: fit-content;
+transition: max-height 0.5s ease-in;
 }
 
 .sr5-marketplace-input.value-input, .sr5-marketplace-input.value {
-    border: none;
-    background: #00ffff00;
-    text-align: center;
-    max-width: 18px;
-    max-height: 18px;
-    padding: 0px;
+border: none;
+background: #00ffff00;
+text-align: center;
+max-width: 18px;
+max-height: 18px;
+padding: 0px;
 }
 
 .marketplace-collapsible-header {
-    color: var(--color-primary-yellow);
+color: var(--text-color-subheader);
+padding-left: 4px;
+cursor: pointer;
+transition: color 0.2s ease;
+}
+.marketplace-collapsible-header:hover {
+color: var(--text-color-link-hover);
+background-color: var(--collapsible-header-hover-bg);
+padding-left: 4px;
+padding-right: 4px;
+border-radius: 4px;
+width: fit-content;
 }
 
 /* Styling for the drop target boxes */
 .drop-target {
-    border: 2px dashed #aaa;
-    border-radius: 5px;
-    padding: 10px;
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.2s ease;
+border: 2px dashed var(--drop-target-border);
+border-radius: 5px;
+padding: 10px;
+min-height: 40px;
+display: flex;
+align-items: center;
+gap: 10px;
+transition: all 0.2s ease;
 }
 
-/* Visual feedback when a document is dragged over the drop zone */
 .drop-target.drag-over {
-    border-color: var(--color-primary-yellow);
-    background: rgba(231, 201, 62, 0.2);
+border-color: var(--drop-target-border-hover);
+background: var(--drop-target-bg-hover);
 }
 
+/* --- Employee List --- */
 .employee-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+list-style: none;
+padding: 0;
+margin: 0;
+display: flex;
 }
 
-.employee-list li {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 2px 0;
+.drop-target .employee-list li {
+display: flex;
+align-items: center;
+gap: 5px;
+}
+
+.employee-list li:not(.drop-hint) {
+padding: 2px 0;
+border-bottom: 1px solid var(--border-color-dark);
+}
+
+.employee-list li:last-of-type {
+border-bottom: none;
 }
 
 .employee-list .drop-hint {
-    color: #aaa;
-    text-align: center;
-    margin-top: 5px;
+color: var(--color-grey-light);
+text-align: center;
+margin-top: 5px;
+}
+
+.employee-list input.toggle {
+display: none;
+}
+
+.employee-list .toggle-label {
+cursor: pointer;
+display: flex;
+align-items: center;
+gap: 8px;
+user-select: none;
+padding: 5px;
+transition: background 0.2s ease;
+}
+
+.employee-list .toggle-label:hover {
+background: var(--collapsible-label-hover-bg);
+}
+
+.employee-list .toggle-content {
+max-height: 0;
+overflow: hidden;
+transition: max-height 0.3s ease-out;
+padding: 10px 10px 10px 42px;
+background: var(--collapsible-content-bg);
+border-top: 1px solid var(--border-color-dark);
+}
+
+.employee-list input.toggle:checked ~ .toggle-content {
+max-height: 100px;
+transition: max-height 0.5s ease-in;
+}
+
+.employee-details {
+display: flex;
+justify-content: space-around;
+gap: 15px;
+}
+
+.employee-detail-label {
+font-weight: bold;
+color: var(--text-color-subheader);
+font-size: 0.9em;
+text-transform: uppercase;
 }
 
 .marketplace-header {
-    display: grid;
-    grid-template-columns: 1fr 6fr 20px;
+display: grid;
+grid-template-columns: 1fr 6fr 20px;
 }
 input.marketplace.name {
-    width: 5em;
-    height: fit-content;
-    border: none;
-    background: #fbc61b42;
-    padding-left: 2px;
+width: 5em;
+height: fit-content;
+border: none;
+background: var(--input-name-bg);
+padding-left: 2px;
 }

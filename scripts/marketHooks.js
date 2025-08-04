@@ -5,7 +5,7 @@ import { registerBasicHelpers } from "./lib/helpers.js";
 import ItemDataServices from './services/ItemDataServices.mjs';
 import { MarketplaceSettingsApp } from "./apps/MarketplaceSettingsApp.mjs";
 import { PurchaseService } from "./services/purchaseService.mjs";
-import { defineShopActorClass } from '../models/shopActor.mjs';
+import { defineShopActorClass } from '../models/actor/shopActor.mjs';
 import { ShopActorSheet } from '../sheets/ShopActorSheet.mjs';
 
 // --- CONSTANTS ---
@@ -236,15 +236,6 @@ Hooks.once("init", () => {
 
     game.sr5marketplace = { itemData: new ItemDataServices() };
 
-    Hooks.on("updateUser", (user, changes) => {
-        // This now correctly checks for changes to the 'basket' flag.
-        if (game.user.isGM && foundry.utils.hasProperty(changes, "flags.sr5-marketplace.basket")) {
-            // A relevant flag changed, so just ask the UI to redraw the controls.
-            setTimeout(() => {
-                if (ui.controls) ui.controls.render(true);
-            }, 250);
-        }
-    });
 });
 
 /**
@@ -266,6 +257,19 @@ Hooks.on("ready", async () => {
     }
 });
 
+/**
+ * A hook that runs when a user's data is updated.
+ * We use this to detect changes to a player's basket and update the GM's UI.
+ */
+Hooks.on("updateUser", (user, changes) => {
+    // This now correctly checks for changes to the 'basket' flag.
+    if (game.user.isGM && foundry.utils.hasProperty(changes, "flags.sr5-marketplace.basket")) {
+        // A relevant flag changed, so just ask the UI to redraw the controls.
+        setTimeout(() => {
+            if (ui.controls) ui.controls.render(true);
+        }, 250);
+    }
+});
 // Add a control button for opening the Marketplace
 Hooks.on("getSceneControlButtons", (controls) => {
   const tokenControls = controls["tokens"];

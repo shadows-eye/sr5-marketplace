@@ -3,9 +3,10 @@
     {{!-- Active Skills --}}
     <div class="collapsible-section">
         <input type="checkbox" id="toggle-active-skills" class="toggle" checked>
-        <div for="toggle-active-skills" class="toggle-label">
+        
+        <label class="subHeading" for="toggle-active-skills" class="toggle-label">
             <div class="marketplace-collapsible-header">{{localize "SR5.ActiveSkills"}}</div>
-        </div>
+        </label>
         <div class="toggle-content">
             <div class="active-skills skill-group">
                 <div class="skill-header sr5-grid-3c">
@@ -30,9 +31,10 @@
     {{#each knowledgeSkillGroups as |group|}}
         <div class="collapsible-section">
             <input type="checkbox" id="toggle-knowledge-{{group.label}}" class="toggle">
-            <div for="toggle-knowledge-{{group.label}}" class="toggle-label">
+            
+            <label class="subHeading" for="toggle-knowledge-{{group.label}}" class="toggle-label">
                 <div class="marketplace-collapsible-header">{{group.label}}</div>
-            </div>
+            </label>
             <div class="toggle-content">
                 <div class="knowledge-skills skill-group">
                     <div class="skill-header sr5-grid-3c">
@@ -42,11 +44,11 @@
                         {{#each group.skills as |skill|}}
                             <div class="skill-icon" data-id="{{skill.id}}"></div>
                             <div class="skill-name" data-id="{{skill.id}}">{{skill.name}}</div>
-                             {{#if @root.isEditMode}}
-                                <input class="value-input" type="number" name="system.skills.knowledge.{{group.key}}.value.{{skill.id}}.value" value="{{skill.value}}"/>
-                            {{else}}
-                                <div class="skill-rating">{{skill.value}}</div>
-                            {{/if}}
+                                {{#if @root.isEditMode}}
+                                    <input class="value-input" type="number" name="system.skills.knowledge.{{group.key}}.value.{{skill.id}}.value" value="{{skill.value}}"/>
+                                {{else}}
+                                    <div class="skill-rating">{{skill.value}}</div>
+                                {{/if}}
                         {{/each}}
                     </div>
                 </div>
@@ -57,9 +59,10 @@
     {{!-- Language Skills --}}
     <div class="collapsible-section">
         <input type="checkbox" id="toggle-language-skills" class="toggle">
-        <div for="toggle-language-skills" class="toggle-label">
+        {{!-- FIXED: Changed <div> to <label> --}}
+        <label class="sr5-marketplace" for="toggle-language-skills" class="toggle-label">
             <div class="marketplace-collapsible-header">{{localize "SR5.Languages"}}</div>
-        </div>
+        </label>
         <div class="toggle-content">
             <div class="language-skills skill-group">
                 <div class="skill-header sr5-grid-3c">
