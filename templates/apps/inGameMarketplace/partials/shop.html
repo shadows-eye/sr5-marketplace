@@ -1,7 +1,7 @@
 <div class="shop-container">
     <div class="marketplace-filter" id="marketplaceActorDropzone">
-        <div for="item-type-selector">{{localize "SR5.Marketplace.SelectItemType"}}:</div>
-        <select id="item-type-selector" name="item-type-selector" class="item-type-selector" data-action="changeCategory">
+        <div>{{localize "SR5.Marketplace.SelectItemType"}}:</div>
+        <select id="item-type-selector" name="category" class="item-type-selector" >
             {{#each itemsByType as |category key|}}
               {{#if category.items.length}}
                 <option value="{{key}}" {{#if (eq key ../selectedKey)}}selected{{/if}}>
@@ -11,31 +11,32 @@
             {{/each}}
         </select>
 
-        <div for="search-box">{{localize "SR5.Marketplace.Search"}}:</div>
+        <div>{{localize "SR5.Marketplace.Search"}}:</div>
         <input type="text" id="search-box" placeholder='{{localize "SR5.Marketplace.Search items..."}}' class="marketplace-search">
         <div id="filter-tags-container"></div>
+        
         <div class="sr5-marketplace SR5ShopActor-box" id="shopActorDropzone">
             {{#if shopActorBox.shopId}}
-                <a data-entity-link="Actor" data-uuid="{{shopActorBox.shopUuid}}">
+                <a data-action="openDocumentLink" data-uuid="{{shopActorBox.shopUuid}}">
                     <img src="{{shopActorBox.shopImg}}" alt="{{shopActorBox.shopName}}" class="actor-icon">
                 </a>
-                {{#if isGM}}<span class="remove-link" title="Remove Shop Actor" data-shop-id="{{shopActorBox.shopId}}">&times;</span>{{/if}}
+                {{#if isGM}}<span class="remove-link" title="Remove Shop Actor" data-action="removeShopActor" data-shop-id="{{shopActorBox.shopId}}">&times;</span>{{/if}}
             {{/if}}
         </div>
         <div class="sr5-marketplace SR5ConnectionLink-box" id="connectionItemDropzone">
             {{#if connectionBox}}
-                <a data-entity-link="Item" data-uuid="{{connectionBox.connectionUuid}}">
+                <a data-action="openDocumentLink" data-uuid="{{connectionBox.connectionUuid}}">
                     <img src="{{connectionBox.connectionImg}}" alt="{{connectionBox.connectionName}}" class="item-icon">
                 </a>
-                <span class="remove-link" title="Remove Connection Item" data-item-id="{{connectionBox.connectionId}}">&times;</span>
+                <span class="remove-link" title="Remove Connection Item" data-action="removeConnection" data-item-id="{{connectionBox.connectionId}}">&times;</span>
             {{/if}}
         </div>
         {{#if selectedActorBox.actorId}}
             <div class="sr5-marketplace SR5ActorSelected-box" id="{{selectedActorBox.actorId}}">
-                <a data-entity-link="Actor" data-uuid="{{selectedActorBox.actorUuid}}">
+                <a data-action="openDocumentLink" data-uuid="{{selectedActorBox.actorUuid}}">
                     <img src="{{selectedActorBox.actorImg}}" alt="{{selectedActorBox.actorName}}" class="actor-icon">
                 </a>
-                {{#if isGM}}<span class="remove-link" title="Remove Selected Actor" data-actor-id="{{selectedActorBox.actorId}}">&times;</span>{{/if}}
+                {{#if isGM}}<span class="remove-link" title="Remove Selected Actor" data-action="removeSelectedActor" data-actor-id="{{selectedActorBox.actorId}}">&times;</span>{{/if}}
             </div>
         {{/if}}
     </div>

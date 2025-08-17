@@ -1,63 +1,65 @@
-<div class="basket-items-container">
-    <div class="basket-grid headers seven-columns">
-        <div class="grid-item header" style="justify-self: start;">{{localize "SR5.Marketplace.Name"}}</div>
-        <div class="grid-item header" title="{{localize 'SR5.Marketplace.system.technology.quantity'}} (per Pack)">{{localize "SR5.Marketplace.quantityPerPack"}}</div>
-        <div class="grid-item header">{{localize "SR5.Marketplace.buyQuantity"}}</div>
-        <div class="grid-item header">{{localize "SR5.Marketplace.system.technology.rating"}}</div>
-        <div class="grid-item header">{{localize "SR5.Marketplace.system.technology.Cost"}}</div>
-        <div class="grid-item header">{{localize "SR5.Marketplace.system.karma"}}</div>
-        <div class="grid-item header"><i class="fas fa-trash"></i></div>
+<div class="shopping-cart-container">
+    <div class="basket-items-container">
+        <div class="basket-grid headers seven-columns">
+            <div class="grid-item header" style="justify-self: start;">{{localize "SR5.Marketplace.Name"}}</div>
+            <div class="grid-item header" title="{{localize 'SR5.Marketplace.system.technology.quantity'}} (per Pack)">{{localize "SR5.Marketplace.quantityPerPack"}}</div>
+            <div class="grid-item header">{{localize "SR5.Marketplace.buyQuantity"}}</div>
+            <div class="grid-item header">{{localize "SR5.Marketplace.system.technology.rating"}}</div>
+            <div class="grid-item header">{{localize "SR5.Marketplace.system.technology.Cost"}}</div>
+            <div class="grid-item header">{{localize "SR5.Marketplace.system.karma"}}</div>
+            <div class="grid-item header"><i class="fas fa-trash"></i></div>
+        </div>
+
+        {{#each basket.shoppingCartItems}}
+        <div class="basket-grid item-row seven-columns" data-basket-item-uuid="{{this.basketItemUuid}}">
+            <a class="basket-item item-name" data-action="openDocumentLink" data-uuid="{{this.itemUuid}}">
+                <img class="mini-img" src="{{this.img}}" alt="{{this.name}}">
+                <span class="item-tag">{{this.name}}</span>
+            </a>
+            <div class="basket-item item-pack-quantity">
+                {{#if (gt this.itemQuantity 1)}}{{this.itemQuantity}}{{else}}&mdash;{{/if}}
+            </div>
+            <div class="basket-item item-quantity">
+                <i class="fa-solid fa-circle-plus sr5-marketplace plus" title="Increase Quantity" data-action="increaseQuantity"></i>
+                <span>{{this.buyQuantity}}</span>
+                {{#if (gt this.buyQuantity 1)}}
+                    <i class="fa-solid fa-circle-minus sr5-marketplace minus" title="Decrease Quantity" data-action="decreaseQuantity"></i>
+                {{/if}}
+            </div>
+            <div class="basket-item item-rating">
+                {{#if this.rating}}
+                <select class="item-rating-select" data-action="updateRating" data-basket-item-uuid="{{this.basketItemUuid}}">
+                    {{#range 1 12}}
+                    <option value="{{this}}" {{#ifeq this ../selectedRating}}selected{{/ifeq}}>{{this}}</option>
+                    {{/range}}
+                </select>
+                {{else}}
+                &mdash;
+                {{/if}}
+            </div>
+            <div class="basket-item item-cost">{{this.cost}} ¥</div>
+            <div class="basket-item item-karma">{{this.karma}}</div>
+            <div class="basket-item remove-item">
+                <button class="remove-from-basket-btn" title="Remove Item" data-action="removeFromCart"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>
+        {{/each}}
     </div>
 
-    {{#each basket.shoppingCartItems}}
-    <div class="basket-grid item-row seven-columns" data-basket-item-uuid="{{this.basketItemUuid}}">
-        <a class="basket-item item-name" data-entity-link="Item" data-uuid="{{this.itemUuid}}">
-            <img class="mini-img" src="{{this.img}}" alt="{{this.name}}">
-            <span class="item-tag">{{this.name}}</span>
-        </a>
-        <div class="basket-item item-pack-quantity">
-            {{#if (gt this.itemQuantity 1)}}{{this.itemQuantity}}{{else}}&mdash;{{/if}}
-        </div>
-        <div class="basket-item item-quantity">
-            <i class="fa-solid fa-circle-plus sr5-marketplace plus" title="Increase Quantity"></i>
-            <span>{{this.buyQuantity}}</span>
-            {{#if (gt this.buyQuantity 1)}}
-                <i class="fa-solid fa-circle-minus sr5-marketplace minus" title="Decrease Quantity"></i>
-            {{/if}}
-        </div>
-        <div class="basket-item item-rating">
-            {{#if this.rating}}
-            <select class="item-rating-select" data-basket-item-uuid="{{this.basketItemUuid}}">
-                {{#range 1 12}}
-                <option value="{{this}}" {{#ifeq this ../selectedRating}}selected{{/ifeq}}>{{this}}</option>
-                {{/range}}
-            </select>
-            {{else}}
-            &mdash;
-            {{/if}}
-        </div>
-        <div class="basket-item item-cost">{{this.cost}} ¥</div>
-        <div class="basket-item item-karma">{{this.karma}}</div>
-        <div class="basket-item remove-item">
-            <button class="remove-from-basket-btn" title="Remove Item"><i class="fas fa-trash"></i></button>
-        </div>
-    </div>
-    {{/each}}
-</div>
-
-<div class="basket-summary">
-    <div id="total-cost"><strong>{{localize "SR5.Marketplace.TotalCost"}}:</strong> {{basket.totalCost}} <i class="fa-duotone fa-solid fa-circle-yen darkRed"></i></div>
-    <div id="total-availability"><strong>{{localize "SR5.Marketplace.TotalAvailability"}}:</strong> {{basket.totalAvailability}}</div>
-    {{#if basket.totalKarma}}<div id="total-karma"><strong>{{localize "SR5.Marketplace.TotalKarma"}}:</strong> {{basket.totalKarma}} <i class="fa-duotone fa-solid fa-circle-star yellow"></i></div>{{/if}}
-    {{#if basket.totalEssenceCost}}<div id="total-essence"><strong>{{localize "SR5.Marketplace.TotalEssence"}}:</strong> {{basket.totalEssenceCost}}</div>{{/if}}
-</div>
-
-<hr class="marketplace-settings-hr">
-
-<div class="actor-contact-grid">
+    <div class="basket-summary">
+        <div id="total-cost"><strong>{{localize "SR5.Marketplace.TotalCost"}}:</strong> {{basket.totalCost}} <i class="fa-duotone fa-solid fa-circle-yen darkRed"></i></div>
+        <div id="total-availability"><strong>{{localize "SR5.Marketplace.TotalAvailability"}}:</strong> {{basket.totalAvailability}}</div>
+        {{#if basket.totalKarma}}<div id="total-karma"><strong>{{localize "SR5.Marketplace.TotalKarma"}}:</strong> {{basket.totalKarma}} <i class="fa-duotone fa-solid fa-circle-star yellow"></i></div>{{/if}}
+        {{#if basket.totalEssenceCost}}<div id="total-essence"><strong>{{localize "SR5.Marketplace.TotalEssence"}}:</strong> {{basket.totalEssenceCost}}</div>{{/if}}
     </div>
 
-<div class="basket-actions">
-    <button id="send-request-button" class="send-request-button">{{localize 'SR5.Marketplace.SendRequest'}}</button>
-    <button id="cancel-request-button" class="send-request-button cancel">{{localize 'SR5.Marketplace.CancelRequest'}}</button>
+    <hr class="marketplace-settings-hr">
+
+    <div class="actor-contact-grid">
+        </div>
+
+    <div class="basket-actions">
+        <button id="send-request-button" class="send-request-button" data-action="sendRequest">{{localize 'SR5.Marketplace.SendRequest'}}</button>
+        <button id="cancel-request-button" class="send-request-button cancel" data-action="cancelRequest">{{localize 'SR5.Marketplace.CancelRequest'}}</button>
+    </div>
 </div>

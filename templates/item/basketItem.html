@@ -28,7 +28,7 @@
                 <label for="item-rating">{{localize "SR5.Marketplace.Basket.Rating"}}</label>
                 <input type="number" name="system.marketbasket.basketPrice" value="{{system.marketbasket.basketPrice}}" min="0" />
             </div>
-            <button type="button" class="add-item">{{localize "SR5.Marketplace.Basket.AddItem"}}</button>
+            <button type="button" class="add-item" data-action="addToCart">{{localize "SR5.Marketplace.Basket.AddItem"}}</button>
         </div>
 
         <!-- Basket Contents -->
@@ -41,7 +41,7 @@
                     {{#if basketItemRating}}
                     <span> - {{localize "SR5.Marketplace.Basket.Rating"}}: {{basketItemRating}}</span>
                     {{/if}}
-                    <button type="button" class="remove-item" data-index="{{@index}}">
+                    <button type="button" class="remove-item" data-index="{{@index}}" data-action="removeFromCart">
                         {{localize "SR5.Marketplace.Basket.Remove"}}
                     </button>
                 </li>
