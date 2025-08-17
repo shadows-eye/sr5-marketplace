@@ -41,7 +41,9 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             ...super.DEFAULT_OPTIONS.actions,
             toggleMode: this.#onToggleMode,
             editImage: this.#onEditImage,
-            openDocumentLink: this.#onOpenDocumentLink
+            openDocumentLink: this.#onOpenDocumentLink,
+            addItem: this.#onAddItem,
+            removeItem: this.#onRemoveItem
         }
     };
 
@@ -262,6 +264,38 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     }
 
     /**
+     * Handles removing an item from the inventory.
+     * @param {PointerEvent} event    The originating click event.
+     * @param {HTMLElement} target    The element with the data-action attribute.
+     */
+    static async #onRemoveItem(event, target) {
+        if (!this.isEditMode) return;
+        
+        // UPDATED: Look for 'inventoryEntryId' in the dataset and use the new variable name.
+        const inventoryEntryId = target.dataset.inventoryEntryId;
+        if (inventoryEntryId) {
+            const item = this.document.shop.inventory[inventoryEntryId];
+            const sourceItem = await fromUuid(item.itemUuid);
+            const itemName = sourceItem?.name ?? "this item";
+
+            Dialog.confirm({
+                title: "Remove Item",
+                content: `<p>Are you sure you want to remove <strong>${itemName}</strong> from the inventory?</p>`,
+                yes: () => this.document.removeItemFromInventory(inventoryEntryId),
+                defaultYes: false
+            });
+        }
+    }
+    
+    /**
+     * Handles the click on the "Add Item" button.
+     * For now, it provides a helpful message. A full item browser could be implemented here later.
+     */
+    static #onAddItem(event, target) {
+        if (!this.isEditMode) return;
+        ui.notifications.info("Please drag and drop an item from the sidebar or a compendium into the inventory list.");
+    }
+    /**
      * Toggle Edit vs. Play mode.
      *
      * @this MarketplaceShopActorEditMode
@@ -329,37 +363,26 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
      * @param {DragEvent} event The concluding drag-and-drop event.
      */
     async _onDrop(event) {
-        // Prevent the default browser behavior.
         event.preventDefault();
-
-        // Find the drop target element.
         const dropTarget = event.target.closest(".drop-target");
         if (!dropTarget || !this.isEditMode) return;
 
-        // Get the data from the drop event.
         let data;
-        try {
-            data = JSON.parse(event.dataTransfer.getData('text/plain'));
-        } catch (err) {
-            return;
+        try { data = JSON.parse(event.dataTransfer.getData('text/plain')); }
+        catch (err) { return; }
+
+        if ( (data.type === "Item") && (dropTarget.dataset.dropType === "Item") ) {
+            const item = await Item.fromDropData(data);
+            if (item) return this.document.addItemToInventory(item);
         }
 
-        // Check if the dropped document type is valid for this target.
-        const expectedType = dropTarget.dataset.dropType;
-        if (data.type !== expectedType) {
-            ui.notifications.warn(`You can only drop a ${expectedType} here.`);
-            return;
-        }
-        
-        // Get the target field from the drop zone.
-        const targetField = dropTarget.dataset.targetField;
-        
-        if (targetField === "system.shop.employees") {
-            // Add the actor to the employees array.
-            this.document.addEmployee(data.uuid);
-        } else {
-            // For single fields like owner or connection, update the value.
-            this.document.update({ [targetField]: data.uuid });
+        if ( (data.type === "Actor") && (dropTarget.dataset.dropType === "Actor") ) {
+            const targetField = dropTarget.dataset.targetField;
+            if (targetField === "system.shop.employees") {
+                return this.document.addEmployee(data.uuid);
+            } else {
+                return this.document.update({ [targetField]: data.uuid });
+            }
         }
     }
 }
