@@ -71,49 +71,19 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             }
         });
     }
+    
     /**
-     * This method is now much more efficient.
-     * It uses the pre-indexed item data instead of fetching from the database.
-     * @param {string} shopActorUuid The UUID of the shop actor.
+     * Determines whether to get all items or just a specific shop's items.
      * @returns {Promise<object>}
      */
-    async #getShopItems(shopActorUuid) {
-        const shopActor = await fromUuid(shopActorUuid);
-        if (!shopActor?.system?.shop?.inventory) return {};
-
-        // 1. Get the list of all globally indexed item data.
-        const allIndexedItems = this.itemData.getItems();
-
-        // 2. Create a Set of the shop's item UUIDs for efficient lookup.
-        const shopItemUuids = new Set(
-            Object.values(shopActor.system.shop.inventory).map(item => item.itemUuid)
-        );
-
-        // 3. Filter the global item list to get only the items sold by this shop.
-        const sourceItems = allIndexedItems.filter(item => shopItemUuids.has(item.uuid));
-
-        // 4. The rest of the logic remains the same, but now operates on the filtered in-memory data.
-        const getItemsByType = (type) => sourceItems.filter(i => i.type === type);
-        const getItemsByCategory = (type, cat) => sourceItems.filter(i => i.type === type && i.system.category === cat);
-
-        return {
-            filteredItems: { label: "SR5.Marketplace.ItemTypes.AllItems", items: sourceItems },
-            rangedWeapons: { label: "SR5.Marketplace.ItemTypes.RangedWeapons", items: getItemsByCategory("weapon", "range") },
-            meleeWeapons: { label: "SR5.Marketplace.ItemTypes.MeleeWeapons", items: getItemsByCategory("weapon", "melee") },
-            armor: { label: "SR5.Marketplace.ItemTypes.Armor", items: getItemsByType("armor") },
-            cyberware: { label: "SR5.Marketplace.ItemTypes.Cyberware", items: getItemsByType("cyberware") },
-            bioware: { label: "SR5.Marketplace.ItemTypes.Bioware", items: getItemsByType("bioware") },
-            devices: { label: "SR5.Marketplace.ItemTypes.Devices", items: getItemsByType("device") },
-            equipment: { label: "SR5.Marketplace.ItemTypes.Equipment", items: getItemsByType("equipment") },
-            spells: {label: "SR5.Marketplace.ItemTypes.Spells", items: getItemsByType("spell")},
-        };
-    }
     async #getItemsForSource() {
         if (this.selectedSource === "global") {
             return this.itemData.itemsByType;
         }
-        return this.#getShopItems(this.selectedSource);
+        // --- UPDATED: Call the new method on the service ---
+        return this.itemData.getShopItems(this.selectedSource);
     }
+
     /** @override */
     _onRender(context, options) {
         super._onRender(context, options);
