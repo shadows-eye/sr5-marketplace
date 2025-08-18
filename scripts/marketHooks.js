@@ -296,3 +296,37 @@ Hooks.on("getSceneControlButtons", (controls) => {
 Hooks.on("renderSceneControls", (app, html) => {
     drawBadge(html);
 });
+
+/**
+ * A hook that runs when the canvas is ready.
+ * We use this to add a global listener for double-clicking on Shop Actor tokens.
+ */
+Hooks.on("canvasReady", () => {
+  // A flag to prevent attaching the listener multiple times.
+  if (canvas.marketplaceListenerAttached) return;
+
+  // Listen for the browser's native 'dblclick' event on the main canvas element.
+  canvas.app.view.addEventListener('dblclick', event => {
+    // We only care about interactions when the token select tool is active.
+    if ( game.activeTool !== "select" ) return;
+
+    // Get the token currently under the user's mouse cursor.
+    const hoveredToken = canvas.tokens.hover;
+
+    // If there is a hovered token and its actor is a shop, we take over.
+    if ( hoveredToken?.actor?.type === "sr5-marketplace.shop" ) {
+      // Stop the event from propagating to prevent Foundry's default behavior.
+      event.preventDefault();
+      event.stopPropagation();
+
+      console.log(`Marketplace | Intercepted double-click on Shop Actor: ${hoveredToken.name}`);
+
+      // Open the marketplace application, passing the shop's UUID as an option.
+      new inGameMarketplace({ shopActorUuid: hoveredToken.actor.uuid }).render(true);
+    }
+  });
+
+  // Set the flag so this hook only runs once per canvas session.
+  canvas.marketplaceListenerAttached = true;
+  console.log("Marketplace | Double-click listener for shops is now active.");
+});

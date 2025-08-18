@@ -18,6 +18,10 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         this.tabGroups = { main: "shop" };
         this.purchasingActor = null;
         this.searchService = null;
+        // Handle passed-in shop context ---
+        this.shopActorUuid = options.shopActorUuid ?? null;
+        this.selectedSource = this.shopActorUuid ?? "global"; // Default to the specific shop if provided
+
         this.selectedKey = null;
 
         const itemsByType = this.itemData.itemsByType ?? {}; //Might need to go because of ItemDataService.mjs
@@ -67,20 +71,80 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             }
         });
     }
-    
+    /**
+     * This method is now much more efficient.
+     * It uses the pre-indexed item data instead of fetching from the database.
+     * @param {string} shopActorUuid The UUID of the shop actor.
+     * @returns {Promise<object>}
+     */
+    async #getShopItems(shopActorUuid) {
+        const shopActor = await fromUuid(shopActorUuid);
+        if (!shopActor?.system?.shop?.inventory) return {};
+
+        // 1. Get the list of all globally indexed item data.
+        const allIndexedItems = this.itemData.getItems();
+
+        // 2. Create a Set of the shop's item UUIDs for efficient lookup.
+        const shopItemUuids = new Set(
+            Object.values(shopActor.system.shop.inventory).map(item => item.itemUuid)
+        );
+
+        // 3. Filter the global item list to get only the items sold by this shop.
+        const sourceItems = allIndexedItems.filter(item => shopItemUuids.has(item.uuid));
+
+        // 4. The rest of the logic remains the same, but now operates on the filtered in-memory data.
+        const getItemsByType = (type) => sourceItems.filter(i => i.type === type);
+        const getItemsByCategory = (type, cat) => sourceItems.filter(i => i.type === type && i.system.category === cat);
+
+        return {
+            filteredItems: { label: "SR5.Marketplace.ItemTypes.AllItems", items: sourceItems },
+            rangedWeapons: { label: "SR5.Marketplace.ItemTypes.RangedWeapons", items: getItemsByCategory("weapon", "range") },
+            meleeWeapons: { label: "SR5.Marketplace.ItemTypes.MeleeWeapons", items: getItemsByCategory("weapon", "melee") },
+            armor: { label: "SR5.Marketplace.ItemTypes.Armor", items: getItemsByType("armor") },
+            cyberware: { label: "SR5.Marketplace.ItemTypes.Cyberware", items: getItemsByType("cyberware") },
+            bioware: { label: "SR5.Marketplace.ItemTypes.Bioware", items: getItemsByType("bioware") },
+            devices: { label: "SR5.Marketplace.ItemTypes.Devices", items: getItemsByType("device") },
+            equipment: { label: "SR5.Marketplace.ItemTypes.Equipment", items: getItemsByType("equipment") },
+            spells: {label: "SR5.Marketplace.ItemTypes.Spells", items: getItemsByType("spell")},
+        };
+    }
+    async #getItemsForSource() {
+        if (this.selectedSource === "global") {
+            return this.itemData.itemsByType;
+        }
+        return this.#getShopItems(this.selectedSource);
+    }
     /** @override */
     _onRender(context, options) {
         super._onRender(context, options);
+
         if (this.tabGroups.main === "shop") {
             this.searchService = new SearchService(this.element);
             this.searchService.initialize();
-        const categorySelector = this.element.querySelector("#item-type-selector");
+            
+            const categorySelector = this.element.querySelector("#item-type-selector");
             if (categorySelector) {
                 categorySelector.addEventListener("change", this.onChangeCategory.bind(this));
+            }
+
+            // --- NEW: Add a dedicated listener for the source toggle checkbox ---
+            const sourceToggle = this.element.querySelector("#marketplace-source-toggle");
+            if (sourceToggle) {
+                sourceToggle.addEventListener("change", this.onSourceChange.bind(this));
             }
         } else {
             this.searchService = null;
         }
+    }
+
+    /**
+     * Handles the change event for the item source toggle. 
+     * With event listener Attached in _onRender
+     */
+    async onSourceChange(event) {
+        const isChecked = event.currentTarget.checked;
+        this.selectedSource = isChecked ? this.shopActorUuid : "global";
+        await this.render();
     }
 
     /** @override */
@@ -154,14 +218,28 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 break;
             default:
                 // --- ADDED DEBUG LOG ---
-                console.log(`%cRendering View:`, "color: green; font-weight: bold;", { selectedKey_for_render: this.selectedKey });
+                //console.log(`%cRendering View:`, "color: green; font-weight: bold;", { selectedKey_for_render: this.selectedKey });
                 // --- END DEBUG LOG ---
                 this.tabGroups.main = "shop";
+                const itemsByType = await this.#getItemsForSource();
+                
+                if (!this.selectedKey || !itemsByType[this.selectedKey] || itemsByType[this.selectedKey].items.length === 0) {
+                    const firstAvailableCategory = Object.entries(itemsByType).find(([, data]) => data.items.length > 0);
+                    this.selectedKey = firstAvailableCategory ? firstAvailableCategory[0] : null;
+                }
+                
+                // --- UPDATED: Prepare data for the toggle switch ---
+                partialContext.shopActorUuid = this.shopActorUuid;
+                partialContext.isShopView = this.selectedSource !== "global";
+                if (this.shopActorUuid) {
+                    const shopActor = await fromUuid(this.shopActorUuid);
+                    partialContext.shopName = shopActor?.name ?? "Shop";
+                }
+                
                 partialContext.itemsByType = itemsByType;
-                partialContext.selectedKey = this.selectedKey || "rangedWeapons";
-                this.selectedKey = partialContext.selectedKey;
-                partialContext.selectedItems = itemsByType[this.selectedKey]?.items || [];
-                tabContent = await render("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.html", partialContext);
+                partialContext.selectedKey = this.selectedKey;
+                partialContext.selectedItems = this.selectedKey ? (itemsByType[this.selectedKey]?.items || []) : [];
+                tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.html", partialContext);
                 break;
         }
 
@@ -265,6 +343,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     
     /**
      * Handles the change event for the item category dropdown.
+     * With event listener Attached in _onRender
      * @param {Event} event The `change` event.
      */
     async onChangeCategory(event) {

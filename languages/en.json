@@ -30,6 +30,9 @@
                     "hint": "This setting allows you to set the karma cost for complex forms. Value will be used to pay for Complex Forms."
                 }
             },
+            "Source": {
+                "Global": "Shop"
+            },
             "Shop": {
                 "SheetName": "Shop",
                 "Inventory": "Inventory",
@@ -140,6 +143,7 @@
                 "OrderReview": "Order Review"
             },
             "ItemTypes": {
+                "AllItems": "All Items",
                 "RangedWeapons": "Ranged Weapons",
                 "MeleeWeapons": "Melee Weapons",
                 "Modifications": "Modifications",

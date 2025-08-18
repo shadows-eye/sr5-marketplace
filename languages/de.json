@@ -30,6 +30,9 @@
                     "hint": "Diese Einstellung ermöglicht es Ihnen, die Karma Kosten für komplexe Formen festzulegen. Wenn auf true gesetzt, werden die Karma Kosten anstelle der Essenzkosten verwendet."
                 }
             },
+            "Source": {
+                "Global": "Laden"
+            },
             "Shop": {
                 "SheetName": "Geschäft",
                 "ItemName": "Name",
@@ -118,6 +121,7 @@
                 "OrderReview": "Überprf."
             },
             "ItemTypes": {
+                "AllItems": "Alle Artikel",
                 "RangedWeapons": "Fernkampfwaffen",
                 "MeleeWeapons": "Nahkampfwaffen",
                 "Modifications": "Modifikationen",
