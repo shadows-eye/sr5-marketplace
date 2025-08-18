@@ -136,7 +136,9 @@
                     "duration": "Duration",
                     "damage": "Damage",
                     "drain": "Drain"
-                }
+                },
+                "mount-point": "Mount Point",
+                "slots": "Slots"
             },
             "Tab": {
                 "Shop": "Shop",
@@ -147,6 +149,9 @@
                 "RangedWeapons": "Ranged Weapons",
                 "MeleeWeapons": "Melee Weapons",
                 "Modifications": "Modifications",
+                "WeaponMods": "Weapon Mods",
+                "ArmorMods": "Armor Mods",
+                "VehicleMods": "Vehicle Mods",
                 "Armor": "Armor",
                 "Bioware": "Bioware",
                 "Cyberware": "Cyberware",

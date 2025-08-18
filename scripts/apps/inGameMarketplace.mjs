@@ -1,4 +1,5 @@
 import ItemDataServices from '../services/ItemDataServices.mjs';
+import { ItemPreviewApp } from "./documents/items/ItemPreviewApp.mjs"; 
 import { BasketService } from '../services/basketService.mjs';
 import { PurchaseService } from '../services/purchaseService.mjs';
 import { SearchService } from '../services/searchTag.mjs';
@@ -241,9 +242,21 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         this.render();
     }
 
+    /**
+     * Passes only the item's UUID to the ItemPreviewApp.
+     */
     static async #onOpenDocumentLink(event, target) {
         const uuid = target.dataset.uuid;
-        if (uuid) fromUuid(uuid).then(doc => doc?.sheet?.render(true));
+        if (!uuid) return;
+        const item = await fromUuid(uuid);
+        if (!item) return;
+
+        if (item.isOwner) {
+            item.sheet.render(true);
+        } else {
+            // The call is now simpler, pointing to the standalone app
+            new ItemPreviewApp(item.uuid).render(true);
+        }
     }
 
     static async #onAddToCart(event, target) {

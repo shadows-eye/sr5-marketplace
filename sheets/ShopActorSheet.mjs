@@ -1,4 +1,4 @@
-import MarketplaceDocumentSheetMixin from "../scripts/apps/marketplace-document-sheet-mixin.mjs";
+import MarketplaceDocumentSheetMixin from "../scripts/apps/documents/actors/marketplace-document-sheet-mixin.mjs";
 import enrichHTML from '../scripts/services/enricher.mjs';
 // We get the base ActorSheet class from Foundry's API.
 const { ActorSheet } = foundry.applications.sheets;
@@ -54,12 +54,12 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     static PARTS = {
         // ADDED: The header is now a defined part of the layout.
         header: {
-            template: "modules/sr5-marketplace/templates/actor/partials/shop-header.html",
+            template: "modules/sr5-marketplace/templates/documents/actor/partials/shop-header.html",
             classes: ["marketplace-header"]
         },
         // ADDED: The attributes section is also a part.
         attributes: {
-            template: "modules/sr5-marketplace/templates/actor/partials/shop-attributes.html"
+            template: "modules/sr5-marketplace/templates/documents/actor/partials/shop-attributes.html"
         },
         // The tab navigation bar.
         tabs: {
@@ -67,10 +67,10 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         },
         // The content for the tabs.
         actorShop: {
-            template: "modules/sr5-marketplace/templates/actor/actorShop.html",
+            template: "modules/sr5-marketplace/templates/documents/actor/actorShop.html",
         },
         biography: {
-            template: "modules/sr5-marketplace/templates/actor/partials/shop-biography.html"
+            template: "modules/sr5-marketplace/templates/documents/actor/partials/shop-biography.html"
         }
     };
 
@@ -286,7 +286,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             });
         }
     }
-    
+
     /**
      * Handles the click on the "Add Item" button.
      * For now, it provides a helpful message. A full item browser could be implemented here later.

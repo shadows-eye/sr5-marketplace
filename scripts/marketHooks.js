@@ -47,17 +47,18 @@ const initializeTemplates = () => {
     console.log("SR5 Marketplace | Registering templates and helpers...");
     registerBasicHelpers();
 
-    loadTemplates([
+    foundry.applications.handlebars.loadTemplates([
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/orderReview.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/marketplaceUserActor.html",
-        "modules/sr5-marketplace/templates/item/libraryItem.html",
+        "modules/sr5-marketplace/templates/documents/items/libraryItem.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.html",
         "modules/sr5-marketplace/templates/apps/marketplace-settings/marketplace-settings.html",
         "modules/sr5-marketplace/templates/apps/marketplace-settings/partials/settings-card.html",
-        "modules/sr5-marketplace/templates/actor/partials/shop-header.html",
-        "modules/sr5-marketplace/templates/actor/partials/shop-skills.html",
-        "modules/sr5-marketplace/templates/actor/partials/shop-inventory.html"
+        "modules/sr5-marketplace/templates/documents/actor/partials/shop-header.html",
+        "modules/sr5-marketplace/templates/documents/actor/partials/shop-skills.html",
+        "modules/sr5-marketplace/templates/documents/actor/partials/shop-inventory.html",
+        "modules/sr5-marketplace/templates/documents/items/itemPreviewApp/item-preview.html"
     ]);
 };
 // Initialize module settings
@@ -227,7 +228,7 @@ Hooks.once("init", () => {
     defineShopActorClass();
 
     // Register the custom ShopActorSheet
-    Actors.registerSheet("sr5-marketplace", ShopActorSheet, {
+    foundry.documents.collections.Actors.registerSheet("sr5-marketplace", ShopActorSheet, {
         types: [SHOP_ACTOR_TYPE],
         makeDefault: true,
         label: "SR5.Marketplace.Shop.SheetName"
