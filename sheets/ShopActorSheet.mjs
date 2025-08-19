@@ -45,6 +45,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             addItem: this.#onAddItem,
             removeItem: this.#onRemoveItem,
             removeOwner: this.#onRemoveOwner,
+            removeConnection: this.#onRemoveConnection,
             removeEmployee: this.#onRemoveEmployee
         }
     };
@@ -271,6 +272,16 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     }
 
     /**
+     * Handles removing the connection item from the shop.
+     */
+    static async #onRemoveConnection(event, target) {
+        if (!this.isEditMode) return;
+        // Call the backend method on the actor document and then re-render the sheet.
+        await this.document.removeConnection();
+        this.render();
+    }
+
+    /**
      * Handles removing an employee from the shop.
      */
     static async #onRemoveEmployee(event, target) {
@@ -417,17 +428,46 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         try { data = JSON.parse(event.dataTransfer.getData('text/plain')); }
         catch (err) { return; }
 
-        if ( (data.type === "Item") && (dropTarget.dataset.dropType === "Item") ) {
-            const item = await Item.fromDropData(data);
-            if (item) return this.document.addItemToInventory(item);
-        }
+        const dropZone = dropTarget.dataset.dropZone;
 
-        if ( (data.type === "Actor") && (dropTarget.dataset.dropType === "Actor") ) {
-            const targetField = dropTarget.dataset.targetField;
-            if (targetField === "system.shop.employees") {
-                return this.document.addEmployee(data.uuid);
-            } else {
+        // Use a switch to handle different drop zones
+        switch (dropZone) {
+            case "inventory": {
+                if (data.type !== "Item") return;
+                const item = await Item.fromDropData(data);
+                if (!item) return;
+
+                // As requested, reject 'contact' items from the main inventory.
+                if (item.type === "contact") {
+                    ui.notifications.warn("Contacts cannot be added to inventory. Drop on the 'Connection' field instead.");
+                    return;
+                }
+                return this.document.addItemToInventory(item);
+            }
+
+            case "connection": {
+                if (data.type !== "Item") return;
+                const item = await Item.fromDropData(data);
+                if (!item) return;
+
+                // Only allow items of type 'contact' to be dropped here.
+                if (item.type !== "contact") {
+                    ui.notifications.warn("Only Items of type 'Contact' can be dropped on the Connection field.");
+                    return;
+                }
+                const targetField = dropTarget.dataset.targetField;
                 return this.document.update({ [targetField]: data.uuid });
+            }
+
+            case "owner":
+            case "employees": {
+                if (data.type !== "Actor") return;
+                const targetField = dropTarget.dataset.targetField;
+                if (targetField === "system.shop.employees") {
+                    return this.document.addEmployee(data.uuid);
+                } else {
+                    return this.document.update({ [targetField]: data.uuid });
+                }
             }
         }
     }
