@@ -357,17 +357,19 @@ export function defineShopActorClass() {
 
         /**
          * Removes an item from the shop's inventory.
-         * @param {string} inventoryEntryId The unique ID of the inventory entry.
+         * @param {string} inventoryEntryId The unique ID of the inventory entry to remove.
          * @returns {Promise<this>}
          */
         async removeItemFromInventory(inventoryEntryId) {
-            return this.update({
-                [`system.shop.inventory.${inventoryEntryId}`]: foundry.utils.DELETE
-            });
-        }
-    
+            const updateData = {
+                [`system.shop.inventory.-=${inventoryEntryId}`]: null
+            };
+            
+            console.log("Attempting to apply update:", updateData);
+            return this.update(updateData);
+        }    
     }
     
     CONFIG.Actor.documentClass = ShopActor;
-    return { ShopActor, ShopActorData };
+    return { ShopActor, ShopActorData};
 }

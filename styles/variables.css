@@ -59,6 +59,7 @@
 
     /* --- Backgrounds --- */
     --bg-main: url(/modules/sr5-marketplace/assets/light-page.webp);
+    --bg-main-dark: url(/modules/sr5-marketplace/assets/dark-pageV1.webp);
     --bg-dark-section-hover: #3d3d3d;
     --bg-item-card: #d3af0cd6;
     --bg-item-card-hover: var(--color-red-dark);
@@ -168,7 +169,7 @@
 --app-window-header-bg: var(--color-red-darkest);
 --app-window-header-border: var(--color-red-deep);
 --app-window-header-title-color: var(--color-grey-lightest);
---app-window-content-bg: var(--app-background-image);
+--app-window-content-bg: var(--bg-main);
 --app-window-content-color: var(--color-grey-lightest);
 --app-sticky-top-bg: var(--color-black-transparent-80);
 --app-sticky-top-border: var(--color-yellow-dark);
@@ -219,7 +220,7 @@
 --app-window-header-bg: var(--color-red-darkest);
 --app-window-header-border: var(--color-red-deep);
 --app-window-header-title-color: var(--color-grey-lightest);
---app-window-content-bg: var(--app-background-image);
+--app-window-content-bg: var(--bg-main-dark);
 --app-window-content-color: var(--color-grey-lightest);
 --app-sticky-top-bg: var(--color-black-transparent-80);
 --app-sticky-top-border: var(--color-yellow-dark);

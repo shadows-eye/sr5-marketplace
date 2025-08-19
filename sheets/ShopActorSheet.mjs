@@ -43,7 +43,9 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             editImage: this.#onEditImage,
             openDocumentLink: this.#onOpenDocumentLink,
             addItem: this.#onAddItem,
-            removeItem: this.#onRemoveItem
+            removeItem: this.#onRemoveItem,
+            removeOwner: this.#onRemoveOwner,
+            removeEmployee: this.#onRemoveEmployee
         }
     };
 
@@ -63,7 +65,8 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         },
         // The tab navigation bar.
         tabs: {
-            template: "templates/generic/tab-navigation.hbs"
+            template: "templates/generic/tab-navigation.hbs",
+            classes: ["marketplace-tabs"]
         },
         // The content for the tabs.
         actorShop: {
@@ -178,29 +181,40 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                 };
                 const skills = this.document.system.skills;
                 
-                // Prepare Active Skills
-                context.activeSkills = Object.entries(skills.active).map(([key, data]) => {
-                    const locKey = CONFIG.SR5.activeSkills[key];
-                    return {
-                        id: key, // Use the skill's key as its ID
-                        name: game.i18n.localize(locKey) || key,
-                        value: data.value
-                    };
-                });
-                // Prepare Knowledge Skills
+                // --- UPDATED: Filter Active Skills to show only specific groups and individual skills ---
+                const allowedGroups = ["Acting", "Influence"];
+                const allowedSkills = ["intimidation", "instruction"];
+
+                context.activeSkills = Object.entries(skills.active)
+                    .filter(([key, data]) => {
+                        // Keep the skill if its group is in our allowed list OR if the skill key is in our allowed list.
+                        return allowedGroups.includes(data.group) || allowedSkills.includes(key);
+                    })
+                    .map(([key, data]) => {
+                        const locKey = CONFIG.SR5.activeSkills[key];
+                        return {
+                            id: key,
+                            name: game.i18n.localize(locKey) || key,
+                            value: data.value
+                        };
+                    });
+
+                // Prepare Knowledge Skills (Unchanged)
                 context.knowledgeSkillGroups = Object.entries(skills.knowledge).map(([groupKey, groupData]) => {
                     return {
+                        key: groupKey, // Pass the key for the input name attribute
                         label: game.i18n.localize(`SR5.KnowledgeSkill${capitalize(groupKey)}`),
                         skills: Object.entries(groupData.value).map(([skillId, skillData]) => ({
-                            id: skillId, // Use the skill's random key as its ID
+                            id: skillId,
                             name: skillData.name,
                             value: skillData.value
                         }))
                     };
                 });
-                // Prepare Language Skills
+                
+                // Prepare Language Skills (Unchanged)
                 context.languageSkills = Object.entries(skills.language.value).map(([skillId, skillData]) => ({
-                    id: skillId, // Use the skill's random key as its ID
+                    id: skillId,
                     name: skillData.name,
                     value: skillData.value
                 }));
@@ -248,6 +262,26 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     }
 
     /**
+     * Handles removing the owner from the shop.
+     */
+    static async #onRemoveOwner(event, target) {
+        if (!this.isEditMode) return;
+        // Call the backend method on the actor document
+        await this.document.removeOwner();
+    }
+
+    /**
+     * Handles removing an employee from the shop.
+     */
+    static async #onRemoveEmployee(event, target) {
+        if (!this.isEditMode) return;
+        const employeeUuid = target.dataset.uuid;
+        if (employeeUuid) {
+            await this.document.removeEmployee(employeeUuid);
+        }
+    }
+
+    /**
      * Handles clicks on document links to open their respective sheets.
      * @param {PointerEvent} event    The originating click event.
      * @param {HTMLElement} target    The capturing HTML element which defined a [data-action].
@@ -270,20 +304,32 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
      */
     static async #onRemoveItem(event, target) {
         if (!this.isEditMode) return;
-        
-        // UPDATED: Look for 'inventoryEntryId' in the dataset and use the new variable name.
         const inventoryEntryId = target.dataset.inventoryEntryId;
-        if (inventoryEntryId) {
-            const item = this.document.shop.inventory[inventoryEntryId];
-            const sourceItem = await fromUuid(item.itemUuid);
-            const itemName = sourceItem?.name ?? "this item";
+        if (!inventoryEntryId) return;
 
-            Dialog.confirm({
-                title: "Remove Item",
-                content: `<p>Are you sure you want to remove <strong>${itemName}</strong> from the inventory?</p>`,
-                yes: () => this.document.removeItemFromInventory(inventoryEntryId),
-                defaultYes: false
-            });
+        const item = this.document.shop.inventory[inventoryEntryId];
+        const sourceItem = await fromUuid(item.itemUuid);
+        const itemName = sourceItem?.name ?? "this item";
+        
+        const choice = await foundry.applications.api.DialogV2.wait({
+            window: { title: `Remove ${itemName}` },
+            content: `<p>Are you sure you want to remove <strong>${itemName}</strong> from the inventory?</p>`,
+            buttons: [
+                { label: "Remove", action: "remove", icon: "fa-solid fa-trash" },
+                { label: "Cancel", action: "cancel", icon: "fa-solid fa-times" }
+            ],
+            default: "cancel"
+        });
+
+        if (choice === "remove") {
+            // 1. Await the backend data update.
+            await this.document.removeItemFromInventory(inventoryEntryId);
+
+            // 2. (As requested) Log the new state of the inventory to confirm the deletion.
+            console.log(`Item entry ${inventoryEntryId} removed. Current inventory:`, this.document.shop.inventory);
+
+            // 3. (The Fix) Trigger a re-render of the sheet to update the UI.
+            this.render();
         }
     }
 
