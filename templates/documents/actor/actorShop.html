@@ -6,7 +6,7 @@
                 <legend class="legend">{{localize "Shop"}}</legend>
 
                 <div class="form-group owner {{#if isEditMode}}drop-target{{/if}}" 
-                    {{#if isEditMode}}data-drop-type="Actor" data-target-field="system.shop.owner"{{/if}}>
+                    {{#if isEditMode}}data-drop-zone="owner" data-drop-type="Actor" data-target-field="system.shop.owner"{{/if}}>
                     <label class="subHeading">{{localize "SR5.Marketplace.Shop.OwnerUuid"}}</label>
                     <owner class="form-fields">
                         {{#if owner}}
@@ -28,8 +28,8 @@
                 </div>
                 
                 <div class="form-group connection {{#if isEditMode}}drop-target{{/if}}"
-                    {{#if isEditMode}}data-drop-type="Item" data-target-field="system.shop.connection"{{/if}}>
-                    <label class="subHeading"{{localize "SR5.Marketplace.Shop.ConnectionUuid"}}</label>
+                    {{#if isEditMode}}data-drop-zone="connection" data-drop-type="Item" data-target-field="system.shop.connection"{{/if}}>
+                    <label class="subHeading">{{localize "SR5.Marketplace.Shop.ConnectionUuid"}}</label>
                     <connection class="form-fields">
                         {{#if connection}}
                             <div class="item-container">
@@ -50,11 +50,11 @@
                 </div>
                 
                 <div class="form-group employees {{#if isEditMode}}drop-target{{/if}}"
-                    {{#if isEditMode}}data-drop-type="Actor" data-target-field="system.shop.employees"{{/if}}>
-                    <label class="subHeading"{{localize "SR5.Marketplace.Shop.Employees"}}</label>
+                    {{#if isEditMode}}data-drop-zone="employees" data-drop-type="Actor" data-target-field="system.shop.employees"{{/if}}>
+                    <label class="subHeading">{{localize "SR5.Marketplace.Shop.Employees"}}</label>
                     <employees class="form-fields">
                         {{#each employees as |employee|}}
-                            <div class="form-fields" data-uuid="{{employee.uuid}}">
+                            <div class="item-container" data-uuid="{{employee.uuid}}">
                                 <a class="document-link" data-uuid="{{employee.uuid}}" data-action="openDocumentLink">
                                     <img src="{{employee.img}}" width="24" height="24"/>
                                     <span>{{employee.name}}</span>
@@ -73,7 +73,7 @@
                 </div>
 
             </fieldset>
-        <!-- Inventory -->
+            
             <fieldset class="sr5-marketplace-inventory-fields form-group inventory">
                 <legend class="subHeading">{{localize "SR5.Marketplace.Shop.Inventory"}}</legend>
                 {{> 'modules/sr5-marketplace/templates/documents/actor/partials/shop-inventory.html' }}

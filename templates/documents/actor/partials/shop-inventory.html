@@ -18,7 +18,7 @@
     </div>
 
     {{!-- This container is now the grid itself. The 'drop-target' class is only added in edit mode. --}}
-    <div class="inventory-list sr5-grid c10 {{#if isEditMode}}drop-target{{/if}}" data-drop-type="Item">
+    <div class="inventory-list sr5-grid c10 {{#if isEditMode}}drop-target{{/if}}" data-drop-zone="inventory" data-drop-type="Item">
         {{#each inventory as |item inventoryEntryId|}}
             <div class="item-img">
                 <a data-action="openDocumentLink" data-uuid="{{item.itemUuid}}">
