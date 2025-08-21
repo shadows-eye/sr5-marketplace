@@ -51,7 +51,8 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             // SR5 Actions helper
             runSimpleSocial: this.#onRunSimpleSocial,
             runOpposedSocial: this.#onRunOpposedSocial,
-            runTeamworkSocial: this.#onRunTeamworkSocial
+            runTeamworkSocial: this.#onRunTeamworkSocial,
+            rollAvailability: this.#onRollAvailability
         }
     };
 
@@ -431,6 +432,39 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     }
     await teamworkAll(this.document, helpers, { 
         capByLeaderRating: true, postToChat: true });
+    }
+
+    /**
+     * Handles the click on an item's availability by directly instantiating the AvailabilityTest class.
+     */
+    static async #onRollAvailability(event, target) {
+        const availabilityStr = target.dataset.availability;
+        if (!availabilityStr) return;
+
+        const actor = this.document;
+
+        // 1. Create a minimal data object. We only need to pass the values that are unique
+        //    to this test and cannot be derived from a standard action.
+        const testData = {
+            // We add our custom availability string here so the test class can use it.
+            availabilityStr: availabilityStr,
+        };
+
+        try {
+            // 2. Create a new instance of our test class. The constructor will automatically
+            //    call _prepareData to build the full data structure.
+            const test = new game.shadowrun5e.tests.AvailabilityTest(
+                testData,
+                { actor }
+            );
+
+            // 3. Execute the test.
+            await test.execute();
+
+        } catch (e) {
+            console.error("Marketplace | AvailabilityTest failed:", e);
+            ui.notifications.error("Failed to run the Availability Test. See console (F12) for details.");
+        }
     }
 
     // --- SR5 Tests End --- //
