@@ -371,5 +371,6 @@ export function defineShopActorClass() {
     }
     
     CONFIG.Actor.documentClass = ShopActor;
+    //console.debug("sr5-marketplace | ShopActor parent:", Object.getPrototypeOf(ShopActor.prototype).constructor.name);
     return { ShopActor, ShopActorData};
 }

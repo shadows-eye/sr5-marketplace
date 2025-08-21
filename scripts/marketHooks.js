@@ -1,4 +1,3 @@
-// Import required helpers
 // Import necessary classes and helpers
 import { inGameMarketplace } from "./apps/inGameMarketplace.mjs";
 import { registerBasicHelpers } from "./lib/helpers.js";
@@ -7,10 +6,7 @@ import { MarketplaceSettingsApp } from "./apps/MarketplaceSettingsApp.mjs";
 import { PurchaseService } from "./services/purchaseService.mjs";
 import { defineShopActorClass } from '../models/actor/shopActor.mjs';
 import { ShopActorSheet } from '../sheets/ShopActorSheet.mjs';
-
-// --- CONSTANTS ---
-const SHOP_ACTOR_TYPE = "sr5-marketplace.shop";
-
+import { MODULE_ID, SHOP_ACTOR_TYPE} from "./lib/constants.mjs";
 
 /**
  * Draws the notification badge on the scene control button.
@@ -256,6 +252,8 @@ Hooks.on("ready", async () => {
         // On first load, render the controls to set the initial badge state.
         setTimeout(() => { if (ui.controls) ui.controls.render(true); }, 1000);
     }
+  const tests = await import('../utils/tests.mjs');
+    tests.registerTests();
 });
 
 /**
@@ -275,7 +273,7 @@ Hooks.on("updateUser", (user, changes) => {
 Hooks.on("getSceneControlButtons", (controls) => {
   const tokenControls = controls["tokens"];
   if (!tokenControls) return;
-  if (tokenControls.tools["sr5-marketplace"]) return;
+  if (tokenControls.tools[MODULE_ID]) return;
 
   tokenControls.tools["sr5-marketplace"] = {
     name: "sr5-marketplace",

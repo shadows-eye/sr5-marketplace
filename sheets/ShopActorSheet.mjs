@@ -1,5 +1,6 @@
 import MarketplaceDocumentSheetMixin from "../scripts/apps/documents/actors/marketplace-document-sheet-mixin.mjs";
 import enrichHTML from '../scripts/services/enricher.mjs';
+import { simpleAll, opposedAll, teamworkAll } from "../tests/SR5_Tests.mjs";
 // We get the base ActorSheet class from Foundry's API.
 const { ActorSheet } = foundry.applications.sheets;
 
@@ -46,7 +47,11 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             removeItem: this.#onRemoveItem,
             removeOwner: this.#onRemoveOwner,
             removeConnection: this.#onRemoveConnection,
-            removeEmployee: this.#onRemoveEmployee
+            removeEmployee: this.#onRemoveEmployee,
+            // SR5 Actions helper
+            runSimpleSocial: this.#onRunSimpleSocial,
+            runOpposedSocial: this.#onRunOpposedSocial,
+            runTeamworkSocial: this.#onRunTeamworkSocial
         }
     };
 
@@ -387,6 +392,48 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         });
         return fp.browse();
     }
+    // --- SR5 Tests Start --- //
+
+    /** 
+     * Simple tests: all social skills for this actor
+     * @TestCaller
+     */
+    static async #onRunSimpleSocial(event, target) {
+    await simpleAll(this.document, { postToChat: true });
+    }
+
+    static async #onRunOpposedSocial(event, target) {
+    let defenderUuid = target?.dataset?.defenderUuid;
+    if (!defenderUuid) {
+        // Try a targeted token first, then any controlled token (not this actor)
+        const targeted = Array.from(game.user.targets ?? [])[0]?.actor;
+        const controlled = canvas.tokens.controlled.find(t => t.actor?.id !== this.document.id)?.actor;
+        const fallback = targeted ?? controlled;
+        if (!fallback) return ui.notifications.warn("Select/target an opposing actor or set data-defender-uuid.");
+        defenderUuid = fallback.uuid;
+    }
+    await opposedAll(this.document, defenderUuid,
+        { postToChat: true });
+    }
+
+    static async #onRunTeamworkSocial(event, target) {
+    let helpers = [];
+    const ds = target?.dataset?.helpers;
+    if (ds) {
+        helpers = ds.split(",").map(s => s.trim()).filter(Boolean);
+    } else {
+        helpers = canvas.tokens.controlled
+        .map(t => t.actor?.uuid)
+        .filter(u => u && u !== this.document.uuid);
+        if (!helpers.length) {
+        return ui.notifications.warn("Control helper tokens or provide data-helpers on the button.");
+        }
+    }
+    await teamworkAll(this.document, helpers, { 
+        capByLeaderRating: true, postToChat: true });
+    }
+
+    // --- SR5 Tests End --- //
 
     /** @override */
     _configureRenderOptions(options) {

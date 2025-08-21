@@ -3,10 +3,11 @@ import { ItemPreviewApp } from "./documents/items/ItemPreviewApp.mjs";
 import { BasketService } from '../services/basketService.mjs';
 import { PurchaseService } from '../services/purchaseService.mjs';
 import { SearchService } from '../services/searchTag.mjs';
+import{ MODULE_ID } from '../lib/constants.mjs';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
-const FLAG_SCOPE = "sr5-marketplace";
+const FLAG_SCOPE = MODULE_ID // "sr5-marketplace"
 const FLAG_KEY_SELECTED_ACTOR = "selectedActorUuid";
 
 export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2) {
