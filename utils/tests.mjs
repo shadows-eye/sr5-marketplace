@@ -5,6 +5,8 @@
  * been loaded first and having setup system globals and test registry.
  */
 import { AvailabilityTest } from "../tests/AvailabilityTest.mjs";
+import { AvailabilityResist } from "../tests/AvailabilityResist.mjs";
+
 
 export class TestRegistrationError extends Error {}
 
@@ -38,12 +40,17 @@ export function registerTest(testClass, types = ["activeTests"]) {
     }
 }
 
+/**
+ * Registers all custom test classes with the Shadowrun 5e system.
+ */
 export function registerTests() {
     console.debug("SR5 Marketplace | Registering tests");
 
-    // Register module test into system test registry
+    // Register module tests into system test registry
     try {
         registerTest(AvailabilityTest);
+        registerTest(AvailabilityResist); // 2. Add the registration call for the new test
+        
     } catch (error) {
         ui.notifications.error(
             "SR5 Marketplace | Module failed to register test implementation with Shadowrun5e system. This makes the module incompatible until it is updated."

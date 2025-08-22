@@ -1,164 +1,117 @@
 // scripts/tests/AvailabilityTest.mjs
 // v13 — Use the system's SuccessTest flow (dialog + chat message are handled by the base class).
 // We ONLY compute dice pools/limits and feed them into SuccessTest. No ChatMessage.create here.
+// Wenn man an das gute Zeug kommt, dann gilt: Je höher der
+/** Verfügbarkeitswert, desto schwieriger ist ein Gegenstand zu
+beschaffen. Um einen Gegenstand schwarz zu kaufen, wird
+eine Verfügbarkeitsprobe abgelegt. Dies ist eine Vergleichende
+Probe auf Verhandlung + Charisma [Sozial] gegen
+den Verfügbarkeitswert des Gegenstands. Wenn die Probe
+gelingt,  ndet man den Gegenstand zum angegebenen Preis
+und bekommt ihn innerhalb der Zeitspanne, die in der Tabelle
+Lieferzeiten angegeben ist, geteilt durch die erzielten Nettoerfolge.
+Wenn bei der Probe ein Patt erzielt wird,  ndet man
+den Gegenstand, aber die Lieferzeit beträgt das Doppelte der
+in der Tabelle angegebenen Zeit. Wenn die Probe misslingt,
+kann man es nach dem Doppelten der in der Tabelle angegebenen
+Zeit noch einmal versuchen.
+Geld löst alle Probleme, sagt man auf der Straße. Wenn man
+bereit ist, mehr Geld auszugeben, erhöhen sich die Chancen, einen
+bereitwilligen Verkäufer zu  nden: Für jeweils 25 % des Wertes
+des Gegenstands, die man zusätzlich zu zahlen bereit ist, erhält
+man einen zusätzlichen Würfel für die Verhandlungsprobe.
+Sobald man bei 400 Prozent des Wertes des Gegenstands ist
+(12 Extrawürfel), bringt es nichts, mit noch mehr Geld um sich
+zu werfen. Es gibt keine zusätzlichen Würfel mehr – selbst wenn
+man noch Geld hätte, das man um sich werfen könnte.
+Wenn man bei einer Verfügbarkeitsprobe einen Patzer erzielt,
+hat die Suche nach dem Gegenstand unerwünschte
+Aufmerksamkeit auf sich gezogen. Das könnte eine Undercoveroperation
+von Knight Errant sein (kannst du Falle buchstabieren,
+Omae?), die örtliche Yakuza, die sich nicht an Abmachungen
+halten will, rivalisierende Runner oder Feinde, die
+von dem Deal erfahren, oder ähnliches. Die genauen Konsequenzen
+bleiben dem Spielleiter überlassen, aber die Sache
+läuft nicht so sauber ab wie geplant. Bei einem Kritischen
+Patzer geschieht die extremste Iteration der oben genannten
+Möglichkeiten, und die Chancen, den entsprechenden Gegenstand
+zu erwerben, lösen sich in nichts auf.
+CONNECTIONS UND VERFÜGBARKEIT
+Vielleicht hat man einen Schieber, Taliskrämer, Deckmeister
+oder eine andere Connection an der Hand, die den Gegenstand
+ nden kann, nach dem man sucht. Connections sind
+meist besser als der Charakter darin, die Ausrüstung zu beschaffen,
+auf die sie sich spezialisiert haben. Während Runner
+sich Schießereien mit der Konzernsicherheit liefern, böse
+Geister bannen, Hosts hacken oder was auch immer auf ihren
+Shadowruns tun, verbringen Connections den Großteil ihrer
+Zeit damit, ihre Verbindungen zum Rest der Welt aufrechtzuerhalten
+und zu p egen, weshalb sie Zeit hatten, ihre Beschaffungsfähigkeiten
+zu verbessern. Wenn Connections für einen
+Runner nach einem Gegenstand suchen, verwenden sie ihre
+Verhandlung und ihr Charisma für die Verfügbarkeitsprobe
+und erhalten dafür Bonuswürfel in Höhe ihrer Ein ussstufe.
+Wenn die Connection noch nicht viele Geschäfte mit dem
+Runner gemacht hat, kann sie eine Provision verlangen. Das
+ist allerdings nicht die Art und Weise, wie Connections ihr
+Geld mit Wiederverkauf machen. Das meiste davon kommt
+vom Verhehlen von Waren an die Geizigen.
+**/
 
 export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
-  constructor(actor, options = {}) {
-    super(actor, options);
-    this.availability = options.availability ?? ""; // e.g. "12F", "10R", "8", "12E", "10V"
-  }
 
-  /** Use your custom DialogV2 template */
-  get _dialogTemplate() {
-    return "modules/sr5-marketplace/templates/tests/availability-test-dialog.html";
-  }
-
-  /** Label key for i18n */
-  static get label() {
-    return "SR5.Marketplace.Tests.AvailabilityTest";
-  }
-
-  /* ----------------------- helpers (safe against SR5 impl) ----------------------- */
-
-  static parseAvailability(str) {
-    const m = String(str ?? "").trim().match(/^(\d+)\s*([A-Za-z]*)$/);
-    return {
-      rating: m ? Number(m[1]) : 0,
-      tag: m && m[2] ? m[2].toUpperCase() : ""
-    };
-  }
-
-  async _getAttr(actor, key) {
-    // Prefer SR5 API
-    try {
-      const v = await actor.getAttribute?.(key);
-      if (typeof v === "number") return v;
-      if (v && typeof v === "object") return Number(v.value ?? v.total ?? v.base ?? 0) || 0;
-    } catch (_) {}
-    // Fallbacks (cha/wil/essence names vary by systems)
-    const altKey = key.slice(0, 3);
-    const p = foundry.utils.getProperty(actor, `system.attributes.${key}`) ??
-              foundry.utils.getProperty(actor, `system.attributes.${altKey}`);
-    return Number(p?.value ?? p ?? 0) || 0;
-  }
-
-  async _getSkill(actor, key) {
-    try {
-      const s = await actor.getSkill?.(key);
-      if (typeof s === "number") return s;
-      if (s && typeof s === "object") return Number(s.value ?? s.rating ?? s.total ?? 0) || 0;
-    } catch (_) {}
-    const p = foundry.utils.getProperty(actor, `system.skills.active.${key}`);
-    return Number(p?.value ?? p?.rating ?? 0) || 0;
-  }
-
-  async _getLimit(actor, key) {
-    try {
-      const l = await actor.getLimit?.(key);
-      if (typeof l === "number") return l;
-      if (l && typeof l === "object") return Number(l.value ?? l.total ?? 0) || 0;
-    } catch (_) {}
-    if (key === "social") {
-      // Conservative fallback: floor((2*CHA + WIL + ESS)/3)
-      const cha = await this._getAttr(actor, "charisma");
-      const wil = await this._getAttr(actor, "willpower");
-      const essRaw = foundry.utils.getProperty(actor, "system.attributes.essence") ??
-                     foundry.utils.getProperty(actor, "system.essence");
-      const ess = Number(essRaw?.value ?? essRaw ?? 0) || 0;
-      return Math.floor((2 * cha + wil + ess) / 3);
+    /**
+     * The constructor now correctly matches the parent's signature.
+     */
+    constructor(data, documents, options) {
+        super(data, documents, options);
     }
-    return 0;
-  }
 
-  /**
-   * Compute pools and push them into the SuccessTest options the way the system expects.
-   * We DO NOT roll or post here—SuccessTest handles that.
-   */
-  async _computeAndApplyOptions() {
-    const { rating: itemPool } = this.constructor.parseAvailability(this.availability);
+    _prepareData(data, options) {
+        data = super._prepareData(data, options);
+        data.action = data.action || game.shadowrun5e.data.createData('action_roll');
+        data.availabilityStr = data.availabilityStr || (options ? options.availability : "");
+        return data;
+    }
 
-    // Actor side: Charisma + Negotiation (capped by Social limit)
-    const cha = await this._getAttr(this.actor, "charisma");
-    const neg = await this._getSkill(this.actor, "negotiation");
-    const socialLimit = await this._getLimit(this.actor, "social");
-    const actorPool = Math.max(0, cha + neg);
+    prepareBaseValues() {
+        if (this.actor) {
+            const parsed = this.constructor.parseAvailability(this.data.availabilityStr);
+            const charisma = this.actor.system.attributes.charisma.value;
+            const negotiation = this.actor.system.skills.active.negotiation.value;
+            this.data.pool.base = charisma + negotiation;
+            this.data.limit.base = this.actor.system.limits.social.value;
+            this.data.threshold.base = parsed.rating;
+        }
+        super.prepareBaseValues();
+    }
+    
+    get _dialogTemplate() {
+        return "modules/sr5-marketplace/templates/documents/tests/availabilitySimple-test-dialog.html";
+    }
 
-    // Feed every common field name that SuccessTest implementations tend to check.
-    // (This makes us resilient across minor system updates.)
-    this.options.pool = actorPool;
-    this.options.dicePool = actorPool;
-    this.options.limit = socialLimit;
+    static get label() {
+        return "SR5.Marketplace.Tests.AvailabilityTest";
+    }
+    
+    static parseAvailability(str) {
+        const m = String(str ?? "").trim().match(/^(\d+)\s*([A-Za-z]*)$/);
+        return { rating: m ? Number(m[1]) : 0, tag: m && m[2] ? m[2].toUpperCase() : "" };
+    }
 
-    // Opposed: Availability as the opposing pool
-    this.options.opposition = { label: "Availability", pool: itemPool };
-    this.options.oppositionPool = itemPool;
+    /**
+     * This is the TRANSLATOR. It takes simple inputs and calls the constructor correctly.
+     */
+    static async run(actorRef, availabilityStr = "") {
+        const actor = typeof actorRef === "string" ? await fromUuid(actorRef) : actorRef;
+        if (!actor) throw new Error("AvailabilityTest: actor not found");
 
-    // Optional: a label/notes shown on the chat card, if the system merges this into card data
-    this.options.notes = [
-      { label: "Availability", value: this.availability },
-      { label: "Opposition Pool", value: String(itemPool) }
-    ];
-  }
-
-  /* ----------------------- dialog wiring into base flow ----------------------- */
-
-  /**
-   * If the base class queries dialog data, give it our availability field.
-   * Different SR5 versions use different hook names; support both patterns.
-   */
-  async _getDialogData(...args) {
-    const base = typeof super._getDialogData === "function" ? await super._getDialogData(...args) : {};
-    return { ...base, availability: this.availability, actor: this.actor };
-  }
-  async _prepareDialogContext(...args) {
-    const base = typeof super._prepareDialogContext === "function" ? await super._prepareDialogContext(...args) : {};
-    return { ...base, availability: this.availability, actor: this.actor };
-  }
-
-  /**
-   * If the base class lets us validate or read dialog form values before rolling,
-   * use one of these hooks. We keep both for compatibility; whichever exists will run.
-   */
-  async _onDialogSubmit(htmlOrEl) {
-    const root = htmlOrEl instanceof HTMLElement ? htmlOrEl : (htmlOrEl?.[0] ?? null);
-    const input = root?.querySelector?.('input[name="availability"]');
-    if (input?.value) this.availability = input.value.trim();
-    if (typeof super._onDialogSubmit === "function") return super._onDialogSubmit(htmlOrEl);
-  }
-  async _onDialogClose(...args) {
-    // Some base impls only give us close; read the form if still present
-    const form = document.querySelector("#availability-test-form");
-    const input = form?.querySelector?.('input[name="availability"]');
-    if (input?.value) this.availability = input.value.trim();
-    if (typeof super._onDialogClose === "function") return super._onDialogClose(...args);
-  }
-
-  /**
-   * Final hook before executing the roll. We compute pools and hand them to the base class.
-   * Then we call the base `roll()` which handles dice, limits, opposed logic, and chat output.
-   */
-  async roll(...args) {
-    await this._computeAndApplyOptions();
-    return super.roll?.(...args);
-  }
-
-  /**
-   * If your system uses `execute()` as the main entry, keep it and let base post chat.
-   * We only ensure options are set before the base flow resumes.
-   */
-  async execute(...args) {
-    // Some base flows compute after dialog; to be safe, compute both here and in roll()
-    await this._computeAndApplyOptions();
-    return super.execute?.(...args);
-  }
-
-  /* ----------------------- convenience runner + registrar ----------------------- */
-
-  static async run(actorRef, availabilityStr = "") {
-    const actor = typeof actorRef === "string" ? await fromUuid(actorRef) : actorRef;
-    if (!actor) throw new Error("AvailabilityTest: actor not found");
-    const test = new this(actor, { availability: availabilityStr });
-    // Most SR5 systems expose execute(); if not, fall back to roll().
-    return typeof test.execute === "function" ? test.execute() : test.roll();
-  }
+        // Here we call `new this()` with the arguments in the correct order:
+        // 1. data (empty object, will be populated by our overrides)
+        // 2. documents (contains the actor)
+        // 3. options (contains our custom availability string)
+        const test = new this({}, { actor }, { availability: availabilityStr });
+        
+        return test.execute();
+    }
 }
