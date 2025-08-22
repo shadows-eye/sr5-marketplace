@@ -669,3 +669,29 @@ hr.marketplace-settings-hr {
     width: 18px;
     height: 18px;
 }
+
+.contact-toggle-checkbox {
+    /* Hide the actual checkbox */
+    display: none;
+}
+
+.contact-expand-toggle {
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: transform 0.3s ease, background-color 0.2s ease;
+}
+
+.contact-expand-toggle:hover {
+    background-color: var(--color-white-transparent-05);
+}
+
+/* When the hidden checkbox is checked, rotate the arrow in the label */
+.contact-toggle-checkbox:checked + .contact-card-visible .contact-expand-toggle {
+    transform: rotate(180deg);
+}
+
+/* When the hidden checkbox is checked, show the .contact-details div that follows */
+.contact-toggle-checkbox:checked ~ .contact-details {
+    display: block;
+}

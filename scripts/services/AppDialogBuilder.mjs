@@ -31,6 +31,7 @@ export class AppDialogBuilder {
         // 1. Prioritize the explicitly provided actor.
         if (this.actorUuid) {
             const actor = await fromUuid(this.actorUuid);
+            console.log(actor.name)
             if (actor) return actor;
         }
 
@@ -40,6 +41,7 @@ export class AppDialogBuilder {
             // Assuming the linked actor's UUID is stored in the connection item's system data.
             // Adjust the path `system.actorUuid` if it's stored elsewhere.
             const linkedActorUuid = connectionItem?.system?.actorUuid;
+            console.log(linkedActorUuid);
             if (linkedActorUuid) {
                 const actor = await fromUuid(linkedActorUuid);
                 if (actor) return actor;

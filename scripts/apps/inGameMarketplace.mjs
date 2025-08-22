@@ -82,6 +82,10 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 //changeCategory: this.onChangeCategory, Is moved to _onRender
                 updateRating: this.#onUpdateRating,
                 updatePendingItem: this.#onUpdatePendingItem,
+                // TODO: rollResist: this.#onRollResist,
+                // TODO: runAvailabilityTest: this.#onRunAvailabilityTest,
+                // TODO: showAvailabilityDialog: this.#onShowAvailabilityDialog
+
             }
         });
     }
@@ -190,11 +194,24 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         case "shoppingCart":
             // Prepare standard shopping cart data (contacts)
             if (this.purchasingActor) {
-                partialContext.contacts = this.purchasingActor.items.filter(i => i.type === "contact")
-                    .map(c => ({...c.toObject(false), isSelected: c.id === basket.selectedContactId}));
+                partialContext.contacts = this.purchasingActor.items
+                    .filter(i => i.type === "contact")
+                    .map(c => {
+                        // Get the plain data object from the contact item
+                        const contactData = c.toObject(false);
+
+                        // --- THIS IS THE FIX ---
+                        // Explicitly call the .uuid getter and add it to the data object.
+                        contactData.uuid = c.uuid;
+                        
+                        // Add our selection state
+                        contactData.isSelected = c.id === basket.selectedContactId;
+                        
+                        return contactData;
+                    });
             }
 
-            // --- NEW LOGIC FOR AVAILABILITY DIALOG ---
+            // --- LOGIC FOR AVAILABILITY DIALOG ---
             // 1. Pass the app's current UI state to the template context.
             partialContext.currentTestUI = this.currentTestUI;
             partialContext.rollResult = this.rollResult;

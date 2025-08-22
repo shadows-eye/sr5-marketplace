@@ -6,7 +6,7 @@
             <div class="test-result">
                 <h3>Player Hits: {{rollResult.data.values.hits.value}}</h3>
                 <p>This will be the threshold for the item's resist roll.</p>
-                <button type="button" data-action="roll-resist" data-against-data="{{json rollResult.data}}">
+                <button type="button" data-action="rollResist" data-against-data="{{json rollResult.data}}">
                     Roll Item Resistance
                 </button>
             </div>
@@ -33,14 +33,14 @@
                     {{/each}}
                 </div>
                 <hr>
-                <button type="button" class="roll-button" data-action="run-availability-test">
+                <button type="button" class="roll-button" data-action="runAvailabilityTest">
                     <i class="fas fa-dice-d6"></i> {{localize "SR5.Roll"}}
                 </button>
             </form>
 
         {{else}}
             {{!-- VIEW 1: The initial state, just a single button to start the process --}}
-            <button type="button" data-action="show-availability-dialog">
+            <button type="button" data-action="showAvailabilityDialog">
                 <i class="fas fa-dice-d6"></i> Test Availability for Entire Order
             </button>
         {{/if}}

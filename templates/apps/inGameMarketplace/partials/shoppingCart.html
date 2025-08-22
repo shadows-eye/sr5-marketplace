@@ -59,12 +59,22 @@
         <div class="actor-contact-grid">
         <h3 class="grid-header">{{localize "SR5.Marketplace.selectContact"}}</h3>
         {{#each contacts}}
-            <div class="contact-card {{#if this.isSelected}}selected{{/if}}" data-action="select-contact" data-contact-id="{{this.id}}">
-                <div class="contact-card-visible">
+            
+            <div class="contact-card {{#if this.isSelected}}selected{{/if}}">
+
+                
+                <input type="checkbox" id="contact-toggle-{{this._id}}" class="contact-toggle-checkbox">
+
+                <div class="contact-card-visible" data-action="select-contact" data-contact-uuid="{{this.uuid}}">
                     <img src="{{this.img}}" alt="{{this.name}}" class="contact-image"/>
                     <span class="contact-name">{{this.name}}</span>
-                    <a class="contact-expand-toggle" data-action="toggle-contact-details"><i class="fas fa-chevron-down"></i></a>
+                    
+                    
+                    <label for="contact-toggle-{{this._id}}" class="contact-expand-toggle">
+                        <i class="fas fa-chevron-down"></i>
+                    </label>
                 </div>
+
                 <div class="contact-details">
                     <p><strong>Loyalty:</strong> {{this.system.loyalty}}</p>
                     <p><strong>Connection:</strong> {{this.system.connection}}</p>
