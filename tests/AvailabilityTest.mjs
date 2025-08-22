@@ -58,45 +58,63 @@ Geld mit Wiederverkauf machen. Das meiste davon kommt
 vom Verhehlen von Waren an die Geizigen.
 **/
 
-export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
+export class AvailabilityTest extends SuccessTest {
 
-    /**
-     * The constructor now correctly matches the parent's signature.
-     */
     constructor(data, documents, options) {
         super(data, documents, options);
     }
 
     _prepareData(data, options) {
         data = super._prepareData(data, options);
-        data.action = data.action || game.shadowrun5e.data.createData('action_roll');
+        data.action = data.action || DataDefaults.createData('action_roll');
         data.availabilityStr = data.availabilityStr || (options ? options.availability : "");
+        data.selectedSkill = data.action.skill || 'negotiation';
         return data;
     }
 
     prepareBaseValues() {
         if (this.actor) {
-            const parsed = this.constructor.parseAvailability(this.data.availabilityStr);
+            const skillId = this.data.selectedSkill || 'negotiation';
+            const skill = this.actor.system.skills.active[skillId];
+            if (!skill) {
+                console.error(`Marketplace | Actor is missing the selected skill: ${skillId}`);
+                return;
+            }
+
             const charisma = this.actor.system.attributes.charisma.value;
-            const negotiation = this.actor.system.skills.active.negotiation.value;
-            this.data.pool.base = charisma + negotiation;
+            const modifier = this.data.action.modifier || 0;
+
+            // Set the core test values
+            this.data.threshold.base = 0; // Initial test has no threshold
             this.data.limit.base = this.actor.system.limits.social.value;
-            this.data.threshold.base = parsed.rating;
+            this.data.pool.base = charisma + skill.value + modifier;
+
+            // Populate the pool's `.mod` array for display in the dialog
+            this.data.pool.mod = [];
+            PartsList.AddUniquePart(this.data.pool.mod, skill.label || skillId, skill.value);
+            PartsList.AddUniquePart(this.data.pool.mod, 'SR5.Attributes.Charisma.long', charisma);
+            if (modifier !== 0) {
+                PartsList.AddUniquePart(this.data.pool.mod, 'SR5.Labels.Action.Modifiers', modifier);
+            }
         }
+        
         super.prepareBaseValues();
     }
     
     get _dialogTemplate() {
-        return "modules/sr5-marketplace/templates/documents/tests/availabilitySimple-test-dialog.html";
+        return "modules/sr5-marketplace/templates/tests/availability-test-dialog.html";
     }
 
     static get label() {
         return "SR5.Marketplace.Tests.AvailabilityTest";
     }
-    
+
     static parseAvailability(str) {
         const m = String(str ?? "").trim().match(/^(\d+)\s*([A-Za-z]*)$/);
-        return { rating: m ? Number(m[1]) : 0, tag: m && m[2] ? m[2].toUpperCase() : "" };
+        return {
+            rating: m ? Number(m[1]) : 0,
+            tag: m && m[2] ? m[2].toUpperCase() : ""
+        };
     }
 
     /**
