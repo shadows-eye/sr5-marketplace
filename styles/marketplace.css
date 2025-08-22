@@ -24,8 +24,7 @@
 
 .marketplace-title {
     color: var(--bg-item-card);
-    padding-top: 0.7em;
-    font-size: large;
+    font-size: 40px;
     margin-left: -100px;
 }
 
@@ -318,6 +317,7 @@ input#search-box.marketplace-search {
     flex-grow: 1;
     max-width: 300px;
     max-height: 1.9rem;
+    background-color: var(--searbarColor);
     border: 1px solid var(--border-highlight-dark-yellow);
 }
 select#item-type-selector option { 

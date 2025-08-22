@@ -1,4 +1,5 @@
 import ItemDataServices from '../services/ItemDataServices.mjs';
+import { ThemeService } from '../services/themeService.mjs';
 import { AppDialogBuilder } from '../services/AppDialogBuilder.mjs';
 import { ItemPreviewApp } from "./documents/items/ItemPreviewApp.mjs"; 
 import { BasketService } from '../services/basketService.mjs';
@@ -13,7 +14,17 @@ const FLAG_KEY_SELECTED_ACTOR = "selectedActorUuid";
 
 export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2) {
     constructor(options = {}) {
-        options.classes = [...(options.classes || []), "sr5-marketplace", "sr5-market"];
+        // 1. Get the current theme from our helper function.
+        const currentTheme = inGameMarketplace._getThemeFromSetting();
+
+        // 2. Add all required classes, including the detected theme, to the options.
+        options.classes = [
+            ...(options.classes || []),
+            "sr5-marketplace",
+            "sr5-market",
+            "themed",
+            currentTheme // Add the detected theme here
+        ];
         super(options);
 
         this.itemData = game.sr5marketplace.itemData;
@@ -241,7 +252,26 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         return { tabs, tabContent, actor: purchasingActorData, ownedActors };
     }
-    
+    //-- Static Helpers -- //
+    /**
+     * A static helper to determine the current UI theme from the main Foundry interface.
+     * It checks the Actors tab for either 'theme-dark' or 'theme-light'.
+     * @returns {string} The detected theme class name ('theme-dark' or 'theme-light').
+     * @private
+     */
+    static _getThemeFromSetting() {
+        // 1. Get the entire UI configuration object from the core settings.
+        const uiConfig = game.settings.get("core", "uiConfig");
+        
+        // 2. Access the 'applications' property within that object.
+        
+        const themeValue = uiConfig?.colorScheme.applications;
+        console.log(themeValue);
+        if (themeValue === "dark") {
+            return "theme-dark";
+        }
+        return "theme-light"; // Default to light theme
+    }
     // --- ACTION HANDLERS ---
     static #onChangeTab(event, target) {
         const tabId = target.dataset.tab;

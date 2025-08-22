@@ -58,7 +58,10 @@
     --color-yellow-warning-border: #ffeeba;
 
     /* --- Backgrounds --- */
-    --bg-main: url(/modules/sr5-marketplace/assets/light-page.webp);
+    --bg-main: ;
+    /*-- Light Background */
+    --bg-main-light: url(/modules/sr5-marketplace/assets/light-page.webp);
+    /*-- Dark Background */
     --bg-main-dark: url(/modules/sr5-marketplace/assets/dark-pageV1.webp);
     --bg-dark-section-hover: #3d3d3d;
     --bg-item-card: #d3af0cd6;
@@ -138,6 +141,7 @@
 --inventory-header-color: ;
 --inventory-item-border: ;
 --inventory-item-image-bg: ;
+--searbarColor: ;
 
 /* --- Hint Tooltip --- */
 --hint-bg: #2b2b2b85;
@@ -169,7 +173,7 @@
 --app-window-header-bg: var(--color-red-darkest);
 --app-window-header-border: var(--color-red-deep);
 --app-window-header-title-color: var(--color-grey-lightest);
---app-window-content-bg: var(--bg-main);
+--app-window-content-bg: var(--bg-main-light);
 --app-window-content-color: var(--color-grey-lightest);
 --app-sticky-top-bg: var(--color-black-transparent-80);
 --app-sticky-top-border: var(--color-yellow-dark);
@@ -213,10 +217,11 @@
 --inventory-header-color: var(--color-yellow-base);
 --inventory-item-border: var(--border-color-dark);
 --inventory-item-image-bg: var(--color-white-transparent-10);
+--searbarColor: var(--color-red-darkest);
 
 }
 
-.sr5-marketplace-shop.themed.theme-dark {
+.themed.theme-dark {
 --app-window-header-bg: var(--color-red-darkest);
 --app-window-header-border: var(--color-red-deep);
 --app-window-header-title-color: var(--color-grey-lightest);
@@ -264,5 +269,6 @@
 --inventory-header-color: var(--color-yellow-base);
 --inventory-item-border: var(--border-color-dark);
 --inventory-item-image-bg: var(--color-white-transparent-10);
+--searbarColor: var(--color-red-darkest);
 
 }
