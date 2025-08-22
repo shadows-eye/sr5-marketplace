@@ -420,7 +420,16 @@ select#item-type-selector option {
     border-top: 1px solid var(--color-grey-light); 
 }
 .basket-actions{ display: flex; align-items: center; margin-top: 1em; }
-.actor-contact-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin: 15px 0; padding-top: 15px; }
+.actor-contact-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 2fr; 
+    gap: 20px; margin: 15px 0; 
+    padding-top: 15px; 
+}
+.actor-contact-grid .grid-header,
+.actor-contact-grid .grid-span-all {
+    grid-column: 1 / -1;
+}
 .actor-info-col{ display: grid; grid-template-columns: 1fr 1fr; }
 .actor-funds{ grid-row-start: 2; }
 .actor-link-wrapper{ object-fit: contain; width: 60px; grid-row-start: 2; }
@@ -618,4 +627,45 @@ hr.marketplace-settings-hr {
     border-radius: 4px;
     background-color: var(--color-grey-light);
     background-image: repeating-linear-gradient(180deg, var(--color-red-base), transparent 100px);
+}
+
+/* --- inGameMarketplace-App Test Dialog Modifiers --- */
+.marketplace-modifiers-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-height: 300px; /* Adjust as needed */
+    overflow-y: auto;
+    padding: 5px;
+}
+
+.modifier-group {
+    border: 1px solid var(--border-color-medium);
+    border-radius: 5px;
+    padding: 10px;
+    background: var(--attribute-group-bg);
+}
+
+.modifier-group legend {
+    font-weight: bold;
+    color: var(--text-color-subheader);
+    padding: 0 5px;
+}
+
+.modifier-items-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 5px 20px;
+    align-items: center;
+}
+
+.modifier-items-grid label {
+    text-align: left;
+    color: var(--text-color-primary);
+}
+
+.modifier-items-grid input[type="checkbox"] {
+    justify-self: center;
+    width: 18px;
+    height: 18px;
 }

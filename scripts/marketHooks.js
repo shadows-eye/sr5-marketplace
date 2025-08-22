@@ -54,7 +54,8 @@ const initializeTemplates = () => {
         "modules/sr5-marketplace/templates/documents/actor/partials/shop-header.html",
         "modules/sr5-marketplace/templates/documents/actor/partials/shop-skills.html",
         "modules/sr5-marketplace/templates/documents/actor/partials/shop-inventory.html",
-        "modules/sr5-marketplace/templates/documents/items/itemPreviewApp/item-preview.html"
+        "modules/sr5-marketplace/templates/documents/items/itemPreviewApp/item-preview.html",
+        "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html"
     ]);
 };
 // Initialize module settings

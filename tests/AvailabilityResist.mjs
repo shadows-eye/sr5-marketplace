@@ -1,3 +1,4 @@
+import {DialogList} from '../scripts/services/dialogList.mjs';
 /**
  * Represents the opposed part of an Availability Test.
  * Its dice pool is simply the numeric rating of the item's availability.

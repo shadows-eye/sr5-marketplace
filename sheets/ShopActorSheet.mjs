@@ -463,7 +463,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
 
         } catch (e) {
             console.error("Marketplace | AvailabilityTest failed:", e);
-            ui.notifications.error("Failed to run the Availability Test. See console (F12) for details.");
+            //ui.notifications.error("Failed to run the Availability Test. See console (F12) for details.");
         }
     }
 

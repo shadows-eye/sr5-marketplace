@@ -58,7 +58,49 @@ Geld mit Wiederverkauf machen. Das meiste davon kommt
 vom Verhehlen von Waren an die Geizigen.
 **/
 
-export class AvailabilityTest extends SuccessTest {
+
+import {DialogList} from '../scripts/services/dialogList.mjs';
+/**
+ * @summary A specialized test for determining item availability in the marketplace.
+ * @description
+ * This class manages an Availability Test, which typically involves a social skill roll
+ * (e.g., Negotiation + Charisma). It is designed to be highly flexible, featuring a
+ * dialog that allows the user to change the skill and attribute used for the roll on the fly.
+ *
+ * The result of this test can be used as the threshold for an opposed `AvailabilityResist` test,
+ * creating a complete, two-stage process for acquiring items.
+ *
+ * @extends {game.shadowrun5e.tests.SuccessTest}
+ *
+ * @param {object} [data={}] - An optional initial data object for the test. While you can pass an empty object,
+ * you can also provide an `action` object to set default test parameters.
+ * @param {object} [data.action] - An action object can be passed to set defaults for the test.
+ * @param {string} [data.action.skill='negotiation'] - The default skill ID to be used (e.g., 'negotiation', 'etiquette').
+ * @param {string} [data.action.attribute='charisma'] - The default attribute ID to be used (e.g., 'charisma').
+ *
+ * @param {object} documents - An object containing the required actor document.
+ * @param {Actor} documents.actor - The actor document for the character performing the availability test.
+ *
+ * @param {object} [options={}] - An optional options object to pass in specific values.
+ * @param {string} [options.availability=""] - The availability string to be tested (e.g., "12R", "8F").
+ * This is the primary input for the test.
+ *
+ * @example
+ * // How to call this from an Actor Sheet's click handler:
+ * const actor = this.document;
+ * const availabilityStr = "12R";
+ *
+ * // Create an instance of the test.
+ * const test = new game.shadowrun5e.tests.AvailabilityTest(
+ * {}, // Initial data is empty; the test will calculate it.
+ * { actor: actor }, // Pass the actor in the documents object.
+ * { availability: availabilityStr } // Pass the availability string in the options.
+ * );
+ *
+ * // Run the test, which will open the dialog and handle the roll.
+ * await test.execute();
+ */
+export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
 
     constructor(data, documents, options) {
         super(data, documents, options);
@@ -66,43 +108,63 @@ export class AvailabilityTest extends SuccessTest {
 
     _prepareData(data, options) {
         data = super._prepareData(data, options);
-        data.action = data.action || DataDefaults.createData('action_roll');
+        data.action = data.action || game.shadowrun5e.data.createData('action_roll');
         data.availabilityStr = data.availabilityStr || (options ? options.availability : "");
         data.selectedSkill = data.action.skill || 'negotiation';
+        data.selectedAttribute = data.action.attribute || 'charisma';
         return data;
     }
 
     prepareBaseValues() {
+        // Call parent first to apply system-wide modifiers like wounds
+        super.prepareBaseValues();
+
         if (this.actor) {
             const skillId = this.data.selectedSkill || 'negotiation';
+            const attributeId = this.data.selectedAttribute || 'charisma';
             const skill = this.actor.system.skills.active[skillId];
-            if (!skill) {
-                console.error(`Marketplace | Actor is missing the selected skill: ${skillId}`);
+            const attribute = this.actor.system.attributes[attributeId];
+            const charisma = this.actor.system.attributes.charisma;
+            const modifier = this.data.action.modifier || 0;
+
+            if (!skill || !charisma) {
+                console.error(`Marketplace | Actor is missing required skill or attribute.`);
                 return;
             }
 
-            const charisma = this.actor.system.attributes.charisma.value;
-            const modifier = this.data.action.modifier || 0;
-
-            // Set the core test values
-            this.data.threshold.base = 0; // Initial test has no threshold
-            this.data.limit.base = this.actor.system.limits.social.value;
-            this.data.pool.base = charisma + skill.value + modifier;
-
-            // Populate the pool's `.mod` array for display in the dialog
-            this.data.pool.mod = [];
-            PartsList.AddUniquePart(this.data.pool.mod, skill.label || skillId, skill.value);
-            PartsList.AddUniquePart(this.data.pool.mod, 'SR5.Attributes.Charisma.long', charisma);
-            if (modifier !== 0) {
-                PartsList.AddUniquePart(this.data.pool.mod, 'SR5.Labels.Action.Modifiers', modifier);
-            }
-        }
+            // --- CORRECTED LOCALIZATION LOGIC ---
+            // 1. Get the official localization key from the system's configuration.
+            const skillLocKey = CONFIG.SR5.activeSkills[skillId];
         
-        super.prepareBaseValues();
+            const charismaLocKey = CONFIG.SR5.attributes[attribute]
+
+            // 2. Localize these keys to get the final, human-readable strings.
+            const skillLabel = game.i18n.localize(skillLocKey);
+            const charismaLabel = game.i18n.localize(charismaLocKey);
+            
+            // Set the test's limit and ensure the threshold is 0
+            this.data.threshold.base = 0;
+            this.data.limit.base = this.actor.system.limits.social.value;
+            
+            const pool = new DialogList(this.data.pool.mod);
+            pool.clear();
+            
+            // 3. Use the correctly translated labels when building the pool display.
+            pool.addPart(skillLabel, skill.value);
+            pool.addPart(charismaLabel, charisma.value);
+
+            if (modifier !== 0) {
+                const modifierLabel = game.i18n.localize('SR5.Labels.Action.Modifiers');
+                pool.addPart(modifierLabel, modifier);
+            }
+            
+            // Set base to 0 to prevent double-counting.
+            this.data.pool.base = 0;
+        }
     }
     
     get _dialogTemplate() {
-        return "modules/sr5-marketplace/templates/tests/availability-test-dialog.html";
+        return "modules/sr5-marketplace/templates/documents/tests/availabilitySimple-test-dialog.html";
     }
 
     static get label() {
@@ -118,18 +180,92 @@ export class AvailabilityTest extends SuccessTest {
     }
 
     /**
-     * This is the TRANSLATOR. It takes simple inputs and calls the constructor correctly.
+     * A simple, static runner that acts as a switchboard for the test.
+     * It can create a standard test with a dialog or a "silent" test that
+     * returns its result, based on the context provided.
+     * @param {Actor|string} actorRef - The actor performing the test.
+     * @param {string} availabilityStr - The availability string (e.g., "12R").
+     * @param {object} [context={}] - An object to provide context for the call.
+     * @param {boolean} [context.isAppCall=false] - Set to true if calling from your app.
+     * @returns {Promise<AvailabilityTest>} - The executed test instance, containing the results.
      */
-    static async run(actorRef, availabilityStr = "") {
+    static async run(actorRef, availabilityStr = "", context = {}) {
         const actor = typeof actorRef === "string" ? await fromUuid(actorRef) : actorRef;
         if (!actor) throw new Error("AvailabilityTest: actor not found");
 
-        // Here we call `new this()` with the arguments in the correct order:
-        // 1. data (empty object, will be populated by our overrides)
-        // 2. documents (contains the actor)
-        // 3. options (contains our custom availability string)
-        const test = new this({}, { actor }, { availability: availabilityStr });
+        let testOptions = {
+            availability: availabilityStr
+        };
+
+        // If the test is called from your app, set the options to suppress the UI.
+        if (context.isAppCall) {
+            testOptions.showDialog = false;
+            testOptions.showMessage = false;
+        }
+
+        // Create the new test instance, passing the correct arguments.
+        const test = new this(
+            {},                 // data
+            { actor },          // documents
+            testOptions         // options
+        );
         
-        return test.execute();
+        // Execute the test. It will either show the dialog or run silently
+        // based on the options we just set.
+        await test.execute();
+
+        // Return the completed test instance so the calling app can get the results.
+        return test;
+    }
+
+    /**
+     * Runs a silent, data-driven test specifically for an external application.
+     * It bypasses the standard dialog, uses the provided parameters to build the test,
+     * executes it, and returns the complete result.
+     *
+     * @param {Actor|string} actorRef - The actor or actor's UUID performing the test.
+     * @param {object} testParams - An object containing all parameters for the test.
+     * @param {string} testParams.availabilityStr - The availability string (e.g., "12R").
+     * @param {string} [testParams.skill='negotiation'] - The skill ID to use.
+     * @param {string} [testParams.attribute='charisma'] - The attribute ID to use.
+     * @param {number} [testParams.modifier=0] - A bonus or penalty to the dice pool.
+     * @returns {Promise<object|null>} The JSON result of the executed test, or null on failure.
+     */
+    static async runForApp(actorRef, testParams = {}) {
+        const actor = typeof actorRef === "string" ? await fromUuid(actorRef) : actorRef;
+        if (!actor) {
+            console.error("AvailabilityTest.runForApp | Actor not found.");
+            return null;
+        }
+
+        // We must import the TestCreator to build the test programmatically.
+        const { TestCreator } = await import('/systems/shadowrun5e/src/module/tests/TestCreator.js');
+
+        // 1. Describe the test using the parameters from the app.
+        const action = {
+            test: "AvailabilityTest",
+            skill: testParams.skill || 'negotiation',
+            attribute: testParams.attribute || 'charisma',
+            modifier: testParams.modifier || 0,
+            limit: { attribute: "social" },
+            availabilityStr: testParams.availabilityStr || "",
+            opposed: { test: "AvailabilityResist" }
+        };
+
+        // 2. Set options to run the test silently.
+        const options = {
+            showDialog: false,
+            showMessage: false
+        };
+
+        // 3. Create the test instance using the TestCreator.
+        const test = await TestCreator.fromAction(action, actor, options);
+        if (!test) return null;
+
+        // 4. Execute the test to perform the roll.
+        await test.execute();
+
+        // 5. Return the clean result data.
+        return test.toJSON();
     }
 }

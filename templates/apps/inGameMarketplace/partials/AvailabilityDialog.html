@@ -1,0 +1,49 @@
+<div class="roll-dialog-container">
+    <h3>{{localize "SR5.Marketplace.Availability"}} Test</h3>
+    <div class="roll-dialog-content">
+        {{#if rollResult}}
+            {{!-- VIEW 3: Display the test result --}}
+            <div class="test-result">
+                <h3>Player Hits: {{rollResult.data.values.hits.value}}</h3>
+                <p>This will be the threshold for the item's resist roll.</p>
+                <button type="button" data-action="roll-resist" data-against-data="{{json rollResult.data}}">
+                    Roll Item Resistance
+                </button>
+            </div>
+
+        {{else if (eq currentTestUI "availability-dialog")}}
+            {{!-- VIEW 2: Display the full dialog form --}}
+            <form class="availability-dialog-form">
+                <h2>{{localize "SR5.Marketplace.Tests.AvailabilityTest"}}</h2>
+                <div class="form-grid">
+                    {{!-- ... your inputs for availabilityStr, selectedSkill, selectedAttribute ... --}}
+                </div>
+                <hr>
+                <div class="marketplace-modifiers-container">
+                    {{#each modifierGroups as |group|}}
+                        <fieldset class="modifier-group">
+                            <legend>{{localize group.title}}</legend>
+                            <div class="modifier-items-grid">
+                                {{#each group.items as |mod|}}
+                                    <label>{{localize mod.description}}</label>
+                                    <input type="checkbox" name="modifier" value='{{mod.value}}' />
+                                {{/each}}
+                            </div>
+                        </fieldset>
+                    {{/each}}
+                </div>
+                <hr>
+                <button type="button" class="roll-button" data-action="run-availability-test">
+                    <i class="fas fa-dice-d6"></i> {{localize "SR5.Roll"}}
+                </button>
+            </form>
+
+        {{else}}
+            {{!-- VIEW 1: The initial state, just a single button to start the process --}}
+            <button type="button" data-action="show-availability-dialog">
+                <i class="fas fa-dice-d6"></i> Test Availability for Entire Order
+            </button>
+        {{/if}}
+
+    </div>
+</div>

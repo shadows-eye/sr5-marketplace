@@ -1,4 +1,5 @@
 import ItemDataServices from '../services/ItemDataServices.mjs';
+import { AppDialogBuilder } from '../services/AppDialogBuilder.mjs';
 import { ItemPreviewApp } from "./documents/items/ItemPreviewApp.mjs"; 
 import { BasketService } from '../services/basketService.mjs';
 import { PurchaseService } from '../services/purchaseService.mjs';
@@ -170,25 +171,48 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             this.tabGroups.main = "shop";
         }
         
-        let tabContent;
-        const partialContext = { basket, isGM: game.user.isGM, purchasingActor: purchasingActorData };
+         let tabContent;
+    let partialContext = { basket, isGM: game.user.isGM, purchasingActor: purchasingActorData };
+    const render = foundry.applications.handlebars.renderTemplate;
 
-        // **FIX:** Replace global `renderTemplate` with the V13+ path
-        const render = foundry.applications.handlebars.renderTemplate;
+    switch (this.tabGroups.main) {
+        case "shoppingCart":
+            // Prepare standard shopping cart data (contacts)
+            if (this.purchasingActor) {
+                partialContext.contacts = this.purchasingActor.items.filter(i => i.type === "contact")
+                    .map(c => ({...c.toObject(false), isSelected: c.id === basket.selectedContactId}));
+            }
 
-        switch (this.tabGroups.main) {
-            case "shoppingCart":
-                if (this.purchasingActor) {
-                    partialContext.contacts = this.purchasingActor.items.filter(i => i.type === "contact")
-                        .map(c => ({...c.toObject(false), isSelected: c.id === basket.selectedContactId}));
-                }
-                tabContent = await render("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.html", partialContext);
-                break;
-            case "orderReview":
+            // --- NEW LOGIC FOR AVAILABILITY DIALOG ---
+            // 1. Pass the app's current UI state to the template context.
+            partialContext.currentTestUI = this.currentTestUI;
+            partialContext.rollResult = this.rollResult;
+            
+            // 2. If the state requires the full dialog, build its specific context.
+            if (this.currentTestUI === 'availability-dialog') {
+                const itemUuids = basket.shoppingCartItems.map(i => i.itemUuid);
+                const builder = new AppDialogBuilder({
+                    actorUuid: this.purchasingActor?.uuid,
+                    connectionUuid: basket.selectedContactId,
+                    itemUuids: itemUuids
+                });
+
+                // Build the context for the dialog (actor, modifiers, etc.)
+                const dialogContext = await builder.buildContext({
+                    selectedSkill: this.element?.querySelector('[name="selectedSkill"]')?.value || 'negotiation'
+                });
+
+                // 3. Merge this new data into the main context for the partial.
+                foundry.utils.mergeObject(partialContext, dialogContext);
+            }
+
+            tabContent = await render("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.html", partialContext);
+            break;
+        case "orderReview":
                 partialContext.pendingRequests = await PurchaseService.getAllPendingRequests();
                 tabContent = await render("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/orderReview.html", partialContext);
                 break;
-            default:
+        default:
                 // --- ADDED DEBUG LOG ---
                 //console.log(`%cRendering View:`, "color: green; font-weight: bold;", { selectedKey_for_render: this.selectedKey });
                 // --- END DEBUG LOG ---
@@ -212,7 +236,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 partialContext.selectedKey = this.selectedKey;
                 partialContext.selectedItems = this.selectedKey ? (itemsByType[this.selectedKey]?.items || []) : [];
                 tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.html", partialContext);
-                break;
+            break;
         }
 
         return { tabs, tabContent, actor: purchasingActorData, ownedActors };

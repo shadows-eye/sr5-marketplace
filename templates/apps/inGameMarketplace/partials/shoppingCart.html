@@ -56,7 +56,30 @@
     <hr class="marketplace-settings-hr">
 
     <div class="actor-contact-grid">
-        </div>
+        <div class="actor-contact-grid">
+        <h3 class="grid-header">{{localize "SR5.Marketplace.selectContact"}}</h3>
+        {{#each contacts}}
+            <div class="contact-card {{#if this.isSelected}}selected{{/if}}" data-action="select-contact" data-contact-id="{{this.id}}">
+                <div class="contact-card-visible">
+                    <img src="{{this.img}}" alt="{{this.name}}" class="contact-image"/>
+                    <span class="contact-name">{{this.name}}</span>
+                    <a class="contact-expand-toggle" data-action="toggle-contact-details"><i class="fas fa-chevron-down"></i></a>
+                </div>
+                <div class="contact-details">
+                    <p><strong>Loyalty:</strong> {{this.system.loyalty}}</p>
+                    <p><strong>Connection:</strong> {{this.system.connection}}</p>
+                    <div>{{{this.system.description.value}}}</div>
+                </div>
+            </div>
+        {{else}}
+            <p class="hint-text grid-span-all">{{purchasingActor.name}} has no contacts.</p>
+        {{/each}}
+</div>
+    </div>
+    <hr class="marketplace-settings-hr">
+    {{!-- Availability Test Area --}}
+    {{> "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html" currentTestUI=currentTestUI rollResult=rollResult modifierGroups=modifierGroups purchasingActor=purchasingActor 
+    }}
 
     <div class="basket-actions">
         <button id="send-request-button" class="send-request-button" data-action="sendRequest">{{localize 'SR5.Marketplace.SendRequest'}}</button>
