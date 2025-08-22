@@ -2,7 +2,7 @@
  * Represents the opposed part of an Availability Test.
  * Its dice pool is simply the numeric rating of the item's availability.
  */
-export class AvailabilityResist extends OpposedTest {
+export class AvailabilityResist extends game.shadowrun5e.tests.OpposedTest {
 
     constructor(data, documents, options) {
         super(data, documents, options);
