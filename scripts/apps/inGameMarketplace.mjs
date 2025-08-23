@@ -1,11 +1,11 @@
 import ItemDataServices from '../services/ItemDataServices.mjs';
-import { ThemeService } from '../services/themeService.mjs';
 import { AppDialogBuilder } from '../services/AppDialogBuilder.mjs';
 import { ItemPreviewApp } from "./documents/items/ItemPreviewApp.mjs"; 
 import { BasketService } from '../services/basketService.mjs';
 import { PurchaseService } from '../services/purchaseService.mjs';
 import { SearchService } from '../services/searchTag.mjs';
-import{ MODULE_ID } from '../lib/constants.mjs';
+import { AppTestFlagService } from '../services/AppTestFlagService.mjs';
+import{ CurrentUserId, MODULE_ID } from '../lib/constants.mjs';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -26,7 +26,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             currentTheme // Add the detected theme here
         ];
         super(options);
-
+        this.activeTestState = null;
+        this.activeDialogId = null;
         this.itemData = game.sr5marketplace.itemData;
         this.basketService = new BasketService();
         this.tabGroups = { main: "shop" };
@@ -84,7 +85,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 updatePendingItem: this.#onUpdatePendingItem,
                 // TODO: rollResist: this.#onRollResist,
                 // TODO: runAvailabilityTest: this.#onRunAvailabilityTest,
-                // TODO: showAvailabilityDialog: this.#onShowAvailabilityDialog
+                showAvailabilityDialog: this.#onShowAvailabilityDialog,
+                selectContact: this.#onSelectContact
 
             }
         });
@@ -191,48 +193,50 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     const render = foundry.applications.handlebars.renderTemplate;
 
     switch (this.tabGroups.main) {
-        case "shoppingCart":
-            // Prepare standard shopping cart data (contacts)
-            if (this.purchasingActor) {
-                partialContext.contacts = this.purchasingActor.items
-                    .filter(i => i.type === "contact")
-                    .map(c => {
-                        // Get the plain data object from the contact item
-                        const contactData = c.toObject(false);
+            case "shoppingCart":
+                // Prepare standard shopping cart data (contacts)
+                if (this.purchasingActor) {
+                    partialContext.contacts = this.purchasingActor.items
+                        .filter(i => i.type === "contact")
+                        .map(c => {
+                            const contactData = c.toObject(false);
+                            contactData.uuid = c.uuid;
+                            contactData.isSelected = c.uuid === basket.selectedContactUuid;
+                            return contactData;
+                        });
+                }
 
-                        // --- THIS IS THE FIX ---
-                        // Explicitly call the .uuid getter and add it to the data object.
-                        contactData.uuid = c.uuid;
-                        
-                        // Add our selection state
-                        contactData.isSelected = c.id === basket.selectedContactId;
-                        
-                        return contactData;
-                    });
-            }
+                // --- NEW FLAG-BASED WORKFLOW ---
+                const testStates = await AppTestFlagService.getState(CurrentUserId);
+                const activeTestState = this.activeDialogId ? testStates[this.activeDialogId] : null;
+                
+                partialContext.activeTestState = activeTestState;
 
-            // --- LOGIC FOR AVAILABILITY DIALOG ---
-            // 1. Pass the app's current UI state to the template context.
-            partialContext.currentTestUI = this.currentTestUI;
-            partialContext.rollResult = this.rollResult;
-            
-            // 2. If the state requires the full dialog, build its specific context.
-            if (this.currentTestUI === 'availability-dialog') {
-                const itemUuids = basket.shoppingCartItems.map(i => i.itemUuid);
-                const builder = new AppDialogBuilder({
-                    actorUuid: this.purchasingActor?.uuid,
-                    connectionUuid: basket.selectedContactId,
-                    itemUuids: itemUuids
-                });
+                if (activeTestState) {
+                    // Instantiate the builder with the test's unique ID.
+                    const builder = new AppDialogBuilder({ dialogId: this.activeDialogId });
+                    let dialogContext;
+                    console.log (activeTestState);
+                    if (activeTestState.status === 'initial') {
+                        // Pass the required UUIDs from the flag state directly into the build method.
+                        dialogContext = await builder.buildInitialDialogContext({
+                            actorUuid: activeTestState.actorUuid,
+                            itemUuids: activeTestState.itemUuids,
+                            connectionUuid: activeTestState.connectionUuid
+                        });
 
-                // Build the context for the dialog (actor, modifiers, etc.)
-                const dialogContext = await builder.buildContext({
-                    selectedSkill: this.element?.querySelector('[name="selectedSkill"]')?.value || 'negotiation'
-                });
-
-                // 3. Merge this new data into the main context for the partial.
-                foundry.utils.mergeObject(partialContext, dialogContext);
-            }
+                    } else if (activeTestState.status === 'result') {
+                        // The resist context method is self-contained and uses the dialogId
+                        // to load its own state, so it doesn't need arguments.
+                        dialogContext = await builder.buildResistDialogContext();
+                    }
+                    
+                    // Merge the specific dialog context into the main partial context
+                    if (dialogContext) {
+                        foundry.utils.mergeObject(partialContext, dialogContext);
+                    }
+                }
+                // --- END NEW FLAG-BASED WORKFLOW ---
 
             tabContent = await render("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.html", partialContext);
             break;
@@ -422,5 +426,53 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const value = (target.type === "number") ? Number(target.value) : target.value;
         await PurchaseService.updatePendingItem(requestBlock.dataset.userId, requestBlock.dataset.basketUuid, itemRow.dataset.basketItemId, property, value);
         this.render();
+    }
+
+    /**
+     * Handles selecting a contact.
+     * It saves the choice and re-renders the application to update the UI.
+     */
+    static async #onSelectContact(event, target) {
+        const clickedContactUuid = target.dataset.contactUuid;
+        const basket = await this.basketService.getBasket();
+
+        // If the clicked contact is already selected, deselect it. Otherwise, select it.
+        const newSelectedUuid = basket.selectedContactUuid === clickedContactUuid ? null : clickedContactUuid;
+
+        await this.basketService.setSelectedContact(newSelectedUuid);
+        console.log("New Contact selected {" + newSelectedUuid + "}")
+        this.render(); // Re-render to update the 'selected' class
+    }
+
+    /**
+     * @summary Initiates the test workflow by creating the initial test state in a user flag.
+     * @description This handler gathers the necessary actor and item UUIDs from the current
+     * basket, uses the AppTestFlagService to create a new persistent test record with a
+     * status of 'initial', and then triggers a re-render of the application.
+     * @param {Event} event - The triggering click event.
+     * @param {HTMLElement} target - The button element that was clicked.
+     * @private
+     */
+    static async #onShowAvailabilityDialog(event, target) {
+        const basket = await this.basketService.getBasket();
+        if (basket.shoppingCartItems.length === 0) {
+            return ui.notifications.warn("Your shopping cart is empty.");
+        }
+
+        // 1. Create the initial data payload that will be saved to the flag.
+        const initialData = {
+            actorUuid: this.purchasingActor?.uuid,
+            itemUuids: basket.shoppingCartItems.map(i => i.itemUuid),
+            connectionUuid: basket.selectedContactUuid,
+            status: 'initial',
+
+        };
+
+        // 2. Create the test state in the flag. This sets status to 'initial' by default.
+        // The service returns the unique ID for this new test instance.
+        this.activeDialogId = await AppTestFlagService.createTest(initialData);
+        
+        // 3. Trigger a re-render. _prepareContext will now read the new flag state.
+        this.render(false);
     }
 }

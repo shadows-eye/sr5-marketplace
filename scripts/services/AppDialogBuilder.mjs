@@ -1,98 +1,113 @@
 import { DialogModifierService } from './DialogModifierService.mjs';
+import { AppTestFlagService } from './AppTestFlagService.mjs';
 
 /**
- * @summary A service that builds the data context for the in-app Availability Test dialog.
- * @description This class accepts actorUuid, connectionUuid with actorUuid linked, and item UUIDs, fetches the required
- * documents, and prepares a complete data object for rendering the test dialog partial.
- * It includes logic to find a valid actor via a connection if one is not directly provided.
+ * @summary Builds and manages the data context for the multi-step in-app Availability Test.
+ * @description This class is the central engine for the test workflow. It fetches documents,
+ * reads and writes test state to user flags, and prepares data contexts for rendering the
+ * different stages of the test dialog (initial roll, resist roll, and final result).
  */
 export class AppDialogBuilder {
     /**
      * @param {object} params - The parameters for the builder.
-     * @param {string|null} [params.actorUuid=null] - The UUID of the actor performing the test.
-     * @param {string|null} [params.connectionUuid=null] - The UUID of a Connection/Contact item to use as a fallback for finding an actor.
-     * @param {string[]} [params.itemUuids=[]] - An array of item UUIDs to be included in the availability test.
+     * @param {string|null} [params.dialogId=null] - The existing ID of a test in progress.
      */
-    constructor({ actorUuid = null, connectionUuid = null, itemUuids = [] }) {
-        this.actorUuid = actorUuid;
-        this.connectionUuid = connectionUuid;
-        this.itemUuids = itemUuids;
-        this.itemDataService = game.sr5marketplace.itemData; // Assuming service is globally available
+    constructor({ dialogId = null } = {}) {
+        this.dialogId = dialogId;
+        this.testState = null;
     }
 
     /**
-     * Resolves the correct actor to use for the test.
-     * It prioritizes the explicitly provided actorUuid, then falls back to finding
-     * an actor linked on the connection item.
-     * @returns {Promise<Actor|null>} The resolved actor document or null if none found.
-     * @private
+     * A static helper to get a full Actor document from a UUID.
+     * @param {string} uuid - The actor's UUID.
+     * @returns {Promise<Actor|null>}
      */
-    async _resolveActor() {
-        // 1. Prioritize the explicitly provided actor.
-        if (this.actorUuid) {
-            const actor = await fromUuid(this.actorUuid);
-            console.log(actor.name)
-            if (actor) return actor;
-        }
-
-        // 2. If no actor, fall back to the connection.
-        if (this.connectionUuid) {
-            const connectionItem = await fromUuid(this.connectionUuid);
-            // Assuming the linked actor's UUID is stored in the connection item's system data.
-            // Adjust the path `system.actorUuid` if it's stored elsewhere.
-            const linkedActorUuid = connectionItem?.system?.actorUuid;
-            console.log(linkedActorUuid);
-            if (linkedActorUuid) {
-                const actor = await fromUuid(linkedActorUuid);
-                if (actor) return actor;
-            }
-        }
-
-        // 3. If no actor could be found, return null.
-        return null;
+    static async getActor(uuid) {
+        if (!uuid) return null;
+        return await fromUuid(uuid);
     }
 
     /**
-     * Builds and returns the complete context for the AvailabilityDialog partial.
-     * If a valid actor cannot be found, it returns null.
-     * @param {object} [context={}] - Additional context, like the currently selected skill.
-     * @returns {Promise<object|null>} The data object for the Handlebars template, or null.
+     * A static helper to get a full Item document from a UUID.
+     * @param {string} uuid - The item's UUID.
+     * @returns {Promise<Item|null>}
      */
-    async buildContext(context = {}) {
-        const actor = await this._resolveActor();
-        if (!actor) {
-            console.warn("AppDialogBuilder | A valid actor could not be resolved for the test.");
-            return null; // Return null to signal failure
-        }
+    static async getItem(uuid) {
+        if (!uuid) return null;
+        return await fromUuid(uuid);
+    }
 
-        const items = (await Promise.all(this.itemUuids.map(uuid => fromUuid(uuid)))).filter(i => i);
-        if (items.length === 0) {
-            console.warn("AppDialogBuilder | No valid items were provided for the test.");
-            return null;
-        }
+    /**
+     * A static helper to find a linked actor's UUID from a Connection/Contact item's UUID.
+     * @param {string} connectionUuid - The UUID of the Connection item.
+     * @returns {Promise<string|null>} The linked actor's UUID or null.
+     */
+    static async getActorUuidFromConnection(connectionUuid) {
+        if (!connectionUuid) return null;
+        const connectionItem = await fromUuid(connectionUuid);
+        // Adjust the path `system.actorUuid` if your data model is different.
+        return connectionItem?.system?.actorUuid || null;
+    }
 
-        // Calculate the combined availability for all items.
-        let totalAvailabilityRating = 0;
-        items.forEach(item => {
-            const availabilityStr = item.system.technology?.availability?.value || "0";
-            const rating = parseInt(availabilityStr.match(/^(\d+)/)?.[1] || "0", 10);
-            totalAvailabilityRating += rating;
-        });
-        const finalAvailabilityStr = `${totalAvailabilityRating}R`;
+    /**
+     * Loads the test state from the user flag if a dialogId is present.
+     * @returns {Promise<boolean>} True if state was loaded successfully.
+     */
+    async loadState() {
+        if (!this.dialogId) return false;
+        const allState = await AppTestFlagService.getState();
+        this.testState = allState[this.dialogId];
+        return !!this.testState;
+    }
 
-        // Get the list of relevant situational modifiers.
-        const modifierGroups = DialogModifierService.getModifiersForTest({
-            selectedSkill: context.selectedSkill || 'negotiation'
-        });
+    /**
+     * Builds the context for the initial test dialog (the player's roll).
+     * @param {object} initialParams - Data to start a new test.
+     * @param {string} initialParams.actorUuid - The UUID of the actor performing the test.
+     * @param {string[]} initialParams.itemUuids - The item UUIDs for the test.
+     * @returns {Promise<object|null>} The context for the Handlebars template.
+     */
+    async buildInitialDialogContext({ actorUuid, itemUuids }) {
+        const actor = await this.constructor.getActor(actorUuid);
+        const items = (await Promise.all(itemUuids.map(uuid => this.constructor.getItem(uuid)))).filter(i => i);
+        if (!actor || items.length === 0) return null;
+
+        // Create a new test state in the user's flag
+        this.dialogId = await AppTestFlagService.createTest({ actorUuid, itemUuids });
         
-        const houseRuleActive = false;
+        // Calculate combined availability (this logic can be expanded for your house rules)
+        const totalAvailabilityRating = items.reduce((total, item) => {
+            const availStr = item.system.technology?.availability?.value || "0";
+            return total + (parseInt(availStr.match(/^(\d+)/)?.[1] || "0", 10));
+        }, 0);
+        
+        const modifierGroups = DialogModifierService.getModifiersForTest({ selectedSkill: 'negotiation' });
 
-        // Assemble and return the final context object.
         return {
-            actor: actor,
-            availabilityStr: finalAvailabilityStr,
-            modifierGroups: modifierGroups,
-            houseRuleActive: houseRuleActive,
+            dialogId: this.dialogId, // Pass the ID to the template
+            actor,
+            availabilityStr: `${totalAvailabilityRating}R`,
+            modifierGroups,
+            context: 'initial' // A flag to tell the template which view to render
+        };
+    }
+
+    /**
+     * Builds the context for the resist test dialog (the item's roll).
+     * @returns {Promise<object|null>} The context for the Handlebars template.
+     */
+    async buildResistDialogContext() {
+        if (!await this.loadState() || !this.testState.result) return null;
+
+        const actor = await this.constructor.getActor(this.testState.actorUuid);
+        const initialResult = this.testState.result;
+
+        // The context for the resist roll view
+        return {
+            dialogId: this.dialogId,
+            actor,
+            initialResult, // Pass the first result to the template
+            context: 'resist' // A flag to tell the template to show the resist UI
         };
     }
 }

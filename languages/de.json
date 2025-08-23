@@ -173,9 +173,7 @@
                 "initiation": { "label": "Initiation" },
                 "submersion": { "label": "Submersion" }
             },
-            "skills": {
-                "label": "Skills",
-                "Skill": {
+            "Skill": {
                     "AeronauticsMechanic": "Luftfahrtmechanik",
                     "Alchemy": "Alchemie",
                     "AnimalHandling": "Tierführung",
@@ -260,7 +258,9 @@
                     "ThrowingWeapons": "Wurfwaffen",
                     "Tracking": "Spurenlesen",
                     "UnarmedCombat": "Waffenloser Kampf"
-                }
+                },
+            "skills": {
+                "label": "Skills"
             },
             "limits": {
                 "label": "Limits",

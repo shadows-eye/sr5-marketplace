@@ -1,8 +1,8 @@
+import { MODULE_ID, FLAGKEY_Basket } from "../lib/constants.mjs";
+
 export class BasketService {
 
     constructor() {
-        this.flagScope = "sr5-marketplace";
-        this.flagKey = "basket";
     }
     /**
      * Returns the default structure for the entire basket flag.
@@ -12,7 +12,8 @@ export class BasketService {
             basketUUID: foundry.utils.randomID(),
             creationTime: new Date().toISOString(),
             createdForActor: null,
-            selectedContactId: null,
+            selectedContactUuid: null,
+            shopActorUuid: null,
             totalCost: 0,
             totalAvailability: "0",
             totalKarma: 0,
@@ -31,7 +32,7 @@ export class BasketService {
         const user = userId ? game.users.get(userId) : game.user;
         if (!user) return this._getDefaultBasketState();
 
-        const savedBasket = await user.getFlag(this.flagScope, this.flagKey) || {};
+        const savedBasket = await user.getFlag(MODULE_ID, FLAGKEY_Basket) || {};
         return foundry.utils.mergeObject(this._getDefaultBasketState(), savedBasket);
     }
 
@@ -43,8 +44,8 @@ export class BasketService {
     async saveBasket(basket, userId = null) {
         const user = userId ? game.users.get(userId) : game.user;
         if (user) {
-            // 'this.flagScope' and 'this.flagKey' will now be correct.
-            return user.setFlag(this.flagScope, this.flagKey, basket);
+            // 'flagScope is MODULE_ID' and 'FLAGKEY_Basket' will now be correct.
+            return user.setFlag(MODULE_ID, FLAGKEY_Basket, basket);
         }
     }
     
@@ -197,5 +198,27 @@ export class BasketService {
             }
         }
         return `${totalNumeric}${highestPriorityCode}`;
+    }
+
+    /**
+     * Updates the selected contact in the user's basket.
+     * @param {string} contactUuid The UUID of the contact item to select.
+     */
+    async setSelectedContact(contactUuid) {
+        const basket = await this.getBasket();
+        basket.selectedContactUuid = contactUuid;
+        // No need to recalculate totals, just save the change.
+        await this.saveBasket(basket);
+    }
+
+    /**
+     * Updates the shop actor associated with the user's basket.
+     * This is typically the owner of the shop or the actor linked to a contact.
+     * @param {string} actorUuid The UUID of the shop actor.
+     */
+    async setShopActor(actorUuid) {
+        const basket = await this.getBasket();
+        basket.shopActorUuid = actorUuid;
+        await this.saveBasket(basket);
     }
 }

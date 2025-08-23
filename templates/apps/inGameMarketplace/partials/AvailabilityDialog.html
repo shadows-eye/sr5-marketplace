@@ -40,7 +40,7 @@
 
         {{else}}
             {{!-- VIEW 1: The initial state, just a single button to start the process --}}
-            <button type="button" data-action="showAvailabilityDialog">
+            <button type="button" data-action="showAvailabilityDialog" data-basket-uuid="{{basket.basketUUID}}">
                 <i class="fas fa-dice-d6"></i> Test Availability for Entire Order
             </button>
         {{/if}}

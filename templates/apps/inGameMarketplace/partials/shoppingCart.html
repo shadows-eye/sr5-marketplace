@@ -20,10 +20,10 @@
                 {{#if (gt this.itemQuantity 1)}}{{this.itemQuantity}}{{else}}&mdash;{{/if}}
             </div>
             <div class="basket-item item-quantity">
-                <i class="fa-solid fa-circle-plus sr5-marketplace plus" title="Increase Quantity" data-action="increaseQuantity"></i>
+                <i class="fa-solid fa-circle-plus  market-plus" title="Increase Quantity" data-action="increaseQuantity"></i>
                 <span>{{this.buyQuantity}}</span>
                 {{#if (gt this.buyQuantity 1)}}
-                    <i class="fa-solid fa-circle-minus sr5-marketplace minus" title="Decrease Quantity" data-action="decreaseQuantity"></i>
+                    <i class="fa-solid fa-circle-minus market-minus" title="Decrease Quantity" data-action="decreaseQuantity"></i>
                 {{/if}}
             </div>
             <div class="basket-item item-rating">
@@ -59,18 +59,22 @@
         <div class="actor-contact-grid">
         <h3 class="grid-header">{{localize "SR5.Marketplace.selectContact"}}</h3>
         {{#each contacts}}
-            
             <div class="contact-card {{#if this.isSelected}}selected{{/if}}">
 
-                
                 <input type="checkbox" id="contact-toggle-{{this._id}}" class="contact-toggle-checkbox">
 
-                <div class="contact-card-visible" data-action="select-contact" data-contact-uuid="{{this.uuid}}">
-                    <img src="{{this.img}}" alt="{{this.name}}" class="contact-image"/>
+                <div class="contact-card-visible">
+                    <img 
+                        src="{{this.img}}" 
+                        alt="{{this.name}}" 
+                        class="contact-image" 
+                        data-action="selectContact" 
+                        data-contact-uuid="{{this.uuid}}"
+                        title="Click to Select/Deselect Contact"
+                    />
                     <span class="contact-name">{{this.name}}</span>
                     
-                    
-                    <label for="contact-toggle-{{this._id}}" class="contact-expand-toggle">
+                    <label for="contact-toggle-{{this._id}}" class="contact-expand-toggle" title="Toggle Details">
                         <i class="fas fa-chevron-down"></i>
                     </label>
                 </div>
@@ -84,12 +88,11 @@
         {{else}}
             <p class="hint-text grid-span-all">{{purchasingActor.name}} has no contacts.</p>
         {{/each}}
-</div>
+    </div>
     </div>
     <hr class="marketplace-settings-hr">
     {{!-- Availability Test Area --}}
-    {{> "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html" currentTestUI=currentTestUI rollResult=rollResult modifierGroups=modifierGroups purchasingActor=purchasingActor 
-    }}
+    {{> "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html" currentTestUI=currentTestUI rollResult=rollResult modifierGroups=modifierGroups purchasingActor=purchasingActor }}
 
     <div class="basket-actions">
         <button id="send-request-button" class="send-request-button" data-action="sendRequest">{{localize 'SR5.Marketplace.SendRequest'}}</button>

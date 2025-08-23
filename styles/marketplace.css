@@ -434,7 +434,28 @@ select#item-type-selector option {
 .actor-funds{ grid-row-start: 2; }
 .actor-link-wrapper{ object-fit: contain; width: 60px; grid-row-start: 2; }
 .contact-cards-container { display: grid; grid-template-columns: repeat(5, 5em) auto; }
-.contact-card{ object-fit: contain; width: 4em; }
+.contact-card{ 
+    object-fit: contain;
+}
+
+/* For LIGHT mode, we use a dark, vibrant yellow border */
+.sr5-marketplace.theme-light .contact-card.selected {
+    border: 2px solid var(--color-yellow-dark);
+    padding: 2px;
+    box-shadow: 0 0 8px var(--color-yellow-dark); /* Adds a subtle glow for better visibility */
+}
+
+/* For DARK mode, we use a bright, vibrant yellow border */
+.sr5-marketplace.theme-dark .contact-card.selected {
+    border: 2px solid var(--color-yellow-base);
+    padding: 2px;
+    box-shadow: 0 0 8px var(--color-yellow-base); /* Adds a subtle glow for better visibility */
+}
+
+.shopping-cart-container{
+    padding-right: 0.4em;
+}
+
 
 /* --------------------------------------
    7. Buttons & Icons
@@ -456,8 +477,18 @@ select#item-type-selector option {
     color: var(--color-red-dark); 
     border-color: var(--color-red-dark); 
 }
-.fa-circle-minus { color: var(--color-red-bright); cursor: pointer; }
-.fa-circle-plus { color: var(--color-green-base); cursor: pointer; }
+.fa-circle-minus.market-minus { 
+    color: var(--color-red-bright); 
+    cursor: pointer; 
+}
+.fa-circle-plus.market-plus { 
+    color: var(--color-green-base); 
+    cursor: pointer; 
+}
+.remove-from-basket-btn {
+    border: none;
+    background: none;
+}
 .fa-trash { color: var(--color-red-dark); }
 .sr5-marketplace-yen { color: var(--color-red-bright); }
 .fa-circle-star, .sr5-marketplace-karma { color: var(--color-yellow-base); }
@@ -670,28 +701,31 @@ hr.marketplace-settings-hr {
     height: 18px;
 }
 
+/*-- Contact Card and Details --*/
+
+.contact-image {
+    cursor: pointer; /* Add pointer cursor to show the image is clickable */
+}
+
 .contact-toggle-checkbox {
-    /* Hide the actual checkbox */
+    /* Hide the actual checkbox from view */
     display: none;
+}
+
+.contact-details {
+    /* CRITICAL: Details are hidden by default */
+    display: none;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color-medium);
 }
 
 .contact-expand-toggle {
     cursor: pointer;
-    padding: 5px;
-    border-radius: 50%;
-    transition: transform 0.3s ease, background-color 0.2s ease;
+    transition: transform 0.3s ease;
 }
 
-.contact-expand-toggle:hover {
-    background-color: var(--color-white-transparent-05);
-}
-
-/* When the hidden checkbox is checked, rotate the arrow in the label */
-.contact-toggle-checkbox:checked + .contact-card-visible .contact-expand-toggle {
-    transform: rotate(180deg);
-}
-
-/* When the hidden checkbox is checked, show the .contact-details div that follows */
+/* When the hidden checkbox is checked, show the .contact-details div */
 .contact-toggle-checkbox:checked ~ .contact-details {
     display: block;
 }

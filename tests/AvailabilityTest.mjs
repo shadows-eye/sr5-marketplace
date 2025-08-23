@@ -116,42 +116,44 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
     }
 
     prepareBaseValues() {
-        // Call parent first to apply system-wide modifiers like wounds
+    // Call parent first to apply system-wide modifiers
         super.prepareBaseValues();
 
         if (this.actor) {
             const skillId = this.data.selectedSkill || 'negotiation';
             const attributeId = this.data.selectedAttribute || 'charisma';
-            const skill = this.actor.system.skills.active[skillId];
-            const attribute = this.actor.system.attributes[attributeId];
-            const charisma = this.actor.system.attributes.charisma;
+
+            const skill = this.actor.system.skills.active[skillId];         // Your log shows this has skill.value but an empty skill.label
+            const attribute = this.actor.system.attributes[attributeId]; // Your log shows this has attribute.value but an empty attribute.label
             const modifier = this.data.action.modifier || 0;
 
-            if (!skill || !charisma) {
-                console.error(`Marketplace | Actor is missing required skill or attribute.`);
+            if (!skill || !attribute) {
+                console.error(`Marketplace | Actor is missing required skill ('${skillId}') or attribute ('${attributeId}').`);
                 return;
             }
 
-            // --- CORRECTED LOCALIZATION LOGIC ---
-            // 1. Get the official localization key from the system's configuration.
-            const skillLocKey = CONFIG.SR5.activeSkills[skillId];
-        
-            const charismaLocKey = CONFIG.SR5.attributes[attribute]
+            // --- THE FIX ---
+            // 1. Since .label is empty, we get the official localization key from the system's configuration.
+            const skillLocKey = CONFIG.SR5.activeSkills[skillId]; 
+            const attributeLocKey = `FIELDS.attributes.${attributeId}.label`;
+            console.log(skillLocKey, attributeLocKey);
 
-            // 2. Localize these keys to get the final, human-readable strings.
+
+            // 2. We localize these keys to get the final, human-readable strings.
             const skillLabel = game.i18n.localize(skillLocKey);
-            const charismaLabel = game.i18n.localize(charismaLocKey);
+            const attributeLabel = game.i18n.localize(attributeLocKey);
+            console.log(skillLabel, attributeLabel);
             
-            // Set the test's limit and ensure the threshold is 0
+            // Set the rest of the test's data
             this.data.threshold.base = 0;
             this.data.limit.base = this.actor.system.limits.social.value;
             
             const pool = new DialogList(this.data.pool.mod);
             pool.clear();
             
-            // 3. Use the correctly translated labels when building the pool display.
+            // 3. We use the correctly translated labels when building the pool display.
             pool.addPart(skillLabel, skill.value);
-            pool.addPart(charismaLabel, charisma.value);
+            pool.addPart(attributeLabel, attribute.value);
 
             if (modifier !== 0) {
                 const modifierLabel = game.i18n.localize('SR5.Labels.Action.Modifiers');
