@@ -1,17 +1,64 @@
 import { BasketService } from "./basketService.mjs";
+import { MODULE_ID, FLAGKEY_Basket } from "../lib/constants.mjs";
 
 export class PurchaseService {
-    static get flagScope() { return "sr5-marketplace"; }
-    static get flagKey() { return "basket"; }
+
+    /**
+     * A robust helper to get and validate a user's basket flag.
+     * If the flag is malformed, it can be reset.
+     * @param {string} userId The user ID.
+     * @param {object} [options]
+     * @param {boolean} [options.resetInvalid=false] Whether to delete an invalid flag.
+     * @returns {Promise<object|null>} The valid basket object or null.
+     * @private
+     */
+    static async _validateAndGetBasket(userId, {resetInvalid = false} = {}) {
+        const user = game.users.get(userId);
+        if (!user) return null;
+
+        let basket = user.getFlag(MODULE_ID, FLAGKEY_Basket);
+
+        // Check for the essential arrays. If they don't exist, the flag is invalid.
+        if (!basket || !Array.isArray(basket.shoppingCartItems) || !Array.isArray(basket.orderReviewItems)) {
+            console.warn(`Marketplace | Invalid or missing basket flag for user ${user.name}.`);
+            if (resetInvalid) {
+                await user.unsetFlag(MODULE_ID, FLAGKEY_Basket);
+                console.log(`Marketplace | Reset invalid basket flag for user ${user.name}.`);
+            }
+            return null;
+        }
+        
+        const basketService = new BasketService();
+        // Ensure the basket has all default properties.
+        return foundry.utils.mergeObject(basketService._getDefaultBasketState(), basket);
+    }
 
     static getPendingRequestCount() {
         if (!game.user.isGM) return 0;
         return game.users.reduce((count, user) => {
-            const basket = user.getFlag(this.flagScope, this.flagKey);
+            const basket = user.getFlag(MODULE_ID, FLAGKEY_Basket);
             return count + (basket?.orderReviewItems?.length || 0);
         }, 0);
     }
 
+    static async getAllPendingRequests() {
+        if (!game.user.isGM) return [];
+        const allPendingRequests = [];
+        for (const user of game.users) {
+            const basketState = user.getFlag(MODULE_ID, FLAGKEY_Basket);
+            if (basketState?.orderReviewItems?.length > 0) {
+                for (const request of basketState.orderReviewItems) {
+                    const actor = request.createdForActor ? await fromUuid(request.createdForActor) : null;
+                    allPendingRequests.push({ 
+                        user: user.toJSON(), 
+                        basket: request, 
+                        actor: actor ? { name: actor.name, nuyen: actor.system.nuyen, karma: actor.system.karma.value } : null 
+                    });
+                }
+            }
+        }
+        return allPendingRequests;
+    }
     static async submitForReview(userId) {
         const user = game.users.get(userId);
         if (!user) return;
@@ -49,7 +96,7 @@ export class PurchaseService {
         game.socket.emit("module.sr5-marketplace", { type: "new_request", senderId: user.id, basketUUID: newRequest.basketUUID });
     }
 
-    static async updatePendingItem(userId, basketUUID, basketItemId, property, value) {
+    static async updatePendingItem(userId, basketUUID, basketItemUuid, property, value) {
         const user = game.users.get(userId);
         if (!user) return;
         const basketService = new BasketService();
@@ -62,7 +109,7 @@ export class PurchaseService {
         const request = basket.orderReviewItems.find(r => r.basketUUID === basketUUID);
         if (!request) return;
 
-        const item = request.basketItems.find(i => i.basketItemId === basketItemId);
+        const item = request.basketItems.find(i => i.basketItemUuid === basketItemUuid);
         if (!item) return;
 
         foundry.utils.setProperty(item, property, value);
@@ -71,61 +118,80 @@ export class PurchaseService {
         // --- FIX: Pass userId as an argument instead of using .call() ---
         await basketService.saveBasket(basket, userId);
     }
+    /**
+     * Rejects and removes a single item from a pending request.
+     */
+    static async rejectItemFromRequest(userId, basketUUID, basketItemUuid) {
+        const basket = await this._validateAndGetBasket(userId);
+        if (!basket) return;
+
+        const request = basket.orderReviewItems.find(r => r.basketUUID === basketUUID);
+        if (!request) return;
+        
+        const initialItemCount = request.basketItems.length;
+        request.basketItems = request.basketItems.filter(i => i.basketItemUuid !== basketItemUuid);
+
+        if (request.basketItems.length < initialItemCount) {
+            this._recalculateTotals(request);
+            const basketService = new BasketService();
+            await basketService.saveBasket(basket, userId);
+            ui.notifications.info("Item rejected and removed from the request.");
+        }
+    }
 
     static async rejectBasket(userId, basketUUID) {
-        const user = game.users.get(userId);
-        if (!user) return;
-        const basketService = new BasketService();
-        
-        // --- FIX: Pass userId as an argument instead of using .call() ---
-        const basket = await basketService.getBasket(userId);
+        // Use the validator to ensure we have a good basket object.
+        const basket = await this._validateAndGetBasket(userId, {resetInvalid: true});
         if (!basket?.orderReviewItems) return;
 
         const initialCount = basket.orderReviewItems.length;
         basket.orderReviewItems = basket.orderReviewItems.filter(r => r.basketUUID !== basketUUID);
 
         if (basket.orderReviewItems.length < initialCount) {
-            // --- FIX: Pass userId as an argument instead of using .call() ---
+            const basketService = new BasketService();
             await basketService.saveBasket(basket, userId);
-            ui.notifications.warn(`Purchase request for ${user.name} has been rejected.`);
+            ui.notifications.warn(`Purchase request for user ${game.users.get(userId)?.name} has been rejected.`);
             game.socket.emit("module.sr5-marketplace", { type: "request_resolved", userId });
         }
     }
 
     static async approveBasket(userId, basketUUID) {
-        const user = game.users.get(userId);
-        if (!user) return;
         const basketService = new BasketService();
+        const CurrentUserId = await game.user.id;
+        const basket = await basketService.getBasket(CurrentUserId);
+        if (!basket) return;
+
+        const requestIndex = basket.orderReviewItems.findIndex(r => r.basketUUID === basketUUID);
+        if (requestIndex === -1) return;
         
-        // --- FIX: Pass userId as an argument instead of using .call() ---
-        const basket = await basketService.getBasket(userId);
-        const requestIndex = basket.orderReviewItems?.findIndex(r => r.basketUUID === basketUUID);
-        if (requestIndex === undefined || requestIndex === -1) return;
+        const requestToProcess = basket.orderReviewItems[requestIndex];
 
-        const [requestToProcess] = basket.orderReviewItems.splice(requestIndex, 1);
-        const actor = await fromUuid(requestToProcess.createdForActor);
-        if (!actor) {
-            ui.notifications.error(`Could not find the actor associated with this request.`);
-            return;
-        }
-
-        const success = await this.directPurchase(actor, requestToProcess);
+        // --- REFACTOR ---
+        // Call directPurchase with just the request data. It will find the actor itself.
+        const success = await this.directPurchase(requestToProcess);
+        
         if (success) {
-            // After a successful purchase, save the updated basket (with the request removed).
-            // --- FIX: Pass userId as an argument instead of using .call() ---
+            basket.orderReviewItems.splice(requestIndex, 1);
             await basketService.saveBasket(basket, userId);
-            ui.notifications.info(`Purchase approved for ${user.name}.`);
+            ui.notifications.info(`Purchase approved for user ${game.users.get(userId)?.name}.`);
             game.socket.emit("module.sr5-marketplace", { type: "request_resolved", userId });
-        } else {
-            // If the purchase fails (e.g., not enough funds), add the request back to the queue.
-            basket.orderReviewItems.splice(requestIndex, 0, requestToProcess);
-            await basketService.saveBasket(basket, userId);
         }
     }
 
-    static async directPurchase(actor, basket) {
-        if (!actor || !basket || !basket.basketItems) return false;
+    /**
+     * This function is now self-contained. It receives basket data
+     * and is responsible for finding the actor and completing the purchase.
+     * @param {object} basket The basket or request object containing purchase data.
+     */
+    static async directPurchase(basket) {
+        if (!basket || !basket.basketItems) return false;
         
+        const actor = await fromUuid(basket.createdForActor);
+        if (!actor) {
+            ui.notifications.error("Could not find the actor associated with this purchase.");
+            return false;
+        }
+
         this._recalculateTotals(basket);
         
         const currentNuyen = actor.system.nuyen;
@@ -144,16 +210,25 @@ export class PurchaseService {
 
         const itemsToCreate = [];
         for (const basketItem of basket.basketItems) {
-            const sourceItem = await fromUuid(basketItem.basketItemUuid);
+            const sourceItem = await fromUuid(basketItem.itemUuid);
             if (sourceItem) {
                 const itemData = sourceItem.toObject();
-                // Ensure quantity is handled correctly, especially for items that don't stack.
                 itemData.system.quantity = basketItem.buyQuantity * (itemData.system.quantity || 1);
-                itemData.system.technology.rating = basketItem.selectedRating;
-                itemData.system.technology.cost = basketItem.cost;
+
+                // --- FIX: Only set technology properties if the technology object exists. ---
+                // This prevents errors for items like qualities, spells, and actions.
+                if ( "technology" in itemData.system ) {
+                    itemData.system.technology.rating = basketItem.selectedRating;
+                    itemData.system.technology.cost = basketItem.cost;
+                }
+                
                 itemsToCreate.push(itemData);
             }
         }
+        // --- DEBUG LOG: Inspect the data being passed to the creation method ---
+        console.log("Marketplace | Attempting to create the following items on actor:", actor.name, itemsToCreate);
+        // --- END DEBUG LOG ---
+
         if (itemsToCreate.length > 0) {
             await actor.createEmbeddedDocuments("Item", itemsToCreate);
             ui.notifications.info(`Added ${itemsToCreate.length} new item(s) to ${actor.name}'s inventory.`);

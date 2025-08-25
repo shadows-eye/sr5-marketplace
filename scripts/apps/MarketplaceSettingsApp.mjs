@@ -1,7 +1,8 @@
+import { MARKETPLACE_SETTINGS_TEMPLATE } from '../lib/constants.mjs';
+
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 // Define the template path as a constant to ensure consistency.
-export const MARKETPLACE_SETTINGS_TEMPLATE = "modules/sr5-marketplace/templates/apps/marketplace-settings/marketplace-settings.html";
 
 export class MarketplaceSettingsApp extends HandlebarsApplicationMixin(ApplicationV2) {
 

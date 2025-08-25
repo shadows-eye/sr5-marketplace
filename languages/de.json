@@ -30,6 +30,25 @@
                     "hint": "Diese Einstellung ermöglicht es Ihnen, die Karma Kosten für komplexe Formen festzulegen. Wenn auf true gesetzt, werden die Karma Kosten anstelle der Essenzkosten verwendet."
                 }
             },
+            "Source": {
+                "Global": "Laden"
+            },
+            "Shop": {
+                "SheetName": "Geschäft",
+                "ItemName": "Name",
+                "ItemRating": "Stufe",
+                "SellPrice": "Verkaufspreis",
+                "BuyPrice": "Kaufpreis",
+                "BuyTime": "Kaufzeit",
+                "Comment": "Kommentar",
+                "Employees": "Mitarbeiter",
+                "OneUuidPerLine": "Eine UUID pro Zeile",
+                "Discount": "Rabatt",
+                "Fee": "Gebühr",
+                "Modifier": "Preisänderung",
+                "ConnectionUuid": "Verbindung",
+                "Owner": "Geschäftsinhaber"
+            },
             "funds": "Budget",
             "YourOrderHasArrived": "Deine Bestellung ist angekommen!",
             "OrderReviewItems": "Artikel Liste für die Überprüfung",
@@ -95,16 +114,22 @@
                     "duration": "Dauer",
                     "damage": "Schaden",
                     "drain": "Entzug"
-                }
+                },
+                "mount-point": "Rüstplatz",
+                "slots": "Mod Punkte"
             },
             "Tab": {
                 "Shop": "Laden",
                 "OrderReview": "Überprf."
             },
             "ItemTypes": {
+                "AllItems": "Alle Artikel",
                 "RangedWeapons": "Fernkampfwaffen",
                 "MeleeWeapons": "Nahkampfwaffen",
                 "Modifications": "Modifikationen",
+                "WeaponMods": "Waffenmodifikationen",
+                "ArmorMods": "Rüstungmodifikationen",
+                "VehicleMods": "Fahrzeugmodifikationen",
                 "Armor": "Rüstung",
                 "Bioware": "Bioware",
                 "Cyberware": "Cyberware",
@@ -120,6 +145,142 @@
                 "Qualitys": "Vor/Nachteile",
                 "complex_form": "Komplexe Formen"
             }
+        }
+    },
+    "TYPES": {
+        "Actor": {
+            "sr5-marketplace.shop": "Marktplatz Laden"
+        }
+    },
+    "FIELDS": {
+            "description": {
+                "label": "Beschreibung"
+            },
+            "attributes": {
+                "label": "Attribute",
+                "body": { "label": "" },
+                "agility": { "label": "Agility" },
+                "reaction": { "label": "Reaction" },
+                "strength": { "label": "Strength" },
+                "willpower": { "label": "Willpower" },
+                "logic": { "label": "Logic" },
+                "intuition": { "label": "Intuition" },
+                "charisma": { "label": "Charisma" },
+                "magic": { "label": "Magic" },
+                "resonance": { "label": "Resonance" },
+                "essence": { "label": "Essence" },
+                "edge": { "label": "Edge" },
+                "initiation": { "label": "Initiation" },
+                "submersion": { "label": "Submersion" }
+            },
+            "Skill": {
+                    "AeronauticsMechanic": "Luftfahrtmechanik",
+                    "Alchemy": "Alchemie",
+                    "AnimalHandling": "Tierführung",
+                    "Arcana": "Arkana",
+                    "Archery": "Projektilwaffen",
+                    "Armorer": "Waffenbau",
+                    "Artificing": "Fokusherstellung",
+                    "Artisan": "Handwerk",
+                    "Assensing": "Askennen",
+                    "AstralCombat": "Astralkampf",
+                    "Automatics": "Schnellfeuerwaffen",
+                    "AutomotiveMechanic": "Fahrzeugmechanik",
+                    "Banishing": "Verbannen",
+                    "Binding": "Binden",
+                    "Biotechnology": "Biotechnologie",
+                    "Blades": "Klingenwaffen",
+                    "Chemistry": "Chemie",
+                    "Clubs": "Knüppel",
+                    "Compiling": "Kompilieren",
+                    "Computer": "Computer",
+                    "Con": "Überreden",
+                    "Counterspelling": "Antimagie",
+                    "Cybercombat": "Matrixkampf",
+                    "Cybertechnology": "Kybernetik",
+                    "Decompiling": "Dekompilieren",
+                    "Demolitions": "Sprengstoffe",
+                    "Disenchanting": "Entzaubern",
+                    "Disguise": "Verkleiden",
+                    "Diving": "Tauchen",
+                    "ElectronicWarfare": "Elektronische Kriegsführung",
+                    "EscapeArtist": "Entfesseln",
+                    "Etiquette": "Gebräuche",
+                    "ExoticMelee": "Exotische Nahkampfwaffe",
+                    "ExoticRange": "Exotische Fernkampfwaffe",
+                    "FirstAid": "Erste Hilfe",
+                    "Flight": "Fliegen",
+                    "Forgery": "Fälschen",
+                    "FreeFall": "Freifall",
+                    "Gunnery": "Geschütze",
+                    "Gymnastics": "Akrobatik",
+                    "Hacking": "Hacking",
+                    "Hardware": "Hardware",
+                    "HeavyWeapons": "Schwere Waffen",
+                    "Impersonation": "Verkörperung",
+                    "IndustrialMechanic": "Industriemechanik",
+                    "Instruction": "Unterricht",
+                    "Intimidation": "Einschüchtern",
+                    "Leadership": "Führung",
+                    "Locksmith": "Schlosser",
+                    "Longarms": "Gewehre",
+                    "Medicine": "Medizin",
+                    "NauticalMechanic": "Seefahrtmechanik",
+                    "Navigation": "Navigation",
+                    "Negotiation": "Verhandlung",
+                    "Palming": "Fingerfertigkeit",
+                    "Perception": "Wahrnehmung",
+                    "Performance": "Vorführung",
+                    "PilotAerospace": "Raumfahrzeuge",
+                    "PilotAircraft": "Flugzeuge",
+                    "PilotExoticVehicle": "Exotisches Fahrzeug",
+                    "PilotGroundCraft": "Bodenfahrzeuge",
+                    "PilotWalker": "Läufer",
+                    "PilotWaterCraft": "Schiffe",
+                    "Pistols": "Pistolen",
+                    "Registering": "Registrieren",
+                    "RitualSpellcasting": "Ritualzauberei",
+                    "Running": "Laufen",
+                    "Skill": "Fertigkeit",
+                    "Skills": "Fertigkeiten",
+                    "Sneaking": "Schleichen",
+                    "Software": "Software",
+                    "Spellcasting": "Spruchzauberei",
+                    "Summoning": "Herbeirufen",
+                    "Survival": "Survival",
+                    "Swimming": "Schwimmen",
+                    "Teamwork": {
+                        "Glitched": "Glitched",
+                        "ParticipantActor": "Choose actor",
+                        "RollIt": "Roll it",
+                        "TakePart": "Take part"
+                    },
+                    "ThrowingWeapons": "Wurfwaffen",
+                    "Tracking": "Spurenlesen",
+                    "UnarmedCombat": "Waffenloser Kampf"
+                },
+            "skills": {
+                "label": "Skills"
+            },
+            "limits": {
+                "label": "Limits",
+                "social": { "label": "Social Limit" },
+                "mental": { "label": "Mental Limit" },
+                "physical": { "label": "Physical Limit" },
+                "astral": { "label": "Astral Limit" }
+            },
+            "track": {
+                "label": "Condition Tracks",
+                "physical": { "label": "Physical" },
+                "stun": { "label": "Stun" }
+            },
+            "movement": {
+                "label": "Movement",
+                "walk": { "label": "Walk" },
+                "run": { "label": "Run" }
+            },
+            "nuyen": { "label": "Nuyen" },
+            "karma": { "label": "Karma" 
         }
     }
 }

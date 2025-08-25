@@ -30,6 +30,48 @@
                     "hint": "This setting allows you to set the karma cost for complex forms. Value will be used to pay for Complex Forms."
                 }
             },
+            "Source": {
+                "Global": "Shop"
+            },
+            "Shop": {
+                "SheetName": "Shop",
+                "Inventory": "Inventory",
+                "ItemName": "Name",
+                "ItemRating": "Rating",
+                "SellPrice": "Sell Price",
+                "BuyPrice": "Buy Price",
+                "BuyTime": "Buy Time",
+                "Comment": "Comment",
+                "Employees": "Employees",
+                "OneUuidPerLine": "One UUID per line",
+                "Discount": "Discount",
+                "Fee": "Fee",
+                "Modifier": "Price Modifier",
+                "ConnectionUuid": "Connection",
+                "Owner": "Shop Owner",
+                "FIELDS": {
+                    "owner": {
+                        "label": "Shop Owner",
+                        "hint": "The UUID of the Actor who owns this shop."
+                    },
+                    "employees": {
+                        "label": "Employees",
+                        "hint": "A list of Actor UUIDs who are employees of this shop."
+                    },
+                    "connection": {
+                        "label": "Connection",
+                        "hint": "The UUID of an Item that represents the shop's primary Connection."
+                    },
+                    "modifierValue": {
+                        "label": "Modifier Value",
+                        "hint": "The numeric value of the fee or discount."
+                    },
+                    "modifierType": {
+                        "label": "Modifier Type",
+                        "hint": "Whether the modifier is a fee or a discount."
+                    }
+                }
+            },
             "funds": "Funds",
             "YourOrderHasArrived": "Your order has arrived!",
             "OrderReviewItems": "Items List for the Review",
@@ -94,16 +136,22 @@
                     "duration": "Duration",
                     "damage": "Damage",
                     "drain": "Drain"
-                }
+                },
+                "mount-point": "Mount Point",
+                "slots": "Slots"
             },
             "Tab": {
                 "Shop": "Shop",
                 "OrderReview": "Order Review"
             },
             "ItemTypes": {
+                "AllItems": "All Items",
                 "RangedWeapons": "Ranged Weapons",
                 "MeleeWeapons": "Melee Weapons",
                 "Modifications": "Modifications",
+                "WeaponMods": "Weapon Mods",
+                "ArmorMods": "Armor Mods",
+                "VehicleMods": "Vehicle Mods",
                 "Armor": "Armor",
                 "Bioware": "Bioware",
                 "Cyberware": "Cyberware",
@@ -120,6 +168,143 @@
                 "complex_form": "Complex Forms"
             }
         }
-    }
+    },
+    "TYPES":{
+        "Actor": {
+            "sr5-marketplace.shop": "Marketplace Shop"
+        }
+    },
+    "FIELDS": {
+            "description": {
+                "label": "Description"
+            },
+            "attributes": {
+                "label": "Attributes",
+                "body": { "label": "Body" },
+                "agility": { "label": "Agility" },
+                "reaction": { "label": "Reaction" },
+                "strength": { "label": "Strength" },
+                "willpower": { "label": "Willpower" },
+                "logic": { "label": "Logic" },
+                "intuition": { "label": "Intuition" },
+                "charisma": { "label": "Charisma" },
+                "magic": { "label": "Magic" },
+                "resonance": { "label": "Resonance" },
+                "essence": { "label": "Essence" },
+                "edge": { "label": "Edge" },
+                "initiation": { "label": "Initiation" },
+                "submersion": { "label": "Submersion" }
+            },
+            "Skill": {
+                    "AeronauticsMechanic": "Luftfahrtmechanik",
+                    "Alchemy": "Alchemie",
+                    "AnimalHandling": "Tierführung",
+                    "Arcana": "Arkana",
+                    "Archery": "Projektilwaffen",
+                    "Armorer": "Waffenbau",
+                    "Artificing": "Fokusherstellung",
+                    "Artisan": "Handwerk",
+                    "Assensing": "Askennen",
+                    "AstralCombat": "Astralkampf",
+                    "Automatics": "Schnellfeuerwaffen",
+                    "AutomotiveMechanic": "Fahrzeugmechanik",
+                    "Banishing": "Verbannen",
+                    "Binding": "Binden",
+                    "Biotechnology": "Biotechnologie",
+                    "Blades": "Klingenwaffen",
+                    "Chemistry": "Chemie",
+                    "Clubs": "Knüppel",
+                    "Compiling": "Kompilieren",
+                    "Computer": "Computer",
+                    "Con": "Überreden",
+                    "Counterspelling": "Antimagie",
+                    "Cybercombat": "Matrixkampf",
+                    "Cybertechnology": "Kybernetik",
+                    "Decompiling": "Dekompilieren",
+                    "Demolitions": "Sprengstoffe",
+                    "Disenchanting": "Entzaubern",
+                    "Disguise": "Verkleiden",
+                    "Diving": "Tauchen",
+                    "ElectronicWarfare": "Elektronische Kriegsführung",
+                    "EscapeArtist": "Entfesseln",
+                    "Etiquette": "Gebräuche",
+                    "ExoticMelee": "Exotische Nahkampfwaffe",
+                    "ExoticRange": "Exotische Fernkampfwaffe",
+                    "FirstAid": "Erste Hilfe",
+                    "Flight": "Fliegen",
+                    "Forgery": "Fälschen",
+                    "FreeFall": "Freifall",
+                    "Gunnery": "Geschütze",
+                    "Gymnastics": "Akrobatik",
+                    "Hacking": "Hacking",
+                    "Hardware": "Hardware",
+                    "HeavyWeapons": "Schwere Waffen",
+                    "Impersonation": "Verkörperung",
+                    "IndustrialMechanic": "Industriemechanik",
+                    "Instruction": "Unterricht",
+                    "Intimidation": "Einschüchtern",
+                    "Leadership": "Führung",
+                    "Locksmith": "Schlosser",
+                    "Longarms": "Gewehre",
+                    "Medicine": "Medizin",
+                    "NauticalMechanic": "Seefahrtmechanik",
+                    "Navigation": "Navigation",
+                    "Negotiation": "Verhandlung",
+                    "Palming": "Fingerfertigkeit",
+                    "Perception": "Wahrnehmung",
+                    "Performance": "Vorführung",
+                    "PilotAerospace": "Raumfahrzeuge",
+                    "PilotAircraft": "Flugzeuge",
+                    "PilotExoticVehicle": "Exotisches Fahrzeug",
+                    "PilotGroundCraft": "Bodenfahrzeuge",
+                    "PilotWalker": "Läufer",
+                    "PilotWaterCraft": "Schiffe",
+                    "Pistols": "Pistolen",
+                    "Registering": "Registrieren",
+                    "RitualSpellcasting": "Ritualzauberei",
+                    "Running": "Laufen",
+                    "Skill": "Fertigkeit",
+                    "Skills": "Fertigkeiten",
+                    "Sneaking": "Schleichen",
+                    "Software": "Software",
+                    "Spellcasting": "Spruchzauberei",
+                    "Summoning": "Herbeirufen",
+                    "Survival": "Survival",
+                    "Swimming": "Schwimmen",
+                    "Teamwork": {
+                        "Glitched": "Glitched",
+                        "ParticipantActor": "Choose actor",
+                        "RollIt": "Roll it",
+                        "TakePart": "Take part"
+                    },
+                    "ThrowingWeapons": "Wurfwaffen",
+                    "Tracking": "Spurenlesen",
+                    "UnarmedCombat": "Waffenloser Kampf"
+                },
+            "skills": {
+                "label": "Skills"
+            },
+            "limits": {
+                "label": "Limits",
+                "social": { "label": "Social Limit" },
+                "mental": { "label": "Mental Limit" },
+                "physical": { "label": "Physical Limit" },
+                "astral": { "label": "Astral Limit" }
+            },
+            "track": {
+                "label": "Condition Tracks",
+                "physical": { "label": "Physical" },
+                "stun": { "label": "Stun" }
+            },
+            "movement": {
+                "label": "Movement",
+                "walk": { "label": "Walk" },
+                "run": { "label": "Run" }
+            },
+            "nuyen": { "label": "Nuyen" },
+            "karma": { "label": "Karma" 
+        }
+    }  
+    
 }
 

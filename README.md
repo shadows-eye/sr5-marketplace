@@ -1,6 +1,6 @@
 <!--- Downloads @ Latest Badge -->
 <!--- replace <user>/<repo> with your shadows-eye/sr5-marketplace -->
-<!--- ![Latest Release Download Count](https://img.shields.io/github/downloads/<user>/<repo>/latest/module.zip) -->
+<!--- ![Latest Release Download Count](https://img.shields.io/github/downloads/shadows-eye/sr5-marketplace/latest/module.zip) -->
 
 <!--- Forge Bazaar Install % Badge -->
 <!--- replace <your-module-name> with the `name` in your manifest -->

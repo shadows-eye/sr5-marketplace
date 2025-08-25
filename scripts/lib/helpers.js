@@ -9,7 +9,16 @@ export const registerBasicHelpers = () => {
         console.log(`Type not found: ${type}`);
         return options.inverse(this);
     });
-
+    Handlebars.registerHelper('capitalize', function (string) {
+        if (typeof string !== 'string' || !string) return '';
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    });
+    Handlebars.registerHelper('hasKeys', function (obj, options) {
+        if (obj && Object.keys(obj).length > 0) {
+            return options.fn(this);
+        }
+        return options.inverse(this);
+    });
     // Add other helpers here if needed  
     Handlebars.registerHelper('for', function (from, to, options) {
             let accum = '';
@@ -111,5 +120,14 @@ export const registerBasicHelpers = () => {
     Handlebars.registerHelper('capitalizeFirst', function (string) {
         if (typeof string !== 'string' || !string) return '';
         return string.charAt(0).toUpperCase() + string.slice(1);
+    });
+
+    Handlebars.registerHelper("jsonParse", function(jsonString) {
+        try {
+            return JSON.parse(jsonString);
+        } catch (e) {
+            console.error("Failed to parse JSON string in Handlebars:", jsonString);
+            return {}; // Return an empty object on failure
+        }
     });
 };

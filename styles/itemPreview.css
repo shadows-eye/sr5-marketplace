@@ -1,0 +1,32 @@
+h1.sr5-marketplace-sr5Type-header {
+    background: linear-gradient(to right, #55101e 30%, rgba(85, 16, 30, 0) 100%);
+    border-bottom: none;
+}
+
+.ItemPreviewApp .window-header {
+    background: var(--color-red-darkest);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    max-height: 2em;
+}
+
+.ItemPreviewApp .window-header button.header-control[data-action="close"] {
+    min-width: unset !important;
+    min-height: unset !important;
+    max-width: 14px !important;
+    height: 14px !important;
+    padding: 0 !important;
+    font-size: 0 !important;
+    color: transparent;
+    background-image: var(--headerClose);
+    background-color: transparent;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    border: none;
+    transition: transform 0.2s ease-in-out;
+}
+
+.ItemPreviewApp .window-header .window-title{
+    border-bottom: none
+
+}

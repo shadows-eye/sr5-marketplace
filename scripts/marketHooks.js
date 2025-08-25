@@ -1,11 +1,12 @@
-// Import required helpers
 // Import necessary classes and helpers
 import { inGameMarketplace } from "./apps/inGameMarketplace.mjs";
 import { registerBasicHelpers } from "./lib/helpers.js";
 import ItemDataServices from './services/ItemDataServices.mjs';
 import { MarketplaceSettingsApp } from "./apps/MarketplaceSettingsApp.mjs";
 import { PurchaseService } from "./services/purchaseService.mjs";
-
+import { defineShopActorClass } from '../models/actor/shopActor.mjs';
+import { ShopActorSheet } from '../sheets/ShopActorSheet.mjs';
+import { MODULE_ID, SHOP_ACTOR_TYPE} from "./lib/constants.mjs";
 
 /**
  * Draws the notification badge on the scene control button.
@@ -42,17 +43,21 @@ const initializeTemplates = () => {
     console.log("SR5 Marketplace | Registering templates and helpers...");
     registerBasicHelpers();
 
-    loadTemplates([
+    foundry.applications.handlebars.loadTemplates([
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/orderReview.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/marketplaceUserActor.html",
-        "modules/sr5-marketplace/templates/item/libraryItem.html",
+        "modules/sr5-marketplace/templates/documents/items/libraryItem.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.html",
         "modules/sr5-marketplace/templates/apps/marketplace-settings/marketplace-settings.html",
-        "modules/sr5-marketplace/templates/apps/marketplace-settings/partials/settings-card.html"
+        "modules/sr5-marketplace/templates/apps/marketplace-settings/partials/settings-card.html",
+        "modules/sr5-marketplace/templates/documents/actor/partials/shop-header.html",
+        "modules/sr5-marketplace/templates/documents/actor/partials/shop-skills.html",
+        "modules/sr5-marketplace/templates/documents/actor/partials/shop-inventory.html",
+        "modules/sr5-marketplace/templates/documents/items/itemPreviewApp/item-preview.html",
+        "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html"
     ]);
 };
-
 // Initialize module settings
 const initializeSettings = () => {
     console.log("SR5 Marketplace | Initializing settings...");
@@ -216,17 +221,19 @@ Hooks.once("init", () => {
     console.log("SR5 Marketplace | Initializing module...");
     initializeTemplates();
     initializeSettings();
+    // Register the custom ShopActor class
+    defineShopActorClass();
+
+    // Register the custom ShopActorSheet
+    foundry.documents.collections.Actors.registerSheet("sr5-marketplace", ShopActorSheet, {
+        types: [SHOP_ACTOR_TYPE],
+        makeDefault: true,
+        label: "SR5.Marketplace.Shop.SheetName"
+    });
+
+
     game.sr5marketplace = { itemData: new ItemDataServices() };
 
-    Hooks.on("updateUser", (user, changes) => {
-        // This now correctly checks for changes to the 'basket' flag.
-        if (game.user.isGM && foundry.utils.hasProperty(changes, "flags.sr5-marketplace.basket")) {
-            // A relevant flag changed, so just ask the UI to redraw the controls.
-            setTimeout(() => {
-                if (ui.controls) ui.controls.render(true);
-            }, 250);
-        }
-    });
 });
 
 /**
@@ -236,7 +243,6 @@ Hooks.once("init", () => {
 Hooks.on("ready", async () => {
     console.log("SR5 Marketplace | Module is ready!");
     await game.sr5marketplace.itemData.initialize();
-
     if (game.user.isGM) {
         game.socket.on("module.sr5-marketplace", () => {
             // A real-time event was received. Trigger a re-draw after a short delay.
@@ -247,13 +253,28 @@ Hooks.on("ready", async () => {
         // On first load, render the controls to set the initial badge state.
         setTimeout(() => { if (ui.controls) ui.controls.render(true); }, 1000);
     }
+  const tests = await import('../utils/tests.mjs');
+    tests.registerTests();
 });
 
+/**
+ * A hook that runs when a user's data is updated.
+ * We use this to detect changes to a player's basket and update the GM's UI.
+ */
+Hooks.on("updateUser", (user, changes) => {
+    // This now correctly checks for changes to the 'basket' flag.
+    if (game.user.isGM && foundry.utils.hasProperty(changes, "flags.sr5-marketplace.basket")) {
+        // A relevant flag changed, so just ask the UI to redraw the controls.
+        setTimeout(() => {
+            if (ui.controls) ui.controls.render(true);
+        }, 250);
+    }
+});
 // Add a control button for opening the Marketplace
 Hooks.on("getSceneControlButtons", (controls) => {
   const tokenControls = controls["tokens"];
   if (!tokenControls) return;
-  if (tokenControls.tools["sr5-marketplace"]) return;
+  if (tokenControls.tools[MODULE_ID]) return;
 
   tokenControls.tools["sr5-marketplace"] = {
     name: "sr5-marketplace",
@@ -276,33 +297,36 @@ Hooks.on("renderSceneControls", (app, html) => {
     drawBadge(html);
 });
 
-Hooks.on("preCreateItem", async (item, data, options, userId) => {
-    if (item.type === "sr5-marketplace.basket") {
-        console.log("SR5 Marketplace | Ensuring BasketModel is applied...");
+/**
+ * A hook that runs when the canvas is ready.
+ * We use this to add a global listener for double-clicking on Shop Actor tokens.
+ */
+Hooks.on("canvasReady", () => {
+  // A flag to prevent attaching the listener multiple times.
+  if (canvas.marketplaceListenerAttached) return;
 
-        // Assign an ID if missing (before Foundry processes it)
-        if (!data._id) {
-            data._id = foundry.utils.randomID();
-            console.warn(`SR5 Marketplace | Assigned new ID: ${data._id}`);
-        }
+  // Listen for the browser's native 'dblclick' event on the main canvas element.
+  canvas.app.view.addEventListener('dblclick', event => {
+    // We only care about interactions when the token select tool is active.
+    if ( game.activeTool !== "select" ) return;
 
-        // Apply default values from the model
-        const defaultData = {
-            description: { long: "Default long description", short: "Default short description" },
-            marketbasket: { 
-                basketQuantity: 1, 
-                basketPrice: 0, 
-                basketAvailability: "0", 
-                basketItems: [] 
-            },
-            totalCost: 0,
-            totalEssence: 0,
-            totalKarma: 0
-        };
+    // Get the token currently under the user's mouse cursor.
+    const hoveredToken = canvas.tokens.hover;
 
-        // Merge default data into the new item
-        foundry.utils.mergeObject(data, { system: defaultData }, { overwrite: false });
+    // If there is a hovered token and its actor is a shop, we take over.
+    if ( hoveredToken?.actor?.type === "sr5-marketplace.shop" ) {
+      // Stop the event from propagating to prevent Foundry's default behavior.
+      event.preventDefault();
+      event.stopPropagation();
 
-        console.log("SR5 Marketplace | Default BasketModel schema applied.");
+      console.log(`Marketplace | Intercepted double-click on Shop Actor: ${hoveredToken.name}`);
+
+      // Open the marketplace application, passing the shop's UUID as an option.
+      new inGameMarketplace({ shopActorUuid: hoveredToken.actor.uuid }).render(true);
     }
+  });
+
+  // Set the flag so this hook only runs once per canvas session.
+  canvas.marketplaceListenerAttached = true;
+  console.log("Marketplace | Double-click listener for shops is now active.");
 });

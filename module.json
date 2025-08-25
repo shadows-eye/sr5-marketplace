@@ -20,8 +20,10 @@
     "systems": [
       {
         "id": "shadowrun5e",
-        "type": "system",
-        "compatibility": {}
+        "type": "required",
+        "compatibility": {
+          "minimum": "0.27.0"
+        }
       }
     ]
   },
@@ -32,9 +34,9 @@
   "esmodules": [
     "scripts/marketHooks.js",
     "scripts/services/actorItemServices.mjs",
-    "scripts/services/itemDataServices.mjs",
-    "main.mjs"
+    "scripts/services/itemDataServices.mjs"
   ],
+
   "includes": [
     "./assets/**",
     "./packs/**",
@@ -60,6 +62,9 @@
   "documentTypes": {
     "Item": {
       "basket": {}
+    },
+    "Actor": {
+      "shop": {}
     }
   },
   "url": "#{URL}#",
