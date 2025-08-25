@@ -1,8 +1,7 @@
 import { BasketService } from "./basketService.mjs";
+import { MODULE_ID, FLAGKEY_Basket } from "../lib/constants.mjs";
 
 export class PurchaseService {
-    static get flagScope() { return "sr5-marketplace"; }
-    static get flagKey() { return "basket"; }
 
     /**
      * A robust helper to get and validate a user's basket flag.
@@ -17,13 +16,13 @@ export class PurchaseService {
         const user = game.users.get(userId);
         if (!user) return null;
 
-        let basket = user.getFlag(this.flagScope, this.flagKey);
+        let basket = user.getFlag(MODULE_ID, FLAGKEY_Basket);
 
         // Check for the essential arrays. If they don't exist, the flag is invalid.
         if (!basket || !Array.isArray(basket.shoppingCartItems) || !Array.isArray(basket.orderReviewItems)) {
             console.warn(`Marketplace | Invalid or missing basket flag for user ${user.name}.`);
             if (resetInvalid) {
-                await user.unsetFlag(this.flagScope, this.flagKey);
+                await user.unsetFlag(MODULE_ID, FLAGKEY_Basket);
                 console.log(`Marketplace | Reset invalid basket flag for user ${user.name}.`);
             }
             return null;
@@ -37,7 +36,7 @@ export class PurchaseService {
     static getPendingRequestCount() {
         if (!game.user.isGM) return 0;
         return game.users.reduce((count, user) => {
-            const basket = user.getFlag(this.flagScope, this.flagKey);
+            const basket = user.getFlag(MODULE_ID, FLAGKEY_Basket);
             return count + (basket?.orderReviewItems?.length || 0);
         }, 0);
     }
@@ -46,7 +45,7 @@ export class PurchaseService {
         if (!game.user.isGM) return [];
         const allPendingRequests = [];
         for (const user of game.users) {
-            const basketState = user.getFlag(this.flagScope, this.flagKey);
+            const basketState = user.getFlag(MODULE_ID, FLAGKEY_Basket);
             if (basketState?.orderReviewItems?.length > 0) {
                 for (const request of basketState.orderReviewItems) {
                     const actor = request.createdForActor ? await fromUuid(request.createdForActor) : null;
@@ -158,7 +157,8 @@ export class PurchaseService {
 
     static async approveBasket(userId, basketUUID) {
         const basketService = new BasketService();
-        const basket = await basketService.getBasket(userId);
+        const CurrentUserId = await game.user.id;
+        const basket = await basketService.getBasket(CurrentUserId);
         if (!basket) return;
 
         const requestIndex = basket.orderReviewItems.findIndex(r => r.basketUUID === basketUUID);

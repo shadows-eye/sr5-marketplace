@@ -1,44 +1,74 @@
-import { MODULE_ID, CurrentUserId, FLAG_KEY_AppTest } from '../lib/constants.mjs';
+import { MODULE_ID, FLAG_KEY_AppTest } from '../lib/constants.mjs';
 
 /**
  * @summary Manages the state of in-app tests via a user flag.
+ * @description This service handles creating, reading, updating, and deleting test
+ * state objects stored in a user's flags, ensuring a persistent, multi-step
+ * test workflow within the application.
  */
 export class AppTestFlagService {
 
     /**
-     * Gets the entire test state object from the current user's flag.
-     * @returns {Promise<object>}
+     * Gets the entire test state object from a specific user's flag.
+     * @param {string} [userId] - The ID of the user to get the flag from.
+     * @returns {Promise<object>} The test state object, or an empty object if not found.
      */
-    static async getState() {
-        return game.user.getFlag(MODULE_ID, FLAG_KEY_AppTest) || {};
+    static async getState(userId) {
+        const user = game.users.get(userId);
+        if (!user) return {};
+        return user.getFlag(MODULE_ID, FLAG_KEY_AppTest) || {};
     }
 
     /**
-     * Saves the entire test state object to the current user's flag.
-     * @param {object} state The state object to save.
+     * Saves the entire test state object to a specific user's flag.
+     * @param {object} state - The state object to save.
+     * @param {string|null} [userId=null] - The ID of the user to save the flag for. Defaults to the current user.
      */
-    static async saveState(state) {
-        return game.user.setFlag(MODULE_ID, FLAG_KEY_AppTest, state);
+    static async saveState(state, userId = null) {
+        // 1. Determine the target user. Use the provided userId or default to the current game user.
+        const user = userId ? game.users.get(userId) : game.user;
+
+        // 2. Ensure a valid user was found before proceeding.
+        if (!user) {
+            console.error(`AppTestFlagService | Could not find user with ID "${userId}" to save flag.`);
+            return;
+        }
+        
+        // 3. Log the action and set the flag for the resolved user.
+        console.log(`Saving flag '${FLAG_KEY_AppTest}' for user ${user.name}:`, state);
+        return user.setFlag(MODULE_ID, FLAG_KEY_AppTest, state);
     }
 
     /**
-     * Creates a new test entry in the flag with initial data.
+     * Creates a new test entry in the flag. Before creating, it removes any old,
+     * unresolved tests for the same set of items to prevent duplicates.
      * @param {object} initialData - The data to initialize the test with.
      * @returns {Promise<string>} The unique ID of the newly created dialog state.
      */
     static async createTest(initialData) {
         const dialogId = foundry.utils.randomID();
-        const currentState = await this.getState();
-        
+        let currentState = await this.getState();
+
+        // --- NEW: Clean up old, unresolved tests before creating a new one ---
+        const oldTestIds = Object.keys(currentState).filter(id => {
+            const test = currentState[id];
+            // Find any previous tests that are unresolved
+            return !test.resolved;
+        });
+
+        // If we found any old tests, remove them.
+        for (const id of oldTestIds) {
+            delete currentState[id];
+        }
+
+        // Add the new test to the state
         currentState[dialogId] = {
             id: dialogId,
+            status: 'initial',
             ...initialData,
-            result: null, // Initialize result as null
-            //status set on initialData
-            resistResult: null, // Initialize resistResult as null
-            teamWork: null, // Initialize teamWork as null
-            extendedTest: null, // Initialize extendedTest as null
-            resolved: false, // Initialize resolved as false can be set to true ending the Teamwork or Exstended Test
+            result: null,
+            resistResult: null,
+            resolved: false
         };
 
         await this.saveState(currentState);
@@ -48,34 +78,23 @@ export class AppTestFlagService {
     /**
      * Updates an existing test entry with a result object.
      * @param {string} dialogId - The ID of the test state to update.
-     * @param {object} result - The result object from the executed test.
+     * @param {object} resultData - The result object from the executed test.
      */
-    static async updateTestWithResult(dialogId, result) {
+    static async updateTestWithResult(dialogId, resultData) {
         const currentState = await this.getState();
         if (currentState[dialogId]) {
-            currentState[dialogId].result = result;
-            currentState[dialogId].resistResult= resistResult ;
-            currentState[dialogId].extendedTest = extendedTest || null;
-            currentState[dialogId].resolved = resolved || false;
-            currentState[dialogId].teamWork = teamworkResult || null;
+            currentState[dialogId].result = resultData;
             currentState[dialogId].status = 'result'; // Update status
             await this.saveState(currentState);
         }
     }
 
     /**
-     * Clears a specific test or all tests from the flag.
-     * @param {string|null} [dialogId=null] - The ID of the test to clear. If null, clears all.
+     * Clears all test data from the current user's flag.
      */
-    static async clearTest(dialogId = null) {
-        if (dialogId) {
-            const currentState = await this.getState();
-            delete currentState[dialogId];
-            await this.saveState(currentState);
-        } else {
-            // Unset the entire flag for the current user
-            await game.user.unsetFlag(MODULE_ID, FLAG_KEY_AppTest);
-        }
+    static async clearAllTests() {
+        console.log("Clearing all test state flags for current user."); // LOGGING
+        return game.user.unsetFlag(MODULE_ID, FLAG_KEY_AppTest);
     }
 }
 

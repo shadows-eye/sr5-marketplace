@@ -121,4 +121,13 @@ export const registerBasicHelpers = () => {
         if (typeof string !== 'string' || !string) return '';
         return string.charAt(0).toUpperCase() + string.slice(1);
     });
+
+    Handlebars.registerHelper("jsonParse", function(jsonString) {
+        try {
+            return JSON.parse(jsonString);
+        } catch (e) {
+            console.error("Failed to parse JSON string in Handlebars:", jsonString);
+            return {}; // Return an empty object on failure
+        }
+    });
 };

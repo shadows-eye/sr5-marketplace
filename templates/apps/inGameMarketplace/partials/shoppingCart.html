@@ -92,7 +92,7 @@
     </div>
     <hr class="marketplace-settings-hr">
     {{!-- Availability Test Area --}}
-    {{> "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html" currentTestUI=currentTestUI rollResult=rollResult modifierGroups=modifierGroups purchasingActor=purchasingActor }}
+    {{> "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html" . }}
 
     <div class="basket-actions">
         <button id="send-request-button" class="send-request-button" data-action="sendRequest">{{localize 'SR5.Marketplace.SendRequest'}}</button>

@@ -5,7 +5,7 @@ import { BasketService } from '../services/basketService.mjs';
 import { PurchaseService } from '../services/purchaseService.mjs';
 import { SearchService } from '../services/searchTag.mjs';
 import { AppTestFlagService } from '../services/AppTestFlagService.mjs';
-import{ CurrentUserId, MODULE_ID } from '../lib/constants.mjs';
+import{ MODULE_ID } from '../lib/constants.mjs';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -144,6 +144,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
     /** @override */
     async _prepareContext(options = {}) {
+        const AppUserId = await game.user.id;
+        //console.log(AppUserId);
         const selectedActorUuid = game.user.getFlag(FLAG_SCOPE, FLAG_KEY_SELECTED_ACTOR);
         let actorForDisplay = selectedActorUuid ? await fromUuid(selectedActorUuid) : null;
         if (!actorForDisplay) {
@@ -163,6 +165,15 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const itemsByType = this.itemData.itemsByType;
         const basket = await this.basketService.getBasket();
         const basketItemCount = basket.shoppingCartItems.length;
+        //Initial Dialog States
+        const testStates = await AppTestFlagService.getState(AppUserId);
+        console.log("LOG: Loaded testStates from flag:", testStates);
+        // Find the ID of the first test that isn't fully resolved. This makes the UI persistent.
+        const unresolvedTestId = Object.keys(testStates).find(id => !testStates[id].resolved);
+        this.activeDialogId = unresolvedTestId || null;
+        console.log(`LOG: Active Dialog ID for this render is: ${this.activeDialogId}`);
+
+        const activeTestState = this.activeDialogId ? testStates[this.activeDialogId] : null;
 
         const tabs = [{ 
             id: "shop", label: game.i18n.localize("SR5.Marketplace.Tab.Shop"), icon: "fa-store",
@@ -188,8 +199,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             this.tabGroups.main = "shop";
         }
         
-         let tabContent;
-    let partialContext = { basket, isGM: game.user.isGM, purchasingActor: purchasingActorData };
+    let tabContent;
+    let partialContext = { basket, isGM: game.user.isGM, purchasingActor: purchasingActorData, activeTestState };
     const render = foundry.applications.handlebars.renderTemplate;
 
     switch (this.tabGroups.main) {
@@ -206,38 +217,28 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                         });
                 }
 
-                // --- NEW FLAG-BASED WORKFLOW ---
-                const testStates = await AppTestFlagService.getState(CurrentUserId);
-                const activeTestState = this.activeDialogId ? testStates[this.activeDialogId] : null;
-                
-                partialContext.activeTestState = activeTestState;
-
-                if (activeTestState) {
-                    // Instantiate the builder with the test's unique ID.
-                    const builder = new AppDialogBuilder({ dialogId: this.activeDialogId });
-                    let dialogContext;
-                    console.log (activeTestState);
-                    if (activeTestState.status === 'initial') {
-                        // Pass the required UUIDs from the flag state directly into the build method.
-                        dialogContext = await builder.buildInitialDialogContext({
-                            actorUuid: activeTestState.actorUuid,
-                            itemUuids: activeTestState.itemUuids,
-                            connectionUuid: activeTestState.connectionUuid
-                        });
-
-                    } else if (activeTestState.status === 'result') {
-                        // The resist context method is self-contained and uses the dialogId
-                        // to load its own state, so it doesn't need arguments.
-                        dialogContext = await builder.buildResistDialogContext();
-                    }
-                    
-                    // Merge the specific dialog context into the main partial context
+                // --- CORRECTED FLAG-BASED WORKFLOW ---
+                if (activeTestState?.status === 'initial') {
+                    console.log("LOG: Building 'initial' dialog context...");
+                    const builder = new AppDialogBuilder(activeTestState);
+                    const dialogContext = await builder.buildInitialDialogContext({
+                        actorUuid: activeTestState.actorUuid,
+                        itemUuids: activeTestState.itemUuids,
+                        connectionUuid: activeTestState.connectionUuid
+                    });
                     if (dialogContext) {
                         foundry.utils.mergeObject(partialContext, dialogContext);
                     }
+                } else if (activeTestState?.status === 'result') {
+                    console.log("LOG: Building 'result' (resist) dialog context...");
+                    const builder = new AppDialogBuilder(activeTestState);
+                    const resistContext = await builder.buildResistDialogContext();
+                     if (resistContext) {
+                        foundry.utils.mergeObject(partialContext, resistContext);
+                    }
                 }
                 // --- END NEW FLAG-BASED WORKFLOW ---
-
+            console.log("LOG: Final context object passed to shoppingCart.html:", partialContext);
             tabContent = await render("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.html", partialContext);
             break;
         case "orderReview":
@@ -454,25 +455,23 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
      * @private
      */
     static async #onShowAvailabilityDialog(event, target) {
-        const basket = await this.basketService.getBasket();
+        console.log("%c--- Action: Show Availability Dialog ---", "color: green; font-weight: bold;");
+        const CurrentUserId = await game.user.id;
+        const basket = await this.basketService.getBasket(CurrentUserId);
         if (basket.shoppingCartItems.length === 0) {
             return ui.notifications.warn("Your shopping cart is empty.");
         }
 
-        // 1. Create the initial data payload that will be saved to the flag.
         const initialData = {
             actorUuid: this.purchasingActor?.uuid,
             itemUuids: basket.shoppingCartItems.map(i => i.itemUuid),
-            connectionUuid: basket.selectedContactUuid,
-            status: 'initial',
-
+            connectionUuid: basket.selectedContactUuid
         };
 
-        // 2. Create the test state in the flag. This sets status to 'initial' by default.
-        // The service returns the unique ID for this new test instance.
+        // Create the test record in the flag. This returns the new test's ID.
         this.activeDialogId = await AppTestFlagService.createTest(initialData);
+        console.log(`LOG: Created new test state with ID: ${this.activeDialogId}`);
         
-        // 3. Trigger a re-render. _prepareContext will now read the new flag state.
-        this.render(false);
+        this.render();
     }
 }
