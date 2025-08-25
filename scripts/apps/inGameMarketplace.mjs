@@ -86,8 +86,9 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 // TODO: rollResist: this.#onRollResist,
                 // TODO: runAvailabilityTest: this.#onRunAvailabilityTest,
                 showAvailabilityDialog: this.#onShowAvailabilityDialog,
-                selectContact: this.#onSelectContact
-
+                selectContact: this.#onSelectContact,
+                // TODO: applyModifier: this.#onApplyModifier,
+                // TODO: removeModifier: this.#onRemoveModifier,
             }
         });
     }

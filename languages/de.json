@@ -30,6 +30,10 @@
                     "hint": "Diese Einstellung ermöglicht es Ihnen, die Karma Kosten für komplexe Formen festzulegen. Wenn auf true gesetzt, werden die Karma Kosten anstelle der Essenzkosten verwendet."
                 }
             },
+            "Tests":{
+                "title": "Marketplace Tests",
+                "AvailabilityTest": "Verfügbarkeit Test"
+            },
             "Source": {
                 "Global": "Laden"
             },
@@ -144,6 +148,12 @@
                 "Actions": "Aktionen",
                 "Qualitys": "Vor/Nachteile",
                 "complex_form": "Komplexe Formen"
+            },
+            "Modifiers":{
+                "General":{
+                    "title": "Social Modifiers",
+                    "npcAttitudeFriendly": "The Test involved participants have a friendly attitude to each other"
+                }
             }
         }
     },

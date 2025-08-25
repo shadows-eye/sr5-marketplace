@@ -1,5 +1,4 @@
 <div class="roll-dialog-container">
-    <h3>{{localize "SR5.Marketplace.Availability"}} Test</h3>
     <div class="roll-dialog-content">
 
     {{!-- Check if an active test state exists in the context --}}
@@ -12,9 +11,11 @@
                 
                 {{!-- Actor & Test Info --}}
                 <div class="dialog-header">
-                    <div class="actor-info">
-                        <img src="{{actor.img}}" title="{{actor.name}}"/>
-                        <span>{{actor.name}}</span>
+                        <div class="actor-info">
+                        <div class="selectable-actor">
+                            <img src="{{actor.img}}" title="{{actor.name}}"/>
+                            <span>{{actor.name}}</span>
+                        </div>
                     </div>
                     {{!-- This area will be populated by your DialogList helper --}}
                     <div class="common-test"></div>
@@ -24,11 +25,11 @@
                 {{!-- Core Test Parameters --}}
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>{{localize "SR5.Labels.Availability"}}</label>
+                        <label>{{localize "SR5.Marketplace.Availability"}}</label>
                         <input type="text" name="availabilityStr" value="{{availabilityStr}}" readonly/>
                     </div>
                     <div class="form-group">
-                        <label>{{localize "SR5.Skill"}}</label>
+                        <label>{{localize "SR5.Skill.Skill"}}</label>
                         <select name="selectedSkill">
                             <option value="negotiation" selected>{{localize "SR5.Skill.Negotiation"}}</option>
                             <option value="etiquette">{{localize "SR5.Skill.Etiquette"}}</option>
@@ -39,9 +40,9 @@
                     <div class="form-group">
                         <label>{{localize "SR5.Attribute"}}</label>
                         <select name="selectedAttribute">
-                            <option value="charisma" selected>{{localize "SR5.Attributes.Charisma.long"}}</option>
-                            <option value="willpower">{{localize "SR5.Attributes.Willpower.long"}}</option>
-                            <option value="intuition">{{localize "SR5.Attributes.Intuition.long"}}</option>
+                            <option value="charisma" selected>{{localize "FIELDS.attributes.charisma.label"}}</option>
+                            <option value="willpower">{{localize "FIELDS.attributes.willpower.label"}}</option>
+                            <option value="intuition">{{localize "FIELDS.attributes.intuition.label"}}</option>
                         </select>
                     </div>
                 </div>
@@ -51,10 +52,10 @@
                 <div class="marketplace-modifiers-container">
                     {{#each modifierGroups as |group|}}
                         <fieldset class="modifier-group">
-                            <legend>{{localize group.title}}</legend>
+                            <legend>{{localize group.title}}</legend> <!--SR5.Marketplace.Modifiers.General.title-->
                             <div class="modifier-items-grid">
                                 {{#each group.items as |mod|}}
-                                    <label>{{localize mod.description}}</label>
+                                    <label>{{localize mod.description}}</label> <!--SR5.Marketplace.Modifiers.General.npcAttitudeFriendly-->
                                     {{#with (jsonParse mod.value) as |modData|}}
                                         <button type="button" class="modifier-button" data-action="applyModifier" data-modifier-value='{{mod.value}}'>
                                             {{#if (gt modData.value 0)}}+{{/if}}{{modData.value}}

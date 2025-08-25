@@ -30,6 +30,10 @@
                     "hint": "This setting allows you to set the karma cost for complex forms. Value will be used to pay for Complex Forms."
                 }
             },
+            "Tests":{
+                "title": "Marketplace Tests",
+                "AvailabilityTest": "Availability Test"
+            },
             "Source": {
                 "Global": "Shop"
             },
@@ -166,8 +170,14 @@
                 "Actions": "Actions",
                 "Qualitys": "Qualities",
                 "complex_form": "Complex Forms"
+            },
+            "Modifiers":{
+                "General":{
+                    "title": "Social Modifiers",
+                    "npcAttitudeFriendly": "The Test involved participants have a friendly attitude to each other"
+                }
             }
-        }
+    }
     },
     "TYPES":{
         "Actor": {
