@@ -665,8 +665,6 @@ hr.marketplace-settings-hr {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    max-height: 300px; /* Adjust as needed */
-    overflow-y: auto;
     padding: 5px;
 }
 

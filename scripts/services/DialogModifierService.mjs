@@ -67,16 +67,16 @@ export class DialogModifierService {
     /**
      * Gets a list of relevant modifier groups for a given test context.
      * @param {object} context - The context of the test.
-     * @param {string} context.selectedSkill - The skill ID (e.g., 'negotiation').
+     * @param {string} context.skill - The skill ID (e.g., 'negotiation').
      * @returns {ModifierGroup[]} An array of modifier groups to be rendered.
      */
-    static getModifiersForTest({ selectedSkill }) {
+    static getModifiersForTest({ skill }) {
         const db = this.#MODIFIER_DATABASE;
         const groups = [db.general]; // Always include general modifiers.
 
         // Add the skill-specific group if it exists in our database.
-        if (selectedSkill && db[selectedSkill]) {
-            groups.push(db[selectedSkill]);
+        if (skill && db[skill]) {
+            groups.push(db[skill]);
         }
 
         return groups;

@@ -30,19 +30,19 @@
                     </div>
                     <div class="form-group">
                         <label>{{localize "SR5.Skill.Skill"}}</label>
-                        <select name="selectedSkill">
-                            <option value="negotiation" selected>{{localize "SR5.Skill.Negotiation"}}</option>
-                            <option value="etiquette">{{localize "SR5.Skill.Etiquette"}}</option>
-                            <option value="con">{{localize "SR5.Skill.Con"}}</option>
-                            <option value="intimidation">{{localize "SR5.Skill.Intimidation"}}</option>
+                        <select name="skill" data-action="changeTestParameter">
+                            <option value="negotiation" {{#if (eq activeTestState.skill "negotiation")}}selected{{/if}}>{{localize "SR5.Skill.Negotiation"}}</option>
+                            <option value="etiquette" {{#if (eq activeTestState.skill "etiquette")}}selected{{/if}}>{{localize "SR5.Skill.Etiquette"}}</option>
+                            <option value="con" {{#if (eq activeTestState.skill "con")}}selected{{/if}}>{{localize "SR5.Skill.Con"}}</option>
+                            <option value="intimidation" {{#if (eq activeTestState.skill "intimidation")}}selected{{/if}}>{{localize "SR5.Skill.Intimidation"}}</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>{{localize "SR5.Attribute"}}</label>
-                        <select name="selectedAttribute">
-                            <option value="charisma" selected>{{localize "FIELDS.attributes.charisma.label"}}</option>
-                            <option value="willpower">{{localize "FIELDS.attributes.willpower.label"}}</option>
-                            <option value="intuition">{{localize "FIELDS.attributes.intuition.label"}}</option>
+                        <select name="attribute" data-action="changeTestParameter">
+                            <option value="charisma" {{#if (eq activeTestState.attribute "charisma")}}selected{{/if}}>{{localize "FIELDS.attributes.charisma.label"}}</option>
+                            <option value="willpower" {{#if (eq activeTestState.attribute "willpower")}}selected{{/if}}>{{localize "FIELDS.attributes.willpower.label"}}</option>
+                            <option value="intuition" {{#if (eq activeTestState.attribute "intuition")}}selected{{/if}}>{{localize "FIELDS.attributes.intuition.label"}}</option>
                         </select>
                     </div>
                 </div>

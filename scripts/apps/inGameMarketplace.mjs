@@ -26,10 +26,12 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             currentTheme // Add the detected theme here
         ];
         super(options);
-        this.activeTestState = null;
+        
         this.activeDialogId = null;
-        this.selectedSkill = null;
-        this.selectedAttribute = null;
+        this.activeTestState = this.activeDialogId ? testStates[this.activeDialogId] : null;
+        //this.itemData = new ItemDataServices();
+        this.skill = null;
+        this.attribute = null;
         this.modifier = null;
         this.itemData = game.sr5marketplace.itemData;
         this.basketService = new BasketService();
@@ -85,7 +87,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 rejectItem: this.#onApproveRejectItem,
                 // DIALOG Changes
                 applyModifier: this.#onApplyModifier, //adds and removes
-                changeTestParameter: this.#onChangeTestParameter, //changes what skill or attribute is used
+                changeTestParameter: this._onChangeTestParameter, //changes what skill or attribute is used
                 //changeCategory: this.onChangeCategory, Is moved to _onRender
                 updateRating: this.#onUpdateRating,
                 updatePendingItem: this.#onUpdatePendingItem,
@@ -131,6 +133,16 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             }
         } else {
             this.searchService = null;
+        }
+        // If we are on the shopping cart tab, find the dropdowns and attach listeners.
+        if (this.tabGroups.main === "shoppingCart") {
+            const parameterSelects = this.element.querySelectorAll('select[data-action="changeTestParameter"]');
+            for ( const select of parameterSelects ) {
+                select.addEventListener("change", (event) => {
+                    // We manually call the handler, passing the correct `this` context.
+                    this._onChangeTestParameter(event, select);
+                });
+            }
         }
     }
 
@@ -183,8 +195,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const activeTestState = this.activeDialogId ? testStates[this.activeDialogId] : null;
         // Only perform the merge if an active test state actually exists.
         if(activeTestState){
-            this.selectedSkill = activeTestState.skill;
-            this.selectedAttribute = activeTestState.attribute;
+            this.skill = activeTestState.skill;
+            this.attribute = activeTestState.attribute;
             this.modifier = activeTestState.modifier;
             this.activeTestState = activeTestState;
         }
@@ -510,7 +522,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         await AppTestFlagService.toggleModifier(this.activeTestState.id, modData);
 
         // 4. Re-render the UI to reflect the change.
-        this.render();
+        this.render(false);
     }
 
     /**
@@ -521,7 +533,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
      * @param {HTMLSelectElement} target - The select element that was changed.
      * @private
      */
-    static async #onChangeTestParameter(event, target) {
+    async _onChangeTestParameter(event, target) {
         if (!this.activeTestState) return;
 
         const key = target.name;   // This will be "skill" or "attribute"
@@ -529,11 +541,11 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         
         // Update the state on the instance for immediate feedback
         this.activeTestState[key] = value;
-        console.log(activeTestState)
+        console.log(this.activeTestState)
         // Save the change to the flag for persistence
         await AppTestFlagService.updateTest(this.activeTestState.id, { [key]: value });
         
         // Re-render the UI
-        this.render();
+        this.render(false);
     }
 }

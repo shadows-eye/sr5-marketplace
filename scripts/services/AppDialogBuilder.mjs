@@ -55,7 +55,8 @@ export class AppDialogBuilder {
      */
     async loadState() {
         if (!this.dialogId) return false;
-        const allState = await AppTestFlagService.getState();
+        let userId = await game.user.id;
+        const allState = await AppTestFlagService.readState(userId);
         this.testState = allState[this.dialogId];
         return !!this.testState;
     }
@@ -82,7 +83,7 @@ export class AppDialogBuilder {
         }, 0);
         
         const modifierGroups = DialogModifierService.getModifiersForTest({ 
-            selectedSkill: this.testState?.skill || 'negotiation' });
+            skill: this.testState?.skill });
 
         return {
             dialogId: this.dialogId, // Pass the ID to the template
