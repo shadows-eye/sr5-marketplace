@@ -240,8 +240,8 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
             return null;
         }
 
-        // We must import the TestCreator to build the test programmatically.
-        const { TestCreator } = await import('/systems/shadowrun5e/src/module/tests/TestCreator.js');
+        // No Longer needed just left for information where it comes from
+        //const { TestCreator } = await import('/systems/shadowrun5e/src/module/tests/TestCreator.js');
 
         // 1. Describe the test using the parameters from the app.
         const action = {
@@ -268,6 +268,6 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
         await test.execute();
 
         // 5. Return the clean result data.
-        return test.toJSON();
+        return test.toJSON(); //Might not need this as toJSON?
     }
 }

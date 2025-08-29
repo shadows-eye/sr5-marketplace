@@ -28,6 +28,9 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         super(options);
         this.activeTestState = null;
         this.activeDialogId = null;
+        this.selectedSkill = null;
+        this.selectedAttribute = null;
+        this.modifier = null;
         this.itemData = game.sr5marketplace.itemData;
         this.basketService = new BasketService();
         this.tabGroups = { main: "shop" };
@@ -80,6 +83,9 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 rejectAll: this.#onApproveRejectAll,
                 approveItem: this.#onApproveRejectItem,
                 rejectItem: this.#onApproveRejectItem,
+                // DIALOG Changes
+                applyModifier: this.#onApplyModifier, //adds and removes
+                changeTestParameter: this.#onChangeTestParameter, //changes what skill or attribute is used
                 //changeCategory: this.onChangeCategory, Is moved to _onRender
                 updateRating: this.#onUpdateRating,
                 updatePendingItem: this.#onUpdatePendingItem,
@@ -87,7 +93,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 // TODO: runAvailabilityTest: this.#onRunAvailabilityTest,
                 showAvailabilityDialog: this.#onShowAvailabilityDialog,
                 selectContact: this.#onSelectContact,
-                // TODO: applyModifier: this.#onApplyModifier,
+                applyModifier: this.#onApplyModifier,
                 // TODO: removeModifier: this.#onRemoveModifier,
             }
         });
@@ -167,14 +173,21 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const basket = await this.basketService.getBasket();
         const basketItemCount = basket.shoppingCartItems.length;
         //Initial Dialog States
-        const testStates = await AppTestFlagService.getState(AppUserId);
-        console.log("LOG: Loaded testStates from flag:", testStates);
-        // Find the ID of the first test that isn't fully resolved. This makes the UI persistent.
-        const unresolvedTestId = Object.keys(testStates).find(id => !testStates[id].resolved);
-        this.activeDialogId = unresolvedTestId || null;
-        console.log(`LOG: Active Dialog ID for this render is: ${this.activeDialogId}`);
+        const testStates = await AppTestFlagService.readState(AppUserId);
+        console.log(testStates);
+        const unresolvedTest = Object.values(testStates).find(t => !t.resolved);
+        this.activeDialogId = unresolvedTest?.id || null;
+        console.log(this.activeDialogId);
+        // Use the variable we just defined, not a separate one
 
         const activeTestState = this.activeDialogId ? testStates[this.activeDialogId] : null;
+        // Only perform the merge if an active test state actually exists.
+        if(activeTestState){
+            this.selectedSkill = activeTestState.skill;
+            this.selectedAttribute = activeTestState.attribute;
+            this.modifier = activeTestState.modifier;
+            this.activeTestState = activeTestState;
+        }
 
         const tabs = [{ 
             id: "shop", label: game.i18n.localize("SR5.Marketplace.Tab.Shop"), icon: "fa-store",
@@ -199,7 +212,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         if (this.tabGroups.main === "shoppingCart" && basketItemCount === 0) {
             this.tabGroups.main = "shop";
         }
-        
+    
     let tabContent;
     let partialContext = { basket, isGM: game.user.isGM, purchasingActor: purchasingActorData, activeTestState };
     const render = foundry.applications.handlebars.renderTemplate;
@@ -225,7 +238,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                     const dialogContext = await builder.buildInitialDialogContext({
                         actorUuid: activeTestState.actorUuid,
                         itemUuids: activeTestState.itemUuids,
-                        connectionUuid: activeTestState.connectionUuid
+                        connectionUuid: activeTestState.connectionUuid,
                     });
                     if (dialogContext) {
                         foundry.utils.mergeObject(partialContext, dialogContext);
@@ -474,5 +487,68 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         console.log(`LOG: Created new test state with ID: ${this.activeDialogId}`);
         
         this.render();
+    }
+
+    /**
+     * @summary Toggles a situational modifier for the active test.
+     * @description Reads modifier data from the clicked button. Toggles the modifier's
+     * presence in the test state's `modifier` array, saves the change to the flag,
+     * and re-renders the UI.
+     * @private
+     */
+    static async #onApplyModifier(event, target) {
+        // 1. Ensure there is an active test state on the application instance.
+        if (!this.activeTestState) return;
+
+        // 2. Get the modifier's data from the button's data attributes.
+        const modData = {
+            label: target.dataset.label,
+            value: parseInt(target.dataset.value, 10)
+        };
+        const dialogId = this.activeTestState.id;
+        console.log(dialogId)
+        
+        // 3. Get the current list of applied modifiers.
+        const applied = this.activeTestState.modifier ?? [];
+
+        // 4. Check if a modifier with the same label already exists.
+        const existingIndex = applied.findIndex(m => m.label === modData.label);
+
+        if (existingIndex > -1) {
+            // If it exists, remove it.
+            applied.splice(existingIndex, 1);
+        } else {
+            // If it doesn't exist, add it.
+            applied.push(modData);
+        }
+
+        // 5. Update the state on the instance and save the changes to the flag.
+        this.activeTestState.modifier = applied;
+        await AppTestFlagService.updateTest(dialogId, { modifier: applied });
+
+        // 6. Re-render the UI to reflect the change.
+        this.render(false);
+}
+
+    /**
+     * @summary Handles changes to the skill or attribute dropdowns.
+     * @description Updates the active test state in the flag when a new skill or attribute is
+     * selected from a dropdown, then re-renders the application to show the updated context
+     * (e.g., different skill-specific modifiers).
+     * @param {Event} event - The triggering change event.
+     * @param {HTMLSelectElement} target - The select element that was changed.
+     * @private
+     */
+    static async #onChangeTestParameter(event, target) {
+        if (!this.activeTestState) return;
+
+        const key = target.name;   // e.g., "skill" or "attribute"
+        const value = target.value; 
+        
+        this.activeTestState[key] = value;
+        console.log(this.activeTestState)
+        await AppTestFlagService.updateTest(this.activeTestState.id, { [key]: value });
+        
+        this.render(false);
     }
 }

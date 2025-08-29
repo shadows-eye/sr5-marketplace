@@ -67,13 +67,13 @@ export class AppDialogBuilder {
      * @param {string[]} initialParams.itemUuids - The item UUIDs for the test.
      * @returns {Promise<object|null>} The context for the Handlebars template.
      */
-    async buildInitialDialogContext({ actorUuid, itemUuids }) {
+    async buildInitialDialogContext({ actorUuid, itemUuids, ...rest }) {
         const actor = await this.constructor.getActor(actorUuid);
         const items = (await Promise.all(itemUuids.map(uuid => this.constructor.getItem(uuid)))).filter(i => i);
         if (!actor || items.length === 0) return null;
 
         // Create a new test state in the user's flag
-        this.dialogId = await AppTestFlagService.createTest({ actorUuid, itemUuids });
+        //this.dialogId = await AppTestFlagService.createTest({ actorUuid, itemUuids });
         
         // Calculate combined availability (this logic can be expanded for your house rules)
         const totalAvailabilityRating = items.reduce((total, item) => {
@@ -81,14 +81,15 @@ export class AppDialogBuilder {
             return total + (parseInt(availStr.match(/^(\d+)/)?.[1] || "0", 10));
         }, 0);
         
-        const modifierGroups = DialogModifierService.getModifiersForTest({ selectedSkill: 'negotiation' });
+        const modifierGroups = DialogModifierService.getModifiersForTest({ 
+            selectedSkill: this.testState?.skill || 'negotiation' });
 
         return {
             dialogId: this.dialogId, // Pass the ID to the template
             actor,
             availabilityStr: `${totalAvailabilityRating}R`,
             modifierGroups,
-            context: 'initial' // A flag to tell the template which view to render
+            ...rest
         };
     }
 

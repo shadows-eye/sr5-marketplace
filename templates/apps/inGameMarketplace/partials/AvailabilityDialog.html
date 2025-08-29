@@ -56,11 +56,12 @@
                             <div class="modifier-items-grid">
                                 {{#each group.items as |mod|}}
                                     <label>{{localize mod.description}}</label> <!--SR5.Marketplace.Modifiers.General.npcAttitudeFriendly-->
-                                    {{#with (jsonParse mod.value) as |modData|}}
-                                        <button type="button" class="modifier-button" data-action="applyModifier" data-modifier-value='{{mod.value}}'>
-                                            {{#if (gt modData.value 0)}}+{{/if}}{{modData.value}}
-                                        </button>
-                                    {{/with}}
+                                    <button type="button" class="modifier-button" 
+                                            data-action="applyModifier" 
+                                            data-label="{{mod.label}}" 
+                                            data-value="{{mod.value}}">
+                                        {{#if (gt mod.value 0)}}+{{/if}}{{mod.value}}
+                                    </button>
                                 {{/each}}
                             </div>
                         </fieldset>
