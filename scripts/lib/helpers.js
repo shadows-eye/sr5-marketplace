@@ -130,4 +130,8 @@ export const registerBasicHelpers = () => {
             return {}; // Return an empty object on failure
         }
     });
+    Handlebars.registerHelper("isModifierActive", function(label, modifiersArray) {
+        if (!Array.isArray(modifiersArray)) return false;
+        return modifiersArray.some(mod => mod.label === label);
+    });
 };

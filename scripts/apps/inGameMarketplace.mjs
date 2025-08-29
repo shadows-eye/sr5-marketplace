@@ -231,7 +231,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                         });
                 }
 
-                // --- CORRECTED FLAG-BASED WORKFLOW ---
+                // --- FLAG-BASED WORKFLOW ---
                 if (activeTestState?.status === 'initial') {
                     console.log("LOG: Building 'initial' dialog context...");
                     const builder = new AppDialogBuilder(activeTestState);
@@ -491,9 +491,9 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
     /**
      * @summary Toggles a situational modifier for the active test.
-     * @description Reads modifier data from the clicked button. Toggles the modifier's
-     * presence in the test state's `modifier` array, saves the change to the flag,
-     * and re-renders the UI.
+     * @description This handler reads the modifier data from the clicked button and tells the
+     * AppTestFlagService to toggle it. The service handles all the logic for adding,
+     * removing, and enforcing exclusivity rules.
      * @private
      */
     static async #onApplyModifier(event, target) {
@@ -505,36 +505,18 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             label: target.dataset.label,
             value: parseInt(target.dataset.value, 10)
         };
-        const dialogId = this.activeTestState.id;
-        console.log(dialogId)
         
-        // 3. Get the current list of applied modifiers.
-        const applied = this.activeTestState.modifier ?? [];
+        // 3. Call the service to handle the logic.
+        await AppTestFlagService.toggleModifier(this.activeTestState.id, modData);
 
-        // 4. Check if a modifier with the same label already exists.
-        const existingIndex = applied.findIndex(m => m.label === modData.label);
-
-        if (existingIndex > -1) {
-            // If it exists, remove it.
-            applied.splice(existingIndex, 1);
-        } else {
-            // If it doesn't exist, add it.
-            applied.push(modData);
-        }
-
-        // 5. Update the state on the instance and save the changes to the flag.
-        this.activeTestState.modifier = applied;
-        await AppTestFlagService.updateTest(dialogId, { modifier: applied });
-
-        // 6. Re-render the UI to reflect the change.
-        this.render(false);
-}
+        // 4. Re-render the UI to reflect the change.
+        this.render();
+    }
 
     /**
      * @summary Handles changes to the skill or attribute dropdowns.
      * @description Updates the active test state in the flag when a new skill or attribute is
-     * selected from a dropdown, then re-renders the application to show the updated context
-     * (e.g., different skill-specific modifiers).
+     * selected, then re-renders the application to reflect the change.
      * @param {Event} event - The triggering change event.
      * @param {HTMLSelectElement} target - The select element that was changed.
      * @private
@@ -542,13 +524,16 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     static async #onChangeTestParameter(event, target) {
         if (!this.activeTestState) return;
 
-        const key = target.name;   // e.g., "skill" or "attribute"
+        const key = target.name;   // This will be "skill" or "attribute"
         const value = target.value; 
         
+        // Update the state on the instance for immediate feedback
         this.activeTestState[key] = value;
-        console.log(this.activeTestState)
+        console.log(activeTestState)
+        // Save the change to the flag for persistence
         await AppTestFlagService.updateTest(this.activeTestState.id, { [key]: value });
         
-        this.render(false);
+        // Re-render the UI
+        this.render();
     }
 }
