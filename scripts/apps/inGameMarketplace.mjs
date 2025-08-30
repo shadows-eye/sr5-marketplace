@@ -4,6 +4,7 @@ import { ItemPreviewApp } from "./documents/items/ItemPreviewApp.mjs";
 import { BasketService } from '../services/basketService.mjs';
 import { PurchaseService } from '../services/purchaseService.mjs';
 import { SearchService } from '../services/searchTag.mjs';
+import { DialogModifierService } from '../services/DialogModifierService.mjs';
 import { AppTestFlagService } from '../services/AppTestFlagService.mjs';
 import{ MODULE_ID } from '../lib/constants.mjs';
 
@@ -92,7 +93,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 updateRating: this.#onUpdateRating,
                 updatePendingItem: this.#onUpdatePendingItem,
                 // TODO: rollResist: this.#onRollResist,
-                // TODO: runAvailabilityTest: this.#onRunAvailabilityTest,
+                runAvailabilityTest: this.#onRunAvailabilityTest,
                 showAvailabilityDialog: this.#onShowAvailabilityDialog,
                 selectContact: this.#onSelectContact,
                 applyModifier: this.#onApplyModifier,
@@ -247,10 +248,12 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 if (activeTestState?.status === 'initial') {
                     console.log("LOG: Building 'initial' dialog context...");
                     const builder = new AppDialogBuilder(activeTestState);
-                    const dialogContext = await builder.buildInitialDialogContext({
+                    const dialogContext = await builder.buildInitialTestDialogContext({
                         actorUuid: activeTestState.actorUuid,
                         itemUuids: activeTestState.itemUuids,
                         connectionUuid: activeTestState.connectionUuid,
+                        skill: this.skill,
+                        attribute: this.attribute
                     });
                     if (dialogContext) {
                         foundry.utils.mergeObject(partialContext, dialogContext);
@@ -372,8 +375,32 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         this.render();
     }
 
+    /**
+     * @summary Removes an item from the shopping cart.
+     * @description If removing the item results in an empty basket, this handler
+     * will also call the AppTestFlagService to delete any in-progress test states.
+     * @private
+     */
     static async #onRemoveFromCart(event, target) {
-        await this.basketService.removeFromBasket(target.closest("[data-basket-item-uuid]")?.dataset.basketItemUuid);
+        // 1. Remove the item from the basket as before.
+        const itemUuid = target.closest("[data-basket-item-uuid]")?.dataset.basketItemUuid;
+        await this.basketService.removeFromBasket(itemUuid);
+
+        // --- THIS IS THE FIX ---
+        // 2. Get the updated basket state.
+        const basket = await this.basketService.getBasket();
+
+        // 3. If the basket is now empty, clear any associated test flags.
+        if (basket.shoppingCartItems.length === 0) {
+            console.log("LOG: Basket is now empty, clearing any active test state flag.");
+            await AppTestFlagService.deleteState(); // This will clear the flag for the current user.
+            
+            // Also clear the local instance state to prevent issues until the next render.
+            this.activeTestState = null;
+            this.activeDialogId = null;
+        }
+
+        // 4. Re-render the application.
         this.render();
     }
 
@@ -456,19 +483,49 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     }
 
     /**
-     * Handles selecting a contact.
-     * It saves the choice and re-renders the application to update the UI.
+     * @summary Handles selecting or deselecting a contact.
+     * @description Updates the selected contact in the basket. If an availability test is
+     * active, it also re-evaluates the actor to be used for the test (prioritizing the
+     * contact's linked actor) and updates the persistent test state in the flag.
+     * @private
      */
     static async #onSelectContact(event, target) {
         const clickedContactUuid = target.dataset.contactUuid;
         const basket = await this.basketService.getBasket();
 
-        // If the clicked contact is already selected, deselect it. Otherwise, select it.
+        // 1. Toggle the selected contact in the basket.
         const newSelectedUuid = basket.selectedContactUuid === clickedContactUuid ? null : clickedContactUuid;
-
         await this.basketService.setSelectedContact(newSelectedUuid);
-        console.log("New Contact selected {" + newSelectedUuid + "}")
-        this.render(); // Re-render to update the 'selected' class
+
+        // --- THIS IS THE NEW LOGIC ---
+        // 2. If a test is currently active, we must update its state as well.
+        if (this.activeTestState) {
+            console.log("LOG: Active test found, updating contact and actor information...");
+
+            // 3. Determine the new actor UUID for the test. Default to the purchasing actor.
+            let newActorForTestUuid = this.purchasingActor.uuid; 
+            
+            // If a contact is now selected, check for a linked actor.
+            if (newSelectedUuid) {
+                const contactItem = await fromUuid(newSelectedUuid);
+                if (contactItem?.system?.linkedActor) {
+                    newActorForTestUuid = contactItem.system.linkedActor;
+                }
+            }
+
+            // 4. Prepare the data to be saved to the flag.
+            const updateData = {
+                connectionUuid: newSelectedUuid,
+                actorUuid: newActorForTestUuid
+            };
+            
+            // 5. Update the flag with the new information.
+            await AppTestFlagService.updateTest(this.activeTestState.id, updateData);
+        }
+        // --- END OF NEW LOGIC ---
+
+        // 6. Re-render the application to show all changes.
+        this.render();
     }
 
     /**
@@ -487,11 +544,35 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         if (basket.shoppingCartItems.length === 0) {
             return ui.notifications.warn("Your shopping cart is empty.");
         }
+        // --- Check The Actor---
+        // 1. Start with the purchasing actor's UUID as the default.
+        let actorForTestUuid = this.purchasingActor.uuid;
+
+        // 2. Check if a connection (contact) is selected in the basket.
+        if (basket.selectedContactUuid) {
+            const contactItem = await fromUuid(basket.selectedContactUuid);
+            
+            // 3. If that connection item exists and has a linked actor, use that actor's UUID instead.
+            if (contactItem?.system?.linkedActor) {
+                console.log(contactItem.system.linkedActor)
+                actorForTestUuid = contactItem.system.linkedActor;
+                console.log(`LOG: Prioritizing linked actor from contact: ${actorForTestUuid}`);
+            }
+        }
+        // --- END OF Actor Check ---
+
+        // --- NEW: Calculate Availability Here ---
+        const items = (await Promise.all(basket.shoppingCartItems.map(i => fromUuid(i.itemUuid)))).filter(i => i);
+        const totalAvailabilityRating = items.reduce((total, item) => {
+            const availStr = item.system.technology?.availability?.value || "0";
+            return total + (parseInt(availStr.match(/^(\d+)/)?.[1] || "0", 10));
+        }, 0);
 
         const initialData = {
-            actorUuid: this.purchasingActor?.uuid,
+            actorUuid: actorForTestUuid,
             itemUuids: basket.shoppingCartItems.map(i => i.itemUuid),
-            connectionUuid: basket.selectedContactUuid
+            connectionUuid: basket.selectedContactUuid,
+            availabilityStr: `${totalAvailabilityRating}R`
         };
 
         // Create the test record in the flag. This returns the new test's ID.
@@ -503,26 +584,36 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
     /**
      * @summary Toggles a situational modifier for the active test.
-     * @description This handler reads the modifier data from the clicked button and tells the
-     * AppTestFlagService to toggle it. The service handles all the logic for adding,
-     * removing, and enforcing exclusivity rules.
+     * @description This handler reads modifier data from the clicked button, uses the
+     * DialogModifierService to calculate the new state of the modifier list, saves the
+     * result to the flag, and re-renders the application.
      * @private
      */
     static async #onApplyModifier(event, target) {
-        // 1. Ensure there is an active test state on the application instance.
         if (!this.activeTestState) return;
 
-        // 2. Get the modifier's data from the button's data attributes.
-        const modData = {
+        // 1. Get the modifier data from the UI.
+        const clickedModifier = {
             label: target.dataset.label,
             value: parseInt(target.dataset.value, 10)
         };
         
-        // 3. Call the service to handle the logic.
-        await AppTestFlagService.toggleModifier(this.activeTestState.id, modData);
+        // 2. Get the current list of modifiers from the state.
+        const currentModifiers = this.activeTestState.modifier ?? [];
 
-        // 4. Re-render the UI to reflect the change.
-        this.render(false);
+        // 3. Use the DialogModifierService to calculate the new, correct list.
+        //    FIX: Call the static method directly, without 'new'.
+        const newModifiers = DialogModifierService.calculateNewModifierList(currentModifiers, clickedModifier);
+
+        // 4. Update the state on the instance for the next re-render.
+        this.activeTestState.modifier = newModifiers;
+        
+        // 5. Save the complete, updated list of modifiers back to the flag.
+        //    FIX: Pass the 'newModifiers' array under the 'modifier' key.
+        await AppTestFlagService.updateTest(this.activeTestState.id, { modifier: newModifiers });
+
+        // 6. Re-render the UI to reflect the change.
+        this.render();
     }
 
     /**
@@ -547,5 +638,81 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         
         // Re-render the UI
         this.render(false);
+    }
+
+    static async #onRunAvailabilityTest(event, target) {
+        if (!this.activeTestState) return;
+
+        // --- ACTOR SELECTION LOGIC ---
+        // 1. Start with the purchasing actor's UUID as the default.
+        let actorForTestUuid = this.activeTestState.actorUuid;
+
+        // 2. Check if a connection is selected in the current test state.
+        if (this.activeTestState.connectionUuid) {
+            const contactItem = await fromUuid(this.activeTestState.connectionUuid);
+            
+            // 3. If that connection item exists and has a linked actor, use that actor's UUID instead.
+            if (contactItem?.system?.linkedActor) {
+                actorForTestUuid = contactItem.system.linkedActor;
+                console.log(`LOG: Using linked actor from contact: ${actorForTestUuid}`);
+            }
+        }
+        
+        // 4. Fetch the final actor document using the determined UUID.
+        const actor = await fromUuid(actorForTestUuid);
+
+        // 5. Final check to ensure we have a valid actor before proceeding.
+        if (!actor) {
+            ui.notifications.error(`Could not find a valid actor to perform the test (UUID: ${actorForTestUuid}).`);
+            return;
+        }
+        // --- END OFActor Check ---
+
+        // 2. Prepare the 'data' object for the constructor.
+        // This contains the core parameters for the test action.
+        const data = {
+            action: {
+                skill: this.activeTestState.skill,
+                attribute: this.activeTestState.attribute,
+                modifier: this.activeTestState.modifier, // Pass the full array of modifier objects
+                categories: ["social"],
+                itemUuids: this.activeTestState.itemUuids,
+                connectionUuid: this.activeTestState.connectionUuid,
+                availabilityStr: this.activeTestState.availabilityStr,
+                opposed: {test: "AvailabilityResist"},
+                dialogId: this.activeDialogId //Should be the dialog instance
+            }
+        };
+
+        // 3. Prepare the 'options' object for the constructor.
+        const options = {
+            showDialog: false, // Don't show the pop-up dialog
+            showMessage: false  // Show the result in chat
+        };
+
+        try {
+            // 4. Instantiate the test directly, passing the ACTOR OBJECT, not the UUID string.
+            const test = new game.shadowrun5e.tests.AvailabilityTest(
+                data,
+                { actor }, // The actor must be in this 'documents' object
+                options
+            );
+
+            // 5. Execute the test.
+            await test.execute();
+
+            // 6. Get the result and update the flag to the 'result' status.
+            console.log("--- Marketplace | Availability Test Result ---", test);
+            /*await AppTestFlagService.updateTest(this.activeTestState.id, { 
+                result: result, 
+                status: 'result' 
+            });*/
+            
+            // 7. Re-render the app to show the result view.
+            this.render();
+
+        } catch(e) {
+            console.error("Marketplace | AvailabilityTest failed to run:", e);
+        }
     }
 }

@@ -66,9 +66,12 @@ export class AppDialogBuilder {
      * @param {object} initialParams - Data to start a new test.
      * @param {string} initialParams.actorUuid - The UUID of the actor performing the test.
      * @param {string[]} initialParams.itemUuids - The item UUIDs for the test.
+     * @param {string} initialParams.skill - The selectedSkill
+     * @param {string} initialParams.attribute - The selectedAttribute
+     * @param {string} initialParams.connectionUuid - The connectionUuid
      * @returns {Promise<object|null>} The context for the Handlebars template.
      */
-    async buildInitialDialogContext({ actorUuid, itemUuids, ...rest }) {
+    async buildInitialTestDialogContext({ actorUuid, itemUuids, skill, attribute, connectionUuid,...rest }) {
         const actor = await this.constructor.getActor(actorUuid);
         const items = (await Promise.all(itemUuids.map(uuid => this.constructor.getItem(uuid)))).filter(i => i);
         if (!actor || items.length === 0) return null;
@@ -82,8 +85,8 @@ export class AppDialogBuilder {
             return total + (parseInt(availStr.match(/^(\d+)/)?.[1] || "0", 10));
         }, 0);
         
-        const modifierGroups = DialogModifierService.getModifiersForTest({ 
-            skill: this.testState?.skill });
+        const modifierGroups = DialogModifierService.getModifiersForTest({
+            skill: skill });
 
         return {
             dialogId: this.dialogId, // Pass the ID to the template
