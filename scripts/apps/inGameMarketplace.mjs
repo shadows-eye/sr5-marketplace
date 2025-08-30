@@ -232,7 +232,6 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             case "shoppingCart":
                 // Prepare standard shopping cart data (contacts)
                 if (this.purchasingActor) {
-                    // --- THIS IS THE FIX ---
                     // 1. Determine the correct source for items.
                     //    Prioritize the actor from a single controlled token, if one exists.
                     //    This correctly handles unlinked tokens with their own inventories.
