@@ -56,7 +56,7 @@
                             <div class="modifier-items-grid">
                                 {{#each group.items as |mod|}}
                                     <label>{{localize mod.description}}</label> <!--SR5.Marketplace.Modifiers.General.npcAttitudeFriendly-->
-                                    <button type="button" class="modifier-button {{#if (isModifierActive mod.label @root.activeTestState.modifier)}}active{{/if}}" 
+                                    <button type="button" class="modifier-button {{#if (isModifierActive mod.label @root.activeTestState.modifiers)}}active{{/if}}" 
                                             data-action="applyModifier" 
                                             data-label="{{mod.label}}" 
                                             data-value="{{mod.value}}">

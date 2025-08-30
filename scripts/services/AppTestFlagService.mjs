@@ -44,7 +44,7 @@ export class AppTestFlagService {
                 resolved: false,
                 skill: 'negotiation', //Default Value
                 attribute: 'charisma', //Default Value
-                modifier: [] // Empty array
+                modifiers: [] // Empty array
             }
         };
 

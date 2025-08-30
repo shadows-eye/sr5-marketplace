@@ -110,7 +110,7 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
         data = super._prepareData(data, options);
         data.action = data.action || game.shadowrun5e.data.createData('action_roll');
         data.action.categories = ["social"];
-        data.action.modifiers = data.action.modifier || 0;
+        data.action.modifiers = data.action.modifiers || 0;
         data.availabilityStr = data.action.availabilityStr || (options?.availability || ""); // Keep fallback for actor sheet calls
         data.selectedSkill = data.action.skill || 'negotiation';
         data.selectedAttribute = data.action.attribute || 'charisma';
@@ -196,7 +196,7 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
      * @param {string} testParams.availabilityStr - The availability string (e.g., "12R").
      * @param {string} [testParams.skill] - The skill ID to use (for app calls).
      * @param {string} [testParams.attribute] - The attribute ID to use (for app calls).
-     * @param {Array}  [testParams.modifier] - An array of modifier objects (for app calls).
+     * @param {Array}  [testParams.modifiers] objects (for app calls).
      * @param {object} [options={}] - An options object to control execution.
      * @param {boolean} [options.isAppCall=false] - Set to true to run in silent/app mode.
      * @returns {Promise<AvailabilityTest>} The executed test instance, containing the results.
@@ -213,7 +213,7 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
             data.action = {
                 skill: testParams.skill,
                 attribute: testParams.attribute,
-                modifier: testParams.modifier,
+                modifiers: testParams.modifiers,
                 categories: ["social"] // Required by the parent class
             };
             finalOptions.showDialog = false;
@@ -256,7 +256,7 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
             test: "AvailabilityTest",
             skill: testParams.skill || 'negotiation',
             attribute: testParams.attribute || 'charisma',
-            modifier: testParams.modifier || [], // Pass the modifier array
+            modifiers: testParams.modifiers || [], // Pass the modifier array
             limit: { attribute: "social" },
             availabilityStr: testParams.availabilityStr || "",
             opposed: { test: "AvailabilityResist" },

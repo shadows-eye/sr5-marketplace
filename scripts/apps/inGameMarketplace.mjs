@@ -95,9 +95,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 // TODO: rollResist: this.#onRollResist,
                 runAvailabilityTest: this.#onRunAvailabilityTest,
                 showAvailabilityDialog: this.#onShowAvailabilityDialog,
-                selectContact: this.#onSelectContact,
-                applyModifier: this.#onApplyModifier,
-                // TODO: removeModifier: this.#onRemoveModifier,
+                selectContact: this.#onSelectContact
             }
         });
     }
@@ -198,7 +196,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         if(activeTestState){
             this.skill = activeTestState.skill;
             this.attribute = activeTestState.attribute;
-            this.modifier = activeTestState.modifier;
+            this.modifiers = activeTestState.modifiers;
             this.activeTestState = activeTestState;
         }
 
@@ -599,18 +597,18 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         };
         
         // 2. Get the current list of modifiers from the state.
-        const currentModifiers = this.activeTestState.modifier ?? [];
+        const currentModifiers = this.activeTestState.modifiers ?? [];
 
         // 3. Use the DialogModifierService to calculate the new, correct list.
         //    FIX: Call the static method directly, without 'new'.
         const newModifiers = DialogModifierService.calculateNewModifierList(currentModifiers, clickedModifier);
 
         // 4. Update the state on the instance for the next re-render.
-        this.activeTestState.modifier = newModifiers;
+        this.activeTestState.modifiers = newModifiers;
         
         // 5. Save the complete, updated list of modifiers back to the flag.
         //    FIX: Pass the 'newModifiers' array under the 'modifier' key.
-        await AppTestFlagService.updateTest(this.activeTestState.id, { modifier: newModifiers });
+        await AppTestFlagService.updateTest(this.activeTestState.id, { modifiers: newModifiers });
 
         // 6. Re-render the UI to reflect the change.
         this.render();
@@ -674,7 +672,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             action: {
                 skill: this.activeTestState.skill,
                 attribute: this.activeTestState.attribute,
-                modifier: this.activeTestState.modifier, // Pass the full array of modifier objects
+                modifiers: this.activeTestState.modifiers, // Pass the full array of modifier objects
                 categories: ["social"],
                 itemUuids: this.activeTestState.itemUuids,
                 connectionUuid: this.activeTestState.connectionUuid,
