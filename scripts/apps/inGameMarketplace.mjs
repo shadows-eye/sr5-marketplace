@@ -232,7 +232,17 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             case "shoppingCart":
                 // Prepare standard shopping cart data (contacts)
                 if (this.purchasingActor) {
-                    partialContext.contacts = this.purchasingActor.items
+                    // --- THIS IS THE FIX ---
+                    // 1. Determine the correct source for items.
+                    //    Prioritize the actor from a single controlled token, if one exists.
+                    //    This correctly handles unlinked tokens with their own inventories.
+                    const controlledToken = canvas.tokens.controlled[0];
+                    const itemSource = (controlledToken && controlledToken.actor.id === this.purchasingActor.id) 
+                        ? controlledToken.actor 
+                        : this.purchasingActor;
+
+                    // 2. Get contacts from the determined source (either the token's actor or the base actor).
+                    partialContext.contacts = itemSource.items
                         .filter(i => i.type === "contact")
                         .map(c => {
                             const contactData = c.toObject(false);
