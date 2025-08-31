@@ -180,7 +180,7 @@ export class BasketHelper {
         const reverseMapping = { 0: "", 1: "E", 2: "R", 3: "F" };
         const rawTextPart = reverseMapping[highestPriority] || "";
         const textPartLocalized = rawTextPart 
-            ? game.i18n.localize(`SR5.Marketplace.system.avail.${rawTextPart}`) 
+            ? game.i18n.localize(`SR5Marketplace.Marketplace.system.avail.${rawTextPart}`) 
             : "";
 
         const totals = {

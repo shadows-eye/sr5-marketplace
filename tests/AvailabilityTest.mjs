@@ -174,7 +174,7 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
     }
 
     static get label() {
-        return "SR5.Marketplace.Tests.AvailabilityTest";
+        return "SR5Marketplace.Marketplace.Tests.AvailabilityTest";
     }
 
     static parseAvailability(str) {

@@ -201,13 +201,13 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         }
 
         const tabs = [{ 
-            id: "shop", label: game.i18n.localize("SR5.Marketplace.Tab.Shop"), icon: "fa-store",
+            id: "shop", label: game.i18n.localize("SR5Marketplace.Marketplace.Tab.Shop"), icon: "fa-store",
             cssClass: this.tabGroups.main === "shop" ? "active" : "" 
         }];
 
         if (game.user.isGM) {
             tabs.push({ 
-                id: "orderReview", label: game.i18n.localize("SR5.Marketplace.Tab.OrderReview"),
+                id: "orderReview", label: game.i18n.localize("SR5Marketplace.Marketplace.Tab.OrderReview"),
                 icon: "fa-list-check", cssClass: this.tabGroups.main === "orderReview" ? "active" : "",
                 count: PurchaseService.getPendingRequestCount() 
             });
@@ -216,7 +216,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             tabs.push({ 
                 id: "shoppingCart", label: "", icon: "fa-shopping-cart",
                 cssClass: this.tabGroups.main === "shoppingCart" ? "active" : "",
-                count: basketItemCount, tooltip: game.i18n.localize("SR5.Marketplace.ShoppingBasket")
+                count: basketItemCount, tooltip: game.i18n.localize("SR5Marketplace.Marketplace.ShoppingBasket")
             });
         }
         
@@ -374,7 +374,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
     static async #onAddToCart(event, target) {
         if (!this.purchasingActor) {
-            ui.notifications.warn("SR5.Marketplace.selectActorTooltip", { localize: true });
+            ui.notifications.warn("SR5Marketplace.Marketplace.selectActorTooltip", { localize: true });
             return;
         }
         await this.basketService.addToBasket(target.dataset.itemId, this.purchasingActor.uuid);

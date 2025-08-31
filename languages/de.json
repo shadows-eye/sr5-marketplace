@@ -1,5 +1,5 @@
 {
-    "SR5": {
+    "SR5Marketplace": {
         "PurchaseScreen": "Marktplatz Fenster",
         "Marketplace": {
             "Settings": {
@@ -168,20 +168,20 @@
             },
             "attributes": {
                 "label": "Attribute",
-                "body": { "label": "" },
-                "agility": { "label": "Agility" },
-                "reaction": { "label": "Reaction" },
-                "strength": { "label": "Strength" },
-                "willpower": { "label": "Willpower" },
-                "logic": { "label": "Logic" },
+                "body": { "label": "Konstitution" },
+                "agility": { "label": "Geschicklichkeit" },
+                "reaction": { "label": "Reaktion" },
+                "strength": { "label": "Stärke" },
+                "willpower": { "label": "Willenskraft" },
+                "logic": { "label": "Logik" },
                 "intuition": { "label": "Intuition" },
                 "charisma": { "label": "Charisma" },
-                "magic": { "label": "Magic" },
-                "resonance": { "label": "Resonance" },
-                "essence": { "label": "Essence" },
+                "magic": { "label": "Magie" },
+                "resonance": { "label": "Resonanz" },
+                "essence": { "label": "Essenz" },
                 "edge": { "label": "Edge" },
                 "initiation": { "label": "Initiation" },
-                "submersion": { "label": "Submersion" }
+                "submersion": { "label": "Wandlung" }
             },
             "Skill": {
                     "AeronauticsMechanic": "Luftfahrtmechanik",

@@ -1,23 +1,23 @@
 <div class="order-review-container">
-    <h2>{{localize "SR5.Marketplace.OrderReviewItems"}}</h2>
+    <h2>{{localize "SR5Marketplace.Marketplace.OrderReviewItems"}}</h2>
 
     {{#each pendingRequests}}
     <div class="pending-request-block" data-user-id="{{this.user._id}}" data-basket-uuid="{{this.basket.basketUUID}}">
         <h3 class="actor-request-header">
-            <span>{{localize "SR5.Marketplace.RequestFor"}} <strong>{{this.actor.name}}</strong></span>
+            <span>{{localize "SR5Marketplace.Marketplace.RequestFor"}} <strong>{{this.actor.name}}</strong></span>
             <span class="actor-funds">
-                ({{localize "SR5.Marketplace.funds"}}: {{this.actor.nuyen}} ¥ / {{this.actor.karma}} K)
+                ({{localize "SR5Marketplace.Marketplace.funds"}}: {{this.actor.nuyen}} ¥ / {{this.actor.karma}} K)
             </span>
         </h3>
         
         <div class="basket-grid headers seven-columns">
-            <div class="grid-item header" style="justify-self: start;">{{localize "SR5.Marketplace.Name"}}</div>
-            <div class="grid-item header" title="{{localize 'SR5.Marketplace.system.technology.quantity'}} (per Pack)">{{localize "SR5.Marketplace.quantityPerPack"}}</div>
-            <div class="grid-item header">{{localize "SR5.Marketplace.buyQuantity"}}</div>
-            <div class="grid-item header">{{localize "SR5.Marketplace.system.technology.rating"}}</div>
-            <div class="grid-item header">{{localize "SR5.Marketplace.system.technology.Cost"}}</div>
-            <div class="grid-item header">{{localize "SR5.Marketplace.system.karma"}}</div>
-            <div class="grid-item header">{{localize "SR5.Marketplace.actions"}}</div>
+            <div class="grid-item header" style="justify-self: start;">{{localize "SR5Marketplace.Marketplace.Name"}}</div>
+            <div class="grid-item header" title="{{localize 'SR5Marketplace.Marketplace.system.technology.quantity'}} (per Pack)">{{localize "SR5Marketplace.Marketplace.quantityPerPack"}}</div>
+            <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.buyQuantity"}}</div>
+            <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.system.technology.rating"}}</div>
+            <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.system.technology.Cost"}}</div>
+            <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.system.karma"}}</div>
+            <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.actions"}}</div>
         </div>
 
         {{#each this.basket.basketItems}}
@@ -44,12 +44,12 @@
         {{/each}}
 
         <div class="basket-actions full-basket-actions">
-            <span><strong>{{this.user.name}}</strong>'s {{localize "SR5.Marketplace.purchaseReview"}}:</span>
-            <button class="approve-all-btn" data-action="approveAll">{{localize "SR5.Marketplace.allApproved"}}</button>
-            <button class="reject-all-btn" data-action="rejectAll">{{localize "SR5.Marketplace.allRejected"}}</button>
+            <span><strong>{{this.user.name}}</strong>'s {{localize "SR5Marketplace.Marketplace.purchaseReview"}}:</span>
+            <button class="approve-all-btn" data-action="approveAll">{{localize "SR5Marketplace.Marketplace.allApproved"}}</button>
+            <button class="reject-all-btn" data-action="rejectAll">{{localize "SR5Marketplace.Marketplace.allRejected"}}</button>
         </div>
     </div>
     {{else}}
-    <p>{{localize "SR5.Marketplace.noPurchaseRequests"}}</p>
+    <p>{{localize "SR5Marketplace.Marketplace.noPurchaseRequests"}}</p>
     {{/each}}
 </div>
