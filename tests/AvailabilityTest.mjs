@@ -109,9 +109,10 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
     _prepareData(data, options) {
         data = super._prepareData(data, options);
         data.action = data.action || game.shadowrun5e.data.createData('action_roll');
+        data.opposed = data.action.opposed;
         data.action.categories = ["social"];
         data.action.modifiers = data.action.modifiers || 0;
-        data.availabilityStr = data.action.availabilityStr || (options?.availability || ""); // Keep fallback for actor sheet calls
+        data.availabilityStr = data.action.availabilityStr || ""; // Keep fallback for actor sheet calls
         data.selectedSkill = data.action.skill || 'negotiation';
         data.selectedAttribute = data.action.attribute || 'charisma';
         data.dialogId = data.action.dialogId;
@@ -166,6 +167,7 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
             
             // Set base to 0 to prevent double-counting.
             this.data.pool.base = 0;
+            console.log(this.data)
         }
     }
     

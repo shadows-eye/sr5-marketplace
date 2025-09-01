@@ -12,11 +12,11 @@ export class AvailabilityResist extends game.shadowrun5e.tests.OpposedTest {
     /**
      * This static "factory" method is called by the system to create the data for this test.
      * @param {object} againstData       - The complete data from the initial AvailabilityTest.
-     * @param {Actor5e} actor            - The actor performing this resist test (not used here).
+     * @param {document} item            - The actor performing this resist test (not used here).
      * @param {string} previousMessageId - The UUID of the chat message this test is against.
      * @returns {Promise<object>}        - The fully constructed data object for the new test.
      */
-    static async _getOpposedActionTestData(againstData, actor, previousMessageId) {
+    static async _getOpposedActionTestData(againstData, item, previousMessageId) {
         // The original AvailabilityTest's data is in `againstData`.
         // This gives us access to all its properties, including our custom ones.
         const availabilityStr = againstData.availabilityStr || "";
@@ -41,7 +41,7 @@ export class AvailabilityResist extends game.shadowrun5e.tests.OpposedTest {
             threshold: DataDefaults.createData('value_field', { base: threshold }),
 
             // These are needed to prevent errors in the parent class.
-            action: DataDefaults.createData('action_roll'),
+            action: game.shadowrun5e.data.createData('action_roll'),
             values: {},
             
             // Set a custom title for the dialog and chat card.

@@ -92,7 +92,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 //changeCategory: this.onChangeCategory, Is moved to _onRender
                 updateRating: this.#onUpdateRating,
                 updatePendingItem: this.#onUpdatePendingItem,
-                // TODO: rollResist: this.#onRollResist,
+                runResistTest: this.#onRollResist,
                 runAvailabilityTest: this.#onRunAvailabilityTest,
                 showAvailabilityDialog: this.#onShowAvailabilityDialog,
                 selectContact: this.#onSelectContact
@@ -267,14 +267,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                     }
                 } else if (activeTestState?.status === 'result') {
                     console.log("LOG: Building 'result' (resist) dialog context...");
-                    console.log(activeTestState);
                     const builder = new AppDialogBuilder(activeTestState);
-                    console.log(builder);
-                    console.log(activeTestState.id);
-                    console.log(AppUserId);
-                    console.log(activeTestState.result);
-                    console.log(activeTestState.availabilityStr);
-                    console.log(activeTestState.status);
                     const dialogContext = await builder.buildResultDialogContext({
                         dialogId: this.activeDialogId, 
                         userId: AppUserId,
@@ -282,7 +275,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                         availabilityStr: activeTestState.availabilityStr,
                         status: activeTestState.status
                     });
-                    console.log(dialogContext);
+                    //console.log(dialogContext);
                      if (dialogContext) {
                         foundry.utils.mergeObject(partialContext, dialogContext);
                     }
@@ -661,6 +654,89 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         this.render(false);
     }
 
+    /**
+     * @summary Manually triggers the second stage of the availability check: the item's resistance roll.
+     * @description This handler is called when the user clicks "Roll Item Resistance". It reads the
+     * results of the initial test from the user flag, then instantiates and executes a silent
+     * AvailabilityResistTest. The pool for this test is the item's availability rating, and the
+     * threshold is the net hits from the first roll.
+     * @private
+     */
+    static async #onRollResist(event, target) {
+        // 1. Guard Clause: Ensure we have an active test that is waiting for the resist roll.
+        if (!this.activeTestState || this.activeTestState.status !== 'result') return;
+
+        console.log("%c--- Action: Roll Item Resistance ---", "color: blue; font-weight: bold;");
+
+        // 2. Get required data from the active test state saved in the flag.
+        const initialTestResult = this.activeTestState.result; // This holds the 'values' from the first test.
+        let extraData = {
+            type: this.activeTestState.type,
+            categories: ["social"]
+        };
+        const TestObject = foundry.utils.mergeObject(initialTestResult,  extraData )
+        const availabilityStr = this.activeTestState.availabilityStr;
+
+        // 3. The threshold for the resist roll is the net hits from the player's initial roll.
+        const threshold = initialTestResult.values.netHits.value;
+
+        // 4. The dice pool is the numeric part of the availability string (e.g., 12 from "12R").
+        const parsedAvail = game.shadowrun5e.tests.AvailabilityTest.parseAvailability(availabilityStr);
+        const pool = Math.max(parsedAvail.rating, 1);
+
+        // 5. Construct the 'data' object for the AvailabilityResistTest.
+        const data = {
+            against: TestObject,
+
+            // --- THIS IS THE CORRECTED FIX ---
+            // Create a pool object with a base of 0 and add the availability
+            // rating as a single named part in the 'mod' array.
+            pool: {
+                base: 0,
+                mod: [
+                    { name: game.i18n.localize("SR5.Labels.Availability"), value: pool }
+                ]
+            },
+            // The threshold just needs a base value and an empty mod array
+            // to be a valid data object and prevent the error.
+            threshold: {
+                base: threshold,
+                mod: []
+            },
+        };
+
+        // 6. Set options for a silent roll (no dialog, no chat message).
+        const options = { showDialog: false, showMessage: false };
+
+        try {
+            // 7. Instantiate and execute the AvailabilityResist test.
+            const test = new game.shadowrun5e.tests.AvailabilityResist(data, {}, options);
+            await test.execute();
+
+            // 8. Clean the result object for storing in the flag.
+            // The 'success' property tells us if the item *resisted* the purchase.
+            const resistResultForFlag = {
+                diceResults: test.rolls?.[0]?.terms[0]?.results || [],
+                values: test.data.values,
+                success: test.result.success
+            };
+
+            console.log("--- Marketplace | Availability Resist Result to be Saved ---", resistResultForFlag);
+
+            // 9. Update the flag with the resist result and set the status to 'resolved'.
+            await AppTestFlagService.updateTest(this.activeTestState.id, {
+                resistResult: resistResultForFlag,
+                status: 'resolved'
+            });
+
+            // 10. Re-render the app to show the final result view.
+            this.render();
+
+        } catch(e) {
+            console.error("Marketplace | AvailabilityResistTest failed to run:", e);
+        }
+    }
+
     static async #onRunAvailabilityTest(event, target) {
         if (!this.activeTestState) return;
 
@@ -743,7 +819,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             if (dialogIdToUpdate) {
                 await AppTestFlagService.updateTest(dialogIdToUpdate, { 
                     result: resultForFlag, 
-                    status: 'result' 
+                    status: 'result',
+                    type: "AvailabilityTest"
                 }, userId);
             } else {
                 console.error("Marketplace | Could not find dialogId in test result to update the flag.");
