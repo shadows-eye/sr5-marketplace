@@ -1,0 +1,62 @@
+.MarketAppDialog-test-result-container{
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+}
+
+.MarketAppDialog-dice-tray {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.MarketAppDialog-die-result {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 1.2em;
+    color: white;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.4);
+}
+
+.MarketAppDialog-die-text {
+    text-shadow: 1px 1px 2px black;
+}
+
+/* Success: green text, black die */
+.MarketAppDialog-die-result.success {
+    background-color: #222;
+    color: #4CAF50;
+    border: 1px solid #666;
+}
+
+/* Glitch: red text, grey die */
+.MarketAppDialog-die-result.glitch {
+    background-color: #555;
+    color: #F44336;
+    border: 1px solid #999;
+}
+
+/* Failure: white text, grey die */
+.MarketAppDialog-die-result.failure {
+    background-color: #777;
+    color: #f0f0f0;
+    border: 1px solid #aaa;
+}
+
+.MarketAppDialog-result-summary {
+    text-align: center;
+    font-size: 1.1em;
+}
+
+.MarketAppDialog-result-summary.glitched {
+    color: #F44336;
+    font-weight: bold;
+}

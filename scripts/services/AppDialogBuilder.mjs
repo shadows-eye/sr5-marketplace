@@ -1,5 +1,6 @@
 import { DialogModifierService } from './DialogModifierService.mjs';
 import { AppTestFlagService } from './AppTestFlagService.mjs';
+import { DiceHelperService } from './DiceHelperService.mjs';
 
 /**
  * @summary Builds and manages the data context for the multi-step in-app Availability Test.
@@ -50,12 +51,19 @@ export class AppDialogBuilder {
     }
 
     /**
-     * Loads the test state from the user flag if a dialogId is present.
+     * Loads the test state from the user flag using a provided ID.
+     * @param {string} dialogId - The ID of the test state to load.
      * @returns {Promise<boolean>} True if state was loaded successfully.
      */
-    async loadState() {
+    async loadState(dialogId) {
+        // --- THIS IS THE FIX, as you described ---
+        // 1. Set the instance's dialogId from the parameter.
+        this.dialogId = dialogId;
+        // 2. Check if the ID is valid.
         if (!this.dialogId) return false;
-        let userId = await game.user.id;
+
+        // 3. The rest of the function now works correctly.
+        const userId = await game.user.id;
         const allState = await AppTestFlagService.readState(userId);
         this.testState = allState[this.dialogId];
         return !!this.testState;
@@ -113,6 +121,32 @@ export class AppDialogBuilder {
             actor,
             initialResult, // Pass the first result to the template
             context: 'resist' // A flag to tell the template to show the resist UI
+        };
+    }
+
+    /**
+     * Builds the context for the result view.
+     * @param {string} dialogId - The ID of the test state to build the context for.
+     * @param {string} userId - The ID of the user.
+     * @returns {Promise<object|null>} The context for the Handlebars template.
+     */
+    async buildResultDialogContext({dialogId, ...rest}) {
+        // 1. Load the specific test state using the provided IDs.
+        if (!await this.loadState(dialogId) || !this.testState.result) return null;
+
+        const  initialResult = this.testState.result;
+
+        // 2. Pass the result object to the DiceHelperService.
+        const renderedDice = DiceHelperService.processDice(initialResult);
+
+        // 3. Return the prepared context.
+        return {
+            dialogId: this.dialogId,
+            renderedDice: renderedDice,
+            hits: initialResult.values.hits.value,
+            glitches: initialResult.values.glitches.value,
+            isGlitch: initialResult.values.glitches.value > (initialResult.diceResults.length / 2),
+            ...rest
         };
     }
 }

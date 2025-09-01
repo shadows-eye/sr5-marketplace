@@ -31,14 +31,14 @@
                     <div class="form-group">
                         <label>{{localize "SR5Marketplace.Skill.Skill"}}</label>
                         <select name="skill" data-action="changeTestParameter">
-                            <option value="negotiation" {{#if (eq activeTestState.skill "negotiation")}}selected{{/if}}>{{localize "SR5Marketplace.Skill.Negotiation"}}</option>
-                            <option value="etiquette" {{#if (eq activeTestState.skill "etiquette")}}selected{{/if}}>{{localize "SR5Marketplace.Skill.Etiquette"}}</option>
-                            <option value="con" {{#if (eq activeTestState.skill "con")}}selected{{/if}}>{{localize "SR5Marketplace.Skill.Con"}}</option>
-                            <option value="intimidation" {{#if (eq activeTestState.skill "intimidation")}}selected{{/if}}>{{localize "SR5Marketplace.Skill.Intimidation"}}</option>
+                            <option value="negotiation" {{#if (eq activeTestState.skill "negotiation")}}selected{{/if}}>{{localize "SR5.Skill.Negotiation"}}</option>
+                            <option value="etiquette" {{#if (eq activeTestState.skill "etiquette")}}selected{{/if}}>{{localize "SR5.Skill.Etiquette"}}</option>
+                            <option value="con" {{#if (eq activeTestState.skill "con")}}selected{{/if}}>{{localize "SR5.Skill.Con"}}</option>
+                            <option value="intimidation" {{#if (eq activeTestState.skill "intimidation")}}selected{{/if}}>{{localize "SR5.Skill.Intimidation"}}</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>{{localize "SR5Marketplace.Attribute"}}</label>
+                        <label>{{localize "FIELDS.attributes.label"}}</label>
                         <select name="attribute" data-action="changeTestParameter">
                             <option value="charisma" {{#if (eq activeTestState.attribute "charisma")}}selected{{/if}}>{{localize "FIELDS.attributes.charisma.label"}}</option>
                             <option value="willpower" {{#if (eq activeTestState.attribute "willpower")}}selected{{/if}}>{{localize "FIELDS.attributes.willpower.label"}}</option>
@@ -76,10 +76,26 @@
             </form>
 
         {{else if (eq activeTestState.status "result")}}
-            <div class="test-result">
-                <h3>Player Hits: {{activeTestState.result.data.values.hits.value}}</h3>
-                <p>This is the threshold for the item's resist roll.</p>
-                <button type="button" data-action="runResistTest" data-dialog-id="{{activeTestState.id}}">
+            <div class="MarketAppDialog-test-result-container">
+                <h3>Test Result</h3>
+                
+                <div class="MarketAppDialog-dice-tray">
+                    {{#each renderedDice as |die|}}
+                        <div class="MarketAppDialog-die-result {{die.cssClass}}">
+                            <span class="MarketAppDialog-die-text">{{die.text}}</span>
+                        </div>
+                    {{/each}}
+                </div>
+
+                <div class="MarketAppDialog-result-summary {{#if isGlitch}}glitched{{/if}}">
+                    <div>You scored <strong>{{hits}}</strong> hits!</div>
+                    {{#if isGlitch}}
+                        <div class="glitch-text">With <strong>{{glitches}}</strong> ones... a GLITCH!</div>
+                    {{/if}}
+                </div>
+
+                <p class="threshold-info">This is the threshold for the item's resist roll.</p>
+                <button type="button" class="roll-button" data-action="runResistTest" data-dialog-id="{{activeTestState.id}}">
                     Roll Item Resistance
                 </button>
             </div>

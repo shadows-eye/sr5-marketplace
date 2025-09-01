@@ -267,10 +267,24 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                     }
                 } else if (activeTestState?.status === 'result') {
                     console.log("LOG: Building 'result' (resist) dialog context...");
+                    console.log(activeTestState);
                     const builder = new AppDialogBuilder(activeTestState);
-                    const resistContext = await builder.buildResistDialogContext();
-                     if (resistContext) {
-                        foundry.utils.mergeObject(partialContext, resistContext);
+                    console.log(builder);
+                    console.log(activeTestState.id);
+                    console.log(AppUserId);
+                    console.log(activeTestState.result);
+                    console.log(activeTestState.availabilityStr);
+                    console.log(activeTestState.status);
+                    const dialogContext = await builder.buildResultDialogContext({
+                        dialogId: this.activeDialogId, 
+                        userId: AppUserId,
+                        result: activeTestState.result,
+                        availabilityStr: activeTestState.availabilityStr,
+                        status: activeTestState.status
+                    });
+                    console.log(dialogContext);
+                     if (dialogContext) {
+                        foundry.utils.mergeObject(partialContext, dialogContext);
                     }
                 }
                 // --- END NEW FLAG-BASED WORKFLOW ---
@@ -708,12 +722,32 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             // 5. Execute the test.
             await test.execute();
 
-            // 6. Get the result and update the flag to the 'result' status.
-            console.log("--- Marketplace | Availability Test Result ---", test);
-            /*await AppTestFlagService.updateTest(this.activeTestState.id, { 
-                result: result, 
-                status: 'result' 
-            });*/
+        // --- THIS IS THE FIX ---
+        // 4. Extract the specific data points you need from the completed test object.
+        const dialogIdToUpdate = test.data.action.dialogId;
+        console.log(dialogIdToUpdate);
+        
+        // As seen in your data object, the path is rolls[0].terms[0].results
+        const diceResults = test.rolls?.[0]?.terms[0]?.results || []; 
+        const values = test.data.values;
+
+        // 5. Construct the new, clean result object.
+        const resultForFlag = {
+            diceResults: diceResults,
+            values: values
+        };
+        
+        console.log("--- Marketplace | Availability Test Result to be Saved ---", resultForFlag);
+        let userId = await game.user.id
+        // 6. Update the flag with the new result object and the new status.
+            if (dialogIdToUpdate) {
+                await AppTestFlagService.updateTest(dialogIdToUpdate, { 
+                    result: resultForFlag, 
+                    status: 'result' 
+                }, userId);
+            } else {
+                console.error("Marketplace | Could not find dialogId in test result to update the flag.");
+            }
             
             // 7. Re-render the app to show the result view.
             this.render();
