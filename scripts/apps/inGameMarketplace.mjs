@@ -672,7 +672,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const initialTestResult = this.activeTestState.result; // This holds the 'values' from the first test.
         let extraData = {
             type: this.activeTestState.type,
-            categories: ["social"]
+            categories: []
         };
         const TestObject = foundry.utils.mergeObject(initialTestResult,  extraData )
         const availabilityStr = this.activeTestState.availabilityStr;
@@ -687,7 +687,9 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         // 5. Construct the 'data' object for the AvailabilityResistTest.
         const data = {
             against: TestObject,
-
+            action:{
+                categories:["social"]
+            },
             // --- THIS IS THE CORRECTED FIX ---
             // Create a pool object with a base of 0 and add the availability
             // rating as a single named part in the 'mod' array.
@@ -718,7 +720,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             const resistResultForFlag = {
                 diceResults: test.rolls?.[0]?.terms[0]?.results || [],
                 values: test.data.values,
-                success: test.result.success
+                success: test.success
             };
 
             console.log("--- Marketplace | Availability Resist Result to be Saved ---", resistResultForFlag);
@@ -778,7 +780,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 availabilityStr: this.activeTestState.availabilityStr,
                 opposed: {test: "AvailabilityResist"},
                 dialogId: this.activeDialogId //Should be the dialog instance
-            }
+            },
+            
         };
 
         // 3. Prepare the 'options' object for the constructor.
