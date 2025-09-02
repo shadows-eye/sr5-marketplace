@@ -34,6 +34,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         this.skill = null;
         this.attribute = null;
         this.modifier = null;
+        this.availabilityStr = null;
         this.itemData = game.sr5marketplace.itemData;
         this.basketService = new BasketService();
         this.tabGroups = { main: "shop" };
@@ -182,6 +183,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const ownedActors = game.actors.filter(a => a.isOwner).map(a => ({ uuid: a.uuid, name: a.name, img: a.img }));
         const itemsByType = this.itemData.itemsByType;
         const basket = await this.basketService.getBasket();
+        console.log(basket);
         const basketItemCount = basket.shoppingCartItems.length;
         //Initial Dialog States
         const testStates = await AppTestFlagService.readState(AppUserId);
@@ -194,6 +196,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const activeTestState = this.activeDialogId ? testStates[this.activeDialogId] : null;
         // Only perform the merge if an active test state actually exists.
         if(activeTestState){
+            this.availabilityStr = basket.totalAvailability;
             this.skill = activeTestState.skill;
             this.attribute = activeTestState.attribute;
             this.modifiers = activeTestState.modifiers;
@@ -259,6 +262,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                         actorUuid: activeTestState.actorUuid,
                         itemUuids: activeTestState.itemUuids,
                         connectionUuid: activeTestState.connectionUuid,
+                        availabilityStr: activeTestState.availabilityStr,
                         skill: this.skill,
                         attribute: this.attribute
                     });
@@ -572,9 +576,11 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         console.log("%c--- Action: Show Availability Dialog ---", "color: green; font-weight: bold;");
         const CurrentUserId = await game.user.id;
         const basket = await this.basketService.getBasket(CurrentUserId);
+        
         if (basket.shoppingCartItems.length === 0) {
             return ui.notifications.warn("Your shopping cart is empty.");
         }
+        this.availabilityStr=basket.totalAvailabilityRating;
         // --- Check The Actor---
         // 1. Start with the purchasing actor's UUID as the default.
         let actorForTestUuid = this.purchasingActor.uuid;
@@ -591,19 +597,11 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             }
         }
         // --- END OF Actor Check ---
-
-        // --- NEW: Calculate Availability Here ---
-        const items = (await Promise.all(basket.shoppingCartItems.map(i => fromUuid(i.itemUuid)))).filter(i => i);
-        const totalAvailabilityRating = items.reduce((total, item) => {
-            const availStr = item.system.technology?.availability?.value || "0";
-            return total + (parseInt(availStr.match(/^(\d+)/)?.[1] || "0", 10));
-        }, 0);
-
         const initialData = {
             actorUuid: actorForTestUuid,
             itemUuids: basket.shoppingCartItems.map(i => i.itemUuid),
             connectionUuid: basket.selectedContactUuid,
-            availabilityStr: `${totalAvailabilityRating}R`
+            availabilityStr: basket.totalAvailability
         };
 
         // Create the test record in the flag. This returns the new test's ID.

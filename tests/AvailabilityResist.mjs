@@ -15,6 +15,7 @@ export class AvailabilityResist extends game.shadowrun5e.tests.OpposedTest {
         // This gives us access to all its properties, including our custom ones.
         const availabilityStr = againstData.availabilityStr || "";
         const parsed = AvailabilityTest.parseAvailability(availabilityStr);
+        console.log(parsed);
 
         // This is the threshold for our resist roll. The OpposedTest parent class
         // uses this to determine success or failure.

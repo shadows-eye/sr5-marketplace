@@ -79,7 +79,7 @@ export class AppDialogBuilder {
      * @param {string} initialParams.connectionUuid - The connectionUuid
      * @returns {Promise<object|null>} The context for the Handlebars template.
      */
-    async buildInitialTestDialogContext({ actorUuid, itemUuids, skill, attribute, connectionUuid,...rest }) {
+    async buildInitialTestDialogContext({ actorUuid, itemUuids, skill, attribute, connectionUuid, availabilityStr,...rest }) {
         const actor = await this.constructor.getActor(actorUuid);
         const items = (await Promise.all(itemUuids.map(uuid => this.constructor.getItem(uuid)))).filter(i => i);
         if (!actor || items.length === 0) return null;
@@ -99,7 +99,7 @@ export class AppDialogBuilder {
         return {
             dialogId: this.dialogId, // Pass the ID to the template
             actor,
-            availabilityStr: `${totalAvailabilityRating}R`,
+            availabilityStr: availabilityStr,
             modifierGroups,
             ...rest
         };
