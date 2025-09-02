@@ -56,8 +56,8 @@
     <hr class="marketplace-settings-hr">
 
     <div class="actor-contact-grid">
-        <div class="actor-contact-grid">
-        <h3 class="grid-header">{{localize "SR5Marketplace.Marketplace.selectContact"}}</h3>
+
+        <div class="grid-header">{{localize "SR5Marketplace.Marketplace.selectContact"}}</div>
         {{#each contacts}}
             <div class="contact-card {{#if this.isSelected}}selected{{/if}}">
 
@@ -84,9 +84,9 @@
                     <p><strong>Connection:</strong> {{this.system.connection}}</p>
                     <div>{{{this.system.description.value}}}</div>
                 </div>
-            </div>
+
         {{else}}
-            <p class="hint-text grid-span-all">{{purchasingActor.name}} has no contacts.</p>
+            <div class="hint-text grid-span-all">{{purchasingActor.name}} has no contacts.</div>
         {{/each}}
     </div>
     </div>

@@ -106,21 +106,44 @@ export class AppDialogBuilder {
     }
 
     /**
-     * Builds the context for the resist test dialog (the item's roll).
+     * @summary Builds the context for the final, resolved view of the test.
+     * @description This method is called when the test status is 'resolved'. It processes
+     * the results of both the initial roll and the resist roll, determines the final
+     * outcome (is the item available?), and prepares both sets of dice for rendering.
+     * @param {object} params - The parameters for the builder.
+     * @param {string} params.dialogId - The ID of the test state to build the context for.
      * @returns {Promise<object|null>} The context for the Handlebars template.
      */
-    async buildResistDialogContext() {
-        if (!await this.loadState() || !this.testState.result) return null;
+    async buildResolvedDialogContext({ dialogId, ...rest }) {
+        // 1. Load the state. We need both 'result' and 'resistResult' to be present.
+        if (!await this.loadState(dialogId) || !this.testState.result || !this.testState.resistResult) {
+            console.warn("Resolved context cannot be built: Missing result or resistResult.", this.testState);
+            return null;
+        }
 
-        const actor = await this.constructor.getActor(this.testState.actorUuid);
         const initialResult = this.testState.result;
+        const resistResult = this.testState.resistResult;
 
-        // The context for the resist roll view
+        // 2. The item is available if the item's resist roll *failed* to meet the threshold.
+        const isAvailable = !resistResult.success;
+
+        // 3. Prepare both sets of dice for rendering using the helper service.
+        const initialDice = DiceHelperService.processDice(initialResult);
+        const resistDice = DiceHelperService.processDice(resistResult);
+
+        // 4. Build the final context object for the template.
         return {
             dialogId: this.dialogId,
-            actor,
-            initialResult, // Pass the first result to the template
-            context: 'resist' // A flag to tell the template to show the resist UI
+            isAvailable: isAvailable,
+            initialRoll: {
+                netHits: initialResult.values.netHits.value, // This was the threshold
+                renderedDice: initialDice
+            },
+            resistRoll: {
+                hits: resistResult.values.hits.value,
+                renderedDice: resistDice
+            },
+            ...rest
         };
     }
 
