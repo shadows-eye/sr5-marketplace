@@ -11,7 +11,6 @@ export class DiceHelperService {
      * @returns {Array<{cssClass: string, text: string}>} An array of dice ready for rendering.
      */
     static processDice(result) {
-        // --- THIS IS THE FIX ---
         // 1. Safely get the dice results and glitch count from the result object.
         const diceResults = result?.diceResults || [];
         const glitches = result?.values?.glitches?.value || 0;
@@ -23,7 +22,7 @@ export class DiceHelperService {
 
         // 3. Map over the dice to create the rendering data.
         return diceResults.map(die => {
-            let cssClass = 'die-result';
+            let cssClass = 'MarketAppDialog-die-result';
             
             if (isGlitch && die.result === 1) {
                 // Highlight the 1s that caused the glitch.

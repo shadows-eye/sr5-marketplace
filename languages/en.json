@@ -177,7 +177,26 @@
                     "npcAttitudeFriendly": "The Test involved participants have a friendly attitude to each other"
                 }
             }
-    }
+    },
+    "AppDialogItem": {
+            "result": {
+                "Test": "Test Result",
+                "text": "You scored ",
+                "Hits": " hits!"
+            },
+            "GlitchText": {
+                "with": "With ",
+                "glitch": " ones... a GLITCH!"
+            },
+            "ThresholdInfo": "This is the threshold for the item's resist roll.",
+            "RollItemResistance": "Roll Item Resistance",
+            "AcquisitionSuccess": "Items can be Acquired",
+            "AcquisitionFailed": "Acquisition Failed",
+            "YourRoll": "Your Roll",
+            "netHits": "Net Hits",
+            "Resistance": "Item Resistance",
+            "Hits": "Hits"
+        }
     },
     "TYPES":{
         "Actor": {

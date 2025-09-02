@@ -1,0 +1,216 @@
+/* ================================================================== */
+/* Main Dialog Container & Typography                                 */
+/* ================================================================== */
+
+.roll-dialog-container {
+    padding: 10px;
+}
+
+.roll-dialog-content h2,
+.roll-dialog-content .result-title {
+    margin-top: 0;
+    font-family: "Modesto Condensed", "Palatino Linotype", serif;
+    text-align: center;
+    color: var(--text-color-header);
+    border-bottom: 1px solid var(--border-color-medium);
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+/* ================================================================== */
+/* 1. Initial State (The Form)                                        */
+/* ================================================================== */
+
+.availability-dialog-form .dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.availability-dialog-form .actor-info img {
+    height: 48px;
+    width: 48px;
+    border: none;
+    border-radius: 4px;
+    margin-right: 8px;
+}
+
+.availability-dialog-form .actor-info .selectable-actor {
+    display: flex;
+    align-items: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--text-color-primary);
+}
+
+.availability-dialog-form .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.availability-dialog-form .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.availability-dialog-form .form-group label {
+    font-weight: bold;
+    color: var(--text-color-subheader);
+    margin-bottom: 4px;
+}
+
+.availability-dialog-form input,
+.availability-dialog-form select {
+    background: var(--input-bg-transparent);
+    color: var(--input-color);
+    border: 1px solid var(--border-color-dark);
+}
+
+/* ================================================================== */
+/* 2. Result & Resolved States                                      */
+/* ================================================================== */
+
+.MarketAppDialog-test-result-container,
+.MarketAppDialog-final-result-container {
+    padding: 10px;
+    color: var(--text-color-primary);
+}
+
+.MarketAppDialog-result-summary {
+    text-align: center;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+}
+
+.glitch-text {
+    color: var(--color-red-base); /* Using a base color for high alert */
+    font-weight: bold;
+}
+
+.threshold-info {
+    text-align: center;
+    font-style: italic;
+    opacity: 0.8;
+    margin-bottom: 15px;
+}
+
+/* Final Result Accordion */
+.MarketAppDialog-final-summary summary {
+    cursor: pointer;
+    list-style: none; /* Hide default dropdown arrow */
+    transition: background-color 0.2s ease;
+    border-radius: 3px;
+}
+.MarketAppDialog-final-summary summary::-webkit-details-marker {
+    display: none; /* Hide arrow in Chrome/Safari */
+}
+.MarketAppDialog-final-summary summary:hover {
+    background-color: var(--collapsible-label-hover-bg);
+}
+.MarketAppDialog-final-summary h3 {
+    margin: 0;
+    padding: 5px;
+    text-align: center;
+    font-family: "Modesto Condensed", "Palatino Linotype", serif;
+}
+.MarketAppDialog-final-summary h3.success .marketplace-success-icon {
+    color: var(--color-green-button);
+}
+.MarketAppDialog-final-summary h3.failure .marketplace-failure-icon {
+    color: var(--color-red-dark);
+}
+
+.final-result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 20px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color-medium);
+}
+
+.result-column .result-title {
+    font-size: 1.1em;
+    color: var(--text-color-subheader);
+    margin-bottom: 5px;
+}
+
+
+/* ================================================================== */
+/* 3. Dice Display (Theme-Independent Colors)                         */
+/* ================================================================== */
+
+.MarketAppDialog-dice-tray {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 5px;
+    margin-bottom: 15px;
+    min-height: 50px; /* Ensure tray has height even if empty */
+}
+
+.MarketAppDialog-die-result {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 1.2em;
+    color: white;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.4);
+}
+
+.MarketAppDialog-die-text {
+    text-shadow: 1px 1px 2px black;
+}
+
+/* Success: green text, black die */
+.MarketAppDialog-die-result.success {
+    background-color: #222;
+    color: #4CAF50;
+    border: 1px solid #666;
+}
+
+/* Glitch: red text, grey die */
+.MarketAppDialog-die-result.glitch {
+    background-color: #555;
+    color: #F44336;
+    border: 1px solid #999;
+}
+
+/* Failure: white text, grey die */
+.MarketAppDialog-die-result.failure {
+    background-color: #777;
+    color: #f0f0f0;
+    border: 1px solid #aaa;
+}
+
+
+/* ================================================================== */
+/* 4. Common Elements (Buttons, etc.)                                 */
+/* ================================================================== */
+
+.roll-button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    font-size: 1.2em;
+    font-family: "Modesto Condensed", "Palatino Linotype", serif;
+    background: var(--tab-inactive-bg);
+    color: var(--tab-inactive-color);
+    border: 1px solid var(--tab-inactive-border);
+    transition: all 0.2s ease;
+}
+
+.roll-button:hover {
+    background: var(--tab-active-bg);
+    border-color: var(--border-color-highlight);
+    text-shadow: var(--tab-active-text-shadow);
+}

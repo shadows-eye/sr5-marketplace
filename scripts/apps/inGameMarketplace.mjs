@@ -34,6 +34,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         this.skill = null;
         this.attribute = null;
         this.modifier = null;
+        this.availabilityStr = null;
         this.itemData = game.sr5marketplace.itemData;
         this.basketService = new BasketService();
         this.tabGroups = { main: "shop" };
@@ -92,7 +93,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 //changeCategory: this.onChangeCategory, Is moved to _onRender
                 updateRating: this.#onUpdateRating,
                 updatePendingItem: this.#onUpdatePendingItem,
-                // TODO: rollResist: this.#onRollResist,
+                runResistTest: this.#onRollResist,
                 runAvailabilityTest: this.#onRunAvailabilityTest,
                 showAvailabilityDialog: this.#onShowAvailabilityDialog,
                 selectContact: this.#onSelectContact
@@ -182,6 +183,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const ownedActors = game.actors.filter(a => a.isOwner).map(a => ({ uuid: a.uuid, name: a.name, img: a.img }));
         const itemsByType = this.itemData.itemsByType;
         const basket = await this.basketService.getBasket();
+        console.log(basket);
         const basketItemCount = basket.shoppingCartItems.length;
         //Initial Dialog States
         const testStates = await AppTestFlagService.readState(AppUserId);
@@ -194,6 +196,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const activeTestState = this.activeDialogId ? testStates[this.activeDialogId] : null;
         // Only perform the merge if an active test state actually exists.
         if(activeTestState){
+            this.availabilityStr = basket.totalAvailability;
             this.skill = activeTestState.skill;
             this.attribute = activeTestState.attribute;
             this.modifiers = activeTestState.modifiers;
@@ -259,6 +262,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                         actorUuid: activeTestState.actorUuid,
                         itemUuids: activeTestState.itemUuids,
                         connectionUuid: activeTestState.connectionUuid,
+                        availabilityStr: activeTestState.availabilityStr,
                         skill: this.skill,
                         attribute: this.attribute
                     });
@@ -267,14 +271,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                     }
                 } else if (activeTestState?.status === 'result') {
                     console.log("LOG: Building 'result' (resist) dialog context...");
-                    console.log(activeTestState);
                     const builder = new AppDialogBuilder(activeTestState);
-                    console.log(builder);
-                    console.log(activeTestState.id);
-                    console.log(AppUserId);
-                    console.log(activeTestState.result);
-                    console.log(activeTestState.availabilityStr);
-                    console.log(activeTestState.status);
                     const dialogContext = await builder.buildResultDialogContext({
                         dialogId: this.activeDialogId, 
                         userId: AppUserId,
@@ -282,9 +279,26 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                         availabilityStr: activeTestState.availabilityStr,
                         status: activeTestState.status
                     });
-                    console.log(dialogContext);
+                    //console.log(dialogContext);
                      if (dialogContext) {
                         foundry.utils.mergeObject(partialContext, dialogContext);
+                    }
+                } else if (activeTestState?.status === 'resolved') {
+                    console.log("LOG: Building 'resolved' dialog context...");
+                    // Use the AppDialogBuilder to prepare the final result data.
+                    const builder = new AppDialogBuilder(activeTestState);
+                    const dialogContext = await builder.buildResolvedDialogContext({
+                        dialogId: this.activeDialogId,
+                        userId: AppUserId,
+                        result: activeTestState.result,
+                        resistResult: activeTestState.resistResult,
+                        status: activeTestState.status,
+                        resolved: activeTestState.resolved,
+                        success: activeTestState.resistResult.success
+                    });
+                    // Merge the final results into the main context for the template.
+                    if (dialogContext) {
+                        foundry.utils.mergeObject(partialContext.activeTestState, dialogContext);
                     }
                 }
                 // --- END NEW FLAG-BASED WORKFLOW ---
@@ -562,9 +576,11 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         console.log("%c--- Action: Show Availability Dialog ---", "color: green; font-weight: bold;");
         const CurrentUserId = await game.user.id;
         const basket = await this.basketService.getBasket(CurrentUserId);
+        
         if (basket.shoppingCartItems.length === 0) {
             return ui.notifications.warn("Your shopping cart is empty.");
         }
+        this.availabilityStr=basket.totalAvailabilityRating;
         // --- Check The Actor---
         // 1. Start with the purchasing actor's UUID as the default.
         let actorForTestUuid = this.purchasingActor.uuid;
@@ -581,19 +597,11 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             }
         }
         // --- END OF Actor Check ---
-
-        // --- NEW: Calculate Availability Here ---
-        const items = (await Promise.all(basket.shoppingCartItems.map(i => fromUuid(i.itemUuid)))).filter(i => i);
-        const totalAvailabilityRating = items.reduce((total, item) => {
-            const availStr = item.system.technology?.availability?.value || "0";
-            return total + (parseInt(availStr.match(/^(\d+)/)?.[1] || "0", 10));
-        }, 0);
-
         const initialData = {
             actorUuid: actorForTestUuid,
             itemUuids: basket.shoppingCartItems.map(i => i.itemUuid),
             connectionUuid: basket.selectedContactUuid,
-            availabilityStr: `${totalAvailabilityRating}R`
+            availabilityStr: basket.totalAvailability
         };
 
         // Create the test record in the flag. This returns the new test's ID.
@@ -661,35 +669,176 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         this.render(false);
     }
 
+    /**
+     * @summary Manually triggers the second stage of the availability check: the item's resistance roll.
+     * @description This handler is called when the user clicks "Roll Item Resistance". It reads the
+     * results of the initial player test from the user flag (`activeTestState`), then instantiates
+     * and executes a silent `AvailabilityResistTest`. The dice pool for this test is derived from the
+     * item's availability string, and the threshold is the net hits from the first roll.
+     *
+     * After the resist roll is executed, its results (dice, values, and success state) are
+     * captured. The handler then updates the flag again via `AppTestFlagService`, saving the
+     * resist result and setting the overall test status to 'resolved'. Finally, it re-renders
+     * the application to display the final outcome of the purchase attempt.
+     *
+     * @param {PointerEvent} event    The originating click event.
+     * @param {HTMLElement} target    The capturing HTML element which defined a [data-action].
+     * @private
+     *
+     * @param {object} this.activeTestState - The current state of the test, read from the user flag.
+     * @param {string} this.activeTestState.status - The current status of the test, expected to be 'result'.
+     * @param {object} this.activeTestState.result - The stored result from the initial `AvailabilityTest`.
+     * @param {object} this.activeTestState.result.values - The calculated values from the initial test.
+     * @param {number} this.activeTestState.result.values.netHits.value - The net hits from the player's roll, used as the threshold for this test.
+     * @param {string} this.activeTestState.type - The original test type (e.g., 'AvailabilityTest').
+     * @param {string} this.activeTestState.availabilityStr - The availability string (e.g., "12R") used to determine the dice pool.
+     * @param {string} this.activeTestState.id - The unique ID for the active test, used to update the flag.
+     *
+     * @fires AppTestFlagService.updateTest
+     * @param {string} testId - The ID of the test flag to update, from `this.activeTestState.id`.
+     * @param {object} updatePayload - The data to save to the flag.
+     * @param {object} updatePayload.resistResult - The results of the item's resistance test.
+     * @param {Array<number>} updatePayload.resistResult.diceResults - The individual dice results of the resistance roll.
+     * @param {object} updatePayload.resistResult.values - The calculated values from the resistance roll.
+     * @param {boolean} updatePayload.resistResult.success - Whether the item successfully resisted the purchase.
+     * @param {string} updatePayload.status - The new status of the test, set to 'resolved'.
+     */
+    static async #onRollResist(event, target) {
+        // Guard Clause: Ensure we have an active test that is waiting for the resist roll.
+        if (!this.activeTestState || this.activeTestState.status !== 'result') return;
+
+        console.log("%c--- Action: Roll Item Resistance ---", "color: blue; font-weight: bold;");
+
+        // Get required data from the active test state saved in the flag.
+        const initialTestResult = this.activeTestState.result; // This holds the 'values' from the first test.
+        let extraData = {
+            type: this.activeTestState.type,
+            categories: []
+        };
+        const TestObject = foundry.utils.mergeObject(initialTestResult,  extraData )
+        const availabilityStr = this.activeTestState.availabilityStr;
+
+        // The threshold for the resist roll is the net hits from the player's initial roll.
+        const threshold = initialTestResult.values.netHits.value;
+
+        // The dice pool is the numeric part of the availability string (e.g., 12 from "12R").
+        const parsedAvail = game.shadowrun5e.tests.AvailabilityTest.parseAvailability(availabilityStr);
+        const pool = Math.max(parsedAvail.rating, 1);
+
+        // Construct the 'data' object for the AvailabilityResistTest.
+        const data = {
+            against: TestObject,
+            action:{
+                categories:["social"]
+            },
+            pool: {
+                base: 0,
+                mod: [
+                    { name: game.i18n.localize("SR5.Labels.Availability"), value: pool }
+                ]
+            },
+            threshold: {
+                base: threshold,
+                mod: []
+            },
+        };
+
+        //Set options for a silent roll (no standard dialog but appDialog, no chat message but App message).
+        const options = { 
+            showDialog: false, 
+            showMessage: false 
+        };
+
+        try {
+            
+            const test = new game.shadowrun5e.tests.AvailabilityResist(data, {}, options);
+            await test.execute();
+
+            // The 'success' property tells us if the item *resisted* the purchase. false means success for the purchase
+            const resistResultForFlag = {
+                diceResults: test.rolls?.[0]?.terms[0]?.results || [],
+                values: test.data.values,
+                success: test.success
+            };
+
+            console.log("--- Marketplace | Availability Resist Result to be Saved ---", resistResultForFlag);
+
+            // 9. Update the flag with the resist result and set the status to 'resolved'.
+            await AppTestFlagService.updateTest(this.activeTestState.id, {
+                resistResult: resistResultForFlag,
+                status: 'resolved'
+            });
+
+            // 10. Re-render the app to show the final result view.
+            this.render();
+
+        } catch(e) {
+            console.error("Marketplace | AvailabilityResistTest failed to run:", e);
+        }
+    }
+
+    /**
+     * @summary Runs the primary Availability Test.
+     * @description This is the main handler for initiating the player's roll in the availability
+     * test sequence. It gathers all necessary data from the current `activeTestState` (including
+     * the actor, skill, attribute, modifiers, and item details), constructs the data object for
+     * the `AvailabilityTest`, and then executes it silently (without a dialog or chat message).
+     *
+     * After the test is executed, it captures the dice results and calculated values
+     * (like hits, net hits, etc.). It then uses `AppTestFlagService` to update the
+     * persistent state in the user's flag, setting the status to 'result' and storing the
+     * outcome. This triggers the UI to advance to the second stage, where the user can roll
+     * for item resistance.
+     *
+     * @param {PointerEvent} event    The originating click event.
+     * @param {HTMLElement} target    The capturing HTML element which defined a [data-action].
+     * @private
+     *
+     * @param {object} this.activeTestState - The current state of the test, read from the user flag.
+     * @param {string} this.activeTestState.actorUuid - The UUID of the actor performing the test. This
+     *   may be the player's character or a linked actor from a selected contact.
+     * @param {string|null} this.activeTestState.connectionUuid - The UUID of the selected 'contact'
+     *   item, if any. Used to determine if a linked actor should be used for the roll.
+     * @param {string} this.activeTestState.skill - The key of the skill being used for the test (e.g., 'etiquette').
+     * @param {string} this.activeTestState.attribute - The key of the attribute being used (e.g., 'charisma').
+     * @param {Array<object>} this.activeTestState.modifiers - An array of modifier objects, each with 'label' and 'value' properties.
+     * @param {Array<string>} this.activeTestState.itemUuids - An array of UUIDs for the items in the shopping basket.
+     * @param {string} this.activeTestState.availabilityStr - The calculated availability string for the items (e.g., "12R").
+     * @param {string} this.activeDialogId - The unique ID for the active test dialog instance.
+     *
+     * @fires AppTestFlagService.updateTest
+     * @param {string} dialogIdToUpdate - The ID of the test flag to update.
+     * @param {object} updatePayload - The data to save to the flag.
+     * @param {object} updatePayload.result - The results of the test.
+     * @param {Array<number>} updatePayload.result.diceResults - The individual results of the dice rolled.
+     * @param {object} updatePayload.result.values - The calculated values from the test (hits, netHits, etc.).
+     * @param {string} updatePayload.status - The new status of the test, set to 'result'.
+     * @param {string} updatePayload.type - The type of test, set to 'AvailabilityTest'.
+     * @param {string} userId - The ID of the current user.
+     */
     static async #onRunAvailabilityTest(event, target) {
         if (!this.activeTestState) return;
 
         // --- ACTOR SELECTION LOGIC ---
-        // 1. Start with the purchasing actor's UUID as the default.
         let actorForTestUuid = this.activeTestState.actorUuid;
 
-        // 2. Check if a connection is selected in the current test state.
         if (this.activeTestState.connectionUuid) {
             const contactItem = await fromUuid(this.activeTestState.connectionUuid);
             
-            // 3. If that connection item exists and has a linked actor, use that actor's UUID instead.
             if (contactItem?.system?.linkedActor) {
                 actorForTestUuid = contactItem.system.linkedActor;
                 console.log(`LOG: Using linked actor from contact: ${actorForTestUuid}`);
             }
         }
         
-        // 4. Fetch the final actor document using the determined UUID.
         const actor = await fromUuid(actorForTestUuid);
 
-        // 5. Final check to ensure we have a valid actor before proceeding.
         if (!actor) {
-            ui.notifications.error(`Could not find a valid actor to perform the test (UUID: ${actorForTestUuid}).`);
+            //ui.notifications.error(`Could not find a valid actor to perform the test (UUID: ${actorForTestUuid}).`);
             return;
         }
         // --- END OFActor Check ---
 
-        // 2. Prepare the 'data' object for the constructor.
         // This contains the core parameters for the test action.
         const data = {
             action: {
@@ -702,36 +851,29 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 availabilityStr: this.activeTestState.availabilityStr,
                 opposed: {test: "AvailabilityResist"},
                 dialogId: this.activeDialogId //Should be the dialog instance
-            }
+            },
+            
         };
 
-        // 3. Prepare the 'options' object for the constructor.
+        
         const options = {
             showDialog: false, // Don't show the pop-up dialog
             showMessage: false  // Show the result in chat
         };
 
         try {
-            // 4. Instantiate the test directly, passing the ACTOR OBJECT, not the UUID string.
             const test = new game.shadowrun5e.tests.AvailabilityTest(
                 data,
-                { actor }, // The actor must be in this 'documents' object
+                { actor }, // The actor must be in this 'documents' object can be a document like item
                 options
             );
 
-            // 5. Execute the test.
             await test.execute();
 
-        // --- THIS IS THE FIX ---
-        // 4. Extract the specific data points you need from the completed test object.
         const dialogIdToUpdate = test.data.action.dialogId;
-        console.log(dialogIdToUpdate);
-        
-        // As seen in your data object, the path is rolls[0].terms[0].results
+        //console.log(dialogIdToUpdate);
         const diceResults = test.rolls?.[0]?.terms[0]?.results || []; 
         const values = test.data.values;
-
-        // 5. Construct the new, clean result object.
         const resultForFlag = {
             diceResults: diceResults,
             values: values
@@ -739,19 +881,17 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         
         console.log("--- Marketplace | Availability Test Result to be Saved ---", resultForFlag);
         let userId = await game.user.id
-        // 6. Update the flag with the new result object and the new status.
             if (dialogIdToUpdate) {
                 await AppTestFlagService.updateTest(dialogIdToUpdate, { 
                     result: resultForFlag, 
-                    status: 'result' 
+                    status: 'result',
+                    type: "AvailabilityTest"
                 }, userId);
             } else {
                 console.error("Marketplace | Could not find dialogId in test result to update the flag.");
             }
-            
-            // 7. Re-render the app to show the result view.
-            this.render();
 
+            this.render();
         } catch(e) {
             console.error("Marketplace | AvailabilityTest failed to run:", e);
         }

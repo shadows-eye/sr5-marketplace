@@ -76,35 +76,71 @@
             </form>
 
         {{else if (eq activeTestState.status "result")}}
-            <div class="MarketAppDialog-test-result-container">
-                <h3>Test Result</h3>
-                
-                <div class="MarketAppDialog-dice-tray">
-                    {{#each renderedDice as |die|}}
-                        <div class="MarketAppDialog-die-result {{die.cssClass}}">
-                            <span class="MarketAppDialog-die-text">{{die.text}}</span>
+        <div class="MarketAppDialog-test-result-container">
+            <div class="result-title">{{localize "SR5Marketplace.AppDialogItem.result.Test"}}</div>
+            
+            <div class="MarketAppDialog-dice-tray">
+                {{#each renderedDice as |die|}}
+                    <div class="MarketAppDialog-die-result {{die.cssClass}}">
+                        <span class="MarketAppDialog-die-text">{{die.text}}</span>
+                    </div>
+                {{/each}}
+            </div>
+
+            <div class="MarketAppDialog-result-summary {{#if isGlitch}}glitched{{/if}}">
+                <div>{{localize "SR5Marketplace.AppDialogItem.result.text"}}<strong>{{hits}}</strong> {{localize "SR5Marketplace.AppDialogItem.result.Hits"}}</div>
+                {{#if isGlitch}}
+                    <div class="glitch-text">{{localize "SR5Marketplace.AppDialogItem.GlitchText.with"}} <strong>{{glitches}}</strong> {{localize "SR5Marketplace.AppDialogItem.GlitchText.glitch"}}</div>
+                {{/if}}
+            </div>
+
+            <div class="threshold-info">{{localize "SR5Marketplace.AppDialogItem.ThresholdInfo"}}</div>
+            <button type="button" class="roll-button" data-action="runResistTest" data-dialog-id="{{activeTestState.id}}">
+                {{localize "SR5Marketplace.AppDialogItem.RollItemResistance"}}
+            </button>
+        </div>
+
+        {{else if (eq activeTestState.status "resolved")}}
+            <div class="MarketAppDialog-final-result-container">
+                <details class="MarketAppDialog-final-summary">
+                    <summary>
+                        {{#if activeTestState.isAvailable}}
+                            <h3 class="success"><i class="fas fa-check-circle marketplace-success-icon"></i> {{localize "SR5Marketplace.AppDialogItem.AcquisitionSuccess"}}</h3>
+                        {{else}}
+                            <h3 class="failure"><i class="fas fa-times-circle marketplace-failure-icon"></i> {{localize "SR5Marketplace.AppDialogItem.AcquisitionFailed"}}</h3>
+                        {{/if}}
+                    </summary>
+
+                    <div class="final-result-grid">
+                        <div class="result-column">
+                            <div class="result-title">{{localize "SR5Marketplace.AppDialogItem.YourRoll"}} ({{activeTestState.initialRoll.netHits}}) {{localize "SR5Marketplace.AppDialogItem.netHits"}}</div>
+                            <div class="MarketAppDialog-dice-tray">
+                                {{#each activeTestState.initialRoll.renderedDice as |die|}}
+                                    <div class="MarketAppDialog-die-result {{die.cssClass}}">
+                                        <span class="MarketAppDialog-die-text">{{die.text}}</span>
+                                    </div>
+                                {{/each}}
+                            </div>
                         </div>
-                    {{/each}}
-                </div>
 
-                <div class="MarketAppDialog-result-summary {{#if isGlitch}}glitched{{/if}}">
-                    <div>You scored <strong>{{hits}}</strong> hits!</div>
-                    {{#if isGlitch}}
-                        <div class="glitch-text">With <strong>{{glitches}}</strong> ones... a GLITCH!</div>
-                    {{/if}}
-                </div>
-
-                <p class="threshold-info">This is the threshold for the item's resist roll.</p>
-                <button type="button" class="roll-button" data-action="runResistTest" data-dialog-id="{{activeTestState.id}}">
-                    Roll Item Resistance
-                </button>
+                        <div class="result-column">
+                            <div class="result-title">{{localize "SR5Marketplace.AppDialogItem.Resistance"}} ({{activeTestState.resistRoll.hits}}) {{localize "SR5Marketplace.AppDialogItem.Hits"}}</div>
+                            <div class="MarketAppDialog-dice-tray">
+                                {{#each activeTestState.resistRoll.renderedDice as |die|}}
+                                    <div class="MarketAppDialog-die-result {{die.cssClass}}">
+                                        <span class="MarketAppDialog-die-text">{{die.text}}</span>
+                                    </div>
+                                {{/each}}
+                            </div>
+                        </div>
+                    </div>
+                </details>
             </div>
         {{/if}}
-
     {{else}}
 
         <button type="button" data-action="showAvailabilityDialog" data-basket-uuid="{{basket.basketUUID}}">
-            <i class="fas fa-dice-d6"></i> Test Availability for Entire Order
+            <i class="fas fa-dice-d6"></i> {{localize "SR5Marketplace.AppDialogItem.OrderTest"}}
         </button>
     {{/if}}
     </div>

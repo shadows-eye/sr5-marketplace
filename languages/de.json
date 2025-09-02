@@ -155,6 +155,25 @@
                     "npcAttitudeFriendly": "The Test involved participants have a friendly attitude to each other"
                 }
             }
+        },
+        "AppDialogItem": {
+            "result": {
+                "Test": "Testergebnis",
+                "text": "Du hast ",
+                "Hits": " Erfolge erzielt!"
+            },
+            "GlitchText": {
+                "with": "Mit ",
+                "glitch": " Einsen... ein PATZER!"
+            },
+            "ThresholdInfo": "Dies ist der Schwellenwert für den Widerstandswurf des Gegenstands.",
+            "RollItemResistance": "Gegenstandswiderstand würfeln",
+            "AcquisitionSuccess": "Gegenstände können erworben werden",
+            "AcquisitionFailed": "Erwerb fehlgeschlagen",
+            "YourRoll": "Dein Wurf",
+            "netHits": "Nettoerfolge",
+            "Resistance": "Gegenstandswiderstand",
+            "Hits": "Erfolge"
         }
     },
     "TYPES": {
