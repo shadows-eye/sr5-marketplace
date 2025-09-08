@@ -1,7 +1,7 @@
 import { DialogModifierService } from './DialogModifierService.mjs';
 import { AppTestFlagService } from './AppTestFlagService.mjs';
 import { DiceHelperService } from './DiceHelperService.mjs';
-
+import parseAvailability from '../lib/availabilityParser.mjs';
 /**
  * @summary Builds and manages the data context for the multi-step in-app Availability Test.
  * @description This class is the central engine for the test workflow. It fetches documents,
@@ -114,34 +114,82 @@ export class AppDialogBuilder {
      * @param {string} params.dialogId - The ID of the test state to build the context for.
      * @returns {Promise<object|null>} The context for the Handlebars template.
      */
-    async buildResolvedDialogContext({ dialogId, ...rest }) {
-        // 1. Load the state. We need both 'result' and 'resistResult' to be present.
-        if (!await this.loadState(dialogId) || !this.testState.result || !this.testState.resistResult) {
-            console.warn("Resolved context cannot be built: Missing result or resistResult.", this.testState);
+    async buildResolvedDialogContext({dialogId, ...rest }) {
+        if (!await this.loadState(dialogId) || !this.testState.result) {
+            console.log("Resolved context cannot be built: Missing test state or initial result.", this.testState);
             return null;
         }
 
+        switch (this.testState.testType) {
+            case "opposed":
+                return this.#_buildOpposedResolvedContext(rest);
+            case "simple":
+            case "extended":
+                return this.#_buildSimpleResolvedContext(rest);
+            default:
+                console.error(`Unknown test type "${this.testState.testType}" in buildResolvedDialogContext.`);
+                return null;
+        }
+    }
+
+    /**
+     * @summary Builds the context for a resolved OPPOSED test.
+     * @description Handles the two-roll outcome, comparing player hits to item resistance.
+     * @private
+     */
+    #_buildOpposedResolvedContext(rest) {
+        if (!this.testState.resistResult) {
+            console.log("Opposed context cannot be built: Missing resistResult.", this.testState);
+            return null;
+        }
         const initialResult = this.testState.result;
         const resistResult = this.testState.resistResult;
 
-        // 2. The item is available if the item's resist roll *failed* to meet the threshold.
         const isAvailable = !resistResult.success;
-
-        // 3. Prepare both sets of dice for rendering using the helper service.
         const initialDice = DiceHelperService.processDice(initialResult);
         const resistDice = DiceHelperService.processDice(resistResult);
 
-        // 4. Build the final context object for the template.
         return {
             dialogId: this.dialogId,
             isAvailable: isAvailable,
             initialRoll: {
-                netHits: initialResult.values.netHits.value, // This was the threshold
+                netHits: initialResult.values.netHits.value,
                 renderedDice: initialDice
             },
             resistRoll: {
                 hits: resistResult.values.hits.value,
                 renderedDice: resistDice
+            },
+            ...rest
+        };
+    }
+
+    /**
+     * @summary Builds the context for a resolved SIMPLE or EXTENDED test.
+     * @description This version is now robust and safely handles data.
+     * @private
+     */
+    #_buildSimpleResolvedContext(rest) {
+        const initialResult = this.testState.result || {};
+
+        // 1. Safely access properties using optional chaining (?.) and provide defaults (??).
+        const isAvailable = initialResult.success ?? false;
+        const netHits = initialResult.values?.netHits?.value ?? 0;
+
+        // 2. The threshold for a simple test IS the availability rating.
+        //    We can reliably get it by parsing the availabilityStr from the main test state.
+        const threshold = parseAvailability(this.testState.availabilityStr).rating;
+        
+        // 3. The DiceHelper can now safely process the dice results.
+        const initialDice = DiceHelperService.processDice(initialResult);
+
+        return {
+            dialogId: this.dialogId,
+            isAvailable: isAvailable,
+            initialRoll: {
+                netHits: netHits,
+                renderedDice: initialDice,
+                threshold: threshold
             },
             ...rest
         };

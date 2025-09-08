@@ -136,6 +136,22 @@ const initializeSettings = () => {
         "sprite_power": "unique"
     }  
     });
+
+    game.settings.register("sr5-marketplace", "availabilityTestRule", {
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.AvailabilityRule.name"),
+        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.AvailabilityRule.hint"),
+        scope: "world",
+        config: true, // This makes it visible in the settings menu
+        restricted: true, // Only GMs can change it
+        type: String, // The setting will store the key of the chosen option (e.g., "opposed")
+        choices: {
+            // The keys here are what will be saved in the setting
+            "opposed": game.i18n.localize("SR5Marketplace.Marketplace.Settings.AvailabilityRule.choices.opposed"),
+            "simple": game.i18n.localize("SR5Marketplace.Marketplace.Settings.AvailabilityRule.choices.simple"),
+            "extended": game.i18n.localize("SR5Marketplace.Marketplace.Settings.AvailabilityRule.choices.extended")
+        },
+        default: "opposed", // The default rule will be the core Opposed Test
+    });
 };
 
 /**

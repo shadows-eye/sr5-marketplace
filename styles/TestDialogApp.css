@@ -97,6 +97,20 @@
     margin-bottom: 15px;
 }
 
+.threshold-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 50px;
+    font-size: 3em;
+    font-weight: bold;
+    color: var(--text-color-header);
+    background: var(--attribute-group-bg);
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
 /* Final Result Accordion */
 .MarketAppDialog-final-summary summary {
     cursor: pointer;

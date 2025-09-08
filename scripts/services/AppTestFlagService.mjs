@@ -32,11 +32,14 @@ export class AppTestFlagService {
         if  (!userId) {
         userId = await game.user.id;
         }
+        const rule = game.settings.get("sr5-marketplace", "availabilityTestRule");
+
         // Create a fresh state object containing only this new test.
         // This enforces the "one active test per user" rule.
         const newState = {
             [dialogId]: {
                 id: dialogId,
+                testType: rule,
                 status: 'initial',
                 ...initialData,
                 result: null,

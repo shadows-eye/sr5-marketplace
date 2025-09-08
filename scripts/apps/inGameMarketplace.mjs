@@ -17,7 +17,6 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     constructor(options = {}) {
         // 1. Get the current theme from our helper function.
         const currentTheme = inGameMarketplace._getThemeFromSetting();
-
         // 2. Add all required classes, including the detected theme, to the options.
         options.classes = [
             ...(options.classes || []),
@@ -27,7 +26,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             currentTheme // Add the detected theme here
         ];
         super(options);
-        
+        this.testType = null;
         this.activeDialogId = null;
         this.activeTestState = this.activeDialogId ? testStates[this.activeDialogId] : null;
         //this.itemData = new ItemDataServices();
@@ -196,6 +195,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const activeTestState = this.activeDialogId ? testStates[this.activeDialogId] : null;
         // Only perform the merge if an active test state actually exists.
         if(activeTestState){
+            this.testType = activeTestState.testType;
             this.availabilityStr = basket.totalAvailability;
             this.skill = activeTestState.skill;
             this.attribute = activeTestState.attribute;
@@ -259,6 +259,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                     console.log("LOG: Building 'initial' dialog context...");
                     const builder = new AppDialogBuilder(activeTestState);
                     const dialogContext = await builder.buildInitialTestDialogContext({
+                        testType: activeTestState.testType,
                         actorUuid: activeTestState.actorUuid,
                         itemUuids: activeTestState.itemUuids,
                         connectionUuid: activeTestState.connectionUuid,
@@ -273,6 +274,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                     console.log("LOG: Building 'result' (resist) dialog context...");
                     const builder = new AppDialogBuilder(activeTestState);
                     const dialogContext = await builder.buildResultDialogContext({
+                        testType: activeTestState.testType,
                         dialogId: this.activeDialogId, 
                         userId: AppUserId,
                         result: activeTestState.result,
@@ -285,17 +287,15 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                     }
                 } else if (activeTestState?.status === 'resolved') {
                     console.log("LOG: Building 'resolved' dialog context...");
-                    // Use the AppDialogBuilder to prepare the final result data.
-                    const builder = new AppDialogBuilder(activeTestState);
+                    const builder = new AppDialogBuilder(); // The constructor can be empty now
+
+                    // --- THIS IS THE FIX ---
+                    // The builder is now smart enough to handle everything.
+                    // We only need to give it the ID of the test to build.
                     const dialogContext = await builder.buildResolvedDialogContext({
-                        dialogId: this.activeDialogId,
-                        userId: AppUserId,
-                        result: activeTestState.result,
-                        resistResult: activeTestState.resistResult,
-                        status: activeTestState.status,
-                        resolved: activeTestState.resolved,
-                        success: activeTestState.resistResult.success
+                        dialogId: this.activeDialogId
                     });
+                    
                     // Merge the final results into the main context for the template.
                     if (dialogContext) {
                         foundry.utils.mergeObject(partialContext.activeTestState, dialogContext);
@@ -819,81 +819,63 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     static async #onRunAvailabilityTest(event, target) {
         if (!this.activeTestState) return;
 
-        // --- ACTOR SELECTION LOGIC ---
+        // --- Actor Selection Logic (remains the same) ---
         let actorForTestUuid = this.activeTestState.actorUuid;
-
         if (this.activeTestState.connectionUuid) {
             const contactItem = await fromUuid(this.activeTestState.connectionUuid);
-            
             if (contactItem?.system?.linkedActor) {
                 actorForTestUuid = contactItem.system.linkedActor;
-                console.log(`LOG: Using linked actor from contact: ${actorForTestUuid}`);
             }
         }
-        
         const actor = await fromUuid(actorForTestUuid);
+        if (!actor) return;
 
-        if (!actor) {
-            //ui.notifications.error(`Could not find a valid actor to perform the test (UUID: ${actorForTestUuid}).`);
-            return;
-        }
-        // --- END OFActor Check ---
-
-        // This contains the core parameters for the test action.
+        // The 'opposed' key is removed. The AvailabilityTest class handles this internally now.
         const data = {
             action: {
                 skill: this.activeTestState.skill,
                 attribute: this.activeTestState.attribute,
-                modifiers: this.activeTestState.modifiers, // Pass the full array of modifier objects
-                categories: ["social"],
+                modifiers: this.activeTestState.modifiers,
                 itemUuids: this.activeTestState.itemUuids,
                 connectionUuid: this.activeTestState.connectionUuid,
                 availabilityStr: this.activeTestState.availabilityStr,
-                opposed: {test: "AvailabilityResist"},
-                dialogId: this.activeDialogId //Should be the dialog instance
-            },
-            
+                dialogId: this.activeDialogId
+            }
         };
 
-        
-        const options = {
-            showDialog: false, // Don't show the pop-up dialog
-            showMessage: false  // Show the result in chat
-        };
+        const options = { showDialog: false, showMessage: false };
 
         try {
-            const test = new game.shadowrun5e.tests.AvailabilityTest(
-                data,
-                { actor }, // The actor must be in this 'documents' object can be a document like item
-                options
-            );
-
+            const test = new game.shadowrun5e.tests.AvailabilityTest(data, { actor }, options);
             await test.execute();
 
-        const dialogIdToUpdate = test.data.action.dialogId;
-        //console.log(dialogIdToUpdate);
-        const diceResults = test.rolls?.[0]?.terms[0]?.results || []; 
-        const values = test.data.values;
-        const resultForFlag = {
-            diceResults: diceResults,
-            values: values
-        };
-        
-        console.log("--- Marketplace | Availability Test Result to be Saved ---", resultForFlag);
-        let userId = await game.user.id
+            // Check the rule to decide the next status.
+            const rule = game.settings.get("sr5-marketplace", "availabilityTestRule");
+            const finalStatus = (rule === 'opposed') ? 'result' : 'resolved';
+
+            // Construct the simplified result object, as per your design.
+            const resultForFlag = {
+                diceResults: test.rolls?.[0]?.terms[0]?.results || [],
+                values: test.data.values,
+                success: test.success // Include the success state for simple/extended tests
+            };
+            
+            const dialogIdToUpdate = test.data.action.dialogId;
+            let userId = game.user.id;
+
             if (dialogIdToUpdate) {
                 await AppTestFlagService.updateTest(dialogIdToUpdate, { 
                     result: resultForFlag, 
-                    status: 'result',
-                    type: "AvailabilityTest"
+                    status: finalStatus, // Use the correct status
+                    type: "AvailabilityTest" // Keep the separate type for the resist roll
                 }, userId);
             } else {
-                console.error("Marketplace | Could not find dialogId in test result to update the flag.");
+                console.log("Marketplace | Could not find dialogId in test result to update the flag.");
             }
 
             this.render();
         } catch(e) {
-            console.error("Marketplace | AvailabilityTest failed to run:", e);
+            console.log("Marketplace | AvailabilityTest failed to run:", e);
         }
     }
 }

@@ -104,6 +104,7 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
 
     constructor(data, documents, options) {
         super(data, documents, options);
+        this.contactItem = null;
     }
 
     _prepareData(data, options) {
@@ -112,63 +113,85 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
         data.opposed = data.action.opposed;
         data.action.categories = ["social"];
         data.action.modifiers = data.action.modifiers || 0;
-        data.availabilityStr = data.action.availabilityStr || ""; // Keep fallback for actor sheet calls
+        data.availabilityStr = data.action.availabilityStr || "";
         data.selectedSkill = data.action.skill || 'negotiation';
         data.selectedAttribute = data.action.attribute || 'charisma';
         data.dialogId = data.action.dialogId;
+        data.connectionUuid = data.action.connectionUuid;
         return data;
     }
 
+    async populateDocuments() {
+        await super.populateDocuments();
+        if (this.data.connectionUuid) {
+            this.contactItem = await fromUuid(this.data.connectionUuid);
+        }
+    }
+
     prepareBaseValues() {
-    // Call parent first to apply system-wide modifiers
         super.prepareBaseValues();
+        if (!this.actor) return;
 
-        if (this.actor) {
-            const skillId = this.data.selectedSkill || 'negotiation';
-            const attributeId = this.data.selectedAttribute || 'charisma';
+        // 1. Get common data
+        const rule = game.settings.get("sr5-marketplace", "availabilityTestRule");
+        const skillId = this.data.selectedSkill;
+        const attributeId = this.data.selectedAttribute;
+        const skill = this.actor.system.skills.active[skillId];
+        const attribute = this.actor.system.attributes[attributeId];
+        const modifiers = this.data.action.modifiers || [];
+        const parsed = this.constructor.parseAvailability(this.data.availabilityStr);
 
-            const skill = this.actor.system.skills.active[skillId];         // Your log shows this has skill.value but an empty skill.label
-            const attribute = this.actor.system.attributes[attributeId]; // Your log shows this has attribute.value but an empty attribute.label
-            const modifiers = this.data.action.modifiers || 0;
-
-            if (!skill || !attribute) {
-                console.error(`Marketplace | Actor is missing required skill ('${skillId}') or attribute ('${attributeId}').`);
-                return;
-            }
-
-            // --- THE FIX ---
-            // 1. Since .label is empty, we get the official localization key from the system's configuration.
-            const skillLocKey = CONFIG.SR5.activeSkills[skillId]; 
-            const attributeLocKey = `FIELDS.attributes.${attributeId}.label`;
-            console.log(skillLocKey, attributeLocKey);
-
-
-            // 2. We localize these keys to get the final, human-readable strings.
-            const skillLabel = game.i18n.localize(skillLocKey);
-            const attributeLabel = game.i18n.localize(attributeLocKey);
-            console.log(skillLabel, attributeLabel);
-            const parsed = this.constructor.parseAvailability(this.data.availabilityStr);
-            // Set the rest of the test's data
-            this.data.threshold.base = 0;
-            this.data.limit.base = this.actor.system.limits.social.value;
-            
-            const pool = new DialogList(this.data.pool.mod);
-            pool.clear();
-            
-            // 3. We use the correctly translated labels when building the pool display.
-            pool.addPart(skillLabel, skill.value);
-            pool.addPart(attributeLabel, attribute.value);
-
-            if (Array.isArray(modifiers)) {
-            for (const mod of modifiers) {
-                pool.addPart(mod.label, mod.value);
-            }
+        if (!skill || !attribute) {
+            console.error(`Marketplace | Actor is missing required skill ('${skillId}') or attribute ('${attributeId}').`);
+            return;
         }
-            
-            // Set base to 0 to prevent double-counting.
-            this.data.pool.base = 0;
-            console.log(this.data)
+
+        // 2. Prepare dice pool helper
+        const pool = new DialogList(this.data.pool.mod);
+        pool.clear();
+        const skillLabel = game.i18n.localize(CONFIG.SR5.activeSkills[skillId]);
+        const attributeLabel = game.i18n.localize(`FIELDS.attributes.${attributeId}.label`);
+
+        // 3. Set limit (common to all rules)
+        this.data.limit.base = this.actor.system.limits.social.value;
+
+        // 4. Configure test and build dice pool based on the active rule
+        switch (rule) {
+            case "simple":
+            case "extended":
+                console.log(`Marketplace | Configuring for ${rule.charAt(0).toUpperCase() + rule.slice(1)} Test Rule`);
+                this.data.threshold.base = parsed.rating;
+                this.data.opposed = undefined;
+                this.data.extended = (rule === "extended");
+
+                // Build full dice pool: Skill + Attribute + Modifiers + Contact Stats
+                pool.addPart(skillLabel, skill.value);
+                pool.addPart(attributeLabel, attribute.value);
+                modifiers.forEach(mod => pool.addPart(mod.label, mod.value));
+                if (this.contactItem) {
+                    pool.addPart(game.i18n.localize("SR5.Connection"), this.contactItem.system.connection);
+                    pool.addPart(game.i18n.localize("SR5.Loyalty"), this.contactItem.system.loyalty);
+                }
+                break;
+
+            case "opposed":
+            default:
+                console.log("Marketplace | Configuring for Opposed Test Rule (Core)");
+                this.data.threshold.base = 0;
+                this.data.extended = false;
+
+                // Build opposed dice pool: Skill + Attribute + Modifiers + Connection ONLY
+                pool.addPart(skillLabel, skill.value);
+                pool.addPart(attributeLabel, attribute.value);
+                modifiers.forEach(mod => pool.addPart(mod.label, mod.value));
+                if (this.contactItem) {
+                    pool.addPart(game.i18n.localize("SR5.Connection"), this.contactItem.system.connection);
+                }
+                break;
         }
+        
+        // 5. Finalize the dice pool
+        this.data.pool.base = 0;
     }
     
     get _dialogTemplate() {
@@ -288,44 +311,5 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
 
         // 5. Return the clean result data.
         return test.result.toJSON();
-    }
-
-    /**
-     * A simple, static runner that acts as a switchboard for the test.
-     * It can create a standard test with a dialog or a "silent" test that
-     * returns its result, based on the context provided.
-     * @param {Actor|string} actorRef - The actor performing the test.
-     * @param {string} availabilityStr - The availability string (e.g., "12R").
-     * @param {object} [context={}] - An object to provide context for the call.
-     * @param {boolean} [context.isAppCall=false] - Set to true if calling from your app.
-     * @returns {Promise<AvailabilityTest>} - The executed test instance, containing the results.
-     */
-    static async run_old(actorRef, availabilityStr = "", context = {}) {
-        const actor = typeof actorRef === "string" ? await fromUuid(actorRef) : actorRef;
-        if (!actor) throw new Error("AvailabilityTest: actor not found");
-
-        let testOptions = {
-            availability: availabilityStr
-        };
-
-        // If the test is called from your app, set the options to suppress the UI.
-        if (context.isAppCall) {
-            testOptions.showDialog = false;
-            testOptions.showMessage = false;
-        }
-
-        // Create the new test instance, passing the correct arguments.
-        const test = new this(
-            {},                 // data
-            { actor },          // documents
-            testOptions         // options
-        );
-        
-        // Execute the test. It will either show the dialog or run silently
-        // based on the options we just set.
-        await test.execute();
-
-        // Return the completed test instance so the calling app can get the results.
-        return test;
     }
 }
