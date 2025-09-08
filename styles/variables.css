@@ -40,7 +40,7 @@
     --color-black-transparent-80: rgba(0, 0, 0, 0.8); /* Usage: .sheet-top-content (bg) */
     --color-white-transparent-05: rgba(255, 255, 255, 0.05); /* Usage: .skills-list .toggle-label:hover, .employee-list .toggle-label:hover */
     --color-white-transparent-10: rgba(255, 255, 255, 0.1);  /* Usage: .inventory-item .item-img img (bg) */
-
+    --color-dark-grey: #333333de;
     /* --- Greens --- */
     --color-green-base: green;
     --color-green-button: #4CAF50;
@@ -95,6 +95,8 @@
 --app-sticky-top-bg: ;
 --app-sticky-top-border: ;
 
+/* --- Actor --- */
+--actor-background-hover: ;
 /* --- Text & Links --- */
 --text-color-primary: ;
 --text-color-header: ;
@@ -137,6 +139,10 @@
 --drop-target-border-hover: ;
 --drop-target-bg-hover: ;
 
+/* --- Form Special --- */
+--Form-background-group: ;
+--Form-background-group-hover: ;
+
 /* --- Inventory --- */
 --inventory-header-color: ;
 --inventory-item-border: ;
@@ -170,6 +176,9 @@
 /* ================================================================== \*/
 
 .themed.theme-light {
+--Form-background-group: var(--color-dark-grey);
+--Form-background-group-hover: var(--color-dark-grey);
+--bg-main: var(--bg-main-light);
 --app-window-header-bg: var(--color-red-darkest);
 --app-window-header-border: var(--color-red-deep);
 --app-window-header-title-color: var(--color-grey-lightest);
@@ -178,9 +187,9 @@
 --app-sticky-top-bg: var(--color-black-transparent-80);
 --app-sticky-top-border: var(--color-yellow-dark);
 
---text-color-primary: var(--color-grey-lightest);
+--text-color-primary: var(--color-black);
 --text-color-header: var(--color-red-base);
---text-color-subheader: var(--color-yellow-base);
+--text-color-subheader: var(--color-yellow-dark);
 --text-color-link: var(--color-yellow-base);
 --text-color-link-hover: var(--color-yellow-light);
 --text-color-read-only: var(--color-red-darkest);
@@ -189,9 +198,9 @@
 --border-color-dark: var(--color-grey-medium);
 --border-color-highlight: var(--color-yellow-dark);
 
---tab-inactive-bg: var(--color-grey-dark);
+--tab-inactive-bg: var(--attribute-group-bg);
 --tab-inactive-border: var(--border-color-medium);
---tab-inactive-color: var(--color-grey-lightest);
+--tab-inactive-color: var(--color-black);
 --tab-active-bg: #555; /* Note: This color was not in the original palette */
 --tab-active-text-shadow: 0 0 5px var(--color-yellow-light);
 
@@ -203,7 +212,7 @@
 --skill-header-color: var(--color-yellow-base);
 --skill-header-border: var(--border-color-medium);
 --collapsible-header-hover-bg: rgb(0 0 0 / 23%);
---collapsible-label-hover-bg: var(--color-white-transparent-05);
+--collapsible-label-hover-bg: var(--tab-active-bg);
 --collapsible-content-bg: var(--color-black-transparent-15);
 
 --input-bg-transparent: rgba(0,0,0,0.3);
@@ -218,10 +227,13 @@
 --inventory-item-border: var(--border-color-dark);
 --inventory-item-image-bg: var(--color-white-transparent-10);
 --searbarColor: var(--color-red-darkest);
-
+--actor-background-hover: var(--tab-active-bg);
 }
 
 .themed.theme-dark {
+--Form-background-group: var(--color-dark-grey);
+--Form-background-group-hover: var(--color-dark-grey);
+--bg-main: var(--bg-main-dark);
 --app-window-header-bg: var(--color-red-darkest);
 --app-window-header-border: var(--color-red-deep);
 --app-window-header-title-color: var(--color-grey-lightest);

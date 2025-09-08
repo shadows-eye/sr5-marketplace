@@ -234,7 +234,9 @@
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
-.selectable-actor:hover { background-color: var(--bg-dark-section-hover); }
+.selectable-actor:hover { 
+    background-color: var(--actor-background-hover); 
+}
 
 .selectable-actor img{
     width: 5em;

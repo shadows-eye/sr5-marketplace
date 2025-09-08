@@ -79,28 +79,58 @@ export class AppDialogBuilder {
      * @param {string} initialParams.connectionUuid - The connectionUuid
      * @returns {Promise<object|null>} The context for the Handlebars template.
      */
-    async buildInitialTestDialogContext({ actorUuid, itemUuids, skill, attribute, connectionUuid, availabilityStr,...rest }) {
+    async buildInitialTestDialogContext({ actorUuid, itemUuids, skill, attribute, connectionUuid, availabilityStr, modifiers, ...rest }) {
         const actor = await this.constructor.getActor(actorUuid);
-        const items = (await Promise.all(itemUuids.map(uuid => this.constructor.getItem(uuid)))).filter(i => i);
-        if (!actor || items.length === 0) return null;
+        if (!actor) return null;
 
-        // Create a new test state in the user's flag
-        //this.dialogId = await AppTestFlagService.createTest({ actorUuid, itemUuids });
+        // 1. Prepare base data and the dice pool breakdown array.
+        const dicePoolBreakdown = [];
+        let totalDicePool = 0;
+
+        // 2. Get Skill and Attribute values.
+        const skillData = actor.system.skills.active[skill];
+        const attributeData = actor.system.attributes[attribute];
+
+        if (skillData) {
+            const skillLabel = game.i18n.localize(CONFIG.SR5.activeSkills[skill]);
+            dicePoolBreakdown.push({ label: skillLabel, value: skillData.value });
+            totalDicePool += skillData.value;
+        }
+        if (attributeData) {
+            const attributeLabel = game.i18n.localize(`FIELDS.attributes.${attribute}.label`);
+            dicePoolBreakdown.push({ label: attributeLabel, value: attributeData.value });
+            totalDicePool += attributeData.value;
+        }
+
+        // 3. Get modifiers from the active test state.
+        if (Array.isArray(modifiers)) {
+            modifiers.forEach(mod => {
+                dicePoolBreakdown.push({ label: mod.label, value: mod.value });
+                totalDicePool += mod.value;
+            });
+        }
         
-        // Calculate combined availability (this logic can be expanded for your house rules)
-        const totalAvailabilityRating = items.reduce((total, item) => {
-            const availStr = item.system.technology?.availability?.value || "0";
-            return total + (parseInt(availStr.match(/^(\d+)/)?.[1] || "0", 10));
-        }, 0);
-        
-        const modifierGroups = DialogModifierService.getModifiersForTest({
-            skill: skill });
+        // 4. Get Connection and Loyalty from the selected contact, if any.
+        if (connectionUuid) {
+            const contactItem = await this.constructor.getItem(connectionUuid);
+            if (contactItem) {
+                dicePoolBreakdown.push({ label: game.i18n.localize("SR5.Connection"), value: contactItem.system.connection });
+                totalDicePool += contactItem.system.connection;
+                dicePoolBreakdown.push({ label: game.i18n.localize("SR5.Loyalty"), value: contactItem.system.loyalty });
+                totalDicePool += contactItem.system.loyalty;
+            }
+        }
+
+        // 5. Get modifier groups for the UI.
+        const modifierGroups = DialogModifierService.getModifiersForTest({ skill });
 
         return {
-            dialogId: this.dialogId, // Pass the ID to the template
+            dialogId: this.dialogId,
             actor,
             availabilityStr: availabilityStr,
             modifierGroups,
+            dicePoolBreakdown: dicePoolBreakdown, // The array of parts
+            totalDicePool: totalDicePool,         // The final sum
             ...rest
         };
     }

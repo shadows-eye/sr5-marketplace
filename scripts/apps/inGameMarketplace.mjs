@@ -265,7 +265,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                         connectionUuid: activeTestState.connectionUuid,
                         availabilityStr: activeTestState.availabilityStr,
                         skill: this.skill,
-                        attribute: this.attribute
+                        attribute: this.attribute,
+                        modifiers: activeTestState.modifiers
                     });
                     if (dialogContext) {
                         foundry.utils.mergeObject(partialContext, dialogContext);

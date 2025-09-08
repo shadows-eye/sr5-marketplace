@@ -9,27 +9,25 @@
                 <input type="hidden" name="dialogId" value="{{dialogId}}" />
                 <h2>{{localize "SR5Marketplace.Marketplace.Tests.AvailabilityTest"}}</h2>
                 
-                {{!-- Actor & Test Info --}}
-                <div class="dialog-header">
-                        <div class="actor-info">
-                        <div class="selectable-actor" actorUuid = "{{actor.uuid}}">
+                {{!-- NEW UNIFIED HEADER GRID --}}
+                <div class="dialog-header-grid">
+                    {{!-- Column 1: Actor Info --}}
+                    <div class="actor-info">
+                        <div class="selectable-actor" actorUuid="{{actor.uuid}}">
                             <img src="{{actor.img}}" title="{{actor.name}}"/>
                             <span>{{actor.name}}</span>
                         </div>
                     </div>
-                    {{!-- This area will be populated by your DialogList helper --}}
-                    <div class="common-test"></div>
-                </div>
-                <hr>
 
-                {{!-- Core Test Parameters --}}
-                <div class="form-grid">
+                    {{!-- Column 2: Availability --}}
                     <div class="form-group">
                         <label>{{localize "SR5Marketplace.Marketplace.Availability"}}</label>
-                        <input type="text" name="availabilityStr" value="{{availabilityStr}}" readonly/>
+                        <div class="availability-display">{{availabilityStr}}</div>
                     </div>
+
+                    {{!-- Column 3: Skill --}}
                     <div class="form-group">
-                        <label>{{localize "SR5Marketplace.Skill.Skill"}}</label>
+                        <label>{{localize "FIELDS.Skill.Skill"}}</label>
                         <select name="skill" data-action="changeTestParameter">
                             <option value="negotiation" {{#if (eq activeTestState.skill "negotiation")}}selected{{/if}}>{{localize "SR5.Skill.Negotiation"}}</option>
                             <option value="etiquette" {{#if (eq activeTestState.skill "etiquette")}}selected{{/if}}>{{localize "SR5.Skill.Etiquette"}}</option>
@@ -37,6 +35,8 @@
                             <option value="intimidation" {{#if (eq activeTestState.skill "intimidation")}}selected{{/if}}>{{localize "SR5.Skill.Intimidation"}}</option>
                         </select>
                     </div>
+
+                    {{!-- Column 4: Attribute --}}
                     <div class="form-group">
                         <label>{{localize "FIELDS.attributes.label"}}</label>
                         <select name="attribute" data-action="changeTestParameter">
@@ -46,25 +46,43 @@
                         </select>
                     </div>
                 </div>
+                <div class="dice-pool-summary">
+                    <div class="pool-parts">
+                        {{#each dicePoolBreakdown as |part|}}
+                            <span>{{part.label}} {{part.value}}</span>{{#unless @last}} + {{/unless}}
+                        {{/each}}
+                    </div>
+                    <div class="pool-total">
+                        = <strong>{{totalDicePool}}</strong> {{localize "SR5.Dice"}}
+                    </div>
+                </div>
                 <hr>
 
                 {{!-- Situational Modifiers --}}
                 <div class="marketplace-modifiers-container">
-                    {{#each modifierGroups as |group|}}
-                        <fieldset class="modifier-group">
-                            <legend>{{localize group.title}}</legend> <!--SR5Marketplace.Marketplace.Modifiers.General.title-->
-                            <div class="modifier-items-grid">
-                                {{#each group.items as |mod|}}
-                                    <label>{{localize mod.description}}</label> <!--SR5Marketplace.Marketplace.Modifiers.General.npcAttitudeFriendly-->
-                                    <button type="button" class="modifier-button {{#if (isModifierActive mod.label @root.activeTestState.modifiers)}}active{{/if}}" 
-                                            data-action="applyModifier" 
-                                            data-label="{{mod.label}}" 
-                                            data-value="{{mod.value}}">
-                                        {{#if (gt mod.value 0)}}+{{/if}}{{mod.value}}
-                                    </button>
-                                {{/each}}
+                    {{#each modifierGroups as |group index|}}
+                        <div class="modifier-group collapsible">
+                            {{!-- The hidden checkbox that powers the toggle --}}
+                            <input type="checkbox" id="toggle-mod-group-{{index}}" class="toggle-checkbox" checked>
+
+                            {{!-- The clickable header. The 'for' attribute links it to the checkbox. --}}
+                            <label for="toggle-mod-group-{{index}}" class="collapsible-header">{{localize group.title}}</label>
+
+                            {{!-- The content that will be shown or hidden --}}
+                            <div class="collapsible-content">
+                                <div class="modifier-items-grid">
+                                    {{#each group.items as |mod|}}
+                                        <label>{{localize mod.description}}</label>
+                                        <button type="button" class="modifier-button {{#if (isModifierActive mod.label @root.activeTestState.modifiers)}}active{{/if}}" 
+                                                data-action="applyModifier" 
+                                                data-label="{{mod.label}}" 
+                                                data-value="{{mod.value}}">
+                                            {{#if (gt mod.value 0)}}+{{/if}}{{mod.value}}
+                                        </button>
+                                    {{/each}}
+                                </div>
                             </div>
-                        </fieldset>
+                        </div>
                     {{/each}}
                 </div>
                 <hr>

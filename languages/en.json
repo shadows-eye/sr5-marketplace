@@ -171,13 +171,44 @@
                 "Qualitys": "Qualities",
                 "complex_form": "Complex Forms"
             },
-            "Modifiers":{
-                "General":{
-                    "title": "Social Modifiers",
-                    "npcAttitudeFriendly": "The Test involved participants have a friendly attitude to each other"
+            "Modifiers": {
+                "General": {
+                    "title": "General Social Modifiers",
+                    "npcAttitudeFriendly": "NPC has a friendly attitude",
+                    "npcAttitudeNeutral": "NPC has a neutral attitude",
+                    "npcAttitudeMistrustful": "NPC is mistrustful",
+                    "npcAttitudeBiased": "NPC is biased against the character",
+                    "npcAttitudeAverse": "NPC is averse to the character",
+                    "npcAttitudeHostile": "NPC is hostile",
+                    "resultAdvantageous": "Result of failure is advantageous",
+                    "resultInsignificant": "Result of failure is insignificant",
+                    "resultAnnoying": "Result of failure is annoying",
+                    "resultDangerous": "Result of failure is dangerous",
+                    "resultCatastrophic": "Result of failure is catastrophic"
+                },
+                "Negotiation": {
+                    "title": "Negotiation Modifiers",
+                    "notEnoughInfo": "Character has insufficient information",
+                    "hasLeverage": "Character has leverage over the target"
+                },
+                "Etiquette": {
+                    "title": "Etiquette Modifiers",
+                    "improperlyDressed": "Character is improperly dressed",
+                    "obviouslyNervous": "Character is obviously nervous"
+                },
+                "Intimidation": {
+                    "title": "Intimidation Modifiers",
+                    "physicallyImposing": "Character is physically imposing",
+                    "outnumbered": "Target is outnumbered",
+                    "hasWeapon": "Character is visibly armed or using magic"
+                },
+                "Con": {
+                    "title": "Con Modifiers",
+                    "plausibleEvidence": "Character presents plausible evidence",
+                    "targetDistracted": "Target is distracted or gullible"
                 }
             }
-    },
+        },
     "AppDialogItem": {
             "result": {
                 "Test": "Test Result",

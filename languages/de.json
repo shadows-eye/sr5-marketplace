@@ -149,10 +149,41 @@
                 "Qualitys": "Vor/Nachteile",
                 "complex_form": "Komplexe Formen"
             },
-            "Modifiers":{
-                "General":{
-                    "title": "Social Modifiers",
-                    "npcAttitudeFriendly": "The Test involved participants have a friendly attitude to each other"
+            "Modifiers": {
+                "General": {
+                    "title": "Allgemeine Soziale Modifikatoren",
+                    "npcAttitudeFriendly": "NSC hat eine freundliche Haltung",
+                    "npcAttitudeNeutral": "NSC hat eine neutrale Haltung",
+                    "npcAttitudeMistrustful": "NSC ist misstrauisch",
+                    "npcAttitudeBiased": "NSC ist dem Charakter gegenüber voreingenommen",
+                    "npcAttitudeAverse": "NSC hat eine Abneigung gegen den Charakter",
+                    "npcAttitudeHostile": "NSC ist feindselig",
+                    "resultAdvantageous": "Fehlschlag hat vorteilhafte Konsequenzen",
+                    "resultInsignificant": "Fehlschlag hat unbedeutende Konsequenzen",
+                    "resultAnnoying": "Fehlschlag hat ärgerliche Konsequenzen",
+                    "resultDangerous": "Fehlschlag hat gefährliche Konsequenzen",
+                    "resultCatastrophic": "Fehlschlag hat katastrophale Konsequenzen"
+                },
+                "Negotiation": {
+                    "title": "Verhandlungsmodifikatoren",
+                    "notEnoughInfo": "Charakter hat unzureichende Informationen",
+                    "hasLeverage": "Charakter hat ein Druckmittel gegen das Ziel"
+                },
+                "Etiquette": {
+                    "title": "Etikette-Modifikatoren",
+                    "improperlyDressed": "Charakter ist unpassend gekleidet",
+                    "obviouslyNervous": "Charakter ist offensichtlich nervös"
+                },
+                "Intimidation": {
+                    "title": "Einschüchterungsmodifikatoren",
+                    "physicallyImposing": "Charakter ist körperlich imposant",
+                    "outnumbered": "Ziel ist in der Unterzahl",
+                    "hasWeapon": "Charakter ist sichtbar bewaffnet oder nutzt Magie"
+                },
+                "Con": {
+                    "title": "Überreden-Modifikatoren",
+                    "plausibleEvidence": "Charakter präsentiert glaubwürdige Beweise",
+                    "targetDistracted": "Das Ziel ist abgelenkt oder leichtgläubig"
                 }
             }
         },

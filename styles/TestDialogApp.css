@@ -21,11 +21,16 @@
 /* 1. Initial State (The Form)                                        */
 /* ================================================================== */
 
-.availability-dialog-form .dialog-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+/* NEW: The main grid container for the header */
+.dialog-header-grid {
+    display: grid;
+    /* Create 4 columns: Actor (auto-sized), and 3 flexible columns for the fields */
+    grid-template-columns: auto 1fr 1fr 1fr;
+    gap: 15px;
+    align-items: end; /* Aligns the bottom of the actor icon with the form fields */
     margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color-medium);
 }
 
 .availability-dialog-form .actor-info img {
@@ -44,29 +49,62 @@
     color: var(--text-color-primary);
 }
 
-.availability-dialog-form .form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
 .availability-dialog-form .form-group {
     display: flex;
     flex-direction: column;
+    background-color: var(--Form-background-group);
+    border-radius: 5px;
 }
 
 .availability-dialog-form .form-group label {
     font-weight: bold;
     color: var(--text-color-subheader);
     margin-bottom: 4px;
+    font-size: 0.9em;
 }
 
-.availability-dialog-form input,
 .availability-dialog-form select {
     background: var(--input-bg-transparent);
     color: var(--input-color);
     border: 1px solid var(--border-color-dark);
+}
+
+/* NEW: Style for the non-input availability display */
+.availability-display {
+    background: var(--input-bg-transparent);
+    color: var(--input-color);
+    padding: 0.5em;
+    border-radius: 3px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.dice-pool-summary {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: var(--attribute-group-bg);
+    border: 1px solid var(--border-color-medium);
+    border-radius: 5px;
+    font-size: 1.1em;
+    color: var(--text-color-primary);
+}
+
+.dice-pool-summary .pool-parts {
+    flex-grow: 1;
+    text-align: right;
+}
+
+.dice-pool-summary .pool-total {
+    font-weight: bold;
+    color: var(--text-color-subheader);
+}
+
+.dice-pool-summary .pool-total strong {
+    font-size: 1.5em;
+    margin-right: 5px;
 }
 
 /* ================================================================== */
@@ -227,4 +265,68 @@
     background: var(--tab-active-bg);
     border-color: var(--border-color-highlight);
     text-shadow: var(--tab-active-text-shadow);
+}
+
+/* ================================================================== */
+/* 5. Collapsible Modifier Section                                    */
+/* ================================================================== */
+
+/* Hide the checkbox itself from view */
+.toggle-checkbox {
+    display: none;
+}
+
+/* Style the clickable header (our new <label>) */
+.collapsible-header {
+    display: block;
+    cursor: pointer;
+    padding: 8px;
+    background: var(--attribute-group-bg);
+    border: 1px solid var(--border-color-medium);
+    border-radius: 3px;
+    font-weight: bold;
+    color: var(--text-color-subheader);
+    transition: background-color 0.2s ease;
+    position: relative;
+    padding-left: 30px; /* Make space for the icon */
+}
+
+.collapsible-header:hover {
+    background: var(--collapsible-label-hover-bg);
+}
+
+/* Add a dropdown arrow icon */
+.collapsible-header::before {
+    content: '▼';
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: transform 0.3s ease-in-out;
+    font-size: 0.8em;
+}
+
+/* The content that will be toggled */
+.collapsible-content {
+    padding: 15px 10px 5px 10px;
+    border: 1px solid var(--border-color-medium);
+    border-top: none;
+    border-radius: 0 0 3px 3px;
+    overflow: hidden;
+    /* Smooth transition for the collapse/expand animation */
+    max-height: 1000px; /* A large value to allow content to expand */
+    transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+}
+
+/* --- THE TOGGLE MAGIC --- */
+/* When the checkbox is NOT checked, collapse the content and rotate the arrow */
+.toggle-checkbox:not(:checked) ~ .collapsible-content {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-width: 0;
+}
+
+.toggle-checkbox:not(:checked) ~ .collapsible-header::before {
+    transform: translateY(-50%) rotate(-90deg);
 }
