@@ -227,21 +227,20 @@
 .MarketAppDialog-die-result.success {
     background-color: #222;
     color: #4CAF50;
-    border: 1px solid #666;
+    border: 1px solid #376b0f
 }
 
 /* Glitch: red text, grey die */
 .MarketAppDialog-die-result.glitch {
     background-color: #555;
     color: #F44336;
-    border: 1px solid #999;
+    border: 1px solid #5f0303
 }
 
 /* Failure: white text, grey die */
 .MarketAppDialog-die-result.failure {
     background-color: #777;
     color: #f0f0f0;
-    border: 1px solid #aaa;
 }
 
 
