@@ -45,6 +45,7 @@ export class AppTestFlagService {
                 result: null,
                 rolls: null,
                 resistResult: null,
+                rollCount: 0,
                 resolved: false,
                 skill: 'negotiation', //Default Value
                 attribute: 'charisma', //Default Value

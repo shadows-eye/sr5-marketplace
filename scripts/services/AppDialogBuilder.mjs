@@ -1,6 +1,7 @@
 import { DialogModifierService } from './DialogModifierService.mjs';
 import { DiceHelperService } from './DiceHelperService.mjs';
 import parseAvailability from '../lib/availabilityParser.mjs';
+import { DeliveryTimeService } from './DeliveryTimeService.mjs';
 
 export class AppDialogBuilder {
     constructor() {
@@ -132,25 +133,47 @@ export class AppDialogBuilder {
 
     /** @private Builds context for the 'extended-inprogress' state. */
     #buildExtendedInProgressContext() {
-        const testData = this.testState.result;
-        const lastRollData = { diceResults: testData.rolls[testData.rolls.length - 1]?.terms[0]?.results || [] };
+        const resultData = this.testState.result; // This is the object with the calculated 'values'.
+        const rollsData = this.testState.rolls;   // This is the separate array with the raw dice rolls.
 
+        // 1. For an extended test, we always want to show the results of the MOST RECENT roll.
+        const lastRoll = rollsData?.[rollsData.length - 1];
+        
+        // 2. Extract the dice results from the correct path inside the 'lastRoll' object.
+        const diceResults = lastRoll?.terms[0]?.results || [];
+        const glitches = resultData.values.glitches.value;
+
+        // 3. Create a purpose-built object to pass to your unchanged DiceHelperService.
+        const resultForHelper = {
+            diceResults: diceResults,
+            values: {
+                glitches: {
+                    value: glitches
+                }
+            }
+        };
+        const renderedDice = DiceHelperService.processDice(resultForHelper);
+        
+        // 4. Return the complete context for the "in-progress" template.
         return {
-            cumulativeHits: testData.values.extendedHits.value,
-            threshold: testData.threshold.value,
-            currentPool: testData.pool.value,
-            renderedDice: DiceHelperService.processDice(lastRollData),
+            cumulativeHits: resultData.values.extendedHits.value,
+            threshold: resultData.threshold.value,
+            currentPool: resultData.pool.value,
+            renderedDice: renderedDice
         };
     }
 
-    /** @private Builds context for the 'resolved' state. */
+    /** * @private Builds context for the 'resolved' state. 
+     */
     #buildResolvedContext() {
+        // --- THIS IS THE UPDATED ROUTER ---
         switch (this.testState.testType) {
             case "opposed":
                 return this.#_buildOpposedResolvedContext();
             case "simple":
-            case "extended":
                 return this.#_buildSimpleResolvedContext();
+            case "extended":
+                return this.#_buildExtendedResolvedContext(); // <-- New dedicated path
             default:
                 console.error(`Unknown test type "${this.testState.testType}" in buildResolvedDialogContext.`);
                 return null;
@@ -184,6 +207,39 @@ export class AppDialogBuilder {
                 netHits: initialResult.values?.netHits?.value ?? 0,
                 renderedDice: DiceHelperService.processDice(initialResult),
                 threshold: threshold
+            }
+        };
+    }
+
+    /** * @private Builds context for a resolved EXTENDED test. 
+     * This new method contains the logic we developed previously.
+     */
+    #_buildExtendedResolvedContext() {
+        const resultData = this.testState.result;
+        const rollsData = this.testState.rolls;
+
+        // 1. Final success is based on the CUMULATIVE hits.
+        const isAvailable = resultData.values.extendedHits.value >= resultData.threshold.value;
+        const finalNetHits = Math.max(0, resultData.values.extendedHits.value - resultData.threshold.value);
+
+        // 2. Display the dice from the MOST RECENT roll.
+        const lastRoll = rollsData?.[rollsData.length - 1];
+        const lastDiceResults = lastRoll?.terms[0]?.results || [];
+        const lastGlitches = resultData.values.glitches.value;
+        
+        const resultForHelper = {
+            diceResults: lastDiceResults,
+            values: { glitches: { value: lastGlitches } }
+        };
+
+        // 3. Return the complete context for the final "resolved" template.
+        return {
+            isAvailable: isAvailable,
+            initialRoll: {
+                netHits: finalNetHits,
+                renderedDice: DiceHelperService.processDice(resultForHelper),
+                threshold: resultData.threshold.value,
+                cumulativeHits: resultData.values.extendedHits.value
             }
         };
     }

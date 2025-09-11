@@ -863,35 +863,50 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         console.log("%c--- Action: Continue Extended Test ---", "color: orange; font-weight: bold;");
 
         try {
-            // 1. Re-create the test from the stored result data.
-            const previousTestData = this.activeTestState.result;
             const actor = await fromUuid(this.activeTestState.actorUuid);
             if (!actor) return;
+
+            const rollCount = (this.activeTestState.rollCount || 0) + 1;
+            const penalty = { label: "Extended Test", value: (rollCount - 1) * -1 };
+            const newAppliedModifiers = [...(this.activeTestState.appliedModifiers || []), penalty];
+
+            const data = {
+                action: {
+                    skill: this.activeTestState.skill,
+                    attribute: this.activeTestState.attribute,
+                    modifiers: newAppliedModifiers,
+                    connectionUuid: this.activeTestState.connectionUuid,
+                    availabilityStr: this.activeTestState.availabilityStr,
+                    dialogId: this.activeDialogId
+                }
+            };
             
-            const test = new game.shadowrun5e.tests.AvailabilityTest(previousTestData, { actor });
+            // --- THIS IS THE FIX ---
+            // Add the options object to ensure a silent roll.
+            const options = { showDialog: false, showMessage: false };
 
-            // 2. Use the system's built-in method to run the next iteration of the extended test.
-            await test.executeAsExtended();
+            // Pass the options to the test constructor.
+            const test = new game.shadowrun5e.tests.AvailabilityTest(data, { actor }, options);
+            await test.execute();
 
-            // 3. Determine the new status.
+            // 5. Accumulate hits from the previous total.
+            const previousHits = this.activeTestState.result.values.extendedHits.value;
+            test.data.values.extendedHits.value += previousHits;
+            test.data.values.extendedHits.mod.push({ name: "Previous Hits", value: previousHits });
+
+            // 6. Check if the test is now resolved.
             let finalStatus = 'extended-inprogress';
-            if (test.success || test.pool.value <= 0) {
-                // The test is over if we've met the threshold OR run out of dice.
+            if (test.data.values.extendedHits.value >= test.data.threshold.value || test.pool.value <= 0) {
                 finalStatus = 'resolved';
             }
             
-            // 4. Update the flag with the new result and status.
-            const resultForFlag = {
-                diceResults: test.rolls[test.rolls.length - 1]?.terms[0]?.results || [], // Only the last roll's dice
-                values: test.data.values,
-                success: test.success,
-                // We need to pass the full test data for the next iteration
-                fullTestData: test.data 
-            };
-
+            // 7. Save everything back to the flag.
             await AppTestFlagService.updateTest(this.activeTestState.id, {
-                result: resultForFlag,
-                status: finalStatus
+                result: test.data,
+                rolls: test.rolls,
+                status: finalStatus,
+                rollCount: rollCount, // Save the updated roll count
+                appliedModifiers: newAppliedModifiers // Save the updated modifiers
             });
 
             this.render();
