@@ -1,6 +1,7 @@
 @import "actor.css";
 @import "variables.css";
 @import "itemPreview.css";
+@import "TestDialogApp.css";
 
 /* ======================================
    Custom Foundry Application Window Header Styling for Marketplace and settings App (V1/V2 mix)
@@ -233,7 +234,9 @@
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
-.selectable-actor:hover { background-color: var(--bg-dark-section-hover); }
+.selectable-actor:hover { 
+    background-color: var(--actor-background-hover); 
+}
 
 .selectable-actor img{
     width: 5em;
@@ -436,20 +439,39 @@ select#item-type-selector option {
 .contact-cards-container { display: grid; grid-template-columns: repeat(5, 5em) auto; }
 .contact-card{ 
     object-fit: contain;
+        margin: 0.1em;
+        padding: 0.5em;
+        width: max-content;
 }
 
 /* For LIGHT mode, we use a dark, vibrant yellow border */
 .sr5-marketplace.theme-light .contact-card.selected {
     border: 2px solid var(--color-yellow-dark);
-    padding: 2px;
+    border-radius: 0.5em;
     box-shadow: 0 0 8px var(--color-yellow-dark); /* Adds a subtle glow for better visibility */
 }
 
 /* For DARK mode, we use a bright, vibrant yellow border */
 .sr5-marketplace.theme-dark .contact-card.selected {
     border: 2px solid var(--color-yellow-base);
-    padding: 2px;
+    border-radius: 0.5em;
     box-shadow: 0 0 8px var(--color-yellow-base); /* Adds a subtle glow for better visibility */
+}
+
+.sr5-marketplace.theme-light .contact-card.selected .contact-card-visible img{
+    width: 40px;
+}
+
+.sr5-marketplace.theme-dark .contact-card.selected .contact-card-visible img{
+    width: 40px;
+}
+
+.sr5-marketplace.theme-light .contact-card .contact-card-visible img{
+    width: 40px;
+}
+
+.sr5-marketplace.theme-dark .contact-card .contact-card-visible img{
+    width: 40px;
 }
 
 .shopping-cart-container{
@@ -665,8 +687,6 @@ hr.marketplace-settings-hr {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    max-height: 300px; /* Adjust as needed */
-    overflow-y: auto;
     padding: 5px;
 }
 

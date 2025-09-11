@@ -3,11 +3,11 @@
 
     {{!-- Physical Attributes --}}
     <div class="attribute-group physical">
-        <h4>{{localize "SR5.LimitPhysical"}}</h4>
+        <h4>{{localize "SR5Marketplace.LimitPhysical"}}</h4>
         <div class="attribute-list">
             {{#each system.attributes.physicalAttributes as |attr name|}}
                 <div class="sr5-marketplace-attribute" data-attribute="{{name}}">
-                    <div>{{localize (concat "SR5.Attr" (capitalize name))}}</div>
+                    <div>{{localize (concat "SR5Marketplace.Attr" (capitalize name))}}</div>
                     
                     {{!-- If in edit mode, show an input. Otherwise, show a span. --}}
                     {{#if @root.isEditMode}}
@@ -22,11 +22,11 @@
 
     {{!-- Mental Attributes --}}
     <div class="attribute-group mental">
-        <h4>{{localize "SR5.LimitMental"}}</h4>
+        <h4>{{localize "SR5Marketplace.LimitMental"}}</h4>
         <div class="attribute-list">
             {{#each system.attributes.mentalAttributes as |attr name|}}
                 <div class="sr5-marketplace-attribute" data-attribute="{{name}}">
-                    <div>{{localize (concat "SR5.Attr" (capitalize name))}}</div>
+                    <div>{{localize (concat "SR5Marketplace.Attr" (capitalize name))}}</div>
 
                     {{#if @root.isEditMode}}
                         <input type="number" name="system.attributes.{{name}}.value" value="{{attr.value}}" class="sr5-marketplace-input value-input" />
@@ -40,15 +40,15 @@
 
     {{!-- Special Attributes --}}
     <div class="attribute-group special">
-        <h4>{{localize "SR5.SpecialAttributes"}}</h4>
+        <h4>{{localize "SR5Marketplace.SpecialAttributes"}}</h4>
         <div class="attribute-list">
              {{#each system.attributes.specialAttributes as |attr name|}}
                 <div class="sr5-marketplace-attribute" data-attribute="{{name}}">
                     <div>
                         {{#if (or (eq name "initiation") (eq name "submersion"))}}
-                            {{localize (concat "SR5." (capitalize name))}}
+                            {{localize (concat "SR5Marketplace." (capitalize name))}}
                         {{else}}
-                            {{localize (concat "SR5.Attr" (capitalize name))}}
+                            {{localize (concat "SR5Marketplace.Attr" (capitalize name))}}
                         {{/if}}
                     </div>
 

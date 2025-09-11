@@ -1,12 +1,12 @@
 <div class="shopping-cart-container">
     <div class="basket-items-container">
         <div class="basket-grid headers seven-columns">
-            <div class="grid-item header" style="justify-self: start;">{{localize "SR5.Marketplace.Name"}}</div>
-            <div class="grid-item header" title="{{localize 'SR5.Marketplace.system.technology.quantity'}} (per Pack)">{{localize "SR5.Marketplace.quantityPerPack"}}</div>
-            <div class="grid-item header">{{localize "SR5.Marketplace.buyQuantity"}}</div>
-            <div class="grid-item header">{{localize "SR5.Marketplace.system.technology.rating"}}</div>
-            <div class="grid-item header">{{localize "SR5.Marketplace.system.technology.Cost"}}</div>
-            <div class="grid-item header">{{localize "SR5.Marketplace.system.karma"}}</div>
+            <div class="grid-item header" style="justify-self: start;">{{localize "SR5Marketplace.Marketplace.Name"}}</div>
+            <div class="grid-item header" title="{{localize 'SR5Marketplace.Marketplace.system.technology.quantity'}} (per Pack)">{{localize "SR5Marketplace.Marketplace.quantityPerPack"}}</div>
+            <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.buyQuantity"}}</div>
+            <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.system.technology.rating"}}</div>
+            <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.system.technology.Cost"}}</div>
+            <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.system.karma"}}</div>
             <div class="grid-item header"><i class="fas fa-trash"></i></div>
         </div>
 
@@ -47,17 +47,17 @@
     </div>
 
     <div class="basket-summary">
-        <div id="total-cost"><strong>{{localize "SR5.Marketplace.TotalCost"}}:</strong> {{basket.totalCost}} <i class="fa-duotone fa-solid fa-circle-yen darkRed"></i></div>
-        <div id="total-availability"><strong>{{localize "SR5.Marketplace.TotalAvailability"}}:</strong> {{basket.totalAvailability}}</div>
-        {{#if basket.totalKarma}}<div id="total-karma"><strong>{{localize "SR5.Marketplace.TotalKarma"}}:</strong> {{basket.totalKarma}} <i class="fa-duotone fa-solid fa-circle-star yellow"></i></div>{{/if}}
-        {{#if basket.totalEssenceCost}}<div id="total-essence"><strong>{{localize "SR5.Marketplace.TotalEssence"}}:</strong> {{basket.totalEssenceCost}}</div>{{/if}}
+        <div id="total-cost"><strong>{{localize "SR5Marketplace.Marketplace.TotalCost"}}:</strong> {{basket.totalCost}} <i class="fa-duotone fa-solid fa-circle-yen darkRed"></i></div>
+        <div id="total-availability"><strong>{{localize "SR5Marketplace.Marketplace.TotalAvailability"}}:</strong> {{basket.totalAvailability}}</div>
+        {{#if basket.totalKarma}}<div id="total-karma"><strong>{{localize "SR5Marketplace.Marketplace.TotalKarma"}}:</strong> {{basket.totalKarma}} <i class="fa-duotone fa-solid fa-circle-star yellow"></i></div>{{/if}}
+        {{#if basket.totalEssenceCost}}<div id="total-essence"><strong>{{localize "SR5Marketplace.Marketplace.TotalEssence"}}:</strong> {{basket.totalEssenceCost}}</div>{{/if}}
     </div>
 
     <hr class="marketplace-settings-hr">
 
     <div class="actor-contact-grid">
-        <div class="actor-contact-grid">
-        <h3 class="grid-header">{{localize "SR5.Marketplace.selectContact"}}</h3>
+
+        <div class="grid-header">{{localize "SR5Marketplace.Marketplace.selectContact"}}</div>
         {{#each contacts}}
             <div class="contact-card {{#if this.isSelected}}selected{{/if}}">
 
@@ -84,9 +84,9 @@
                     <p><strong>Connection:</strong> {{this.system.connection}}</p>
                     <div>{{{this.system.description.value}}}</div>
                 </div>
-            </div>
+
         {{else}}
-            <p class="hint-text grid-span-all">{{purchasingActor.name}} has no contacts.</p>
+            <div class="hint-text grid-span-all">{{purchasingActor.name}} has no contacts.</div>
         {{/each}}
     </div>
     </div>
@@ -95,7 +95,7 @@
     {{> "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html" . }}
 
     <div class="basket-actions">
-        <button id="send-request-button" class="send-request-button" data-action="sendRequest">{{localize 'SR5.Marketplace.SendRequest'}}</button>
-        <button id="cancel-request-button" class="send-request-button cancel" data-action="cancelRequest">{{localize 'SR5.Marketplace.CancelRequest'}}</button>
+        <button id="send-request-button" class="send-request-button" data-action="sendRequest">{{localize 'SR5Marketplace.Marketplace.SendRequest'}}</button>
+        <button id="cancel-request-button" class="send-request-button cancel" data-action="cancelRequest">{{localize 'SR5Marketplace.Marketplace.CancelRequest'}}</button>
     </div>
 </div>

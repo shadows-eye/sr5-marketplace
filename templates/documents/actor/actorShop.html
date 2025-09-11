@@ -7,7 +7,7 @@
 
                 <div class="form-group owner {{#if isEditMode}}drop-target{{/if}}" 
                     {{#if isEditMode}}data-drop-zone="owner" data-drop-type="Actor" data-target-field="system.shop.owner"{{/if}}>
-                    <label class="subHeading">{{localize "SR5.Marketplace.Shop.OwnerUuid"}}</label>
+                    <label class="subHeading">{{localize "SR5Marketplace.Marketplace.Shop.OwnerUuid"}}</label>
                     <owner class="form-fields">
                         {{#if owner}}
                             <div class="item-container">
@@ -29,7 +29,7 @@
                 
                 <div class="form-group connection {{#if isEditMode}}drop-target{{/if}}"
                     {{#if isEditMode}}data-drop-zone="connection" data-drop-type="Item" data-target-field="system.shop.connection"{{/if}}>
-                    <label class="subHeading">{{localize "SR5.Marketplace.Shop.ConnectionUuid"}}</label>
+                    <label class="subHeading">{{localize "SR5Marketplace.Marketplace.Shop.ConnectionUuid"}}</label>
                     <connection class="form-fields">
                         {{#if connection}}
                             <div class="item-container">
@@ -51,7 +51,7 @@
                 
                 <div class="form-group employees {{#if isEditMode}}drop-target{{/if}}"
                     {{#if isEditMode}}data-drop-zone="employees" data-drop-type="Actor" data-target-field="system.shop.employees"{{/if}}>
-                    <label class="subHeading">{{localize "SR5.Marketplace.Shop.Employees"}}</label>
+                    <label class="subHeading">{{localize "SR5Marketplace.Marketplace.Shop.Employees"}}</label>
                     <employees class="form-fields">
                         {{#each employees as |employee|}}
                             <div class="item-container" data-uuid="{{employee.uuid}}">
@@ -75,7 +75,7 @@
             </fieldset>
             
             <fieldset class="sr5-marketplace-inventory-fields form-group inventory">
-                <legend class="subHeading">{{localize "SR5.Marketplace.Shop.Inventory"}}</legend>
+                <legend class="subHeading">{{localize "SR5Marketplace.Marketplace.Shop.Inventory"}}</legend>
                 {{> 'modules/sr5-marketplace/templates/documents/actor/partials/shop-inventory.html' }}
             </fieldset>
         </div>

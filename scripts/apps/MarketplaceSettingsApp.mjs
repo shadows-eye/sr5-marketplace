@@ -31,7 +31,7 @@ export class MarketplaceSettingsApp extends HandlebarsApplicationMixin(Applicati
             id: "sr5-marketplace-settings",
             position: { width: 800, height: 650, top: 100, left: 150 },
             window: {
-                title: "SR5.Marketplace.Settings.WindowTitle",
+                title: "SR5Marketplace.Marketplace.Settings.WindowTitle",
                 resizable: true
             }
         });
@@ -112,7 +112,7 @@ export class MarketplaceSettingsApp extends HandlebarsApplicationMixin(Applicati
         const newBehaviors = formData.object;
         
         await game.settings.set("sr5-marketplace", "itemTypeBehaviors", newBehaviors);
-        ui.notifications.info(game.i18n.localize("SR5.Marketplace.Notifications.BehaviorsSaved"));
+        ui.notifications.info(game.i18n.localize("SR5Marketplace.Marketplace.Notifications.BehaviorsSaved"));
         this.close();
     }
 }

@@ -183,8 +183,8 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                 const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
                 context.shopEmployees = this.document.system.shop?.employees?.join('\n') || "";
                 context.modifierTypes = {
-                    discount: game.i18n.localize("SR5.Marketplace.Shop.Discount"),
-                    fee: game.i18n.localize("SR5.Marketplace.Shop.Fee")
+                    discount: game.i18n.localize("SR5Marketplace.Marketplace.Shop.Discount"),
+                    fee: game.i18n.localize("SR5Marketplace.Marketplace.Shop.Fee")
                 };
                 const skills = this.document.system.skills;
                 
@@ -198,7 +198,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                         return allowedGroups.includes(data.group) || allowedSkills.includes(key);
                     })
                     .map(([key, data]) => {
-                        const locKey = CONFIG.SR5.activeSkills[key];
+                        const locKey = CONFIG.SR5Marketplace.activeSkills[key];
                         return {
                             id: key,
                             name: game.i18n.localize(locKey) || key,
@@ -210,7 +210,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                 context.knowledgeSkillGroups = Object.entries(skills.knowledge).map(([groupKey, groupData]) => {
                     return {
                         key: groupKey, // Pass the key for the input name attribute
-                        label: game.i18n.localize(`SR5.KnowledgeSkill${capitalize(groupKey)}`),
+                        label: game.i18n.localize(`SR5Marketplace.KnowledgeSkill${capitalize(groupKey)}`),
                         skills: Object.entries(groupData.value).map(([skillId, skillData]) => ({
                             id: skillId,
                             name: skillData.name,

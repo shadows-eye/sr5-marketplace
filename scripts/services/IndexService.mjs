@@ -45,7 +45,7 @@ export class IndexService {
         });
         
         progressContainer.remove();
-        ui.notifications.info(game.i18n.localize("SR5.Marketplace.Notifications.IndexComplete"));
+        ui.notifications.info(game.i18n.localize("SR5Marketplace.Marketplace.Notifications.IndexComplete"));
         console.log(`SR5 Marketplace | Indexed ${plainItemData.length} items for the session.`);
         
         return plainItemData;

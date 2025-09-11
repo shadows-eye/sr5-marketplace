@@ -1,4 +1,4 @@
-import { MODULE_ID, FLAG_KEY_AppTest } from '../lib/constants.mjs';
+import { MODULE_ID, FLAG_KEY_AppTest, FLAGKEY_Basket } from '../lib/constants.mjs';
 
 /**
  * @summary Manages the state of in-app tests via a user flag.
@@ -7,94 +7,108 @@ import { MODULE_ID, FLAG_KEY_AppTest } from '../lib/constants.mjs';
  * test workflow within the application.
  */
 export class AppTestFlagService {
-
     /**
-     * Gets the entire test state object from a specific user's flag.
+     * READS the entire test state object from a specific user's flag.
      * @param {string} [userId] - The ID of the user to get the flag from.
      * @returns {Promise<object>} The test state object, or an empty object if not found.
      */
-    static async getState(userId) {
+    static async readState(userId) {
+        if (!userId) {
+            userId = await game.user.id;
+        }
         const user = game.users.get(userId);
         if (!user) return {};
         return user.getFlag(MODULE_ID, FLAG_KEY_AppTest) || {};
     }
 
     /**
-     * Saves the entire test state object to a specific user's flag.
-     * @param {object} state - The state object to save.
-     * @param {string|null} [userId=null] - The ID of the user to save the flag for. Defaults to the current user.
-     */
-    static async saveState(state, userId = null) {
-        // 1. Determine the target user. Use the provided userId or default to the current game user.
-        const user = userId ? game.users.get(userId) : game.user;
-
-        // 2. Ensure a valid user was found before proceeding.
-        if (!user) {
-            console.error(`AppTestFlagService | Could not find user with ID "${userId}" to save flag.`);
-            return;
-        }
-        
-        // 3. Log the action and set the flag for the resolved user.
-        console.log(`Saving flag '${FLAG_KEY_AppTest}' for user ${user.name}:`, state);
-        return user.setFlag(MODULE_ID, FLAG_KEY_AppTest, state);
-    }
-
-    /**
-     * Creates a new test entry in the flag. Before creating, it removes any old,
-     * unresolved tests for the same set of items to prevent duplicates.
+     * CREATES a new test state for a user, overwriting any previous state.
      * @param {object} initialData - The data to initialize the test with.
-     * @returns {Promise<string>} The unique ID of the newly created dialog state.
+     * @param {string} [userId] - The user for whom to create the test.
+     * @returns {Promise<string>} The unique ID of the newly created test state.
      */
-    static async createTest(initialData) {
+    static async createTest(initialData, userId) {
         const dialogId = foundry.utils.randomID();
-        let currentState = await this.getState();
-
-        // --- NEW: Clean up old, unresolved tests before creating a new one ---
-        const oldTestIds = Object.keys(currentState).filter(id => {
-            const test = currentState[id];
-            // Find any previous tests that are unresolved
-            return !test.resolved;
-        });
-
-        // If we found any old tests, remove them.
-        for (const id of oldTestIds) {
-            delete currentState[id];
+        if  (!userId) {
+        userId = await game.user.id;
         }
+        const rule = game.settings.get("sr5-marketplace", "availabilityTestRule");
 
-        // Add the new test to the state
-        currentState[dialogId] = {
-            id: dialogId,
-            status: 'initial',
-            ...initialData,
-            result: null,
-            resistResult: null,
-            resolved: false
+        // Create a fresh state object containing only this new test.
+        // This enforces the "one active test per user" rule.
+        const newState = {
+            [dialogId]: {
+                id: dialogId,
+                testType: rule,
+                status: 'initial',
+                ...initialData,
+                result: null,
+                rolls: null,
+                resistResult: null,
+                rollCount: 0,
+                resolved: false,
+                skill: 'negotiation', //Default Value
+                attribute: 'charisma', //Default Value
+                appliedModifiers: [] // Empty array
+            }
         };
 
-        await this.saveState(currentState);
+        const user = game.users.get(userId);
+        if (user) {
+            console.log(`Saving new test state to flag for user ${user.name}:`, newState);
+            await user.setFlag(MODULE_ID, FLAG_KEY_AppTest, newState);
+        }
         return dialogId;
     }
 
     /**
-     * Updates an existing test entry with a result object.
+     * UPDATES an existing test entry with new data.
      * @param {string} dialogId - The ID of the test state to update.
-     * @param {object} resultData - The result object from the executed test.
+     * @param {object} updateData - An object containing the properties to update.
+     * @param {string} [userId] - The user whose test to update.
      */
-    static async updateTestWithResult(dialogId, resultData) {
-        const currentState = await this.getState();
+    static async updateTest(dialogId, updateData, userId) {
+        if  (!userId) {
+        userId = await game.user.id;
+        }
+        const user = game.users.get(userId);
+        if (!user) return;
+
+        const currentState = await this.readState(userId);
         if (currentState[dialogId]) {
-            currentState[dialogId].result = resultData;
-            currentState[dialogId].status = 'result'; // Update status
-            await this.saveState(currentState);
+            // Merge the new data into the existing state for that test
+            foundry.utils.mergeObject(currentState[dialogId], updateData);
+            await user.setFlag(MODULE_ID, FLAG_KEY_AppTest, currentState);
         }
     }
 
     /**
-     * Clears all test data from the current user's flag.
+     * DELETES all test data from a specific user's flag.
+     * @param {string} [userId] - The user whose flag to clear.
      */
-    static async clearAllTests() {
-        console.log("Clearing all test state flags for current user."); // LOGGING
-        return game.user.unsetFlag(MODULE_ID, FLAG_KEY_AppTest);
+    static async deleteState(userId) {
+        if  (!userId) {
+        userId = await game.user.id;
+        }
+        const user = game.users.get(userId);
+        if (user) {
+            console.log(`Clearing all test state flags for user ${user.name}.`);
+            return user.unsetFlag(MODULE_ID, FLAG_KEY_AppTest);
+        }
+    }
+    /**
+     * READS the entire shopping basket object from a specific user's flag.
+     * @param {string} [userId] - The ID of the user to get the flag from. Defaults to the current user.
+     * @returns {Promise<object>} The basket object, or an empty object if not found.
+     */
+    static async readBasket(userId) {
+        if (!userId) {
+            userId = game.user.id;
+        }
+        const user = game.users.get(userId);
+        if (!user) return {};
+        // Make sure FLAG_KEY_Basket is defined in your constants.mjs as "shoppingBasket"
+        return user.getFlag(MODULE_ID, FLAGKEY_Basket) || {};
     }
 }
 

@@ -1,5 +1,4 @@
 <div class="roll-dialog-container">
-    <h3>{{localize "SR5.Marketplace.Availability"}} Test</h3>
     <div class="roll-dialog-content">
 
     {{!-- Check if an active test state exists in the context --}}
@@ -8,85 +7,212 @@
         {{#if (eq activeTestState.status "initial")}}
             <form class="availability-dialog-form">
                 <input type="hidden" name="dialogId" value="{{dialogId}}" />
-                <h2>{{localize "SR5.Marketplace.Tests.AvailabilityTest"}}</h2>
+                <h2>{{localize "SR5Marketplace.Marketplace.Tests.AvailabilityTest"}}</h2>
                 
-                {{!-- Actor & Test Info --}}
-                <div class="dialog-header">
+                {{!-- NEW UNIFIED HEADER GRID --}}
+                <div class="dialog-header-grid">
+                    {{!-- Column 1: Actor Info --}}
                     <div class="actor-info">
-                        <img src="{{actor.img}}" title="{{actor.name}}"/>
-                        <span>{{actor.name}}</span>
+                        <div class="selectable-actor" actorUuid="{{activeTestState.actor.uuid}}">
+                            <img src="{{activeTestState.actor.img}}" title="{{activeTestState.actor.name}}"/>
+                            <span>{{actor.name}}</span>
+                        </div>
                     </div>
-                    {{!-- This area will be populated by your DialogList helper --}}
-                    <div class="common-test"></div>
-                </div>
-                <hr>
 
-                {{!-- Core Test Parameters --}}
-                <div class="form-grid">
+                    {{!-- Column 2: Availability --}}
                     <div class="form-group">
-                        <label>{{localize "SR5.Labels.Availability"}}</label>
-                        <input type="text" name="availabilityStr" value="{{availabilityStr}}" readonly/>
+                        <label>{{localize "SR5Marketplace.Marketplace.Availability"}}</label>
+                        <div class="availability-display">{{activeTestState.availabilityStr}}</div>
                     </div>
+
+                    {{!-- Column 3: Skill --}}
                     <div class="form-group">
-                        <label>{{localize "SR5.Skill"}}</label>
-                        <select name="selectedSkill">
-                            <option value="negotiation" selected>{{localize "SR5.Skill.Negotiation"}}</option>
-                            <option value="etiquette">{{localize "SR5.Skill.Etiquette"}}</option>
-                            <option value="con">{{localize "SR5.Skill.Con"}}</option>
-                            <option value="intimidation">{{localize "SR5.Skill.Intimidation"}}</option>
+                        <label>{{localize "FIELDS.Skill.Skill"}}</label>
+                        <select name="skill" data-action="changeTestParameter">
+                            <option value="negotiation" {{#if (eq activeTestState.skill "negotiation")}}selected{{/if}}>{{localize "SR5.Skill.Negotiation"}}</option>
+                            <option value="etiquette" {{#if (eq activeTestState.skill "etiquette")}}selected{{/if}}>{{localize "SR5.Skill.Etiquette"}}</option>
+                            <option value="con" {{#if (eq activeTestState.skill "con")}}selected{{/if}}>{{localize "SR5.Skill.Con"}}</option>
+                            <option value="intimidation" {{#if (eq activeTestState.skill "intimidation")}}selected{{/if}}>{{localize "SR5.Skill.Intimidation"}}</option>
                         </select>
                     </div>
+
+                    {{!-- Column 4: Attribute --}}
                     <div class="form-group">
-                        <label>{{localize "SR5.Attribute"}}</label>
-                        <select name="selectedAttribute">
-                            <option value="charisma" selected>{{localize "SR5.Attributes.Charisma.long"}}</option>
-                            <option value="willpower">{{localize "SR5.Attributes.Willpower.long"}}</option>
-                            <option value="intuition">{{localize "SR5.Attributes.Intuition.long"}}</option>
+                        <label>{{localize "FIELDS.attributes.label"}}</label>
+                        <select name="attribute" data-action="changeTestParameter">
+                            <option value="charisma" {{#if (eq activeTestState.attribute "charisma")}}selected{{/if}}>{{localize "FIELDS.attributes.charisma.label"}}</option>
+                            <option value="willpower" {{#if (eq activeTestState.attribute "willpower")}}selected{{/if}}>{{localize "FIELDS.attributes.willpower.label"}}</option>
+                            <option value="intuition" {{#if (eq activeTestState.attribute "intuition")}}selected{{/if}}>{{localize "FIELDS.attributes.intuition.label"}}</option>
                         </select>
+                    </div>
+                </div>
+                <div class="dice-pool-summary">
+                    <div class="pool-parts">
+                        {{#each activeTestState.dicePoolBreakdown as |part|}}
+                            <span>{{part.label}} {{part.value}}</span>{{#unless @last}} + {{/unless}}
+                        {{/each}}
+                    </div>
+                    <div class="pool-total">
+                        = <strong>{{activeTestState.totalDicePool}}</strong> {{localize "SR5.Dice"}}
                     </div>
                 </div>
                 <hr>
 
                 {{!-- Situational Modifiers --}}
                 <div class="marketplace-modifiers-container">
-                    {{#each modifierGroups as |group|}}
-                        <fieldset class="modifier-group">
-                            <legend>{{localize group.title}}</legend>
-                            <div class="modifier-items-grid">
-                                {{#each group.items as |mod|}}
-                                    <label>{{localize mod.description}}</label>
-                                    {{#with (jsonParse mod.value) as |modData|}}
-                                        <button type="button" class="modifier-button" data-action="applyModifier" data-modifier-value='{{mod.value}}'>
-                                            {{#if (gt modData.value 0)}}+{{/if}}{{modData.value}}
+                    {{#each activeTestState.modifierGroups as |group index|}}
+                        <div class="modifier-group collapsible">
+                            {{!-- The hidden checkbox that powers the toggle --}}
+                            <input type="checkbox" id="toggle-mod-group-{{index}}" class="toggle-checkbox" checked>
+
+                            {{!-- The clickable header. The 'for' attribute links it to the checkbox. --}}
+                            <label for="toggle-mod-group-{{index}}" class="collapsible-header">{{localize group.title}}</label>
+
+                            {{!-- The content that will be shown or hidden --}}
+                            <div class="collapsible-content">
+                                <div class="modifier-items-grid">
+                                    {{#each group.items as |mod|}}
+                                        <label>{{localize mod.description}}</label>
+                                        <button type="button" class="modifier-button {{#if (isModifierActive mod.label @root.activeTestState.modifiers)}}active{{/if}}" 
+                                                data-action="applyModifier" 
+                                                data-label="{{mod.label}}" 
+                                                data-value="{{mod.value}}">
+                                            {{#if (gt mod.value 0)}}+{{/if}}{{mod.value}}
                                         </button>
-                                    {{/with}}
-                                {{/each}}
+                                    {{/each}}
+                                </div>
                             </div>
-                        </fieldset>
+                        </div>
                     {{/each}}
                 </div>
                 <hr>
 
                 {{!-- Final Roll Button --}}
                 <button type="button" class="roll-button" data-action="runAvailabilityTest">
-                    <i class="fas fa-dice-d6"></i> {{localize "SR5.Roll"}}
+                    <i class="fas fa-dice-d6"></i> {{localize "SR5Marketplace.Roll"}}
                 </button>
             </form>
 
         {{else if (eq activeTestState.status "result")}}
-            <div class="test-result">
-                <h3>Player Hits: {{activeTestState.result.data.values.hits.value}}</h3>
-                <p>This is the threshold for the item's resist roll.</p>
-                <button type="button" data-action="runResistTest" data-dialog-id="{{activeTestState.id}}">
-                    Roll Item Resistance
-                </button>
+        <div class="MarketAppDialog-test-result-container">
+            <div class="result-title">{{localize "SR5Marketplace.AppDialogItem.result.Test"}}</div>
+            
+            <div class="MarketAppDialog-dice-tray">
+                {{#each activeTestState.renderedDice as |die|}}
+                    <div class="MarketAppDialog-die-result {{die.cssClass}}">
+                        <span class="MarketAppDialog-die-text">{{die.text}}</span>
+                    </div>
+                {{/each}}
+            </div>
+
+            <div class="MarketAppDialog-result-summary {{#if activeTestState.isGlitch}}glitched{{/if}}">
+                <div>{{localize "SR5Marketplace.AppDialogItem.result.text"}}<strong>{{activeTestState.hits}}</strong> {{localize "SR5Marketplace.AppDialogItem.result.Hits"}}</div>
+                {{#if isGlitch}}
+                    <div class="glitch-text">{{localize "SR5Marketplace.AppDialogItem.GlitchText.with"}} <strong>{{activeTestState.glitches}}</strong> {{localize "SR5Marketplace.AppDialogItem.GlitchText.glitch"}}</div>
+                {{/if}}
+            </div>
+
+            <div class="threshold-info">{{localize "SR5Marketplace.AppDialogItem.ThresholdInfo"}}</div>
+            <button type="button" class="roll-button" data-action="runResistTest" data-dialog-id="{{activeTestState.id}}">
+                {{localize "SR5Marketplace.AppDialogItem.RollItemResistance"}}
+            </button>
+        </div>
+
+        {{else if (eq activeTestState.status "extended-inprogress")}}
+        <div class="MarketAppDialog-test-result-container">
+            <div class="result-title">Extended Test In Progress</div>
+            
+            <div class="extended-test-summary">
+                <span>Progress: <strong>{{activeTestState.cumulativeHits}} / {{activeTestState.threshold}}</strong> Hits</span>
+                <span>Next Roll: <strong>{{activeTestState.currentPool}}</strong> Dice</span>
+            </div>
+
+            <div class="result-subtitle">Last Roll's Results:</div>
+            <div class="MarketAppDialog-dice-tray">
+                {{#each activeTestState.renderedDice as |die|}}
+                    <div class="MarketAppDialog-die-result {{die.cssClass}}">
+                        <span class="MarketAppDialog-die-text">{{die.text}}</span>
+                    </div>
+                {{/each}}
+            </div>
+
+            <button type="button" class="roll-button" data-action="continueExtendedTest" data-dialog-id="{{activeTestState.id}}">
+                Continue Test
+            </button>
+        </div>
+
+        {{else if (eq activeTestState.status "resolved")}}
+            <div class="MarketAppDialog-final-result-container">
+                <details class="MarketAppDialog-final-summary" open>
+                    <summary>
+                        {{!-- This summary works for all test types --}}
+                        {{#if activeTestState.isAvailable}}
+                            <h3 class="success"><i class="fas fa-check-circle"></i> {{localize "SR5Marketplace.Marketplace.Acquisition.Success"}}</h3>
+                        {{else}}
+                            <h3 class="failure"><i class="fas fa-times-circle"></i> {{localize "SR5Marketplace.Marketplace.Acquisition.Failed"}}</h3>
+                        {{/if}}
+                    </summary>
+
+                    {{!-- This block ONLY appears for a SUCCESSFUL EXTENDED test --}}
+                    {{#if (and activeTestState.isAvailable (eq activeTestState.testType "extended"))}}
+                        <div class="acquisition-details">
+                            <div class="detail-item">
+                                {{loc "SR5Marketplace.AppDialogItem.ExtendedSuccessDetails" 
+                                    rolls=activeTestState.totalRolls 
+                                    connection=activeTestState.connectionUsed 
+                                    timeValue=activeTestState.deliveryTime.value 
+                                }} {{activeTestState.deliveryTime.unit}}
+                            </div>
+                        </div>
+                    {{/if}}
+
+                    {{!-- Check the test type to render the correct dice display grid --}}
+                    {{#if (eq activeTestState.testType "opposed")}}
+                        
+                        <div class="final-result-grid">
+                            <div class="result-column">
+                                <div class="result-title">{{localize "SR5Marketplace.AppDialogItem.YourRoll"}} ({{activeTestState.initialRoll.netHits}} {{localize "SR5Marketplace.AppDialogItem.netHits"}})</div>
+                                <div class="MarketAppDialog-dice-tray">
+                                    {{#each activeTestState.initialRoll.renderedDice as |die|}}
+                                        <div class="MarketAppDialog-die-result {{die.cssClass}}"><span class="MarketAppDialog-die-text">{{die.text}}</span></div>
+                                    {{/each}}
+                                </div>
+                            </div>
+                            <div class="result-column">
+                                <div class="result-title">{{localize "SR5Marketplace.AppDialogItem.Resistance"}} ({{activeTestState.resistRoll.hits}} {{localize "SR5Marketplace.AppDialogItem.Hits"}})</div>
+                                <div class="MarketAppDialog-dice-tray">
+                                    {{#each activeTestState.resistRoll.renderedDice as |die|}}
+                                        <div class="MarketAppDialog-die-result {{die.cssClass}}"><span class="MarketAppDialog-die-text">{{die.text}}</span></div>
+                                    {{/each}}
+                                </div>
+                            </div>
+                        </div>
+                    {{else}}
+                        {{!-- SIMPLE / EXTENDED TEST GRID --}}
+                        <div class="final-result-grid">
+                            <div class="result-column">
+                                <div class="result-title">{{localize "SR5Marketplace.AppDialogItem.FinalRoll"}} ({{activeTestState.netHits}} {{localize "SR5Marketplace.AppDialogItem.netHits"}})</div>
+                                <div class="MarketAppDialog-dice-tray">
+                                    {{#each activeTestState.renderedDice as |die|}}
+                                        <div class="MarketAppDialog-die-result {{die.cssClass}}"><span class="MarketAppDialog-die-text">{{die.text}}</span></div>
+                                    {{/each}}
+                                </div>
+                            </div>
+                            <div class="result-column">
+                                <div class="result-title">{{localize "SR5.Threshold"}}</div>
+                                <div class="threshold-display">
+                                    {{activeTestState.cumulativeHits}} / {{activeTestState.threshold}}
+                                </div>
+                            </div>
+                        </div>
+                    {{/if}}
+                </details>
             </div>
         {{/if}}
-
     {{else}}
 
         <button type="button" data-action="showAvailabilityDialog" data-basket-uuid="{{basket.basketUUID}}">
-            <i class="fas fa-dice-d6"></i> Test Availability for Entire Order
+            <i class="fas fa-dice-d6"></i> {{localize "SR5Marketplace.AppDialogItem.OrderTest"}}
         </button>
     {{/if}}
     </div>

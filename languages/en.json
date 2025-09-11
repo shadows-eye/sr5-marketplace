@@ -1,8 +1,17 @@
 {
-    "SR5": {
+    "SR5Marketplace": {
         "PurchaseScreen": "Marketplace Purchase Screen",
         "Marketplace": {
             "Settings": {
+                "AvailabilityRule": {
+                    "name": "Availability Rules",
+                    "hint": "Selection options for the Rules you want to use, standard is Opposed",
+                    "choises": {
+                        "opposed": "Opposed",
+                        "simple": "Simple",
+                        "extended": "Extended"
+                    }
+                },
                 "ApprovalWorkflow": {
                     "name": "GM Approval Workflow",
                     "hint": "Toggle this setting to Disable the approval workflow for player purchases!"
@@ -29,6 +38,10 @@
                     "name": "Karma Complex Form Cost",
                     "hint": "This setting allows you to set the karma cost for complex forms. Value will be used to pay for Complex Forms."
                 }
+            },
+            "Tests":{
+                "title": "Marketplace Tests",
+                "AvailabilityTest": "Availability Test"
             },
             "Source": {
                 "Global": "Shop"
@@ -166,7 +179,75 @@
                 "Actions": "Actions",
                 "Qualitys": "Qualities",
                 "complex_form": "Complex Forms"
+            },
+            "Modifiers": {
+                "General": {
+                    "title": "General Social Modifiers",
+                    "npcAttitudeFriendly": "NPC has a friendly attitude",
+                    "npcAttitudeNeutral": "NPC has a neutral attitude",
+                    "npcAttitudeMistrustful": "NPC is mistrustful",
+                    "npcAttitudeBiased": "NPC is biased against the character",
+                    "npcAttitudeAverse": "NPC is averse to the character",
+                    "npcAttitudeHostile": "NPC is hostile",
+                    "resultAdvantageous": "Result of failure is advantageous",
+                    "resultInsignificant": "Result of failure is insignificant",
+                    "resultAnnoying": "Result of failure is annoying",
+                    "resultDangerous": "Result of failure is dangerous",
+                    "resultCatastrophic": "Result of failure is catastrophic"
+                },
+                "Negotiation": {
+                    "title": "Negotiation Modifiers",
+                    "notEnoughInfo": "Character has insufficient information",
+                    "hasLeverage": "Character has leverage over the target"
+                },
+                "Etiquette": {
+                    "title": "Etiquette Modifiers",
+                    "improperlyDressed": "Character is improperly dressed",
+                    "obviouslyNervous": "Character is obviously nervous"
+                },
+                "Intimidation": {
+                    "title": "Intimidation Modifiers",
+                    "physicallyImposing": "Character is physically imposing",
+                    "outnumbered": "Target is outnumbered",
+                    "hasWeapon": "Character is visibly armed or using magic"
+                },
+                "Con": {
+                    "title": "Con Modifiers",
+                    "plausibleEvidence": "Character presents plausible evidence",
+                    "targetDistracted": "Target is distracted or gullible"
+                }
+            },
+            "Acquisition":{
+                "Success": "Success",
+                "Failed": "Could not be acquired."
             }
+        },
+        "AppDialogItem": {
+                "result": {
+                    "Test": "Test Result",
+                    "text": "You scored ",
+                    "Hits": " hits!"
+                },
+                "GlitchText": {
+                    "with": "With ",
+                    "glitch": " ones... a GLITCH!"
+                },
+                "ThresholdInfo": "This is the threshold for the item's resist roll.",
+                "RollItemResistance": "Roll Item Resistance",
+                "AcquisitionSuccess": "Items can be Acquired",
+                "AcquisitionFailed": "Acquisition Failed",
+                "YourRoll": "Your Roll",
+                "netHits": "Net Hits",
+                "Resistance": "Item Resistance",
+                "Hits": "Hits",
+                "ExtendedSuccessDetails": "Acquisition took {rolls} rolls, using a Connection of {connection}. Final delivery time: {timeValue}"
+            },
+        "Time": {
+            "Hours": "Hours",
+            "Day": "Day",
+            "Days": "Days",
+            "Week": "Week",
+            "Month": "Month"
         }
     },
     "TYPES":{

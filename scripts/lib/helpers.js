@@ -130,4 +130,12 @@ export const registerBasicHelpers = () => {
             return {}; // Return an empty object on failure
         }
     });
+    Handlebars.registerHelper("isModifierActive", function(label, modifiersArray) {
+        if (!Array.isArray(modifiersArray)) return false;
+        return modifiersArray.some(mod => mod.label === label);
+    });
+    Handlebars.registerHelper('loc', function(key, options) {
+        // 'options.hash' contains all the key=value pairs from the helper call (e.g., rolls=totalRolls)
+        return game.i18n.format(key, options.hash);
+    });
 };

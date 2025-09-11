@@ -27,25 +27,25 @@
                 <div class="flexcol flex0">
                     <div class="technology">
                         {{#if item.system.technology.rating}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5.Rating"}}</label><div class="display">{{item.system.technology.rating}}</div></div>
+                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.Rating"}}</label><div class="display">{{item.system.technology.rating}}</div></div>
                         {{/if}}
                         {{#if item.system.technology.cost}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5.Cost"}}</label><div class="display">{{item.system.technology.cost}}<span class="unit"><i class="fas fa-yen-sign"></i></span></div></div>
+                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.Cost"}}</label><div class="display">{{item.system.technology.cost}}<span class="unit"><i class="fas fa-yen-sign"></i></span></div></div>
                         {{/if}}
                         {{#if item.system.karma}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5.Karma"}}</label><div class="display">{{item.system.karma}}</div></div>
+                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.Karma"}}</label><div class="display">{{item.system.karma}}</div></div>
                         {{/if}}
                         {{#if item.flags.sr5-marketplace.Karma}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5.Karma"}}</label><div class="display">{{item.flags.sr5-marketplace.Karma}}</div></div>
+                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.Karma"}}</label><div class="display">{{item.flags.sr5-marketplace.Karma}}</div></div>
                         {{/if}}
                         {{#if item.system.technology.availability}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5.Availability"}}</label><div class="display">{{item.system.technology.availability}}</div></div>
+                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.Availability"}}</label><div class="display">{{item.system.technology.availability}}</div></div>
                         {{/if}}
                          {{#if item.system.slots}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5.Marketplace.Slots"}}</label><div class="display">{{item.system.slots}}</div></div>
+                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.Marketplace.Slots"}}</label><div class="display">{{item.system.slots}}</div></div>
                         {{/if}}
                         {{#if item.system.mount_point}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5.Marketplace.MountPoint"}}</label><div class="display">{{item.system.mount_point}}</div></div>
+                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.Marketplace.MountPoint"}}</label><div class="display">{{item.system.mount_point}}</div></div>
                         {{/if}}
                     </div>
                 </div>
@@ -59,11 +59,11 @@
     </section>
 
     <footer class="preview-footer">
-        <button type="button" class="add-to-cart" data-action="addToCart" data-item-id="{{item.uuid}}" {{#unless purchasingActor}}disabled title="{{localize 'SR5.Marketplace.selectActorTooltip'}}"{{/unless}}>
-            <i class="fa-solid fa-cart-plus"></i> {{localize "SR5.Marketplace.AddToCart"}}
+        <button type="button" class="add-to-cart" data-action="addToCart" data-item-id="{{item.uuid}}" {{#unless purchasingActor}}disabled title="{{localize 'SR5Marketplace.Marketplace.selectActorTooltip'}}"{{/unless}}>
+            <i class="fa-solid fa-cart-plus"></i> {{localize "SR5Marketplace.Marketplace.AddToCart"}}
         </button>
         <button type="button" class="add-to-builder" data-action="addToItemBuilder">
-            <i class="fa-solid fa-wrench"></i> {{localize "SR5.Marketplace.AddToBuilder"}}
+            <i class="fa-solid fa-wrench"></i> {{localize "SR5Marketplace.Marketplace.AddToBuilder"}}
         </button>
     </footer>
 </form>

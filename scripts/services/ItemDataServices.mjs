@@ -54,23 +54,23 @@ export default class ItemDataServices {
             sourceItems.filter(i => i.type === "modification" && i.system.type === modType);
 
         return {
-            filteredItems: { label: "SR5.Marketplace.ItemTypes.AllItems", items: sourceItems },
-            rangedWeapons: { label: "SR5.Marketplace.ItemTypes.RangedWeapons", items: getItemsByCategory("weapon", "range") },
-            meleeWeapons: { label: "SR5.Marketplace.ItemTypes.MeleeWeapons", items: getItemsByCategory("weapon", "melee") },
-            weaponMods: { label: "SR5.Marketplace.ItemTypes.WeaponMods", items: getModificationsByType("weapon") },
-            armorMods: { label: "SR5.Marketplace.ItemTypes.ArmorMods", items: getModificationsByType("armor") },
-            vehicleMods: { label: "SR5.Marketplace.ItemTypes.VehicleMods", items: getModificationsByType("vehicle") },
-            armor: { label: "SR5.Marketplace.ItemTypes.Armor", items: getItemsByType("armor") },
-            cyberware: { label: "SR5.Marketplace.ItemTypes.Cyberware", items: getItemsByType("cyberware") },
-            bioware: { label: "SR5.Marketplace.ItemTypes.Bioware", items: getItemsByType("bioware") },
-            devices: { label: "SR5.Marketplace.ItemTypes.Devices", items: getItemsByType("device") },
-            equipment: { label: "SR5.Marketplace.ItemTypes.Equipment", items: getItemsByType("equipment") },
-            spells: {label: "SR5.Marketplace.ItemTypes.Spells", items: getItemsByType("spell")},
-            metamagic: {label: "SR5.Marketplace.ItemTypes.Metamagic", items: getItemsByType("metamagic")},
-            adeptPower: {label: "SR5.Marketplace.ItemTypes.AdeptPowers", items: getItemsByType("adept_power")},
-            echo: {label: "SR5.Marketplace.ItemTypes.Echo", items: getItemsByType("echo")},
-            qualitys: {label: "SR5.Marketplace.ItemTypes.Qualitys", items: getItemsByType("quality")},
-            complex_form: {label: "SR5.Marketplace.ItemTypes.complex_form", items: getItemsByType("complex_form")},
+            filteredItems: { label: "SR5Marketplace.Marketplace.ItemTypes.AllItems", items: sourceItems },
+            rangedWeapons: { label: "SR5Marketplace.Marketplace.ItemTypes.RangedWeapons", items: getItemsByCategory("weapon", "range") },
+            meleeWeapons: { label: "SR5Marketplace.Marketplace.ItemTypes.MeleeWeapons", items: getItemsByCategory("weapon", "melee") },
+            weaponMods: { label: "SR5Marketplace.Marketplace.ItemTypes.WeaponMods", items: getModificationsByType("weapon") },
+            armorMods: { label: "SR5Marketplace.Marketplace.ItemTypes.ArmorMods", items: getModificationsByType("armor") },
+            vehicleMods: { label: "SR5Marketplace.Marketplace.ItemTypes.VehicleMods", items: getModificationsByType("vehicle") },
+            armor: { label: "SR5Marketplace.Marketplace.ItemTypes.Armor", items: getItemsByType("armor") },
+            cyberware: { label: "SR5Marketplace.Marketplace.ItemTypes.Cyberware", items: getItemsByType("cyberware") },
+            bioware: { label: "SR5Marketplace.Marketplace.ItemTypes.Bioware", items: getItemsByType("bioware") },
+            devices: { label: "SR5Marketplace.Marketplace.ItemTypes.Devices", items: getItemsByType("device") },
+            equipment: { label: "SR5Marketplace.Marketplace.ItemTypes.Equipment", items: getItemsByType("equipment") },
+            spells: {label: "SR5Marketplace.Marketplace.ItemTypes.Spells", items: getItemsByType("spell")},
+            metamagic: {label: "SR5Marketplace.Marketplace.ItemTypes.Metamagic", items: getItemsByType("metamagic")},
+            adeptPower: {label: "SR5Marketplace.Marketplace.ItemTypes.AdeptPowers", items: getItemsByType("adept_power")},
+            echo: {label: "SR5Marketplace.Marketplace.ItemTypes.Echo", items: getItemsByType("echo")},
+            qualitys: {label: "SR5Marketplace.Marketplace.ItemTypes.Qualitys", items: getItemsByType("quality")},
+            complex_form: {label: "SR5Marketplace.Marketplace.ItemTypes.complex_form", items: getItemsByType("complex_form")},
         };
     }
 
@@ -93,25 +93,25 @@ export default class ItemDataServices {
             filteredItems.filter(i => i.type === "modification" && i.system.type === modType);
 
         return {
-            filteredItems: { label: "SR5.Marketplace.ItemTypes.AllItems", items: filteredItems },
-            rangedWeapons: { label: "SR5.Marketplace.ItemTypes.RangedWeapons", items: getItemsByCategory("weapon", "range") },
-            meleeWeapons: { label: "SR5.Marketplace.ItemTypes.MeleeWeapons", items: getItemsByCategory("weapon", "melee") },
+            filteredItems: { label: "SR5Marketplace.Marketplace.ItemTypes.AllItems", items: filteredItems },
+            rangedWeapons: { label: "SR5Marketplace.Marketplace.ItemTypes.RangedWeapons", items: getItemsByCategory("weapon", "range") },
+            meleeWeapons: { label: "SR5Marketplace.Marketplace.ItemTypes.MeleeWeapons", items: getItemsByCategory("weapon", "melee") },
 
-            weaponMods: { label: "SR5.Marketplace.ItemTypes.WeaponMods", items: getModificationsByType("weapon") },
-            armorMods: { label: "SR5.Marketplace.ItemTypes.ArmorMods", items: getModificationsByType("armor") },
-            vehicleMods: { label: "SR5.Marketplace.ItemTypes.VehicleMods", items: getModificationsByType("vehicle") },
+            weaponMods: { label: "SR5Marketplace.Marketplace.ItemTypes.WeaponMods", items: getModificationsByType("weapon") },
+            armorMods: { label: "SR5Marketplace.Marketplace.ItemTypes.ArmorMods", items: getModificationsByType("armor") },
+            vehicleMods: { label: "SR5Marketplace.Marketplace.ItemTypes.VehicleMods", items: getModificationsByType("vehicle") },
 
-            armor: { label: "SR5.Marketplace.ItemTypes.Armor", items: getItemsByType("armor") },
-            cyberware: { label: "SR5.Marketplace.ItemTypes.Cyberware", items: getItemsByType("cyberware") },
-            bioware: { label: "SR5.Marketplace.ItemTypes.Bioware", items: getItemsByType("bioware") },
-            devices: { label: "SR5.Marketplace.ItemTypes.Devices", items: getItemsByType("device") },
-            equipment: { label: "SR5.Marketplace.ItemTypes.Equipment", items: getItemsByType("equipment") },
-            spells: {label: "SR5.Marketplace.ItemTypes.Spells", items: getItemsByType("spell")},
-            metamagic: {label: "SR5.Marketplace.ItemTypes.Metamagic", items: getItemsByType("metamagic")},
-            adeptPower: {label: "SR5.Marketplace.ItemTypes.AdeptPowers", items: getItemsByType("adept_power")},
-            echo: {label: "SR5.Marketplace.ItemTypes.Echo", items: getItemsByType("echo")},
-            qualitys: {label: "SR5.Marketplace.ItemTypes.Qualitys", items: getItemsByType("qualitys")},
-            complex_form: {label: "SR5.Marketplace.ItemTypes.complex_form", items: getItemsByType("complex_form")}
+            armor: { label: "SR5Marketplace.Marketplace.ItemTypes.Armor", items: getItemsByType("armor") },
+            cyberware: { label: "SR5Marketplace.Marketplace.ItemTypes.Cyberware", items: getItemsByType("cyberware") },
+            bioware: { label: "SR5Marketplace.Marketplace.ItemTypes.Bioware", items: getItemsByType("bioware") },
+            devices: { label: "SR5Marketplace.Marketplace.ItemTypes.Devices", items: getItemsByType("device") },
+            equipment: { label: "SR5Marketplace.Marketplace.ItemTypes.Equipment", items: getItemsByType("equipment") },
+            spells: {label: "SR5Marketplace.Marketplace.ItemTypes.Spells", items: getItemsByType("spell")},
+            metamagic: {label: "SR5Marketplace.Marketplace.ItemTypes.Metamagic", items: getItemsByType("metamagic")},
+            adeptPower: {label: "SR5Marketplace.Marketplace.ItemTypes.AdeptPowers", items: getItemsByType("adept_power")},
+            echo: {label: "SR5Marketplace.Marketplace.ItemTypes.Echo", items: getItemsByType("echo")},
+            qualitys: {label: "SR5Marketplace.Marketplace.ItemTypes.Qualitys", items: getItemsByType("qualitys")},
+            complex_form: {label: "SR5Marketplace.Marketplace.ItemTypes.complex_form", items: getItemsByType("complex_form")}
         };
     }
 }

@@ -63,8 +63,8 @@ const initializeSettings = () => {
     console.log("SR5 Marketplace | Initializing settings...");
 
     game.settings.register("sr5-marketplace", "resetItemLoad", {
-        name: game.i18n.localize("SR5.Marketplace.Settings.ResetItemLoad.name"),
-        hint: game.i18n.localize("SR5.Marketplace.Settings.ResetItemLoad.hint"),
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.ResetItemLoad.name"),
+        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.ResetItemLoad.hint"),
         scope: "world",
         config: false,
         // This setting is not meant to be user-configurable in the UI for now
@@ -79,8 +79,8 @@ const initializeSettings = () => {
     });
 
     game.settings.register("sr5-marketplace", "approvalWorkflow", {
-        name: game.i18n.localize("SR5.Marketplace.Settings.ApprovalWorkflow.name"),
-        hint: game.i18n.localize("SR5.Marketplace.Settings.ApprovalWorkflow.hint"),
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.ApprovalWorkflow.name"),
+        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.ApprovalWorkflow.hint"),
         scope: "world",
         config: true,
         type: Boolean,
@@ -89,8 +89,8 @@ const initializeSettings = () => {
     });
 
     game.settings.register("sr5-marketplace", "karmaCostForSpell", {
-        name: game.i18n.localize("SR5.Marketplace.Settings.KarmaSpell.name"),
-        hint: game.i18n.localize("SR5.Marketplace.Settings.KarmaSpell.hint"),
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.KarmaSpell.name"),
+        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.KarmaSpell.hint"),
         scope: "world",
         config: true,
         type: Number,
@@ -99,8 +99,8 @@ const initializeSettings = () => {
     });
 
     game.settings.register("sr5-marketplace", "karmaCostForComplexForm", {
-        name: game.i18n.localize("SR5.Marketplace.Settings.KarmaComplexForm.name"),
-        hint: game.i18n.localize("SR5.Marketplace.Settings.KarmaComplexForm.hint"),
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.KarmaComplexForm.name"),
+        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.KarmaComplexForm.hint"),
         scope: "world",
         config: true,
         type: Number,
@@ -108,15 +108,15 @@ const initializeSettings = () => {
         restricted: true,
     });
     game.settings.register("sr5-marketplace", "itemTypeBehaviors", {
-        name: game.i18n.localize("SR5.Marketplace.Settings.ItemTypeBehaviors.name"),
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.ItemTypeBehaviors.name"),
         scope: "world",
         config: false, // Hidden from the default menu
         type: Object,
         default: {}
     });
     game.settings.register("sr5-marketplace", "openSettingsMenu", {
-        name: game.i18n.localize("SR5.Marketplace.Settings.Menu.name"),
-        hint: game.i18n.localize("SR5.Marketplace.Settings.Menu.hint"),
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.Menu.name"),
+        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.Menu.hint"),
         scope: "world",
         config: true, // This makes the setting appear in the menu
         restricted: true,
@@ -135,6 +135,22 @@ const initializeSettings = () => {
         "spell": "unique",
         "sprite_power": "unique"
     }  
+    });
+
+    game.settings.register("sr5-marketplace", "availabilityTestRule", {
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.AvailabilityRule.name"),
+        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.AvailabilityRule.hint"),
+        scope: "world",
+        config: true, // This makes it visible in the settings menu
+        restricted: true, // Only GMs can change it
+        type: String, // The setting will store the key of the chosen option (e.g., "opposed")
+        choices: {
+            // The keys here are what will be saved in the setting
+            "opposed": game.i18n.localize("SR5Marketplace.Marketplace.Settings.AvailabilityRule.choices.opposed"),
+            "simple": game.i18n.localize("SR5Marketplace.Marketplace.Settings.AvailabilityRule.choices.simple"),
+            "extended": game.i18n.localize("SR5Marketplace.Marketplace.Settings.AvailabilityRule.choices.extended")
+        },
+        default: "opposed", // The default rule will be the core Opposed Test
     });
 };
 
@@ -161,7 +177,7 @@ Hooks.on("renderSettingsConfig", (app, html, data) => {
         const button = document.createElement("button");
         button.type = "button";
         button.classList.add(buttonClass);
-        button.innerHTML = `<i class="fas fa-cogs"></i> ${game.i18n.localize("SR5.Marketplace.Settings.Menu.buttonLabel")}`;
+        button.innerHTML = `<i class="fas fa-cogs"></i> ${game.i18n.localize("SR5Marketplace.Marketplace.Settings.Menu.buttonLabel")}`;
         
         button.addEventListener("click", () => {
             new MarketplaceSettingsApp().render(true);
@@ -199,13 +215,13 @@ Hooks.on("renderSettingsConfig", (app, html, data) => {
             tag.textContent = type; // The CSS will handle capitalizing.
             switch (behavior) {
                 case "unique":
-                    tag.title = game.i18n.localize("SR5.Marketplace.Settings.CategoryUnique");
+                    tag.title = game.i18n.localize("SR5Marketplace.Marketplace.Settings.CategoryUnique");
                     break;
                 case "stack":
-                    tag.title = game.i18n.localize("SR5.Marketplace.Settings.StackingItems");
+                    tag.title = game.i18n.localize("SR5Marketplace.Marketplace.Settings.StackingItems");
                     break;
                 case "single":
-                    tag.title = game.i18n.localize("SR5.Marketplace.Settings.SingleItems");
+                    tag.title = game.i18n.localize("SR5Marketplace.Marketplace.Settings.SingleItems");
                     break;
             }
             summaryContainer.appendChild(tag);
@@ -228,7 +244,7 @@ Hooks.once("init", () => {
     foundry.documents.collections.Actors.registerSheet("sr5-marketplace", ShopActorSheet, {
         types: [SHOP_ACTOR_TYPE],
         makeDefault: true,
-        label: "SR5.Marketplace.Shop.SheetName"
+        label: "SR5Marketplace.Marketplace.Shop.SheetName"
     });
 
 
@@ -278,7 +294,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
 
   tokenControls.tools["sr5-marketplace"] = {
     name: "sr5-marketplace",
-    title: game.i18n.localize("SR5.PurchaseScreen"),
+    title: game.i18n.localize("SR5Marketplace.PurchaseScreen"),
     icon: "fas fa-shopping-cart",
     visible: true,
     toggle: true,
