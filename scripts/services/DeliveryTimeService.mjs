@@ -1,3 +1,5 @@
+import {LocalizationService} from '../lib/localisation.mjs';
+
 /**
  * @typedef {object} DeliveryTime
  * @property {number} value - The numeric value of the time.
@@ -15,15 +17,15 @@ export class DeliveryTimeService {
      */
     static getBaseDeliveryTime(totalCost) {
         if (totalCost <= 100) {
-            return { value: 6, unit: "SR5Marketplace.Marketplace.Time.Hours" };
+            return { value: 6, unit: LocalizationService.get("Time.Hours") };
         } else if (totalCost <= 1000) {
-            return { value: 1, unit: "SR5Marketplace.Marketplace.Time.Day" };
+            return { value: 1, unit: LocalizationService.get("Time.Day") };
         } else if (totalCost <= 10000) {
-            return { value: 2, unit: "SR5Marketplace.Marketplace.Time.Days" };
+            return { value: 2, unit: LocalizationService.get("Time.Days") };
         } else if (totalCost <= 100000) {
-            return { value: 1, unit: "SR5Marketplace.Marketplace.Time.Week" };
+            return { value: 1, unit: LocalizationService.get("Time.Week") };
         } else {
-            return { value: 1, unit: "SR5Marketplace.Marketplace.Time.Month" };
+            return { value: 1, unit: LocalizationService.get("Time.Month") };
         }
     }
 

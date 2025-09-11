@@ -1,8 +1,12 @@
-import { DialogModifierService } from './DialogModifierService.mjs';
-import { DiceHelperService } from './DiceHelperService.mjs';
-import parseAvailability from '../lib/availabilityParser.mjs';
-import { DeliveryTimeService } from './DeliveryTimeService.mjs';
+import { DialogTestModifierService } from './DialogModifierService.mjs';
+import { DiceHelperService } from '../../../services/DiceHelperService.mjs';
+import { DeliveryTimeService } from '../../../services/DeliveryTimeService.mjs';
+import { AppTestFlagService } from '../../../services/AppTestFlagService.mjs';
+import parseAvailability from '../../../lib/availabilityParser.mjs';
 
+/**
+* @param {object|null} activeTestState - The active test state from the flag.
+ */
 export class AppDialogBuilder {
     constructor() {
         this.testState = null;
@@ -22,9 +26,10 @@ export class AppDialogBuilder {
      * @description This method acts as a router. It takes the test state, determines the
      * current status, and calls the appropriate private builder to get the final context.
      * @param {object} testState - The active test state object from the user flag.
+     * @param {object} basket - The basket that the test will go into
      * @returns {Promise<object|null>} The context object ready for the template.
      */
-    async buildContext(testState) {
+    async buildTestDialogContext(testState, basket=null) {
         this.testState = testState;
         if (!this.testState) return null;
 
@@ -36,7 +41,7 @@ export class AppDialogBuilder {
             case 'extended-inprogress':
                 return this.#buildExtendedInProgressContext();
             case 'resolved':
-                return this.#buildResolvedContext();
+                return await this.#buildResolvedContext(basket);
             default:
                 console.error(`Unknown test status: "${this.testState.status}"`);
                 return null;
@@ -52,6 +57,7 @@ export class AppDialogBuilder {
 
         const dicePoolBreakdown = [];
         let totalDicePool = 0;
+        let connectionUsed = 0;
         
         const skillData = actor.system.skills.active[skill];
         if (skillData) {
@@ -77,6 +83,7 @@ export class AppDialogBuilder {
         if (connectionUuid) {
             const contactItem = await this.constructor.getItem(connectionUuid);
             if (contactItem) {
+                connectionUsed = contactItem.system.connection;
                 dicePoolBreakdown.push({ label: game.i18n.localize("SR5.Connection"), value: contactItem.system.connection });
                 totalDicePool += contactItem.system.connection;
                 dicePoolBreakdown.push({ label: game.i18n.localize("SR5.Loyalty"), value: contactItem.system.loyalty });
@@ -87,14 +94,15 @@ export class AppDialogBuilder {
         
         // It uses the 'skill' from the test state to get the correct list of 
         // situational modifiers that should be displayed in the UI.
-        const modifierGroups = DialogModifierService.getModifiersForTest({ skill });
+        const modifierGroups = DialogTestModifierService.getModifiersForTest({ skill });
 
         return {
             actor,
             availabilityStr,
             modifierGroups, // The modifier groups are now guaranteed to be included
             dicePoolBreakdown,
-            totalDicePool
+            totalDicePool,
+            connectionUsed: connectionUsed
         };
     }
 
@@ -163,17 +171,19 @@ export class AppDialogBuilder {
         };
     }
 
-    /** * @private Builds context for the 'resolved' state. 
+    /**
+     * @private Builds context for the 'resolved' state.
+     * @param {object} basket - The basket from the build of the basket passed as dataObject
      */
-    #buildResolvedContext() {
-        // --- THIS IS THE UPDATED ROUTER ---
+    async #buildResolvedContext(basket) {
+        // --- THIS IS THE ROUTER ON RESOLVED BASED ON RULE in testState.testType (read from the settings [opposed, simple, extended])---
         switch (this.testState.testType) {
             case "opposed":
                 return this.#_buildOpposedResolvedContext();
             case "simple":
                 return this.#_buildSimpleResolvedContext();
             case "extended":
-                return this.#_buildExtendedResolvedContext(); // <-- New dedicated path
+                return await this.#_buildExtendedResolvedContext(basket); // <-- New dedicated path
             default:
                 console.error(`Unknown test type "${this.testState.testType}" in buildResolvedDialogContext.`);
                 return null;
@@ -214,7 +224,7 @@ export class AppDialogBuilder {
     /** * @private Builds context for a resolved EXTENDED test. 
      * This new method contains the logic we developed previously.
      */
-    #_buildExtendedResolvedContext() {
+    async #_buildExtendedResolvedContext(basket) {
         const resultData = this.testState.result;
         const rollsData = this.testState.rolls;
 
@@ -222,7 +232,22 @@ export class AppDialogBuilder {
         const isAvailable = resultData.values.extendedHits.value >= resultData.threshold.value;
         const finalNetHits = Math.max(0, resultData.values.extendedHits.value - resultData.threshold.value);
 
-        // 2. Display the dice from the MOST RECENT roll.
+        let finalBasket = basket;
+
+        // 2. Check if the provided basket is missing or empty.
+        if (!finalBasket || Object.keys(finalBasket).length === 0) {
+            console.log("AppDialogBuilder | Basket not provided or empty, fetching from flag as a fallback.");
+            // 3. If so, fetch it from the flag and assign it to our 'let' variable.
+            finalBasket = await AppTestFlagService.readBasket();
+        }
+        const totalCost = finalBasket.totalCost || 0;
+        
+        // 2. Use our service to get the delivery times.
+        const baseDeliveryTime = DeliveryTimeService.getBaseDeliveryTime(totalCost);
+        const finalDeliveryTime = DeliveryTimeService.calculateFinalDeliveryTime(baseDeliveryTime, this.testState.rollCount);
+        // --- Test Availability ---
+        const localizedTimeUnit = game.i18n.localize(baseDeliveryTime.unit);
+        
         const lastRoll = rollsData?.[rollsData.length - 1];
         const lastDiceResults = lastRoll?.terms[0]?.results || [];
         const lastGlitches = resultData.values.glitches.value;
@@ -240,7 +265,12 @@ export class AppDialogBuilder {
                 renderedDice: DiceHelperService.processDice(resultForHelper),
                 threshold: resultData.threshold.value,
                 cumulativeHits: resultData.values.extendedHits.value
-            }
+            },
+            totalRolls: this.testState.rollCount,
+            deliveryTime: finalDeliveryTime,
+            connectionUsed: this.testState.connectionUsed,
+            localizedTimeUnit: localizedTimeUnit
+
         };
     }
 }

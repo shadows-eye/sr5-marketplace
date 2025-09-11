@@ -3,6 +3,15 @@
         "PurchaseScreen": "Marketplace Purchase Screen",
         "Marketplace": {
             "Settings": {
+                "AvailabilityRule": {
+                    "name": "Availability Rules",
+                    "hint": "Selection options for the Rules you want to use, standard is Opposed",
+                    "choises": {
+                        "opposed": "Opposed",
+                        "simple": "Simple",
+                        "extended": "Extended"
+                    }
+                },
                 "ApprovalWorkflow": {
                     "name": "GM Approval Workflow",
                     "hint": "Toggle this setting to Disable the approval workflow for player purchases!"
@@ -207,26 +216,38 @@
                     "plausibleEvidence": "Character presents plausible evidence",
                     "targetDistracted": "Target is distracted or gullible"
                 }
+            },
+            "Acquisition":{
+                "Success": "Success",
+                "Failed": "Could not be acquired."
             }
         },
-    "AppDialogItem": {
-            "result": {
-                "Test": "Test Result",
-                "text": "You scored ",
-                "Hits": " hits!"
+        "AppDialogItem": {
+                "result": {
+                    "Test": "Test Result",
+                    "text": "You scored ",
+                    "Hits": " hits!"
+                },
+                "GlitchText": {
+                    "with": "With ",
+                    "glitch": " ones... a GLITCH!"
+                },
+                "ThresholdInfo": "This is the threshold for the item's resist roll.",
+                "RollItemResistance": "Roll Item Resistance",
+                "AcquisitionSuccess": "Items can be Acquired",
+                "AcquisitionFailed": "Acquisition Failed",
+                "YourRoll": "Your Roll",
+                "netHits": "Net Hits",
+                "Resistance": "Item Resistance",
+                "Hits": "Hits",
+                "ExtendedSuccessDetails": "Acquisition took {rolls} rolls, using a Connection of {connection}. Final delivery time: {timeValue}"
             },
-            "GlitchText": {
-                "with": "With ",
-                "glitch": " ones... a GLITCH!"
-            },
-            "ThresholdInfo": "This is the threshold for the item's resist roll.",
-            "RollItemResistance": "Roll Item Resistance",
-            "AcquisitionSuccess": "Items can be Acquired",
-            "AcquisitionFailed": "Acquisition Failed",
-            "YourRoll": "Your Roll",
-            "netHits": "Net Hits",
-            "Resistance": "Item Resistance",
-            "Hits": "Hits"
+        "Time": {
+            "Hours": "Hours",
+            "Day": "Day",
+            "Days": "Days",
+            "Week": "Week",
+            "Month": "Month"
         }
     },
     "TYPES":{

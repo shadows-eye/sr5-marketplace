@@ -4,7 +4,7 @@
  * @property {string} label - The short, non-localized label for the modifier (e.g., "Friendly").
  * @property {number} value - The numeric value of the modifier (e.g., 2, -1).
  */
-export class DialogModifierService {
+export class DialogTestModifierService {
     /**
      * The complete database of all known situational modifiers, grouped by skill.
      * @type {Object.<string, ModifierGroup>}

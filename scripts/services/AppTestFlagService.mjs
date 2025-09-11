@@ -1,4 +1,4 @@
-import { MODULE_ID, FLAG_KEY_AppTest } from '../lib/constants.mjs';
+import { MODULE_ID, FLAG_KEY_AppTest, FLAGKEY_Basket } from '../lib/constants.mjs';
 
 /**
  * @summary Manages the state of in-app tests via a user flag.
@@ -95,6 +95,20 @@ export class AppTestFlagService {
             console.log(`Clearing all test state flags for user ${user.name}.`);
             return user.unsetFlag(MODULE_ID, FLAG_KEY_AppTest);
         }
+    }
+    /**
+     * READS the entire shopping basket object from a specific user's flag.
+     * @param {string} [userId] - The ID of the user to get the flag from. Defaults to the current user.
+     * @returns {Promise<object>} The basket object, or an empty object if not found.
+     */
+    static async readBasket(userId) {
+        if (!userId) {
+            userId = game.user.id;
+        }
+        const user = game.users.get(userId);
+        if (!user) return {};
+        // Make sure FLAG_KEY_Basket is defined in your constants.mjs as "shoppingBasket"
+        return user.getFlag(MODULE_ID, FLAGKEY_Basket) || {};
     }
 }
 

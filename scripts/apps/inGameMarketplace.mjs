@@ -1,10 +1,10 @@
 import ItemDataServices from '../services/ItemDataServices.mjs';
-import { AppDialogBuilder } from '../services/AppDialogBuilder.mjs';
+import { AppDialogBuilder } from './documents/dialog/AppDialogBuilder.mjs';
 import { ItemPreviewApp } from "./documents/items/ItemPreviewApp.mjs"; 
 import { BasketService } from '../services/basketService.mjs';
 import { PurchaseService } from '../services/purchaseService.mjs';
 import { SearchService } from '../services/searchTag.mjs';
-import { DialogModifierService } from '../services/DialogModifierService.mjs';
+import { DialogTestModifierService as DialogModifierService } from '../apps/documents/dialog/DialogModifierService.mjs'; // Builder for Dialog For inline-Dialog in Apps
 import { AppTestFlagService } from '../services/AppTestFlagService.mjs';
 import{ MODULE_ID } from '../lib/constants.mjs';
 
@@ -258,7 +258,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 // --- FLAG-BASED WORKFLOW ---
                 if (activeTestState) {
                     const builder = new AppDialogBuilder();
-                    const dialogContext = await builder.buildContext(activeTestState);
+                    const dialogContext = await builder.buildTestDialogContext(activeTestState, basket);
                     
                     // --- THIS IS THE FIX (Part 2) ---
                     // Merge the results directly INTO the 'activeTestState' object.
@@ -839,7 +839,9 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                     result: resultForFlag,
                     rolls: test.rolls, 
                     status: finalStatus, // Use the correct status
-                    type: "AvailabilityTest" // Keep the separate type for the resist roll
+                    type: "AvailabilityTest", // Keep the separate type for the resist roll
+                    rollCount: 1,
+                    connectionUsed: this.activeTestState.connectionUsed
                 }, userId);
             } else {
                 console.log("Marketplace | Could not find dialogId in test result to update the flag.");

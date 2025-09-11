@@ -145,16 +145,30 @@
             <div class="MarketAppDialog-final-result-container">
                 <details class="MarketAppDialog-final-summary" open>
                     <summary>
-                        {{!-- This summary works for both test types --}}
+                        {{!-- This summary works for all test types --}}
                         {{#if activeTestState.isAvailable}}
-                            <h3 class="success"><i class="fas fa-check-circle"></i> {{localize "SR5Marketplace.AppDialogItem.AcquisitionSuccess"}}</h3>
+                            <h3 class="success"><i class="fas fa-check-circle"></i> {{localize "SR5Marketplace.Marketplace.Acquisition.Success"}}</h3>
                         {{else}}
-                            <h3 class="failure"><i class="fas fa-times-circle"></i> {{localize "SR5Marketplace.AppDialogItem.AcquisitionFailed"}}</h3>
+                            <h3 class="failure"><i class="fas fa-times-circle"></i> {{localize "SR5Marketplace.Marketplace.Acquisition.Failed"}}</h3>
                         {{/if}}
                     </summary>
 
-                    {{!-- Check if this was an Opposed Test (has a resistResult) --}}
-                    {{#if activeTestState.resistResult}}
+                    {{!-- This block ONLY appears for a SUCCESSFUL EXTENDED test --}}
+                    {{#if (and activeTestState.isAvailable (eq activeTestState.testType "extended"))}}
+                        <div class="acquisition-details">
+                            <div class="detail-item">
+                                {{loc "SR5Marketplace.AppDialogItem.ExtendedSuccessDetails" 
+                                    rolls=activeTestState.totalRolls 
+                                    connection=activeTestState.connectionUsed 
+                                    timeValue=activeTestState.deliveryTime.value 
+                                }} {{activeTestState.deliveryTime.unit}}
+                            </div>
+                        </div>
+                    {{/if}}
+
+                    {{!-- Check the test type to render the correct dice display grid --}}
+                    {{#if (eq activeTestState.testType "opposed")}}
+                        
                         <div class="final-result-grid">
                             <div class="result-column">
                                 <div class="result-title">{{localize "SR5Marketplace.AppDialogItem.YourRoll"}} ({{activeTestState.initialRoll.netHits}} {{localize "SR5Marketplace.AppDialogItem.netHits"}})</div>
@@ -173,13 +187,13 @@
                                 </div>
                             </div>
                         </div>
-                    {{!-- This is the new layout for Simple and Extended tests --}}
                     {{else}}
+                        {{!-- SIMPLE / EXTENDED TEST GRID --}}
                         <div class="final-result-grid">
                             <div class="result-column">
-                                <div class="result-title">{{localize "SR5Marketplace.AppDialogItem.YourRoll"}} ({{activeTestState.initialRoll.netHits}} {{localize "SR5Marketplace.AppDialogItem.netHits"}})</div>
+                                <div class="result-title">{{localize "SR5Marketplace.AppDialogItem.FinalRoll"}} ({{activeTestState.netHits}} {{localize "SR5Marketplace.AppDialogItem.netHits"}})</div>
                                 <div class="MarketAppDialog-dice-tray">
-                                    {{#each activeTestState.initialRoll.renderedDice as |die|}}
+                                    {{#each activeTestState.renderedDice as |die|}}
                                         <div class="MarketAppDialog-die-result {{die.cssClass}}"><span class="MarketAppDialog-die-text">{{die.text}}</span></div>
                                     {{/each}}
                                 </div>
@@ -187,7 +201,7 @@
                             <div class="result-column">
                                 <div class="result-title">{{localize "SR5.Threshold"}}</div>
                                 <div class="threshold-display">
-                                    {{activeTestState.initialRoll.threshold}}
+                                    {{activeTestState.cumulativeHits}} / {{activeTestState.threshold}}
                                 </div>
                             </div>
                         </div>

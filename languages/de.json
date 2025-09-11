@@ -3,6 +3,15 @@
         "PurchaseScreen": "Marktplatz Fenster",
         "Marketplace": {
             "Settings": {
+                "AvailabilityRule": {
+                    "name": "Verfügbarkeits Regeln",
+                    "hint": "Auswahl welche regeln ihr benutzen wollt, standard ist resistence",
+                    "choises": {
+                        "opposed": "Resistence",
+                        "simple": "Einfache",
+                        "extended": "Erweiterte"
+                    }
+                },
                 "ApprovalWorkflow": {
                     "name": "GM Genehmigungsprocess",
                     "hint": "Schalte diese Einstellung um den Genehmigungsprocess für Spielerkäufe zu deaktivieren!"
@@ -185,27 +194,39 @@
                     "plausibleEvidence": "Charakter präsentiert glaubwürdige Beweise",
                     "targetDistracted": "Das Ziel ist abgelenkt oder leichtgläubig"
                 }
+            },
+            "Acquisition":{
+                "Success": "Kauf Erfolg",
+                "Failure": "Konnte nicht beschafft werden."
             }
         },
         "AppDialogItem": {
-            "result": {
-                "Test": "Testergebnis",
-                "text": "Du hast ",
-                "Hits": " Erfolge erzielt!"
+                "result": {
+                    "Test": "Testergebnis",
+                    "text": "Du hast ",
+                    "Hits": " Erfolge erzielt!"
+                },
+                "GlitchText": {
+                    "with": "Mit ",
+                    "glitch": " Einsen... ein PATZER!"
+                },
+                "ThresholdInfo": "Dies ist der Schwellenwert für den Widerstandswurf des Gegenstands.",
+                "RollItemResistance": "Gegenstandswiderstand würfeln",
+                "AcquisitionSuccess": "Gegenstände können erworben werden",
+                "AcquisitionFailed": "Erwerb fehlgeschlagen",
+                "YourRoll": "Dein Wurf",
+                "netHits": "Nettoerfolge",
+                "Resistance": "Gegenstandswiderstand",
+                "Hits": "Erfolge",
+                "ExtendedSuccessDetails": "Der Erwerb benötigte {rolls} Würfe, unter Verwendung einer Connection von {connection}. Endgültige Lieferzeit: {timeValue}"
             },
-            "GlitchText": {
-                "with": "Mit ",
-                "glitch": " Einsen... ein PATZER!"
-            },
-            "ThresholdInfo": "Dies ist der Schwellenwert für den Widerstandswurf des Gegenstands.",
-            "RollItemResistance": "Gegenstandswiderstand würfeln",
-            "AcquisitionSuccess": "Gegenstände können erworben werden",
-            "AcquisitionFailed": "Erwerb fehlgeschlagen",
-            "YourRoll": "Dein Wurf",
-            "netHits": "Nettoerfolge",
-            "Resistance": "Gegenstandswiderstand",
-            "Hits": "Erfolge"
-        }
+            "Time": {
+                "Hours": "Stunden",
+                "Day": "Tag",
+                "Days": "Tage",
+                "Week": "Woche",
+                "Month": "Monat"
+            }
     },
     "TYPES": {
         "Actor": {
