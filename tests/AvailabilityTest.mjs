@@ -193,7 +193,128 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
         // 5. Finalize the dice pool
         this.data.pool.base = 0;
     }
+    /**
+     * @override
+     * @description Defines success based on the active test rule. This is the key to making
+     * our custom extended test work correctly.
+     */
+    get success() {
+        const rule = game.settings.get("sr5-marketplace", "availabilityTestRule");
+
+        // For an extended test, "success" means the CUMULATIVE hits have met the threshold.
+        if (rule === "extended") {
+            return this.extendedHits().value >= this.threshold.value;
+        }
+
+        // For all other tests (simple, opposed), we use the default system behavior.
+        return super.success;
+    }
+
+    /**
+     * @override
+     * @description Defines failure based on the active test rule. For an extended test,
+     * failure only occurs when the dice pool is exhausted before the threshold is met.
+     */
+    get failure() {
+        const rule = game.settings.get("sr5-marketplace", "availabilityTestRule");
+
+        if (rule === "extended") {
+            // It's a failure ONLY if the dice pool has run out AND we haven't succeeded yet.
+            return this.pool.value <= 0 && !this.success;
+        }
+
+        // For all other tests (simple, opposed), use the default system behavior.
+        return super.failure;
+    }
+
+    /**
+     * @override
+     * @description Calculates net hits using the correct hit total and our own local calcTotal method.
+     */
+    calculateNetHits() {
+        const rule = game.settings.get("sr5-marketplace", "availabilityTestRule");
+        let hitsToUse;
+
+        if (rule === "extended") {
+            hitsToUse = this.extendedHits();
+        } else {
+            hitsToUse = this.hits;
+        }
+
+        const base = this.hasThreshold ? Math.max(hitsToUse.value - this.threshold.value, 0) : hitsToUse.value;
+        const netHits = game.shadowrun5e.data.createData('value_field', {
+            label: "SR5.NetHits",
+            base
+        });
+        
+        // --- THIS IS THE FIX ---
+        // Call our new, local static method instead of the system's helper.
+        netHits.value = AvailabilityTest.calcTotal(netHits, { min: 0 });
+
+        return netHits;
+    }
+
+    /**
+     * @summary A self-contained version of the system's `calcTotal` helper.
+     * @description Calculates the total value from a modifiable value field,
+     * including base, mods, and temp values, and applies optional constraints.
+     * @param {object} value - The value field object (e.g., this.data.pool).
+     * @param {object} [options={}] - Options like min/max values.
+     * @returns {number} The calculated total.
+     * @static
+     */
+    static calcTotal(value, options = {}) {
+        // If there's an override, it takes precedence.
+        if (value.override) {
+            let total = value.override.value;
+            if (options.min !== undefined) total = Math.max(total, options.min);
+            if (options.max !== undefined) total = Math.min(total, options.max);
+            return total;
+        }
+
+        // Start with the base value.
+        let total = value.base || 0;
+
+        // Add the value of each modifier in the 'mod' array.
+        if (Array.isArray(value.mod)) {
+            total += value.mod.reduce((acc, current) => acc + (current.value || 0), 0);
+        }
+
+        // Add the temporary value if it exists.
+        total += value.temp || 0;
+
+        // Apply min/max constraints from options.
+        if (options.min !== undefined) total = Math.max(total, options.min);
+        if (options.max !== undefined) total = Math.min(total, options.max);
+
+        return Math.ceil(total); // Ensure we always deal with integers as per SR5 rules.
+    }
     
+    /**
+     * @override
+     * @description We override the parent's afterTestComplete to prevent it from
+     * automatically calling the system's default `executeAsExtended` logic. Our application's
+     * UI will now have full control over when and how the extended test continues.
+     */
+    async afterTestComplete() {
+        console.debug(`SR5 Marketplace | Test ${this.constructor.name} completed. Custom afterTestComplete is preventing automatic extension.`);
+
+        // Run the essential parts of the parent method.
+        if (this.success) {
+            await this.processSuccess();
+        } else {
+            await this.processFailure();
+        }
+
+        // You can choose to keep or remove the follow-up test logic based on your needs.
+        if (this.autoExecuteFollowupTest) {
+            await this.executeFollowUpTest();
+        }
+
+        // By INTENTIONALLY OMITTING the `if (this.extended)` block that is present
+        // in the parent SuccessTest, we stop the automatic (and incorrect) roll.
+    }
+
     get _dialogTemplate() {
         return "modules/sr5-marketplace/templates/documents/tests/availabilitySimple-test-dialog.html";
     }

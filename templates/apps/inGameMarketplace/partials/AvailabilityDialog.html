@@ -13,8 +13,8 @@
                 <div class="dialog-header-grid">
                     {{!-- Column 1: Actor Info --}}
                     <div class="actor-info">
-                        <div class="selectable-actor" actorUuid="{{actor.uuid}}">
-                            <img src="{{actor.img}}" title="{{actor.name}}"/>
+                        <div class="selectable-actor" actorUuid="{{activeTestState.actor.uuid}}">
+                            <img src="{{activeTestState.actor.img}}" title="{{activeTestState.actor.name}}"/>
                             <span>{{actor.name}}</span>
                         </div>
                     </div>
@@ -22,7 +22,7 @@
                     {{!-- Column 2: Availability --}}
                     <div class="form-group">
                         <label>{{localize "SR5Marketplace.Marketplace.Availability"}}</label>
-                        <div class="availability-display">{{availabilityStr}}</div>
+                        <div class="availability-display">{{activeTestState.availabilityStr}}</div>
                     </div>
 
                     {{!-- Column 3: Skill --}}
@@ -48,19 +48,19 @@
                 </div>
                 <div class="dice-pool-summary">
                     <div class="pool-parts">
-                        {{#each dicePoolBreakdown as |part|}}
+                        {{#each activeTestState.dicePoolBreakdown as |part|}}
                             <span>{{part.label}} {{part.value}}</span>{{#unless @last}} + {{/unless}}
                         {{/each}}
                     </div>
                     <div class="pool-total">
-                        = <strong>{{totalDicePool}}</strong> {{localize "SR5.Dice"}}
+                        = <strong>{{activeTestState.totalDicePool}}</strong> {{localize "SR5.Dice"}}
                     </div>
                 </div>
                 <hr>
 
                 {{!-- Situational Modifiers --}}
                 <div class="marketplace-modifiers-container">
-                    {{#each modifierGroups as |group index|}}
+                    {{#each activeTestState.modifierGroups as |group index|}}
                         <div class="modifier-group collapsible">
                             {{!-- The hidden checkbox that powers the toggle --}}
                             <input type="checkbox" id="toggle-mod-group-{{index}}" class="toggle-checkbox" checked>
@@ -98,23 +98,46 @@
             <div class="result-title">{{localize "SR5Marketplace.AppDialogItem.result.Test"}}</div>
             
             <div class="MarketAppDialog-dice-tray">
-                {{#each renderedDice as |die|}}
+                {{#each activeTestState.renderedDice as |die|}}
                     <div class="MarketAppDialog-die-result {{die.cssClass}}">
                         <span class="MarketAppDialog-die-text">{{die.text}}</span>
                     </div>
                 {{/each}}
             </div>
 
-            <div class="MarketAppDialog-result-summary {{#if isGlitch}}glitched{{/if}}">
-                <div>{{localize "SR5Marketplace.AppDialogItem.result.text"}}<strong>{{hits}}</strong> {{localize "SR5Marketplace.AppDialogItem.result.Hits"}}</div>
+            <div class="MarketAppDialog-result-summary {{#if activeTestState.isGlitch}}glitched{{/if}}">
+                <div>{{localize "SR5Marketplace.AppDialogItem.result.text"}}<strong>{{activeTestState.hits}}</strong> {{localize "SR5Marketplace.AppDialogItem.result.Hits"}}</div>
                 {{#if isGlitch}}
-                    <div class="glitch-text">{{localize "SR5Marketplace.AppDialogItem.GlitchText.with"}} <strong>{{glitches}}</strong> {{localize "SR5Marketplace.AppDialogItem.GlitchText.glitch"}}</div>
+                    <div class="glitch-text">{{localize "SR5Marketplace.AppDialogItem.GlitchText.with"}} <strong>{{activeTestState.glitches}}</strong> {{localize "SR5Marketplace.AppDialogItem.GlitchText.glitch"}}</div>
                 {{/if}}
             </div>
 
             <div class="threshold-info">{{localize "SR5Marketplace.AppDialogItem.ThresholdInfo"}}</div>
             <button type="button" class="roll-button" data-action="runResistTest" data-dialog-id="{{activeTestState.id}}">
                 {{localize "SR5Marketplace.AppDialogItem.RollItemResistance"}}
+            </button>
+        </div>
+
+        {{else if (eq activeTestState.status "extended-inprogress")}}
+        <div class="MarketAppDialog-test-result-container">
+            <div class="result-title">Extended Test In Progress</div>
+            
+            <div class="extended-test-summary">
+                <span>Progress: <strong>{{activeTestState.cumulativeHits}} / {{activeTestState.threshold}}</strong> Hits</span>
+                <span>Next Roll: <strong>{{activeTestState.currentPool}}</strong> Dice</span>
+            </div>
+
+            <div class="result-subtitle">Last Roll's Results:</div>
+            <div class="MarketAppDialog-dice-tray">
+                {{#each activeTestState.renderedDice as |die|}}
+                    <div class="MarketAppDialog-die-result {{die.cssClass}}">
+                        <span class="MarketAppDialog-die-text">{{die.text}}</span>
+                    </div>
+                {{/each}}
+            </div>
+
+            <button type="button" class="roll-button" data-action="continueExtendedTest" data-dialog-id="{{activeTestState.id}}">
+                Continue Test
             </button>
         </div>
 

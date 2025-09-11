@@ -93,6 +93,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 updateRating: this.#onUpdateRating,
                 updatePendingItem: this.#onUpdatePendingItem,
                 runResistTest: this.#onRollResist,
+                continueExtendedTest: this.#onContinueExtendedTest,
                 runAvailabilityTest: this.#onRunAvailabilityTest,
                 showAvailabilityDialog: this.#onShowAvailabilityDialog,
                 selectContact: this.#onSelectContact
@@ -255,49 +256,12 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 }
 
                 // --- FLAG-BASED WORKFLOW ---
-                if (activeTestState?.status === 'initial') {
-                    console.log("LOG: Building 'initial' dialog context...");
-                    const builder = new AppDialogBuilder(activeTestState);
-                    const dialogContext = await builder.buildInitialTestDialogContext({
-                        testType: activeTestState.testType,
-                        actorUuid: activeTestState.actorUuid,
-                        itemUuids: activeTestState.itemUuids,
-                        connectionUuid: activeTestState.connectionUuid,
-                        availabilityStr: activeTestState.availabilityStr,
-                        skill: this.skill,
-                        attribute: this.attribute,
-                        modifiers: activeTestState.modifiers
-                    });
-                    if (dialogContext) {
-                        foundry.utils.mergeObject(partialContext, dialogContext);
-                    }
-                } else if (activeTestState?.status === 'result') {
-                    console.log("LOG: Building 'result' (resist) dialog context...");
-                    const builder = new AppDialogBuilder(activeTestState);
-                    const dialogContext = await builder.buildResultDialogContext({
-                        testType: activeTestState.testType,
-                        dialogId: this.activeDialogId, 
-                        userId: AppUserId,
-                        result: activeTestState.result,
-                        availabilityStr: activeTestState.availabilityStr,
-                        status: activeTestState.status
-                    });
-                    //console.log(dialogContext);
-                     if (dialogContext) {
-                        foundry.utils.mergeObject(partialContext, dialogContext);
-                    }
-                } else if (activeTestState?.status === 'resolved') {
-                    console.log("LOG: Building 'resolved' dialog context...");
-                    const builder = new AppDialogBuilder(); // The constructor can be empty now
-
-                    // --- THIS IS THE FIX ---
-                    // The builder is now smart enough to handle everything.
-                    // We only need to give it the ID of the test to build.
-                    const dialogContext = await builder.buildResolvedDialogContext({
-                        dialogId: this.activeDialogId
-                    });
+                if (activeTestState) {
+                    const builder = new AppDialogBuilder();
+                    const dialogContext = await builder.buildContext(activeTestState);
                     
-                    // Merge the final results into the main context for the template.
+                    // --- THIS IS THE FIX (Part 2) ---
+                    // Merge the results directly INTO the 'activeTestState' object.
                     if (dialogContext) {
                         foundry.utils.mergeObject(partialContext.activeTestState, dialogContext);
                     }
@@ -629,7 +593,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         };
         
         // 2. Get the current list of modifiers from the state.
-        const currentModifiers = this.activeTestState.modifiers ?? [];
+        const currentModifiers = this.activeTestState.appliedModifiers ?? [];
 
         // 3. Use the DialogModifierService to calculate the new, correct list.
         //    FIX: Call the static method directly, without 'new'.
@@ -640,7 +604,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         
         // 5. Save the complete, updated list of modifiers back to the flag.
         //    FIX: Pass the 'newModifiers' array under the 'modifier' key.
-        await AppTestFlagService.updateTest(this.activeTestState.id, { modifiers: newModifiers });
+        await AppTestFlagService.updateTest(this.activeTestState.id, { appliedModifiers: newModifiers });
 
         // 6. Re-render the UI to reflect the change.
         this.render();
@@ -820,7 +784,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     static async #onRunAvailabilityTest(event, target) {
         if (!this.activeTestState) return;
 
-        // --- Actor Selection Logic (remains the same) ---
+        // --- Actor Selection Logic ---
         let actorForTestUuid = this.activeTestState.actorUuid;
         if (this.activeTestState.connectionUuid) {
             const contactItem = await fromUuid(this.activeTestState.connectionUuid);
@@ -850,23 +814,30 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             const test = new game.shadowrun5e.tests.AvailabilityTest(data, { actor }, options);
             await test.execute();
 
-            // Check the rule to decide the next status.
             const rule = game.settings.get("sr5-marketplace", "availabilityTestRule");
-            const finalStatus = (rule === 'opposed') ? 'result' : 'resolved';
+            let finalStatus;
 
-            // Construct the simplified result object, as per your design.
-            const resultForFlag = {
-                diceResults: test.rolls?.[0]?.terms[0]?.results || [],
-                values: test.data.values,
-                success: test.success // Include the success state for simple/extended tests
-            };
+            // --- THIS IS THE UPDATED LOGIC ---
+            if (rule === 'extended') {
+                // For an extended test, check if it succeeded on the first roll.
+                // If not, it's 'in-progress'. Otherwise, it's 'resolved'.
+                finalStatus = test.success ? 'resolved' : 'extended-inprogress';
+            } else if (rule === 'opposed') {
+                finalStatus = 'result';
+            } else {
+                finalStatus = 'resolved';
+            }
+
+            // Complete Test Data
+            const resultForFlag = test.data
             
             const dialogIdToUpdate = test.data.action.dialogId;
             let userId = game.user.id;
 
             if (dialogIdToUpdate) {
                 await AppTestFlagService.updateTest(dialogIdToUpdate, { 
-                    result: resultForFlag, 
+                    result: resultForFlag,
+                    rolls: test.rolls, 
                     status: finalStatus, // Use the correct status
                     type: "AvailabilityTest" // Keep the separate type for the resist roll
                 }, userId);
@@ -877,6 +848,71 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             this.render();
         } catch(e) {
             console.log("Marketplace | AvailabilityTest failed to run:", e);
+        }
+    }
+
+    /**
+     * @summary Continues an in-progress extended availability test.
+     * @description This handler re-creates the test from the stored flag state, calls the
+     * system's built-in `executeAsExtended` method to perform the next roll, and then
+     * determines if the test has succeeded, failed (pool exhausted), or should continue.
+     * @private
+     */
+    static async #onContinueExtendedTest(event, target) {
+        if (!this.activeTestState || this.activeTestState.status !== 'extended-inprogress') return;
+        console.log("%c--- Action: Continue Extended Test ---", "color: orange; font-weight: bold;");
+
+        try {
+            const actor = await fromUuid(this.activeTestState.actorUuid);
+            if (!actor) return;
+
+            const rollCount = (this.activeTestState.rollCount || 0) + 1;
+            const penalty = { label: "Extended Test", value: (rollCount - 1) * -1 };
+            const newAppliedModifiers = [...(this.activeTestState.appliedModifiers || []), penalty];
+
+            const data = {
+                action: {
+                    skill: this.activeTestState.skill,
+                    attribute: this.activeTestState.attribute,
+                    modifiers: newAppliedModifiers,
+                    connectionUuid: this.activeTestState.connectionUuid,
+                    availabilityStr: this.activeTestState.availabilityStr,
+                    dialogId: this.activeDialogId
+                }
+            };
+            
+            // --- THIS IS THE FIX ---
+            // Add the options object to ensure a silent roll.
+            const options = { showDialog: false, showMessage: false };
+
+            // Pass the options to the test constructor.
+            const test = new game.shadowrun5e.tests.AvailabilityTest(data, { actor }, options);
+            await test.execute();
+
+            // 5. Accumulate hits from the previous total.
+            const previousHits = this.activeTestState.result.values.extendedHits.value;
+            test.data.values.extendedHits.value += previousHits;
+            test.data.values.extendedHits.mod.push({ name: "Previous Hits", value: previousHits });
+
+            // 6. Check if the test is now resolved.
+            let finalStatus = 'extended-inprogress';
+            if (test.data.values.extendedHits.value >= test.data.threshold.value || test.pool.value <= 0) {
+                finalStatus = 'resolved';
+            }
+            
+            // 7. Save everything back to the flag.
+            await AppTestFlagService.updateTest(this.activeTestState.id, {
+                result: test.data,
+                rolls: test.rolls,
+                status: finalStatus,
+                rollCount: rollCount, // Save the updated roll count
+                appliedModifiers: newAppliedModifiers // Save the updated modifiers
+            });
+
+            this.render();
+
+        } catch(e) {
+            console.error("Marketplace | Failed to continue extended test:", e);
         }
     }
 }
