@@ -57,11 +57,7 @@ const initializeTemplates = () => {
         "modules/sr5-marketplace/templates/documents/actor/partials/shop-inventory.html",
         "modules/sr5-marketplace/templates/documents/items/itemPreviewApp/item-preview.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html",
-        "modules/sr5-marketplace/templates/apps/itemBuilder/item-builder.html",
-        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/builder-mod-selector.html",
-        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/builder-main-content.html",
-        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/builder-header.html",
-        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/builder-item-selctor.html"
+        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/Builder.html"
     ]);
 };
 // Initialize module settings

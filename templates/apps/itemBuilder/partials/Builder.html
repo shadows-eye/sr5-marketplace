@@ -1,0 +1,92 @@
+{{!-- This single file now contains the entire layout and logic for the "Builder" tab --}}
+<div class="builder-container">
+
+    {{!-- Sidebar with Item and Mod Selectors --}}
+    <aside class="builder-sidebar">
+        <section class="item-selector-section">
+            <header class="component-header">
+                <h3>{{localize "SR5Marketplace.ItemBuilder.Items.Header"}}</h3>
+                <select id="item-type-selector" name="itemType">
+                    {{#each itemsByType}}
+                    <option value="{{@key}}" {{#if (eq @key ../selectedKey)}}selected{{/if}}>
+                        {{this.label}}
+                    </option>
+                    {{/each}}
+                </select>
+                <input type="search" name="itemSearch" placeholder="Search items..."/>
+            </header>
+            <div class="item-content-grid">
+                {{#each selectedItems}}
+                <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}">
+                    <img src="{{this.img}}" alt="{{this.name}}" class="item-image" loading="lazy"/>
+                    <a class="item-name" data-action="clickItemName" data-item-uuid="{{this.uuid}}">{{this.name}}</a>
+                    <a class="select-icon" data-action="selectBaseItem" data-item-uuid="{{this.uuid}}" title="Select as Base">
+                        <i class="fas fa-crosshairs"></i>
+                    </a>
+                </div>
+                {{/each}}
+            </div>
+        </section>
+
+        <section class="mod-selector-section">
+            <header class="component-header">
+                <h3>{{localize "SR5Marketplace.ItemBuilder.Modifications.Header"}}</h3>
+                <input type="search" name="modSearch" placeholder="Search mods..."/>
+            </header>
+            <div class="item-content-grid">
+                {{#each mods}}
+                <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}">
+                    <img src="{{this.img}}" alt="{{this.name}}" class="item-image" loading="lazy"/>
+                    <a class="item-name" data-action="clickItemName" data-item-uuid="{{this.uuid}}">{{this.name}}</a>
+                </div>
+                {{/each}}
+            </div>
+        </section>
+    </aside>
+
+    {{!-- Main Content Area (Conditional) --}}
+    {{#if hasBaseItem}}
+        {{!-- If an item IS selected, show the builder interface --}}
+        <section class="builder-main-content">
+            <div class="builder-area">
+                <div class="item-showcase">
+                    <div class="mod-slot top-left"></div>
+                    <div class="mod-slot bottom-left"></div>
+                    <div class="base-item-display">
+                        <h4>{{builderData.baseItem.name}}</h4>
+                        <img src="{{builderData.baseItem.img}}" alt="{{builderData.baseItem.name}}" />
+                        <p class="item-effects">Additional effects will be listed here.</p>
+                    </div>
+                    <div class="mod-slot top-right"></div>
+                    <div class="mod-slot middle-right"></div>
+                    <div class="mod-slot bottom-right"></div>
+                </div>
+                <div class="bottom-slots">
+                    <div class="mod-slot"></div>
+                    <div class="mod-slot"></div>
+                    <div class="mod-slot"></div>
+                    <div class="mod-slot"></div>
+                </div>
+                <div class="item-stats-display">
+                    {{!-- These stats will come from builderData later --}}
+                    <div class="stat-block"><label>Damage</label><span>10P</span></div>
+                    <div class="stat-block"><label>Accuracy</label><span>7</span></div>
+                    <div class="stat-block"><label>AP</label><span>-2</span></div>
+                    <div class="stat-block"><label>Mode</label><span>SA/BF</span></div>
+                    <div class="stat-block"><label>RC</label><span>1</span></div>
+                    <div class="stat-block"><label>Ammo</label><span>15(c)</span></div>
+                </div>
+            </div>
+        </section>
+    {{else}}
+        {{!-- If NO item is selected, show the blank placeholder --}}
+        <section class="builder-main-content blank">
+            <div class="placeholder-content">
+                <img src="icons/svg/anvil.svg" alt="Select an Item" width="128" height="128"/>
+                <h3>Select a Base Item</h3>
+                <p>Choose an item from the list on the left to begin building.</p>
+            </div>
+        </section>
+    {{/if}}
+
+</div>

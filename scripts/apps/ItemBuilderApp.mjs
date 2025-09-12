@@ -1,5 +1,6 @@
 import { ItemPreviewApp } from "../apps/documents/items/ItemPreviewApp.mjs";
 import { SearchService } from '../services/searchTag.mjs';
+import { BuilderStateService } from "../services/builderStateService.mjs";
 // We will create this service later to handle the builder logic.
 // import { BuilderService } from '../services/builderService.mjs'; 
 
@@ -28,7 +29,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.purchasingActor = null;
         this.searchService = null;
         // this.builderService = new BuilderService(); // To be added later
-
+        this.builderData = {
+            baseItem: null,
+            modifications: []
+        };
         this.tabGroups = { main: "builder" }; // Default to the 'builder' tab
 
         // --- Item & Category Selection State ---
@@ -77,8 +81,6 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     /** @override */
     _onRender(context, options) {
         super._onRender(context, options);
-
-        // Attach search and category listeners only when the builder tab is active
         if (this.tabGroups.main === "builder") {
             this.searchService = new SearchService(this.element);
             this.searchService.initialize();
@@ -94,56 +96,55 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     /** @override */
     async _prepareContext(options) {
-        // Get the purchasing actor
+        // --- THIS IS THE KEY CHANGE (PART 1) ---
+        // At the start of every render, get the latest state from the flag.
+        const builderData = await BuilderStateService.getState();
+
         const selectedActorUuid = game.user.getFlag("sr5-marketplace", "selectedActorUuid");
         this.purchasingActor = selectedActorUuid ? await fromUuid(selectedActorUuid) : (game.user.character || null);
-
-        // Define the navigation tabs
-        const tabs = [
-            { id: "builder", label: "Builder", icon: "fa-wrench", cssClass: this.tabGroups.main === "builder" ? "active" : "" },
-            { id: "effects", label: "Active Effects", icon: "fa-star", cssClass: this.tabGroups.main === "effects" ? "active" : "" },
-            { id: "dialog", label: "Creation Dialog", icon: "fa-comment-dots", cssClass: this.tabGroups.main === "dialog" ? "active" : "" }
-        ];
-
-        let tabContent;
+        
+        let tabContent = null;
         const render = foundry.applications.handlebars.renderTemplate;
         const partialContext = { 
             purchasingActor: this.purchasingActor,
-            // We will add builderData here once the service is built
+            hasBaseItem: !!builderData.baseItem, // Use the state we just fetched
+            builderData: builderData             // Pass it to the partial
         };
 
-        // --- Render Tab Content ---
         switch (this.tabGroups.main) {
             case "effects":
-                // Placeholder content for the future
                 tabContent = `<div class="placeholder">Active Effects Configuration will be here.</div>`;
                 break;
             case "dialog":
-                // Placeholder content for the future
                 tabContent = `<div class="placeholder">The final Creation Dialog will be here.</div>`;
                 break;
             default: // "builder" tab
                 this.tabGroups.main = "builder";
                 const itemsByType = this.itemData.itemsByType ?? {};
-
-                // Ensure a category is selected if possible
+                
+                partialContext.itemsByType = itemsByType;
                 if (!this.selectedKey || !itemsByType[this.selectedKey]) {
                     this.selectedKey = Object.keys(itemsByType).find(k => itemsByType[k].items.length > 0) || null;
                 }
-
-                partialContext.itemsByType = itemsByType;
                 partialContext.selectedKey = this.selectedKey;
                 partialContext.selectedItems = this.selectedKey ? (itemsByType[this.selectedKey]?.items || []) : [];
-                
-                // Placeholder for mods - we'll filter this properly later
                 partialContext.mods = itemsByType.itemModifications?.items ?? [];
 
-                // Render the main builder content area using its own partial
-                tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/builder-main-content.html", partialContext);
+                // Render the single, all-in-one template for the builder tab.
+                tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/builder.html", partialContext);
                 break;
         }
 
-        return { tabs, tabContent, purchasingActor: this.purchasingActor };
+        const builderContext = {
+            title: this.builderData.baseItem ? `Building: ${this.builderData.baseItem.name}` : "Select a Base Item",
+            itemType: { img: "icons/svg/anvil.svg" }
+        };
+
+        return { 
+            tabContent, // We now pass the single content variable to the main template.
+            purchasingActor: this.purchasingActor,
+            builder: builderContext
+        };
     }
 
     // --- Static Helpers ---
