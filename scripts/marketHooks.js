@@ -7,6 +7,7 @@ import { PurchaseService } from "./services/purchaseService.mjs";
 import { defineShopActorClass } from '../models/actor/shopActor.mjs';
 import { ShopActorSheet } from '../sheets/ShopActorSheet.mjs';
 import { MODULE_ID, SHOP_ACTOR_TYPE} from "./lib/constants.mjs";
+import { ItemBuilderApp } from "./apps/ItemBuilderApp.mjs";
 
 /**
  * Draws the notification badge on the scene control button.
@@ -55,7 +56,12 @@ const initializeTemplates = () => {
         "modules/sr5-marketplace/templates/documents/actor/partials/shop-skills.html",
         "modules/sr5-marketplace/templates/documents/actor/partials/shop-inventory.html",
         "modules/sr5-marketplace/templates/documents/items/itemPreviewApp/item-preview.html",
-        "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html"
+        "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html",
+        "modules/sr5-marketplace/templates/apps/itemBuilder/item-builder.html",
+        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/builder-mod-selector.html",
+        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/builder-main-content.html",
+        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/builder-header.html",
+        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/builder-item-selctor.html"
     ]);
 };
 // Initialize module settings
@@ -308,6 +314,30 @@ Hooks.on("getSceneControlButtons", (controls) => {
       }
     }
   };
+});
+
+Hooks.on("getSceneControlButtons", (controls) => {
+    const tokenControls = controls["tokens"];
+    if (!tokenControls) return;
+
+    // In V13, the `tools` property is also an ARRAY. We add our new button object to it using .push().
+    tokenControls.tools["itemBuilder"] =({
+        name: "itemBuilder",
+        title: "Open Item Builder", // Will be localized later
+        icon: "fas fa-wrench",
+        visible: game.user.isGM,
+
+        toggle: true,
+        active: Object.values(ui.windows).some(app => app.id === "itemBuilderApp"),
+        onChange: (toggled) => {
+            if (toggled) {
+                new ItemBuilderApp().render(true);
+            } else {
+                const app = Object.values(ui.windows).find(app => app.id === "itemBuilderApp");
+                if (app) app.close();
+            }
+        }
+    });
 });
 Hooks.on("renderSceneControls", (app, html) => {
     drawBadge(html);

@@ -1,0 +1,16 @@
+<header class="builder-header">
+    <div class="header-left">
+        <img class="item-type-icon" src="icons/svg/anvil.svg" alt="Item Type" width="32" height="32"/>
+        <h1>{{builderTitle}}</h1>
+    </div>
+    <div class="header-right">
+        <button type="button" class="build-item-btn" data-action="buildItem">
+            <i class="fas fa-save"></i> {{localize "SR5Marketplace.AppDialogItem.BuildItem"}}
+        </button>
+        {{#if purchasingActor}}
+        <div class="actor-display">
+            <img src="{{purchasingActor.img}}" alt="{{purchasingActor.name}}" width="36" height="36"/>
+        </div>
+        {{/if}}
+    </div>
+</header>

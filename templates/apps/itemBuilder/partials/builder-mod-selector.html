@@ -1,0 +1,14 @@
+<section class="mod-selector-section">
+    <header class="component-header">
+        <h3>{{localize "SR5Marketplace.ItemBuilder.Modifications.Header"}}</h3>
+        <input type="search" name="modSearch" placeholder="Search mods..."/>
+    </header>
+    <div class="item-content-grid">
+        {{#each mods}}
+        <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}">
+            <img src="{{this.img}}" alt="{{this.name}}" class="item-image" loading="lazy"/>
+            <a class="item-name" data-action="clickItemName" data-item-uuid="{{this.uuid}}">{{this.name}}</a>
+            </div>
+        {{/each}}
+    </div>
+</section>
