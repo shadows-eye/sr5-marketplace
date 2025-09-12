@@ -6,14 +6,16 @@
         <section class="item-selector-section">
             <header class="component-header">
                 <h3>{{localize "SR5Marketplace.ItemBuilder.Items.Header"}}</h3>
-                <select id="item-type-selector" name="itemType">
-                    {{#each itemsByType}}
-                    <option value="{{@key}}" {{#if (eq @key ../selectedKey)}}selected{{/if}}>
-                        {{this.label}}
-                    </option>
-                    {{/each}}
-                </select>
-                <input type="search" name="itemSearch" placeholder="Search items..."/>
+                <div class="header-controls">
+                    <select id="item-type-selector" name="itemType">
+                        {{#each itemsByType}}
+                        <option value="{{@key}}" {{#if (eq @key ../selectedKey)}}selected{{/if}}>
+                            {{localize this.label}}
+                        </option>
+                        {{/each}}
+                    </select>
+                    <input type="search" name="itemSearch" placeholder="Search items..."/>
+                </div>
             </header>
             <div class="item-content-grid">
                 {{#each selectedItems}}
@@ -31,9 +33,11 @@
         <section class="mod-selector-section">
             <header class="component-header">
                 <h3>{{localize "SR5Marketplace.ItemBuilder.Modifications.Header"}}</h3>
-                <input type="search" name="modSearch" placeholder="Search mods..."/>
+                {{!-- The dropdown is now removed --}}
+                <input type="search" id= "search-box" name="modSearch" placeholder="Search all mods..."/>
             </header>
             <div class="item-content-grid">
+                {{!-- We now loop over a simple 'mods' array --}}
                 {{#each mods}}
                 <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}">
                     <img src="{{this.img}}" alt="{{this.name}}" class="item-image" loading="lazy"/>

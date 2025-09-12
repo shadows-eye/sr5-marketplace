@@ -1,0 +1,190 @@
+/* ================================================================== */
+/* Item Builder Application Styles                                    */
+/* ================================================================== */
+
+/* --- 1. Main App Layout --- */
+/* This is the main content area for the "Builder" tab.
+   It establishes our primary two-column grid layout. */
+.itemBuilder .builder-container {
+    display: grid;
+    /* Define a 450px sidebar and let the main content take the rest of the space */
+    grid-template-columns: 450px 1fr; 
+    grid-template-areas: "sidebar mainBuilder"; /* Name our grid areas */
+    gap: 10px;
+    height: 100%; /* Make it fill the builder-body */
+    padding: 10px;
+}
+
+.itemBuilder .builder-header{
+    display: flex;
+    justify-content: space-between;
+}
+
+/* --- 2. Sidebar Layout --- */
+/* Assign the sidebar to its named grid area. */
+.itemBuilder .builder-sidebar {
+    grid-area: sidebar; /* This is the magic! */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--attribute-group-bg);
+    border: 1px solid var(--border-color-medium);
+    border-radius: 5px;
+    padding: 5px;
+    overflow-y: auto; /* Allow the sidebar content to scroll */
+}
+
+
+/* --- 3. Main Content Area --- */
+/* Assign the main content (both versions) to its named grid area. */
+.itemBuilder .builder-main-content {
+    grid-area: mainBuilder; /* This is the magic! */
+    display: flex; /* Use flex for internal layout */
+    flex-direction: column;
+    border: 1px solid var(--border-color-medium);
+    border-radius: 5px;
+    background: var(--attribute-group-bg);
+    overflow-y: auto;
+}
+
+
+/* --- 4. Item & Mod Selector Sections --- */
+.itemBuilder .item-selector-section,
+.itemBuilder .mod-selector-section {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border-color-dark);
+    border-radius: 3px;
+    background: var(--collapsible-content-bg);
+}
+
+.itemBuilder .component-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    background: var(--tab-inactive-bg);
+    border-bottom: 1px solid var(--border-color-dark);
+}
+
+.itemBuilder .component-header h3 {
+    margin: 0;
+    font-size: 1.1em;
+    color: var(--text-color-subheader);
+    flex-shrink: 0;
+}
+
+/* --- 4a. Component Header Layout --- */
+/* This section styles the headers for the sidebar selectors */
+
+/* Stacks the title and controls vertically */
+.itemBuilder .component-header {
+    display: flex;
+    flex-direction: column; /* This is the key change */
+    align-items: stretch; /* Make children fill the width */
+    gap: 8px;
+    padding: 8px;
+}
+
+/* Creates the "box frame" around the title */
+.itemBuilder .component-header h3 {
+    text-align: center;
+    padding: 5px;
+    border: 1px solid var(--border-color-dark);
+    background-color: var(--collapsible-content-bg);
+    border-radius: 3px;
+    margin: 0;
+}
+
+/* This new rule targets our wrapper div */
+.itemBuilder .header-controls {
+    display: flex;
+    gap: 8px;
+}
+
+/* Make the search bar fill the remaining space */
+.itemBuilder .header-controls input[type="search"] {
+    flex-grow: 1;
+    width: 100%; /* Fixes a Safari sizing bug */
+}
+
+
+/* --- 5. Item Content Grid (Sidebar) --- */
+/* This remains a grid for the item cards, as you wanted. */
+.itemBuilder .item-content-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 cards per row */
+    gap: 5px;
+    padding: 5px;
+    overflow-y: auto;
+    max-height: 190px;
+}
+
+
+/* --- 6. Builder Area & Item Showcase (Main Content) --- */
+.itemBuilder .builder-area {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px;
+    height: 100%;
+}
+
+.itemBuilder .item-showcase {
+    display: grid;
+    grid-template-columns: 100px 1fr 100px;
+    align-items: center;
+    justify-items: center;
+    gap: 15px;
+}
+
+.itemBuilder .base-item-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+}
+
+.itemBuilder .base-item-display img {
+    max-width: 150px;
+    height: auto;
+    border: none;
+    filter: drop-shadow(2px 2px 5px var(--color-black-transparent-30));
+}
+
+.itemBuilder .base-item-display h4 {
+    color: var(--text-color-subheader);
+    margin: 0;
+}
+
+.itemBuilder .mod-selector-section{
+    max-height: 260px;
+}
+/* --- 7. Compact Item Card Variant (for Sidebar) --- */
+/* Overrides the default item-card styles to be much smaller,
+   allowing them to fit 3-across in the sidebar. */
+
+.itemBuilder .item-card {
+    padding: 4px; /* Reduce padding */
+    gap: 5px;
+    min-width: 8em;
+}
+
+.itemBuilder .item-card .item-image {
+    width: 32px;  /* Make the image smaller */
+    height: 32px;
+    flex-shrink: 0;
+}
+
+.itemBuilder .item-card .item-name {
+    font-size: 13px; /* Reduce font size */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Add '...' if the name is too long */
+}
+
+.itemBuilder .item-card .select-icon {
+    font-size: 14px; /* Adjust icon size */
+    margin-left: auto; /* Pushes the icon to the far right */
+}

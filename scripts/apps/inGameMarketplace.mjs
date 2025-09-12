@@ -119,7 +119,12 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         if (this.tabGroups.main === "shop") {
             this.searchService = new SearchService(this.element);
-            this.searchService.initialize();
+            this.searchService.initialize({
+                searchBox: "#search-box",
+                itemsGrid: "#marketplace-items",
+                tagsContainer: "#filter-tags-container",
+                nameSelector: ".marketplace_h4" // <-- ADD THIS LINE
+            });
             
             const categorySelector = this.element.querySelector("#item-type-selector");
             if (categorySelector) {

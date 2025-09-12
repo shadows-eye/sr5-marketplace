@@ -1,5 +1,5 @@
 import { ItemPreviewApp } from "../apps/documents/items/ItemPreviewApp.mjs";
-import { SearchService } from '../services/searchTag.mjs';
+import { SearchService as itemSearchService } from '../services/searchTag.mjs';
 import { BuilderStateService } from "../services/builderStateService.mjs";
 // We will create this service later to handle the builder logic.
 // import { BuilderService } from '../services/builderService.mjs'; 
@@ -27,7 +27,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         // --- State and Services ---
         this.itemData = game.sr5marketplace.itemData; // Use the global item data service
         this.purchasingActor = null;
-        this.searchService = null;
+        this.itemSearchService = null;
+        this.modSearchService = null;
         // this.builderService = new BuilderService(); // To be added later
         this.builderData = {
             baseItem: null,
@@ -56,7 +57,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     static get DEFAULT_OPTIONS() {
         return foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
             id: "itemBuilder",
-            position: { width: 1200, height: 800 },
+            position: { width: 1600, height: 800 },
             window: { title: "Item Builder" },
             actions: {
                 // Core App Actions
@@ -78,25 +79,43 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         main: { template: "modules/sr5-marketplace/templates/apps/itemBuilder/item-builder.html" }
     };
 
-    /** @override */
+    /** 
+     * @override
+     * @param {object} context - The context object on render
+     * @param {[options]}  options - The Options from the main app passed down.
+     * */
     _onRender(context, options) {
         super._onRender(context, options);
+
         if (this.tabGroups.main === "builder") {
-            this.searchService = new SearchService(this.element);
-            this.searchService.initialize();
+            // --- Item Search ---
+            this.itemSearchService = new itemSearchService(this.element);
+            this.itemSearchService.initialize({
+                searchBox: 'input[name="itemSearch"]',
+                itemsGrid: '.item-selector-section .item-content-grid',
+                nameSelector: ".item-name" // <-- ADD THIS LINE
+            }); // No tagsContainer needed
             
+            // --- Mod Search ---
+            this.modSearchService = new itemSearchService(this.element);
+            this.modSearchService.initialize({
+                searchBox: 'input[name="modSearch"]',
+                itemsGrid: '.mod-selector-section .item-content-grid',
+                nameSelector: ".item-name" // <-- ADD THIS LINE
+            }); // No tagsContainer needed
+
             const categorySelector = this.element.querySelector("#item-type-selector");
             if (categorySelector) {
                 categorySelector.addEventListener("change", this.onChangeCategory.bind(this));
             }
         } else {
-            this.searchService = null;
+            this.itemSearchService = null;
+            this.modSearchService = null;
         }
     }
 
     /** @override */
     async _prepareContext(options) {
-        // --- THIS IS THE KEY CHANGE (PART 1) ---
         // At the start of every render, get the latest state from the flag.
         const builderData = await BuilderStateService.getState();
 
@@ -120,18 +139,28 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 break;
             default: // "builder" tab
                 this.tabGroups.main = "builder";
-                const itemsByType = this.itemData.itemsByType ?? {};
+                // --- THIS IS THE UPDATE ---
+                // Fetch the specific data sets we need for the builder.
+                const baseItemsByType = this.itemData.baseItemsByType ?? {};
+                const modsByType = this.itemData.modificationsByType ?? {};
                 
-                partialContext.itemsByType = itemsByType;
-                if (!this.selectedKey || !itemsByType[this.selectedKey]) {
-                    this.selectedKey = Object.keys(itemsByType).find(k => itemsByType[k].items.length > 0) || null;
+                // Update context for the item selector (now only shows base items)
+                partialContext.itemsByType = baseItemsByType;
+                if (!this.selectedKey || !baseItemsByType[this.selectedKey]) {
+                    this.selectedKey = Object.keys(baseItemsByType).find(k => baseItemsByType[k].items.length > 0) || null;
                 }
                 partialContext.selectedKey = this.selectedKey;
-                partialContext.selectedItems = this.selectedKey ? (itemsByType[this.selectedKey]?.items || []) : [];
-                partialContext.mods = itemsByType.itemModifications?.items ?? [];
-
+                partialContext.selectedItems = this.selectedKey ? (baseItemsByType[this.selectedKey]?.items || []) : [];
+                
+                // Update context for the mod selector (now shows categorized mods)
+                 // Instead of relying on a single key, we'll combine the 'items' array
+                // from every category within modsByType (weaponMods, armorMods, etc.).
+                // This is a much more robust way to get all modifications.
+                partialContext.mods = Object.values(modsByType).flatMap(category => category.items || []);
+                
+                console.log (partialContext)
                 // Render the single, all-in-one template for the builder tab.
-                tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/builder.html", partialContext);
+                tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/Builder.html", partialContext);
                 break;
         }
 
@@ -159,7 +188,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     async onChangeCategory(event) {
         this.selectedKey = event.currentTarget.value;
-        this.searchService?.clearAllFilters(); // Clear search when changing category
+        this.itemSearchService?.clearAllFilters(); // Clear search when changing category
         await this.render();
     }
 

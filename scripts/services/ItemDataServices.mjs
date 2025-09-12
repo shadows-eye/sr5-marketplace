@@ -114,4 +114,61 @@ export default class ItemDataServices {
             complex_form: {label: "SR5Marketplace.Marketplace.ItemTypes.complex_form", items: getItemsByType("complex_form")}
         };
     }
+    // ... inside the ItemDataServices class ...
+
+    /**
+     * Getter that returns a categorized list of ONLY non-modification items.
+     * Ideal for the Item Builder's main selector.
+     */
+    get baseItemsByType() {
+        const allItems = this.getItems();
+        
+        // 1. Filter out unwanted types AND all modifications.
+        const baseItems = allItems.filter(item => 
+            !["modification", "call_in_action", "critter_power", "host", "sprite_power", "contact"].includes(item.type)
+        );
+
+        // 2. Run categorization logic ONLY on the base items.
+        const getItemsByType = (type) => baseItems.filter(i => i.type === type);
+        const getItemsByCategory = (type, cat) => baseItems.filter(i => i.type === type && i.system.category === cat);
+
+        return {
+            filteredItems: { label: "SR5Marketplace.Marketplace.ItemTypes.AllItems", items: baseItems },
+            rangedWeapons: { label: "SR5Marketplace.Marketplace.ItemTypes.RangedWeapons", items: getItemsByCategory("weapon", "range") },
+            meleeWeapons: { label: "SR5Marketplace.Marketplace.ItemTypes.MeleeWeapons", items: getItemsByCategory("weapon", "melee") },
+            armor: { label: "SR5Marketplace.Marketplace.ItemTypes.Armor", items: getItemsByType("armor") },
+            cyberware: { label: "SR5Marketplace.Marketplace.ItemTypes.Cyberware", items: getItemsByType("cyberware") },
+            bioware: { label: "SR5Marketplace.Marketplace.ItemTypes.Bioware", items: getItemsByType("bioware") },
+            devices: { label: "SR5Marketplace.Marketplace.ItemTypes.Devices", items: getItemsByType("device") },
+            equipment: { label: "SR5Marketplace.Marketplace.ItemTypes.Equipment", items: getItemsByType("equipment") },
+            spells: {label: "SR5Marketplace.Marketplace.ItemTypes.Spells", items: getItemsByType("spell")},
+            metamagic: {label: "SR5Marketplace.Marketplace.ItemTypes.Metamagic", items: getItemsByType("metamagic")},
+            adeptPower: {label: "SR5Marketplace.Marketplace.ItemTypes.AdeptPowers", items: getItemsByType("adept_power")},
+            echo: {label: "SR5Marketplace.Marketplace.ItemTypes.Echo", items: getItemsByType("echo")},
+            qualitys: {label: "SR5Marketplace.Marketplace.ItemTypes.Qualitys", items: getItemsByType("qualitys")},
+            complex_form: {label: "SR5Marketplace.Marketplace.ItemTypes.complex_form", items: getItemsByType("complex_form")}
+        };
+    }
+
+    /**
+     * Getter that returns a categorized list of ONLY modification items.
+     * Ideal for the Item Builder's modification selector.
+     */
+    get modificationsByType() {
+        const allItems = this.getItems();
+        
+        // 1. Filter for ONLY modifications.
+        const allModifications = allItems.filter(item => item.type === "modification");
+
+        // 2. Categorize modifications by their specific type (weapon, armor, etc.).
+        const getModificationsByType = (modType) => 
+            allModifications.filter(i => i.system.type === modType);
+
+        return {
+            allModifications: { label: "SR5Marketplace.Marketplace.ItemTypes.AllMods", items: allModifications },
+            weaponMods: { label: "SR5Marketplace.Marketplace.ItemTypes.WeaponMods", items: getModificationsByType("weapon") },
+            armorMods: { label: "SR5Marketplace.Marketplace.ItemTypes.ArmorMods", items: getModificationsByType("armor") },
+            vehicleMods: { label: "SR5Marketplace.Marketplace.ItemTypes.VehicleMods", items: getModificationsByType("vehicle") },
+        };
+    }
 }
