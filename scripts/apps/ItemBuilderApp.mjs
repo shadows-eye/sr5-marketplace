@@ -58,7 +58,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         return foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
             id: "itemBuilder",
             position: { width: 1600, height: 800 },
-            window: { title: "Item Builder" },
+            window: { title: "Item Builder", resizable: true },
             actions: {
                 // Core App Actions
                 changeTab: this.#onChangeTab,
@@ -207,10 +207,38 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         if (itemUuid) new ItemPreviewApp(itemUuid).render(true);
     }
     
-    static #onSelectBaseItem(event, target) {
-        ui.notifications.info("TODO: Set this item as the base for building.");
-        console.log("Selected Item UUID:", target.dataset.itemUuid);
-        // Later this will call: this.builderService.setBaseItem(itemUuid);
+    // ... inside the ItemBuilderApp class ...
+
+    /**
+     * Handles selecting a base item from the sidebar.
+     * It saves the selected item to the state flag and triggers a re-render.
+     * @private
+     */
+    static async #onSelectBaseItem(event, target) {
+        const itemUuid = target.dataset.itemUuid;
+        if (!itemUuid) return;
+
+        // 1. Fetch the full item document from its UUID.
+        const item = await fromUuid(itemUuid);
+        if (!item) {
+            return ui.notifications.warn("Could not find the selected item.");
+        }
+        const cleanItemData = {
+            uuid: item.uuid,
+            name: item.name,
+            img: item.img,
+            type: item.type,
+            system: item.system,
+            technology: item.technology
+        };
+        // 2. Use our service to set this item as the new base item.
+        //    This also clears any previous modifications from the state.
+        //    We use .toObject(false) to get a clean data object for storage.
+        await BuilderStateService.setBaseItem(cleanItemData);
+        
+        // 3. Re-render the application to reflect the new state.
+        //    The UI will now switch from the blank placeholder to the builder view.
+        this.render();
     }
     
     static #onBuildItem(event, target) {

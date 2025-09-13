@@ -3,8 +3,9 @@ import { MODULE_ID } from '../lib/constants.mjs';
 const FLAG_SCOPE = MODULE_ID;
 const FLAG_KEY = "itemBuilderState";
 
+
 /**
- * A service to manage the persistent state of the Item Builder using a user flag.
+ * A service to manage the persistent state of the Item Builder's ACTIVE build.
  */
 export class BuilderStateService {
 
@@ -16,7 +17,8 @@ export class BuilderStateService {
     static _getDefaultState() {
         return {
             baseItem: null,
-            modifications: []
+            modifications: [],
+            changes: [] // NEW: An array to track specific attribute changes
         };
     }
 
@@ -41,12 +43,37 @@ export class BuilderStateService {
     }
 
     /**
-     * A specific helper to set the base item.
+     * Sets the base item, clearing any previous modifications and changes.
      * @param {object|null} itemData - The data object for the base item.
      * @returns {Promise<void>}
      */
     static async setBaseItem(itemData) {
-        await this.updateState({ baseItem: itemData });
+        // When setting a new base item, we reset the build.
+        const newState = this._getDefaultState();
+        newState.baseItem = itemData;
+        await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, newState);
+    }
+
+    /**
+     * NEW: Adds a modification to the list.
+     * @param {object} modData - The data object for the modification item.
+     * @returns {Promise<void>}
+     */
+    static async addModification(modData) {
+        const state = await this.getState();
+        state.modifications.push(modData);
+        await this.updateState({ modifications: state.modifications });
+    }
+
+    /**
+     * NEW: Adds a specific attribute change to the list.
+     * @param {object} change - The change object you described.
+     * @returns {Promise<void>}
+     */
+    static async addChange(change) {
+        const state = await this.getState();
+        state.changes.push(change);
+        await this.updateState({ changes: state.changes });
     }
 
     /**

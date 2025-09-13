@@ -6,7 +6,7 @@
                 "AvailabilityRule": {
                     "name": "Verfügbarkeits Regeln",
                     "hint": "Auswahl welche regeln ihr benutzen wollt, standard ist resistence",
-                    "choises": {
+                    "choices": {
                         "opposed": "Resistence",
                         "simple": "Einfache",
                         "extended": "Erweiterte"

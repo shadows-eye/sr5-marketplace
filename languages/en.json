@@ -6,7 +6,7 @@
                 "AvailabilityRule": {
                     "name": "Availability Rules",
                     "hint": "Selection options for the Rules you want to use, standard is Opposed",
-                    "choises": {
+                    "choices": {
                         "opposed": "Opposed",
                         "simple": "Simple",
                         "extended": "Extended"
