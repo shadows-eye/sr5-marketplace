@@ -45,18 +45,16 @@
         </div>
     </section>
 
-    {{!-- Main Content Area (Conditional) - THIS WAS THE MISSING PART --}}
+    {{!-- Main Content Area (Conditional) --}}
     {{#if hasBaseItem}}
         {{!-- If an item IS selected, show the builder interface --}}
         <section class="builder-main-content">
             <div class="builder-area">
-                <div class="mod-slot slot-top-left"></div>
-                <div class="mod-slot slot-bottom-left"></div>
-                
+                <div class= "mod-slot slot-top-left"></div>
+                <div class= "mod-slot slot-bottom-left"></div>
                 <div class="center-display">
-                    <img src="modules/sr5-marketplace/assets/ring_placeholder.png" alt="Item Build" class="ring-image"/>
-                    <img src="{{builderData.baseItem.img}}" alt="{{builderData.baseItem.name}}" class="base-item-image"/>
-                    <h4>{{builderData.baseItem.name}}</h4>
+                    <img src="modules/sr5-marketplace/assets/frames/ItemRing.svg" alt="Item Build" class="ring-image"/>
+                    <img src="{{builderData.itemTypeImage}}" alt="{{builderData.baseItem.name}}" class="base-item-image"/>
                 </div>
 
                 <div class="mod-slot slot-top-right"></div>
@@ -64,16 +62,51 @@
                 <div class="mod-slot slot-bottom-right"></div>
 
                 <div class="bottom-slots">
-                    <div class="mod-slot"></div>
-                    <div class="mod-slot"></div>
-                    <div class="mod-slot"></div>
-                    <div class="mod-slot"></div>
+                <div class="bottom-slots">
+                    {{!-- Slot 1 --}}
+                    <div class="mod-slot" data-slot-id="bottomSlot1">
+                        {{#with builderData.changes.bottomSlot1}}
+                            <div class="slot-content-containment">
+                                <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
+                                <i class="fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}" data-action="editEffects" data-effect-uuid="{{this.uuid}}" title="Active Effects"></i>
+                            </div>
+                        {{/with}}
+                    </div>
+
+                    {{!-- Slot 2 --}}
+                    <div class="mod-slot" data-slot-id="bottomSlot2">
+                        {{#with builderData.changes.bottomSlot2}}
+                            <div class="slot-content-containment">
+                                <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
+                                <i class="fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}" data-action="editEffects" data-effect-uuid="{{this.uuid}}" title="Active Effects"></i>
+                            </div>
+                        {{/with}}
+                    </div>
+
+                    {{!-- Slot 3 --}}
+                    <div class="mod-slot" data-slot-id="bottomSlot3">
+                        {{#with builderData.changes.bottomSlot3}}
+                            <div class="slot-content-containment">
+                                <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
+                                <i class="fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}" data-action="editEffects" data-effect-uuid="{{this.uuid}}" title="Active Effects"></i>
+                            </div>
+                        {{/with}}
+                    </div>
+
+                    {{!-- Slot 4 --}}
+                    <div class="mod-slot" data-slot-id="bottomSlot4">
+                        {{#with builderData.changes.bottomSlot4}}
+                            <div class="slot-content-containment">
+                                <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
+                                <i class="fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}" data-action="editEffects" data-effect-uuid="{{this.uuid}}" title="Active Effects"></i>
+                            </div>
+                        {{/with}}
+                    </div>
                 </div>
+            </div>
 
                 <div class="item-stats-display">
-                    <div class="stat-block"><label>Damage</label><span>10P</span></div>
-                    <div class="stat-block"><label>Accuracy</label><span>7</span></div>
-                    <div class="stat-block"><label>AP</label><span>-2</span></div>
+                    {{builderData.baseItem.name}}
                 </div>
             </div>
         </section>

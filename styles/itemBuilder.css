@@ -30,7 +30,8 @@
 }
 
 .itemBuilder .builder-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;;
   justify-content: space-between;
   align-items: center;
   padding: 5px 10px;
@@ -179,13 +180,17 @@
 }
 .itemBuilder .center-display .ring-image {
   width: 100%;
-  max-width: 300px;
+  max-width: 36em;
   height: auto;
   position: absolute;
+  z-index: 100;
   opacity: 0.5;
 }
+.itemBuilder .center-display .ring-image:hover {
+  opacity: 0.8;
+}
 .itemBuilder .center-display .base-item-image {
-  max-width: 150px;
+  max-width: 30em;
   height: auto;
   position: relative;
   z-index: 1;
@@ -200,13 +205,20 @@
   z-index: 1;
 }
 
+/* 7.5) MOD SLOT CONTENT STYLING */
 .itemBuilder .mod-slot {
+  /* This parent must be a positioning anchor and clip overflow */
+  position: relative;
+  overflow: hidden;
+
+  /* Keep base styling from original file */
   background: var(--collapsible-content-bg);
   border: 1px dashed var(--border-color-dark);
   border-radius: 5px;
   min-width: 100px;
   min-height: 100px;
 }
+
 .itemBuilder .mod-slot:hover {
   border-color: var(--border-color-highlight);
   background: var(--color-black-transparent-20);
@@ -235,6 +247,47 @@
   text-shadow: 1px 1px 3px var(--color-black);
   margin: auto;
   text-align: center;
+}
+
+
+.itemBuilder .slot-content-containment {
+  /* Force this element to fill its parent exactly */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  
+  /* Use padding inside the container for the image */
+  padding: 5px; 
+
+  /* Center the image within this container */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.itemBuilder .slot-item-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* Scales image down to fit, preserving aspect ratio */
+  border: none;
+}
+
+.itemBuilder .effect-indicator {
+  position: absolute;
+  bottom: 8px; /* Adjusted for padding */
+  right: 8px;  /* Adjusted for padding */
+  font-size: 14px;
+  text-shadow: 0 0 4px var(--color-black);
+}
+
+.itemBuilder .effect-indicator.has-effects {
+  color: var(--color-red-bright);
+}
+
+.itemBuilder .effect-indicator.no-effects {
+  color: var(--color-grey-medium-light);
 }
 
 /* 8) COMPACT ITEM CARD --------------------------------------------- */

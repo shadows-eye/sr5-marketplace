@@ -1,6 +1,29 @@
 import { IndexService } from './IndexService.mjs';
 
 export default class ItemDataServices {
+    /**
+     * A static mapping of item types and subtypes to their representative icons.
+     * This makes it easy to configure the icons in one place.
+     */
+    static ITEM_TYPE_ICONS = {
+        // Simple Types (item.type)
+        armor: "modules/sr5-marketplace/assets/icons/types/armor.svg",
+        device: "modules/sr5-marketplace/assets/icons/types/Kommlink.webp",
+        cyberware: "modules/sr5-marketplace/assets/icons/types/scann_woman_2.webp",
+        bioware: "modules/sr5-marketplace/assets/icons/types/bioware.svg",
+        equipment: "modules/sr5-marketplace/assets/icons/types/kletter.webp",
+
+        // Complex Type with Subtypes (item.system.range.category for weapons)
+        weapon: {
+            lightPistol: "modules/sr5-marketplace/assets/icons/weapons/light_pistol.webp",
+            assaultRifle: "modules/sr5-marketplace/assets/icons/weapons/StormGun.webp",
+            // Add other weapon categories here if needed
+            default: "modules/sr5-marketplace/assets/icons/weapons/light_pistol.webp" // Fallback for other weapon types
+        },
+
+        // A default fallback icon for any unmapped type
+        default: "icons/svg/item-bag.svg"
+    };
     constructor() {
         this.items = [];
         this.isIndexed = false;
@@ -31,6 +54,36 @@ export default class ItemDataServices {
             return [];
         }
         return this.items;
+    }
+    
+    /**
+     * Gets a representative image for an item based on its type or subtype.
+     * @param {object|null} itemData The plain data object of an item.
+     * @returns {string} The path to the representative icon.
+     */
+    getRepresentativeImage(itemData) {
+        const icons = this.constructor.ITEM_TYPE_ICONS;
+        if (!itemData) {
+            return icons.default;
+        }
+
+        const mapping = icons[itemData.type];
+
+        if (itemData.type === 'weapon' && typeof mapping === 'object') {
+            const mainCategory = itemData.system?.category;
+            let subtypeKey = null;
+
+            if (mainCategory === 'range') {
+                // CORRECTED: Use the full path to the subtype category
+                subtypeKey = itemData.system.range?.ranges?.category;
+            } else {
+                subtypeKey = mainCategory;
+            }
+
+            return mapping[subtypeKey] || mapping.default || icons.default;
+        }
+
+        return mapping || icons.default;
     }
 
     /**

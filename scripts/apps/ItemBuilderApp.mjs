@@ -26,14 +26,11 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         // --- State and Services ---
         this.itemData = game.sr5marketplace.itemData; // Use the global item data service
+        console.log(this.itemData);
         this.purchasingActor = null;
         this.itemSearchService = null;
         this.modSearchService = null;
-        // this.builderService = new BuilderService(); // To be added later
-        this.builderData = {
-            baseItem: null,
-            modifications: []
-        };
+        // this.builderService = new BuilderService(); // To be added later no builder data needed here
         this.tabGroups = { main: "builder" }; // Default to the 'builder' tab
 
         // --- Item & Category Selection State ---
@@ -65,8 +62,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 clickItemName: this.#onClickItemName,
                 buildItem: this.#onBuildItem,
                 // Item & Mod Selection Actions
-                selectBaseItem: this.#onSelectBaseItem
-                // We will add drag-and-drop handlers later
+                selectBaseItem: this.#onSelectBaseItem,
+                editEffects: this.#onEditEffects
             }
         });
     }
@@ -79,36 +76,97 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         main: { template: "modules/sr5-marketplace/templates/apps/itemBuilder/item-builder.html" }
     };
 
-    /** 
-     * @override
-     * @param {object} context - The context object on render
-     * @param {[options]}  options - The Options from the main app passed down.
-     * */
+    /** * @override
+     * @param {object} context - The context object on render.
+     * @param {object} options - The options from the main app passed down.
+     */
     _onRender(context, options) {
         super._onRender(context, options);
 
+        // Only initialize services and listeners if the builder tab is active
         if (this.tabGroups.main === "builder") {
             // --- Item Search ---
             this.itemSearchService = new itemSearchService(this.element);
             this.itemSearchService.initialize({
                 searchBox: 'input[name="itemSearch"]',
                 itemsGrid: '.item-selector-section .item-content-grid',
-                nameSelector: ".item-name" // <-- ADD THIS LINE
-            }); // No tagsContainer needed
+                nameSelector: ".item-name"
+            });
             
             // --- Mod Search ---
             this.modSearchService = new itemSearchService(this.element);
             this.modSearchService.initialize({
                 searchBox: 'input[name="modSearch"]',
                 itemsGrid: '.mod-selector-section .item-content-grid',
-                nameSelector: ".item-name" // <-- ADD THIS LINE
-            }); // No tagsContainer needed
+                nameSelector: ".item-name"
+            });
 
+            // --- Category Filter ---
             const categorySelector = this.element.querySelector("#item-type-selector");
             if (categorySelector) {
                 categorySelector.addEventListener("change", this.onChangeCategory.bind(this));
             }
+
+            // --- Drag and Drop Listeners ---
+            
+            // 1. Make all item cards in the sidebar draggable
+            const draggables = this.element.querySelectorAll('.item-card[draggable="true"]');
+            for (const card of draggables) {
+                card.addEventListener("dragstart", event => {
+                    const data = { uuid: card.dataset.itemUuid };
+                    event.dataTransfer.setData("text/plain", JSON.stringify(data));
+                });
+            }
+
+            // 2. Make the bottom mod slots receptive to drops
+            const dropTargets = this.element.querySelectorAll('.bottom-slots .mod-slot');
+            for (const slot of dropTargets) {
+                slot.addEventListener("dragover", event => {
+                    event.preventDefault(); // This is required to allow a drop
+                    slot.classList.add("drag-over");
+                });
+
+                slot.addEventListener("dragleave", event => {
+                    slot.classList.remove("drag-over");
+                });
+                
+                /**
+                 * Handle the drop event for an item card onto a mod slot.
+                 * @param {DragEvent} event - The drop event.
+                 */
+                slot.addEventListener("drop", async event => {
+                    event.preventDefault();
+                    slot.classList.remove("drag-over");
+
+                    const data = JSON.parse(event.dataTransfer.getData("text/plain"));
+                    const slotId = slot.dataset.slotId;
+
+                    if (data.uuid && slotId) {
+                        // Asynchronously load the full item document from its UUID
+                        const item = await fromUuid(data.uuid);
+                        if (!item) {
+                            console.error("Marketplace Builder | Could not find item from UUID:", data.uuid);
+                            return;
+                        }
+
+                        // Now that we have the full item, we can build the data object
+                        const droppedItemData = {
+                            uuid: item.uuid,
+                            name: item.name,
+                            img: item.img,
+                            // Map the effects to plain data objects for storage
+                            effects: item.effects.map(e => e.toObject(false))
+                        };
+                        
+                        await BuilderStateService.addChange(slotId, droppedItemData);
+                        
+                        // Re-render the app to show the new item in the slot
+                        this.render();
+                    }
+                });
+            }
         } else {
+            // Clean up services if the tab is not active to prevent memory leaks
             this.itemSearchService = null;
             this.modSearchService = null;
         }
@@ -165,8 +223,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         }
 
         const builderContext = {
-            title: this.builderData.baseItem ? `Building: ${this.builderData.baseItem.name}` : "Select a Base Item",
-            itemType: { img: "icons/svg/anvil.svg" }
+            title: builderData.title || "Select a Base Item",
+            itemTypeImage: builderData.itemTypeImage || "icons/svg/item-bag.svg"
         };
 
         return { 
@@ -207,7 +265,6 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         if (itemUuid) new ItemPreviewApp(itemUuid).render(true);
     }
     
-    // ... inside the ItemBuilderApp class ...
 
     /**
      * Handles selecting a base item from the sidebar.
@@ -229,17 +286,29 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             img: item.img,
             type: item.type,
             system: item.system,
-            technology: item.technology
+            technology: item.technology,
+            effects: item.effects?.map(e => e.toObject(false)) ?? []
         };
-        // 2. Use our service to set this item as the new base item.
-        //    This also clears any previous modifications from the state.
-        //    We use .toObject(false) to get a clean data object for storage.
         await BuilderStateService.setBaseItem(cleanItemData);
         
         // 3. Re-render the application to reflect the new state.
         //    The UI will now switch from the blank placeholder to the builder view.
         this.render();
     }
+
+    /**
+     * 
+     * @param {*} event click
+     * @param {*} target The selected button with the data-effect-uuid
+     * @returns 
+     */
+    static async #onEditEffects(event, target) {
+        const uuid = target.dataset.uuid;
+        if (!uuid) return;
+        let effects = await BuilderStateService.getEffectFromItemUuid(uuid)
+        return effects
+    }
+
     
     static #onBuildItem(event, target) {
         ui.notifications.warn("The Item Builder feature is not yet implemented.");

@@ -1,4 +1,5 @@
 import { MODULE_ID } from '../lib/constants.mjs';
+import ItemDataServices from './ItemDataServices.mjs';
 
 const FLAG_SCOPE = MODULE_ID;
 const FLAG_KEY = "itemBuilderState";
@@ -16,9 +17,11 @@ export class BuilderStateService {
      */
     static _getDefaultState() {
         return {
+            title: null,
             baseItem: null,
             modifications: [],
-            changes: [] // NEW: An array to track specific attribute changes
+            changes: {}, // later a {object with changes.modslot1 to modslot5 and changes.bottomSlot1 to 4 but can be expanded}
+            itemTypeImage: null
         };
     }
 
@@ -43,14 +46,23 @@ export class BuilderStateService {
     }
 
     /**
-     * Sets the base item, clearing any previous modifications and changes.
+     * Sets the base item, its image, and the dynamic title, clearing any previous build state.
      * @param {object|null} itemData - The data object for the base item.
      * @returns {Promise<void>}
      */
     static async setBaseItem(itemData) {
-        // When setting a new base item, we reset the build.
         const newState = this._getDefaultState();
         newState.baseItem = itemData;
+        let itemTypeImagePath= game.sr5marketplace.itemData.getRepresentativeImage(itemData);
+        newState.itemTypeImage = itemTypeImagePath;
+        // Generate and set the title
+        if (itemData) {
+            const typeLabel = itemData.type.charAt(0).toUpperCase() + itemData.type.slice(1);
+            newState.title = `${typeLabel}: ${itemData.name}`;
+        } else {
+            newState.title = "Select a Base Item"; // Default title
+        }
+        
         await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, newState);
     }
 
@@ -66,13 +78,15 @@ export class BuilderStateService {
     }
 
     /**
-     * NEW: Adds a specific attribute change to the list.
-     * @param {object} change - The change object you described.
+     * NEW: Adds or updates a change for a specific mod slot.
+     * @param {string} slotId - The ID of the slot (e.g., "bottomSlot1").
+     * @param {string} itemUuid - The UUID of the item being dropped.
      * @returns {Promise<void>}
      */
-    static async addChange(change) {
+    static async addChange(slotId, itemUuid) {
         const state = await this.getState();
-        state.changes.push(change);
+        // This will create or overwrite the key for the specific slot
+        state.changes[slotId] = itemUuid;
         await this.updateState({ changes: state.changes });
     }
 
@@ -82,5 +96,10 @@ export class BuilderStateService {
      */
     static async clearState() {
         await game.user.unsetFlag(FLAG_SCOPE, FLAG_KEY);
+    }
+    static async getEffectFromItemUuid(uuid) {
+        let item = fromUuid(uuid);
+        let effects = item.effects;
+        return effects;
     }
 }
