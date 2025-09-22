@@ -17,16 +17,15 @@
     }
   ],
   "relationships": {
-    "systems": [
-      {
-        "id": "shadowrun5e",
-        "type": "required",
-        "compatibility": {
-          "minimum": "0.27.0"
-        }
+  "systems": [
+    {
+      "id": "shadowrun5e",
+      "compatibility": {
+        "minimum": "0.30.0"
       }
-    ]
-  },
+    }
+  ]
+},
   "socket": true,
   "styles": [
     "styles/marketplace.css"
