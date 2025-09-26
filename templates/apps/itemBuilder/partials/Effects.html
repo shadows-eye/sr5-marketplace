@@ -1,35 +1,120 @@
 <div class="effects-container">
-    <header class="effects-header">
-        <h2>Manage Active Effects</h2>
-        <p>Effects from the base item and all slotted modifications are listed below.</p>
-    </header>
+    {{#if isCreating}}
+        {{!-- RENDER THE EFFECT CREATOR UI --}}
+        <form id="itemBuilder-effect-creator-form">
+            <header class="itemBuilder effects-header">
+                <h2>{{#if draftEffect.isEdit}}Edit{{else}}Create New{{/if}} Active Effect</h2>
+                <p>Fill in the details below. More options will appear as you complete each step.</p>
+            </header>
 
-    <div class="effects-list">
-        {{#each effectGroups}}
-        <section class="effect-group">
-            <h3 class="group-header">{{this.groupName}}</h3>
-            <ul class="effects">
-                {{#each this.effects}}
-                <li class="effect-item">
-                    <img src="{{this.img}}" alt="{{this.name}}" class="effect-icon"/>
-                    <span class="effect-name">{{this.name}}</span>
-                    <div class="effect-controls">
-                        <a data-action="edit-effect" data-effect-uuid="{{this.uuid}}"><i class="fas fa-edit"></i></a>
-                        <a data-action="delete-effect" data-effect-uuid="{{this.uuid}}"><i class="fas fa-trash"></i></a>
+            <section class="itemBuilder effect-creator-steps">
+                <div class="form-group">
+                    <label>Effect Name</label>
+                    <input type="text" name="name" value="{{draftEffect.name}}" data-action="updateDraftField" placeholder="e.g., Strength Boost"/>
+                </div>
+
+                {{#if draftEffect.name}}
+                <div class="itemBuilder form-group">
+                    <label>Target Document Type</label>
+                    <select name="documentType" data-action="updateDraftField">
+                        <option value="">-- Select Type --</option>
+                        <optgroup label="Actors">
+                            {{#each actorTypes}}
+                            <option value="{{this}}" {{#if (eq this ../draftEffect.documentType)}}selected{{/if}}>{{this}}</option>
+                            {{/each}}
+                        </optgroup>
+                        <optgroup label="Items">
+                            {{#each itemTypes}}
+                            <option value="{{this}}" {{#if (eq this ../draftEffect.documentType)}}selected{{/if}}>{{this}}</option>
+                            {{/each}}
+                        </optgroup>
+                    </select>
+                </div>
+                {{/if}}
+
+                {{#if draftEffect.documentType}}
+                <div class="itemBuilder form-group">
+                    <label>Attribute Key</label>
+                    <input type="text" name="changes.0.key" value="{{draftEffect.changes.[0].key}}" readonly/>
+                </div>
+                <div class="key-selector">
+                    {{#each mappableKeys}}
+                        <h4>{{@key}}</h4>
+                        <div class="key-buttons">
+                            {{#each this}}
+                            <button type="button" class="key-btn {{#if (eq this.path ../../draftEffect.changes.[0].key)}}selected{{/if}}" data-action="selectDraftKey" data-path="{{this.path}}">{{this.label}}</button>
+                            {{/each}}
+                        </div>
+                    {{/each}}
+                </div>
+                {{/if}}
+                
+                {{#if draftEffect.changes.[0].key}}
+                 <div class="itemBuilder form-group-inline">
+                    <div class="itemBuilder form-group">
+                        <label>Change Mode</label>
+                        <select name="changes.0.mode" data-action="updateDraftField">
+                            {{#each changeModes}}
+                            <option value="{{this.value}}" {{#if (eq this.value ../draftEffect.changes.[0].mode)}}selected{{/if}}>
+                                {{localize this.label}}
+                            </option>
+                            {{/each}}
+                        </select>
                     </div>
-                </li>
-                {{/each}}
-            </ul>
-            <div class="group-footer">
-                 <a class="create-effect-button" data-action="create-effect" data-source-uuid="{{this.sourceUuid}}">
-                    <i class="fas fa-bolt"></i> Create New Effect
-                </a>
-            </div>
-        </section>
-        {{else}}
-        <div class="placeholder">
-            <p>No items have been added to the builder yet. Add a base item to begin.</p>
+                    <div class="itemBuilder form-group">
+                        <label>Effect Value</label>
+                        <input type="text" name="changes.0.value" value="{{draftEffect.changes.[0].value}}" data-action="updateDraftField"/>
+                    </div>
+                 </div>
+                 {{/if}}
+            </section>
+
+            <footer class="dialog-footer">
+                <button type="button" data-action="saveDraftEffect"><i class="fas fa-save"></i> Save Effect</button>
+                <button type="button" class="cancel-button" data-action="cancelDraftEffect"><i class="fas fa-times"></i> Cancel</button>
+            </footer>
+        </form>
+
+    {{else}}
+        {{!-- RENDER THE LIST OF EXISTING EFFECTS --}}
+        <header class="itemBuilder effects-header">
+            <h2>Manage Active Effects</h2>
+            <p>Innate and custom-built effects are listed below.</p>
+        </header>
+
+        <div class="itemBuilder effects-list">
+            {{#each effectGroups}}
+            <section class="effect-group">
+                <div class="group-header">
+                    <h3>{{this.groupName}}</h3>
+                    <a class="create-effect-button" data-action="createEffect" data-source-uuid="{{this.sourceUuid}}">
+                        <i class="fas fa-plus"></i> Add Effect
+                    </a>
+                </div>
+                
+                <div class="item-content-grid effects-grid">
+                    {{#each this.effects}}
+                    <div class="item-card effect-card">
+                         <div class="effect-details">
+                            <span class="item-name">{{this.name}}</span>
+                            {{#each this.changes}}
+                            <span class="effect-path">{{this.key}}</span>
+                            {{/each}}
+                        </div>
+                        <div class="effect-actions">
+                           <a data-action="editEffect" data-source-uuid="{{../sourceUuid}}" data-effect-id="{{this._id}}" title="Edit Effect"><i class="fas fa-edit"></i></a>
+                           
+                           {{#if this.sourceUuid}}
+                               <a data-action="deleteEffect" data-effect-id="{{this._id}}" title="Delete Effect"><i class="fas fa-trash"></i></a>
+                           {{else}}
+                               <span class="innate-effect" title="Innate effects cannot be deleted."><i class="fas fa-lock"></i></span>
+                           {{/if}}
+                        </div>
+                    </div>
+                    {{/each}}
+                </div>
+            </section>
+            {{/each}}
         </div>
-        {{/each}}
-    </div>
+    {{/if}}
 </div>

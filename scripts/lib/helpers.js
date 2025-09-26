@@ -138,4 +138,14 @@ export const registerBasicHelpers = () => {
         // 'options.hash' contains all the key=value pairs from the helper call (e.g., rolls=totalRolls)
         return game.i18n.format(key, options.hash);
     });
+    Handlebars.registerHelper("invert", obj => {
+        if (typeof obj !== 'object' || obj === null) return {};
+        const newObj = {};
+        for (const key in obj) {
+            if (Object.hasOwn(obj, key)) {
+                newObj[obj[key]] = key;
+            }
+        }
+        return newObj;
+    });
 };

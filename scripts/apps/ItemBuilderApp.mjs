@@ -35,7 +35,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.tabGroups = { main: "builder" }; // Default to the 'builder' tab
 
         // --- Item & Category Selection State ---
-        this.selectedKey = null;
+        this.selectedKey = Object.keys(this.itemData.itemsByType ?? {}).find(k => this.itemData.itemsByType[k].items.length > 0) || null;
 
         // Find a default item category to display on first load
         const itemsByType = this.itemData.itemsByType ?? {};
@@ -58,14 +58,21 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             position: { width: 1600, height: 800 },
             window: { title: "Item Builder", resizable: true },
             actions: {
-                // Core App Actions
+                // Core
                 changeTab: this.#onChangeTab,
                 clickItemName: this.#onClickItemName,
                 buildItem: this.#onBuildItem,
-                // Item & Mod Selection Actions
+                // Builder Tab
                 selectBaseItem: this.#onSelectBaseItem,
-                editEffects: this.#onEditEffects,
-                removeChange: this.#onRemoveChange
+                removeChange: this.#onRemoveChange,
+                // Effects Tab
+                createEffect: this.#onCreateEffect,
+                editEffect: this.#onEditEffect,
+                deleteEffect: this.#onDeleteEffect,
+                updateDraftField: this.#onUpdateDraftField,
+                selectDraftKey: this.#onSelectDraftKey,
+                saveDraftEffect: this.#onSaveDraftEffect,
+                cancelDraftEffect: this.#onCancelDraftEffect
             }
         });
     }
@@ -335,5 +342,57 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     
     static #onBuildItem(event, target) {
         ui.notifications.warn("The Item Builder feature is not yet implemented.");
+    }
+
+    // --- Action Handlers for Effects Tab ---
+    static async #onCreateEffect(event, target) {
+        const sourceUuid = target.dataset.sourceUuid;
+        if (!sourceUuid) return;
+        await BuilderStateService.startEffectCreation(sourceUuid);
+        this.render();
+    }
+    
+    static async #onUpdateDraftField(event, target) {
+        const form = target.closest("form");
+        const updates = foundry.utils.formToObject(form);
+        await BuilderStateService.updateDraftEffect(updates);
+        this.render();
+    }
+
+    static async #onSelectDraftKey(event, target) {
+        const key = target.dataset.path;
+        await BuilderStateService.updateDraftEffect({ changes: [{ key }] });
+        this.render();
+    }
+
+    static async #onSaveDraftEffect(event, target) {
+        const form = target.closest("form");
+        const updates = foundry.utils.formToObject(form);
+        await BuilderStateService.updateDraftEffect(updates);
+        await BuilderStateService.saveDraftEffect();
+        this.render();
+    }
+
+    static async #onCancelDraftEffect(event, target) {
+        await BuilderStateService.cancelEffectCreation();
+        this.render();
+    }
+    
+    static async #onEditEffect(event, target) {
+        const { sourceUuid, effectId } = target.dataset;
+        await BuilderStateService.startEffectEdit(sourceUuid, effectId);
+        this.render();
+    }
+
+    static async #onDeleteEffect(event, target) {
+        const { sourceUuid, effectId } = target.dataset;
+        const confirmed = await Dialog.confirm({
+            title: "Delete Effect",
+            content: "<p>Are you sure you want to delete this effect?</p>"
+        });
+        if (confirmed) {
+            await BuilderStateService.deleteEffect(sourceUuid, effectId);
+            this.render();
+        }
     }
 }

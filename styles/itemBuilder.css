@@ -323,3 +323,85 @@
 .itemBuilder .item-card .select-icon { 
     font-size: 14px; 
 }
+
+
+/* ================================================================== */
+/* 9) EFFECTS TAB STYLING                                             */
+/* ================================================================== */
+
+/* --- General Layout --- */
+.itemBuilder .effects-container {
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.itemBuilder .effects-list .group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color-dark);
+  padding-bottom: 5px;
+  margin: 20px 0 10px 0;
+}
+.itemBuilder .effects-list .group-header:first-child {
+    margin-top: 0;
+}
+
+/* --- Effect Card Grid --- */
+/* We can reuse the item-content-grid for consistency */
+.itemBuilder .effects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* A bit wider for effect details */
+}
+
+/* --- Individual Effect Card --- */
+/* Re-use .item-card and add a specific class for tweaks */
+.itemBuilder .effect-card {
+    grid-template-columns: 32px 1fr auto; /* Make image column wider */
+    align-items: center;
+}
+
+.itemBuilder .effect-card .item-image {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: var(--color-black-transparent-20);
+    padding: 2px;
+    border-radius: 3px;
+}
+
+.itemBuilder .effect-card .effect-details {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-left: 5px;
+}
+
+.itemBuilder .effect-card .item-name {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.itemBuilder .effect-card .effect-path {
+    font-family: monospace;
+    font-size: 11px;
+    opacity: 0.8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.itemBuilder .effect-card .effect-actions {
+    display: flex;
+    gap: 8px;
+    padding: 0 5px;
+    font-size: 14px;
+}
+
+.itemBuilder .effect-card .effect-actions a {
+    cursor: pointer;
+}
+
+.itemBuilder .effect-card .effect-actions .innate-effect {
+    opacity: 0.5;
+    cursor: help;
+}
