@@ -1,6 +1,7 @@
 import { ItemPreviewApp } from "../apps/documents/items/ItemPreviewApp.mjs";
 import { SearchService as itemSearchService } from '../services/searchTag.mjs';
 import { BuilderStateService } from "../services/builderStateService.mjs";
+import { AppEffectsBuilderDialog } from '../apps/documents/dialog/AppEffectsBuilderDialog.mjs';
 // We will create this service later to handle the builder logic.
 // import { BuilderService } from '../services/builderService.mjs'; 
 
@@ -63,7 +64,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 buildItem: this.#onBuildItem,
                 // Item & Mod Selection Actions
                 selectBaseItem: this.#onSelectBaseItem,
-                editEffects: this.#onEditEffects
+                editEffects: this.#onEditEffects,
+                removeChange: this.#onRemoveChange
             }
         });
     }
@@ -190,7 +192,12 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         switch (this.tabGroups.main) {
             case "effects":
-                tabContent = `<div class="placeholder">Active Effects Configuration will be here.</div>`;
+                // 1. Instantiate the NEW specialized builder
+                const effectsBuilder = new AppEffectsBuilderDialog();
+                // 2. Call the method to get the effects context from the current builderData
+                const effectsContext = await effectsBuilder.buildEffectsContext(builderData);
+                // 3. Render the new Effects.html template with the context
+                tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/Effects.html", effectsContext);
                 break;
             case "dialog":
                 tabContent = `<div class="placeholder">The final Creation Dialog will be here.</div>`;
@@ -309,6 +316,22 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         return effects
     }
 
+    /**
+     * Handles clicking the delete icon on a mod slot to remove the item.
+     * @private
+     */
+    static async #onRemoveChange(event, target) {
+        const slotId = target.closest(".mod-slot")?.dataset.slotId;
+        if (!slotId) return;
+
+        // 1. Tell the service to update the persistent flag.
+        //    The 'await' ensures this operation completes before we proceed.
+        await BuilderStateService.removeChange(slotId);
+        
+        // 2. Trigger a re-render. 
+        //    The _prepareContext method will now run again and fetch the new state from the flag.
+        this.render();
+    }
     
     static #onBuildItem(event, target) {
         ui.notifications.warn("The Item Builder feature is not yet implemented.");

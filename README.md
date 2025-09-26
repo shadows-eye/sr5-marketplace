@@ -28,7 +28,7 @@ The Shadowrun 5e Marketplace is a module for Foundry Virtual Tabletop (Foundry V
 - **Automatic Cost Calculations**: Calculates Karma and Nuyen costs for items, factoring in item ratings, availability, and any custom modifiers.
 - **Actor Inventory Integration**: Purchased items are automatically added to the selected actor's inventory, whether it's your character or a selected token in the scene.
 - **GM Approval Workflow**: Optionally enable a purchase approval system where GMs can review and approve player purchase requests before items are added to inventories.
-- **Customizable Shop Actor**: GMs can designate any actor as the shop, allowing full control over the items available in the marketplace.
+- **Customizable Shop Actor**: GMs can designate a shop actor, allowing full control over the items available in the marketplace.
 - **Language Support**: Includes localization files for English and German, with the ability to add more languages.
 
 ## Installation
@@ -37,7 +37,7 @@ The Shadowrun 5e Marketplace is a module for Foundry Virtual Tabletop (Foundry V
 
 This module requires the following:
 - Foundry VTT version 13
-- Shadowrun 5e game system
+- Shadowrun 5e game system on minimum 0.30.0
 
 ### Installing the Module
 
@@ -55,8 +55,8 @@ This module requires the following:
 - Click on the marketplace icon in the scene controls, or use a macro/hotkey provided by the GM to open the Purchase Screen.
 
 #### Browsing and Searching Items:
-- Navigate through different item categories using tabs.
-- Use the search bar and filters to find specific items.
+- Navigate through different item categories.
+- Use the search bar and filters to find specific items. Attach filter tags to save the filter.
 
 #### Adding Items to Basket:
 - Click on **Add to Basket** for items you wish to purchase.
@@ -69,13 +69,19 @@ This module requires the following:
 #### Sending Purchase Requests:
 - Click on **Send Request** to submit your order to the GM for approval (if enabled).
 
+#### Availability Check
+- Roll the Availability check for purchasing a item or items, this will use a connection or the character skills to get the item or items.
+
+#### GM Approval
+- GM´s will recieve a Approval request when option is enabled, also if Availability was rolled it will show the result of the test, giving information on how long the order will take.
+
 #### Receiving Items:
 - Once approved by the GM, items will be automatically added to your character's inventory.
 
 ### For Game Masters
 
 #### Setting Up the Shop Actor:
-- Drag and drop an actor onto the Shop Actor Dropzone in the Purchase Screen to designate it as the marketplace inventory.
+- Create a shopActor type and if a player dobble clicks on one, in the Purchase Screen the inventory will be the marketplace available items.
 
 #### Managing Available Items:
 - Add or remove items from the Shop Actor's inventory to control what's available for purchase.

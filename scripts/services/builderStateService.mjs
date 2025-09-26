@@ -6,7 +6,8 @@ const FLAG_KEY = "itemBuilderState";
 
 
 /**
- * A service to manage the persistent state of the Item Builder's ACTIVE build.
+ * A service to manage the persistent state of the Item Builder's ACTIVE build. It will save the state to builder object in the flag of the usersId.
+ * @returns {object} Objects - Of state for rendering the UI. FLAG used as Document Storage.
  */
 export class BuilderStateService {
 
@@ -48,7 +49,7 @@ export class BuilderStateService {
     /**
      * Sets the base item, its image, and the dynamic title, clearing any previous build state.
      * @param {object|null} itemData - The data object for the base item.
-     * @returns {Promise<void>}
+     * @returns {Promise<void>} object - item Obeject with item and image
      */
     static async setBaseItem(itemData) {
         const newState = this._getDefaultState();
@@ -78,16 +79,30 @@ export class BuilderStateService {
     }
 
     /**
-     * NEW: Adds or updates a change for a specific mod slot.
+     * Adds or updates a change for a specific mod slot.
      * @param {string} slotId - The ID of the slot (e.g., "bottomSlot1").
-     * @param {string} itemUuid - The UUID of the item being dropped.
-     * @returns {Promise<void>}
+     * @param {object} itemData - The data object of the item being dropped.
      */
-    static async addChange(slotId, itemUuid) {
+    static async addChange(slotId, itemData) {
         const state = await this.getState();
         // This will create or overwrite the key for the specific slot
-        state.changes[slotId] = itemUuid;
-        await this.updateState({ changes: state.changes });
+        state.changes[slotId] = itemData;
+        // Directly set the entire updated state back to the flag
+        await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, state);
+    }
+    
+    /**
+     * Removes a change for a specific mod slot using a direct database update.
+     * @param {string} slotId - The ID of the slot to clear (e.g., "bottomSlot1").
+     * @returns {Promise<void>}
+     */
+    static async removeChange(slotId) {
+        // 1. Construct the specific path to the key we want to delete within the flag.
+        const path = `flags.${FLAG_SCOPE}.${FLAG_KEY}.changes.-=${slotId}`;
+
+        // 2. Use a direct 'update' command with a special key to remove the field.
+        //    This is the most reliable way to ensure a nested property is deleted.
+        await game.user.update({ [path]: null });
     }
 
     /**

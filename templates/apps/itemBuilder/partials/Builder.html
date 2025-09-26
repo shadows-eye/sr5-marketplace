@@ -68,40 +68,66 @@
                         {{#with builderData.changes.bottomSlot1}}
                             <div class="slot-content-containment">
                                 <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
-                                <i class="fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}" data-action="editEffects" data-effect-uuid="{{this.uuid}}" title="Active Effects"></i>
+                                
+                                <div class="slot-icon-link effects-link" data-action="editEffects" data-item-uuid="{{this.uuid}}" title="Active Effects">
+                                    <i class="fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}"></i>
+                                </div>
+
+                                <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomSlot1" title="Remove Mod">
+                                    <i class="fas fa-trash"></i>
+                                </div>
                             </div>
                         {{/with}}
                     </div>
-
                     {{!-- Slot 2 --}}
                     <div class="mod-slot" data-slot-id="bottomSlot2">
                         {{#with builderData.changes.bottomSlot2}}
                             <div class="slot-content-containment">
                                 <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
-                                <i class="fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}" data-action="editEffects" data-effect-uuid="{{this.uuid}}" title="Active Effects"></i>
+                                
+                                <div class="slot-icon-link effects-link" data-action="editEffects" data-item-uuid="{{this.uuid}}" title="Active Effects">
+                                    <i class="fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}"></i>
+                                </div>
+
+                                <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomSlot2" title="Remove Mod">
+                                    <i class="fas fa-trash"></i>
+                                </div>
                             </div>
                         {{/with}}
                     </div>
-
                     {{!-- Slot 3 --}}
                     <div class="mod-slot" data-slot-id="bottomSlot3">
                         {{#with builderData.changes.bottomSlot3}}
                             <div class="slot-content-containment">
                                 <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
-                                <i class="fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}" data-action="editEffects" data-effect-uuid="{{this.uuid}}" title="Active Effects"></i>
+                                
+                                <div class="slot-icon-link effects-link" data-action="editEffects" data-item-uuid="{{this.uuid}}" title="Active Effects">
+                                    <i class="fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}"></i>
+                                </div>
+
+                                <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomSlot3" title="Remove Mod">
+                                    <i class="fas fa-trash"></i>
+                                </div>
                             </div>
                         {{/with}}
                     </div>
-
-                    {{!-- Slot 4 --}}
+                    {{!-- Slot 4--}}
                     <div class="mod-slot" data-slot-id="bottomSlot4">
                         {{#with builderData.changes.bottomSlot4}}
                             <div class="slot-content-containment">
                                 <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
-                                <i class="fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}" data-action="editEffects" data-effect-uuid="{{this.uuid}}" title="Active Effects"></i>
+                                
+                                <div class="slot-icon-link effects-link" data-action="editEffects" data-item-uuid="{{this.uuid}}" title="Active Effects">
+                                    <i class="fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}"></i>
+                                </div>
+
+                                <div class="slot-icon-link delete-mod-link" data-action="removeChange"  data-slot-id="bottomSlot4"title="Remove Mod">
+                                    <i class="fas fa-trash"></i>
+                                </div>
                             </div>
                         {{/with}}
                     </div>
+                </div>
                 </div>
             </div>
 

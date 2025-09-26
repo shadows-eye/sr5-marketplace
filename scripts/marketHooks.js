@@ -8,6 +8,7 @@ import { defineShopActorClass } from '../models/actor/shopActor.mjs';
 import { ShopActorSheet } from '../sheets/ShopActorSheet.mjs';
 import { MODULE_ID, SHOP_ACTOR_TYPE} from "./lib/constants.mjs";
 import { ItemBuilderApp } from "./apps/ItemBuilderApp.mjs";
+import { SystemDataMapperService } from './services/SystemDataMapperService.mjs';
 
 /**
  * Draws the notification badge on the scene control button.
@@ -371,4 +372,31 @@ Hooks.on("canvasReady", () => {
   // Set the flag so this hook only runs once per canvas session.
   canvas.marketplaceListenerAttached = true;
   console.log("Marketplace | Double-click listener for shops is now active.");
+});
+
+// We use the "ready" hook to ensure the game system is fully loaded.
+Hooks.once("ready", () => {
+    
+    // Create a unique namespace for your module on the game object.
+    game.sr5marketplace = game.sr5marketplace || {};
+
+    // Create a dedicated space for debug tools.
+    game.sr5marketplace.debug = {
+        mapAllSystemKeys: () => {
+            console.log("--- 🚀 Running Full System Key Mapper ---");
+            try {
+                console.log("--- All Mappable Actor Keys ---");
+                const actorKeys = SystemDataMapperService.getAllMappableActorKeys();
+                console.log(actorKeys);
+
+                console.log("--- All Mappable Item Keys ---");
+                const itemKeys = SystemDataMapperService.getAllMappableItemKeys();
+                console.log(itemKeys);
+
+                console.log("--- ✅ Mapping Complete ---");
+            } catch (e) {
+                console.error("❌ Failed to run the SystemDataMapperService.", e);
+            }
+        }
+    };
 });

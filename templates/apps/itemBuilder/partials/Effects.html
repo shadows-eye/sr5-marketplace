@@ -1,0 +1,35 @@
+<div class="effects-container">
+    <header class="effects-header">
+        <h2>Manage Active Effects</h2>
+        <p>Effects from the base item and all slotted modifications are listed below.</p>
+    </header>
+
+    <div class="effects-list">
+        {{#each effectGroups}}
+        <section class="effect-group">
+            <h3 class="group-header">{{this.groupName}}</h3>
+            <ul class="effects">
+                {{#each this.effects}}
+                <li class="effect-item">
+                    <img src="{{this.img}}" alt="{{this.name}}" class="effect-icon"/>
+                    <span class="effect-name">{{this.name}}</span>
+                    <div class="effect-controls">
+                        <a data-action="edit-effect" data-effect-uuid="{{this.uuid}}"><i class="fas fa-edit"></i></a>
+                        <a data-action="delete-effect" data-effect-uuid="{{this.uuid}}"><i class="fas fa-trash"></i></a>
+                    </div>
+                </li>
+                {{/each}}
+            </ul>
+            <div class="group-footer">
+                 <a class="create-effect-button" data-action="create-effect" data-source-uuid="{{this.sourceUuid}}">
+                    <i class="fas fa-bolt"></i> Create New Effect
+                </a>
+            </div>
+        </section>
+        {{else}}
+        <div class="placeholder">
+            <p>No items have been added to the builder yet. Add a base item to begin.</p>
+        </div>
+        {{/each}}
+    </div>
+</div>

@@ -187,6 +187,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         const ownedActors = game.actors.filter(a => a.isOwner).map(a => ({ uuid: a.uuid, name: a.name, img: a.img }));
         const itemsByType = this.itemData.itemsByType;
+        console.log(itemsByType);
         const basket = await this.basketService.getBasket();
         console.log(basket);
         const basketItemCount = basket.shoppingCartItems.length;
