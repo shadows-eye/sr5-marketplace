@@ -356,7 +356,7 @@
 /* --- Individual Effect Card --- */
 /* Re-use .item-card and add a specific class for tweaks */
 .itemBuilder .effect-card {
-    grid-template-columns: 32px 1fr auto; /* Make image column wider */
+    grid-template-columns: 3fr 1fr; /* Make image column wider */
     align-items: center;
 }
 
