@@ -332,8 +332,8 @@
 /* --- General Layout --- */
 .itemBuilder .effect-creator-container {
     border-top: 2px solid var(--border-color-highlight);
-    margin-top: 20px;
-    padding-top: 20px;
+    margin-top: 0.5em;
+    padding-top: 0.5em;
 }
 
 .itemBuilder .effect-creator-steps .form-group {
@@ -507,6 +507,14 @@
 
 .key-btn {
     text-align: center;
+}
+/* Style for any selected or active button in the effect creator */
+.itemBuilder .key-btn.selected,
+.itemBuilder .button-group button.active {
+    background: var(--color-red-bright);
+    color: var(--color-white);
+    border-color: var(--color-red-dark);
+    text-shadow: none;
 }
 
 /* --- Footer --- */

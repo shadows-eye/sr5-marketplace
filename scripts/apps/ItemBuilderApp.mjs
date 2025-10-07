@@ -357,23 +357,68 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.render(false, { builderData: newState });
     }
     
+    /**
+     * Handles updates from individual form fields, like a button click or input change.
+     * This is more efficient than reading the entire form for every small change.
+     * @private
+     */
     static async #onUpdateDraftField(event, target) {
-        const form = target.closest("form");
-        const updates = foundry.utils.readFormData(form, { object: true });
+        let { name, value } = target;
+        if (!name) return;
+
+        // --- FIX 1: Preserve Scroll Position ---
+        const scrollable = this.element.querySelector(".effect-creator-steps");
+        const scrollTop = scrollable ? scrollable.scrollTop : 0;
+
+        // --- FIX 2: Correct Data Type ---
+        // The 'mode' value from an HTML element is a string, but it needs to be a number.
+        if (name.endsWith(".mode")) {
+            value = Number(value);
+        }
+
+        const updateData = { [name]: value };
+        const updates = foundry.utils.expandObject(updateData);
         const newState = await BuilderStateService.updateDraftEffect(updates);
-        this.render(false, { builderData: newState });
+
+        // Await the render so we can act on the new DOM.
+        await this.render(false, { builderData: newState });
+
+        // Restore the scroll position.
+        const newScrollable = this.element.querySelector(".effect-creator-steps");
+        if (newScrollable) newScrollable.scrollTop = scrollTop;
     }
 
     static async #onSelectDraftKey(event, target) {
+        // Preserve scroll position
+        const scrollable = this.element.querySelector(".effect-creator-steps");
+        const scrollTop = scrollable ? scrollable.scrollTop : 0;
+
         const key = target.dataset.path;
         const newState = await BuilderStateService.updateDraftEffect({ changes: [{ key }] });
-        this.render(false, { builderData: newState });
+
+        // Await the render and then restore scroll
+        await this.render(false, { builderData: newState });
+        const newScrollable = this.element.querySelector(".effect-creator-steps");
+        if (newScrollable) newScrollable.scrollTop = scrollTop;
     }
     
+    /**
+     * Handles selecting the target type (Actor or Item).
+     * It now also preserves scroll position.
+     * @private
+     */
     static async #onSetEffectTargetType(event, target) {
+        // Preserve scroll position
+        const scrollable = this.element.querySelector(".effect-creator-steps");
+        const scrollTop = scrollable ? scrollable.scrollTop : 0;
+
         const targetType = target.dataset.targetType;
         const newState = await BuilderStateService.updateDraftEffect({ targetType: targetType });
-        this.render(false, { builderData: newState });
+
+        // Await the render and then restore scroll
+        await this.render(false, { builderData: newState });
+        const newScrollable = this.element.querySelector(".effect-creator-steps");
+        if (newScrollable) newScrollable.scrollTop = scrollTop;
     }
 
     static async #onSelectDerivedValue(event, target) {
@@ -384,7 +429,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     static async #onSaveDraftEffect(event, target) {
         const form = target.closest("form");
-        const updates = foundry.utils.formToObject(form);
+        const updates = new FormDataExtended(form).object;
+        
         await BuilderStateService.updateDraftEffect(updates);
         const newState = await BuilderStateService.saveDraftEffect();
         this.render(false, { builderData: newState });

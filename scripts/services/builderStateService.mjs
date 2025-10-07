@@ -205,26 +205,60 @@ export class BuilderStateService {
         const newState = foundry.utils.deepClone(state);
         let effectToEdit = null;
 
+        // Check if it's a custom modification already in the list
         const customModIndex = newState.modifications?.findIndex(m => m._id === effectId);
         if (customModIndex > -1) {
+            // It's a custom mod, so we move it to the draft area for editing.
             effectToEdit = newState.modifications.splice(customModIndex, 1)[0];
-            effectToEdit.wasCustom = true;
+            effectToEdit.wasCustom = true; // Flag to know where to return it if cancelled
         } else {
+            // It's an innate effect from a base item or another mod.
+            // Find the source item (either the base or one of the slotted changes).
             let itemSource = (newState.baseItem?.uuid === sourceUuid) 
                 ? newState.baseItem 
                 : Object.values(newState.changes).find(c => c.uuid === sourceUuid);
-            effectToEdit = itemSource?.effects?.find(e => e._id === effectId);
-            if (effectToEdit) {
-                effectToEdit.originalId = effectToEdit._id;
-                // Generate a new ID for the override to avoid conflicts
+
+            // Find the specific effect within that item.
+            const sourceEffect = itemSource?.effects?.find(e => e._id === effectId);
+
+            if (sourceEffect) {
+                // Create a deep copy to avoid modifying the original data.
+                effectToEdit = foundry.utils.deepClone(sourceEffect);
+                
+                // --- THIS IS THE KEY LOGIC FOR OVERRIDING ---
+                // Store the original ID so we can hide the innate effect later.
+                effectToEdit.originalId = sourceEffect._id; 
+                // Generate a NEW unique ID for our override copy.
                 effectToEdit._id = foundry.utils.randomID();
             }
         }
 
         if (effectToEdit) {
-            const draft = foundry.utils.deepClone(effectToEdit);
+            const draft = effectToEdit;
             draft.sourceUuid = sourceUuid;
             draft.isEdit = true;
+            
+            // --- REFINED LOGIC: Determine targetType ---
+            if ( !draft.targetType ) {
+                // 1. Prioritize the explicit system value.
+                if ( draft.system?.applyTo ) {
+                    draft.targetType = draft.system.applyTo;
+                }
+                // 2. Fall back to inferring from the key if `applyTo` isn't present.
+                else if ( draft.changes?.[0]?.key ) {
+                    const effectKey = draft.changes[0].key;
+                    const mappableKeys = SystemDataMapperService.getMappableKeys();
+
+                    const isActorKey = Object.values(mappableKeys.actors).some(actorType => 
+                        Object.values(actorType).some(keyGroup => 
+                            keyGroup.some(keyData => keyData.path === effectKey)
+                        )
+                    );
+                    if (isActorKey) draft.targetType = 'actor';
+                }
+            }
+            // --- END REFINED LOGIC ---
+
             newState.draftEffect = draft;
             await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, newState);
             return newState;

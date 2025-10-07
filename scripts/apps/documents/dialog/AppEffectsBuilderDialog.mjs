@@ -43,7 +43,7 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
                 value: value, label: `EFFECT.MODE_${key}`
             }));
         }
-        console.log(context);
+        console.log("Marketplace Builder | Effects Tab Context:", context);
         return context;
     }
 
@@ -115,28 +115,43 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
      * @private
      */
     _getEffectGroups(builderState) {
-        // ... (This method remains unchanged)
         if (!builderState?.baseItem) return [];
         const groups = [];
+        // Consolidate all items that can have effects
         const allItems = [builderState.baseItem, ...Object.values(builderState.changes)];
         const customMods = builderState.modifications || [];
+
         for (const item of allItems) {
             if (!item?.uuid) continue;
+
             const finalEffects = [];
             const itemInnateEffects = item.effects || [];
+            
+            // Get custom mods specific to THIS item
             const itemCustomMods = customMods.filter(m => m.sourceUuid === item.uuid);
+
+            // --- NEW LOGIC: Filter out overridden innate effects ---
             for (const innate of itemInnateEffects) {
+                // Check if any custom mod for this item is overriding this specific innate effect.
                 const isOverridden = itemCustomMods.some(m => m.originalId === innate._id);
-                if (!isOverridden) finalEffects.push(innate);
+                // Only add the innate effect to the list if it's NOT overridden.
+                if (!isOverridden) {
+                    finalEffects.push(innate);
+                }
             }
+
+            // Now, add all the custom mods for this item (including our new overrides).
             finalEffects.push(...itemCustomMods);
-            groups.push({
-                groupName: (item === builderState.baseItem) 
-                    ? `Base Item: ${item.name}` 
-                    : `Slot (${Object.keys(builderState.changes).find(k => builderState.changes[k] === item)}): ${item.name}`,
-                sourceUuid: item.uuid,
-                effects: finalEffects
-            });
+            
+            if (finalEffects.length > 0) {
+                groups.push({
+                    groupName: (item === builderState.baseItem) 
+                        ? `Base Item: ${item.name}` 
+                        : `Slot (${Object.keys(builderState.changes).find(k => builderState.changes[k] === item)}): ${item.name}`,
+                    sourceUuid: item.uuid,
+                    effects: finalEffects
+                });
+            }
         }
         return groups;
     }
