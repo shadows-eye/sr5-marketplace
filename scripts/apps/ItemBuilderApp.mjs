@@ -74,7 +74,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 saveDraftEffect: this.#onSaveDraftEffect,
                 cancelDraftEffect: this.#onCancelDraftEffect,
                 selectDerivedValue: this.#onSelectDerivedValue,
-                setEffectTargetType: this.#onSetEffectTargetType
+                setEffectTargetType: this.#onSetEffectTargetType,
+                selectEffectIcon: this.#onSelectEffectIcon
             }
         });
     }
@@ -454,5 +455,25 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             const newState = await BuilderStateService.deleteEffect(effectId);
             this.render(false, { builderData: newState });
         }
+    }
+    /**
+     * Handles clicking the effect icon to open a FilePicker.
+     * @param {Event} event The triggering event.
+     * @param {HTMLElement} target The element that was clicked.
+     * @private
+     */
+    static async #onSelectEffectIcon(event, target) {
+        // Find the hidden input to get the current value
+        const currentIcon = target.querySelector('input[name="img"]')?.value;
+
+        new FilePicker({
+            type: "image",
+            current: currentIcon,
+            callback: async (path) => {
+                // When a new file is picked, update the state and re-render
+                const newState = await BuilderStateService.updateDraftEffect({ img: path });
+                this.render(false, { builderData: newState });
+            }
+        }).render(true);
     }
 }

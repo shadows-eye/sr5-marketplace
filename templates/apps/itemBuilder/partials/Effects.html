@@ -60,7 +60,10 @@
                         </div>
                         <div class="form-group">
                             <label>Effect Icon</label>
-                            <input type="text" name="img" value="{{draftEffect.img}}"/>
+                            <div class="icon-selector" data-action="selectEffectIcon" title="Click to select an icon">
+                                <img src="{{@root.draftEffect.img}}" alt="Effect Icon"/>
+                                <input type="hidden" name="img" value="{{@root.draftEffect.img}}"/>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Target Type</label>
