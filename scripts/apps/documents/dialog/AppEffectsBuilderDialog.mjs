@@ -12,80 +12,124 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
     }
 
     /**
-     * Builds the context for the entire "Effects" tab.
-     * It determines if we are viewing existing effects or actively creating a new one,
-     * and provides all necessary data for the UI.
+     * Builds the complete context for the "Effects" tab.
+     * It receives the builderState from the main application.
      * @param {object} builderState - The full state object from the BuilderStateService.
      * @returns {Promise<object>} The context object for the Effects.html template.
      */
     async buildEffectsContext(builderState) {
-        const isCreating = !!builderState.draftEffect;
-        const effectGroups = this._getEffectGroups(builderState);
-
         const context = {
-            isCreating,
+            isCreating: !!builderState.draftEffect,
             draftEffect: builderState.draftEffect,
-            effectGroups
+            effectGroups: this._getEffectGroups(builderState)
         };
 
-        // If we are in "creation mode", also load all the data needed for the builder UI.
-        if (isCreating) {
-            const allActorKeys = SystemDataMapperService.getAllMappableActorKeys();
-            const allItemKeys = SystemDataMapperService.getAllMappableItemKeys();
+        if (context.isCreating) {
+            const mappableKeys = SystemDataMapperService.getMappableKeys();
+            const selectedKey = context.draftEffect.changes[0].key;
 
-            // Add the list of type names for the <select> dropdowns.
-            context.actorTypes = Object.keys(allActorKeys);
-            context.itemTypes = Object.keys(allItemKeys);
+            // Prepare actor keys for the grid
+            const mergedActorKeys = this.#_getMergedActorKeys(mappableKeys.actors);
+            context.actorKeyGroups = this.#_prepareGroupsForGrid(mergedActorKeys, selectedKey);
 
-            // If a document type has already been selected in the draft,
-            // pass its specific keys to the template for rendering the buttons.
-            const selectedType = builderState.draftEffect.documentType;
-            if (selectedType) {
-                context.mappableKeys = allActorKeys[selectedType] || allItemKeys[selectedType];
+            // Prepare item keys for the grid
+            const itemType = builderState.baseItem?.type;
+            if (itemType && mappableKeys.items[itemType]) {
+                const itemKeyData = { [`${builderState.baseItem.name} Keys`]: mappableKeys.items[itemType] };
+                context.itemKeyGroups = this.#_prepareGroupsForGrid(itemKeyData, selectedKey);
             }
+
+            context.changeModes = Object.entries(CONST.ACTIVE_EFFECT_MODES).map(([key, value]) => ({
+                value: value, label: `EFFECT.MODE_${key}`
+            }));
         }
-        
+        console.log(context);
         return context;
     }
 
     /**
+     * Takes a map of key groups, sorts them, and adds grid-aware properties
+     * for a dynamic bento grid layout.
+     * @param {object} keyGroups - An object where keys are group names and values are arrays of key data.
+     * @param {string|null} selectedKey - The currently selected key path to determine expansion.
+     * @returns {Array<object>} An array of group objects ready for the template.
+     * @private
+     */
+    #_prepareGroupsForGrid(keyGroups, selectedKey) {
+        const finalGroups = [];
+        const sortedGroupNames = Object.keys(keyGroups).sort((a, b) => a.localeCompare(b));
+
+        for (const groupName of sortedGroupNames) {
+            const groupData = keyGroups[groupName];
+            const keyCount = groupData.length;
+            
+            // --- BENTO BOX SIZING LOGIC ---
+            let gridSpan = 1;
+            let gridRowSpan = 1;
+            
+            if (keyCount > 30) {        // Very Large Group (e.g., Skills)
+                gridSpan = 5;
+                gridRowSpan = 1; // A wide banner
+            } else if (keyCount > 15) { // Large Group (e.g., Modifiers)
+                gridSpan = 4;
+                gridRowSpan = 2; // A large square
+            } else if (keyCount > 8) {  // Medium Group (e.g., Attributes)
+                gridSpan = 3;
+                gridRowSpan = 1; // A medium rectangle
+            }
+            // Small groups default to a 1x1 square
+
+            const isExpanded = groupData.some(key => key.path === selectedKey);
+            let contentColumns = gridSpan > 1 ? 2 : 1; // Content inside gets 1 or 2 columns
+
+            finalGroups.push({ groupName, groupData, isExpanded, gridSpan, gridRowSpan, contentColumns });
+        }
+        return finalGroups;
+    }
+
+    /**
+     * Merges all mappable key groups from all actor types into a single object.
+     * @param {object} allActorKeys - The `mappableKeys.actors` object.
+     * @returns {object} A single object with all unique key groups.
+     * @private
+     */
+    #_getMergedActorKeys(allActorKeys) {
+        // This method is now simplified to only do the merge.
+        const merged = {};
+        for (const actorType in allActorKeys) {
+            const keyGroups = allActorKeys[actorType];
+            for (const groupName in keyGroups) {
+                if (!merged[groupName]) {
+                    merged[groupName] = [];
+                }
+                const existingPaths = new Set(merged[groupName].map(k => k.path));
+                const newKeys = keyGroups[groupName].filter(k => !existingPaths.has(k.path));
+                merged[groupName].push(...newKeys);
+            }
+        }
+        return merged;
+    }
+
+    /**
      * Helper method to organize effects into groups for display.
-     * It combines innate effects from items with custom effects from the 'modifications' array.
      * @private
      */
     _getEffectGroups(builderState) {
+        // ... (This method remains unchanged)
         if (!builderState?.baseItem) return [];
-        
         const groups = [];
         const allItems = [builderState.baseItem, ...Object.values(builderState.changes)];
         const customMods = builderState.modifications || [];
-
         for (const item of allItems) {
             if (!item?.uuid) continue;
-
             const finalEffects = [];
             const itemInnateEffects = item.effects || [];
-            
-            // 1. Get all custom mods that belong to this item
             const itemCustomMods = customMods.filter(m => m.sourceUuid === item.uuid);
-
-            // 2. For each innate effect, check if there is an override for it in the custom mods
             for (const innate of itemInnateEffects) {
-                const override = itemCustomMods.find(m => m._id === innate._id);
-                if (override) {
-                    finalEffects.push({ ...override, isOverride: true }); // Show the override
-                } else {
-                    finalEffects.push(innate); // Show the original
-                }
+                const isOverridden = itemCustomMods.some(m => m.originalId === innate._id);
+                if (!isOverridden) finalEffects.push(innate);
             }
-
-            // 3. Add any brand-new custom mods that aren't overrides
-            for (const mod of itemCustomMods) {
-                if (!itemInnateEffects.some(e => e._id === mod._id)) {
-                    finalEffects.push(mod);
-                }
-            }
-            
+            finalEffects.push(...itemCustomMods);
             groups.push({
                 groupName: (item === builderState.baseItem) 
                     ? `Base Item: ${item.name}` 

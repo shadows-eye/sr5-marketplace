@@ -72,7 +72,9 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 updateDraftField: this.#onUpdateDraftField,
                 selectDraftKey: this.#onSelectDraftKey,
                 saveDraftEffect: this.#onSaveDraftEffect,
-                cancelDraftEffect: this.#onCancelDraftEffect
+                cancelDraftEffect: this.#onCancelDraftEffect,
+                selectDerivedValue: this.#onSelectDerivedValue,
+                setEffectTargetType: this.#onSetEffectTargetType
             }
         });
     }
@@ -184,7 +186,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     /** @override */
     async _prepareContext(options) {
         // At the start of every render, get the latest state from the flag.
-        const builderData = await BuilderStateService.getState();
+        const builderData = options.builderData ?? await BuilderStateService.getState();
 
         const selectedActorUuid = game.user.getFlag("sr5-marketplace", "selectedActorUuid");
         this.purchasingActor = selectedActorUuid ? await fromUuid(selectedActorUuid) : (game.user.character || null);
@@ -204,7 +206,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 // 2. Call the method to get the effects context from the current builderData
                 const effectsContext = await effectsBuilder.buildEffectsContext(builderData);
                 // 3. Render the new Effects.html template with the context
-                tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/Effects.html", effectsContext);
+                foundry.utils.mergeObject(partialContext, effectsContext);
+
+                // Now, render the partial using the complete, unified context.
+                tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/Effects.html", partialContext);
                 break;
             case "dialog":
                 tabContent = `<div class="placeholder">The final Creation Dialog will be here.</div>`;
@@ -348,51 +353,60 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     static async #onCreateEffect(event, target) {
         const sourceUuid = target.dataset.sourceUuid;
         if (!sourceUuid) return;
-        await BuilderStateService.startEffectCreation(sourceUuid);
-        this.render();
+        const newState = await BuilderStateService.startEffectCreation(sourceUuid);
+        this.render(false, { builderData: newState });
     }
     
     static async #onUpdateDraftField(event, target) {
         const form = target.closest("form");
-        const updates = foundry.utils.formToObject(form);
-        await BuilderStateService.updateDraftEffect(updates);
-        this.render();
+        const updates = foundry.utils.readFormData(form, { object: true });
+        const newState = await BuilderStateService.updateDraftEffect(updates);
+        this.render(false, { builderData: newState });
     }
 
     static async #onSelectDraftKey(event, target) {
         const key = target.dataset.path;
-        await BuilderStateService.updateDraftEffect({ changes: [{ key }] });
-        this.render();
+        const newState = await BuilderStateService.updateDraftEffect({ changes: [{ key }] });
+        this.render(false, { builderData: newState });
+    }
+    
+    static async #onSetEffectTargetType(event, target) {
+        const targetType = target.dataset.targetType;
+        const newState = await BuilderStateService.updateDraftEffect({ targetType: targetType });
+        this.render(false, { builderData: newState });
+    }
+
+    static async #onSelectDerivedValue(event, target) {
+        const path = target.dataset.path;
+        const newState = await BuilderStateService.updateDraftEffect({ changes: [{ value: path, isDerived: true }] });
+        this.render(false, { builderData: newState });
     }
 
     static async #onSaveDraftEffect(event, target) {
         const form = target.closest("form");
         const updates = foundry.utils.formToObject(form);
         await BuilderStateService.updateDraftEffect(updates);
-        await BuilderStateService.saveDraftEffect();
-        this.render();
+        const newState = await BuilderStateService.saveDraftEffect();
+        this.render(false, { builderData: newState });
     }
 
     static async #onCancelDraftEffect(event, target) {
-        await BuilderStateService.cancelEffectCreation();
-        this.render();
+        const newState = await BuilderStateService.cancelEffectCreation();
+        this.render(false, { builderData: newState });
     }
     
     static async #onEditEffect(event, target) {
         const { sourceUuid, effectId } = target.dataset;
-        await BuilderStateService.startEffectEdit(sourceUuid, effectId);
-        this.render();
+        const newState = await BuilderStateService.startEffectEdit(sourceUuid, effectId);
+        this.render(false, { builderData: newState });
     }
 
     static async #onDeleteEffect(event, target) {
-        const { sourceUuid, effectId } = target.dataset;
-        const confirmed = await Dialog.confirm({
-            title: "Delete Effect",
-            content: "<p>Are you sure you want to delete this effect?</p>"
-        });
+        const { effectId } = target.dataset;
+        const confirmed = await Dialog.confirm({ /* ... */ });
         if (confirmed) {
-            await BuilderStateService.deleteEffect(sourceUuid, effectId);
-            this.render();
+            const newState = await BuilderStateService.deleteEffect(effectId);
+            this.render(false, { builderData: newState });
         }
     }
 }

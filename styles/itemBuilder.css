@@ -330,78 +330,190 @@
 /* ================================================================== */
 
 /* --- General Layout --- */
-.itemBuilder .effects-container {
-  padding: 10px;
-  overflow-y: auto;
+.itemBuilder .effect-creator-container {
+    border-top: 2px solid var(--border-color-highlight);
+    margin-top: 20px;
+    padding-top: 20px;
 }
 
-.itemBuilder .effects-list .group-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid var(--border-color-dark);
-  padding-bottom: 5px;
-  margin: 20px 0 10px 0;
-}
-.itemBuilder .effects-list .group-header:first-child {
-    margin-top: 0;
+.itemBuilder .effect-creator-steps .form-group {
+    margin-bottom: 10px;
 }
 
-/* --- Effect Card Grid --- */
-/* We can reuse the item-content-grid for consistency */
-.itemBuilder .effects-grid {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* A bit wider for effect details */
+/* Custom Radio/Checkbox Selectors */
+.itemBuilder .custom-radios {
+    display: flex;
+    gap: 5px;
 }
 
-/* --- Individual Effect Card --- */
-/* Re-use .item-card and add a specific class for tweaks */
-.itemBuilder .effect-card {
-    grid-template-columns: 3fr 1fr; /* Make image column wider */
+.itemBuilder .custom-radios input[type="radio"] {
+    display: none; /* Hide the actual radio button */
+}
+
+.itemBuilder .custom-radios label {
+    padding: 5px 15px;
+    border: 1px solid var(--border-color-dark);
+    border-radius: 5px;
+    background: var(--collapsible-content-bg);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.itemBuilder .custom-radios input[type="radio"]:checked + label {
+    background: var(--color-red-bright);
+    color: var(--color-white);
+    border-color: var(--color-red-dark);
+}
+
+/* Key Selector Buttons */
+.itemBuilder .key-selector h4 {
+    margin: 10px 0 5px;
+    font-size: 1em;
+    border-bottom: 1px solid var(--border-color-medium);
+    padding-bottom: 3px;
+}
+
+.itemBuilder .key-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.itemBuilder .key-btn {
+    flex-basis: content;
+}
+
+/* Value Input Group */
+.itemBuilder .value-input-group {
+    display: flex;
     align-items: center;
 }
 
-.itemBuilder .effect-card .item-image {
-    width: 32px;
-    height: 32px;
-    border: none;
-    background: var(--color-black-transparent-20);
-    padding: 2px;
+.itemBuilder .value-input-group input[type="text"] {
+    flex-grow: 1;
+}
+
+.itemBuilder .value-input-group input[type="checkbox"] {
+    display: none; /* Hide the actual checkbox */
+}
+
+.itemBuilder .value-input-group label {
+    flex-shrink: 0;
+    margin-left: 5px;
+    padding: 5px 8px;
+    border: 1px solid var(--border-color-dark);
     border-radius: 3px;
-}
-
-.itemBuilder .effect-card .effect-details {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    padding-left: 5px;
-}
-
-.itemBuilder .effect-card .item-name {
-    font-weight: bold;
-    font-size: 14px;
-}
-
-.itemBuilder .effect-card .effect-path {
-    font-family: monospace;
-    font-size: 11px;
-    opacity: 0.8;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.itemBuilder .effect-card .effect-actions {
-    display: flex;
-    gap: 8px;
-    padding: 0 5px;
-    font-size: 14px;
-}
-
-.itemBuilder .effect-card .effect-actions a {
+    line-height: 1;
     cursor: pointer;
 }
 
-.itemBuilder .effect-card .effect-actions .innate-effect {
-    opacity: 0.5;
-    cursor: help;
+.itemBuilder .value-input-group input[type="checkbox"]:checked + label {
+    background: var(--color-red-bright);
+    color: var(--color-white);
+    border-color: var(--color-red-dark);
+}
+
+.itemBuilder .derived-value-selector {
+    border: 1px dashed var(--border-color-medium);
+    padding: 10px;
+    margin-top: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: var(--color-black-transparent-15);
+}
+
+.itemBuilder .effect-creator-steps{
+  height: 20em;
+  overflow-x: auto;
+}
+
+/* --- Main Creator Layout --- */
+.effect-creator-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    align-items: start;
+}
+
+.effect-creator-grid .form-group.full-width {
+    grid-column: 1 / -1; /* Make an element span all 3 columns */
+}
+
+.key-selector-container.full-width {
+    grid-column: 1 / -1;
+}
+
+/* --- Collapsible Key Groups --- */
+.key-group.collapsible {
+    border: 1px solid var(--border-color-dark);
+    border-radius: 3px;
+    margin-bottom: 5px; /* Spacing between collapsible groups */
+}
+
+.key-group.collapsible .toggle-checkbox {
+    display: none;
+}
+
+.key-group.collapsible .toggle-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 6px 8px;
+    background: var(--collapsible-content-bg);
+}
+.key-group.collapsible .toggle-label:hover {
+    background: var(--Form-background-group-hover);
+}
+
+.key-group.collapsible .toggle-label h5 {
+    margin: 0;
+    border: none;
+}
+
+.key-group.collapsible .expand-icon {
+    transition: transform 0.2s ease-in-out;
+}
+
+/* --- Content Grid INSIDE Collapsibles --- */
+.key-group.collapsible .toggle-content {
+    display: none; /* Hidden by default */
+}
+
+.key-group.collapsible .toggle-checkbox:checked + .toggle-label + .toggle-content {
+    display: grid; /* This is your requested grid for the buttons */
+    gap: 6px;
+    padding: 8px;
+    background: var(--color-black-transparent-20);
+}
+
+.key-group.collapsible .toggle-checkbox:checked + .toggle-label .expand-icon {
+    transform: rotate(90deg);
+}
+
+/* --- Buttons --- */
+.mode-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+}
+
+.button-group.mode-selector {
+    display: grid
+;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1em;
+}
+
+.key-btn {
+    text-align: center;
+}
+
+/* --- Footer --- */
+.dialog-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color-medium);
 }

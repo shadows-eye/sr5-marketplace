@@ -120,7 +120,7 @@
 .sr5-marketplace h4, .sr5-market h4 {
     margin: -0.3rem 0 0.2rem;
     line-height: 1;
-    font-size: 2vw;
+    font-size: 1vw;
     color: var(--color-red-base);
     text-shadow: var(--shadow-text);
 }
@@ -371,9 +371,10 @@ select#item-type-selector option {
 .marketplace-items-grid, .marketplace-items {
     flex-grow: 1;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 20px;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 .marketplace-item.grid-item, .item-card {
     background-color: var(--bg-item-card);
@@ -519,8 +520,8 @@ select#item-type-selector option {
 /* --------------------------------------
    8. Responsive Container Queries
    -------------------------------------- */
-@container (max-width: 900px) { .marketplace-items, .marketplace-items-grid { grid-template-columns: repeat(3, 1fr); } }
-@container (max-width: 600px) { .marketplace-items, .marketplace-items-grid { grid-template-columns: repeat(2, 1fr); } }
+@container (max-width: 900px) { .marketplace-items, .marketplace-items-grid { grid-template-columns: 1fr 1fr 1fr 1fr } }
+@container (max-width: 600px) { .marketplace-items, .marketplace-items-grid { grid-template-columns: 1fr 1fr; } }
 @container (max-width: 400px) { .marketplace-items, .marketplace-items-grid { grid-template-columns: 1fr; } }
 
 /* --------------------------------------

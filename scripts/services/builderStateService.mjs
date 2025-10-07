@@ -114,12 +114,18 @@ export class BuilderStateService {
      * @returns {Promise<object>} The updated state object.
      */
     static async startEffectCreation(sourceUuid) {
-        const defaultEffect = {
-            sourceUuid: sourceUuid, name: "", img: "icons/svg/aura.svg", isEdit: false,
-            changes: [{ key: "", mode: CONST.ACTIVE_EFFECT_MODES.ADD, value: "", priority: 10 }]
+        const state = await this.getState();
+        state.draftEffect = {
+            _id: foundry.utils.randomID(),
+            sourceUuid: sourceUuid,
+            name: "",
+            img: "icons/svg/aura.svg",
+            isEdit: false,
+            targetType: null,
+            changes: [{ key: "", mode: CONST.ACTIVE_EFFECT_MODES.ADD, value: "" }]
         };
-        await this.updateState({ draftEffect: defaultEffect });
-        return this.getState();
+        await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, state);
+        return state;
     }
 
     /**
@@ -129,14 +135,16 @@ export class BuilderStateService {
      */
     static async updateDraftEffect(draftUpdate) {
         const state = await this.getState();
-        const updatedDraft = foundry.utils.mergeObject(state.draftEffect, draftUpdate);
-        await this.updateState({ draftEffect: updatedDraft });
-        return this.getState();
+        if (!state.draftEffect) return state;
+        
+        state.draftEffect = foundry.utils.mergeObject(state.draftEffect, draftUpdate);
+        
+        await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, state);
+        return state;
     }
 
     /**
-     * Finalizes effect creation, handling new effects, edits to custom effects,
-     * and edits of innate effects (creating overrides).
+     * Finalizes the effect by moving it from draft into the 'modifications' array.
      */
     static async saveDraftEffect() {
         const state = await this.getState();
@@ -144,85 +152,84 @@ export class BuilderStateService {
 
         const newState = foundry.utils.deepClone(state);
         const draft = newState.draftEffect;
-        
         if (!newState.modifications) newState.modifications = [];
 
-        // If the effect being edited was an innate one, it won't have a sourceUuid yet.
-        // We also mark it as an override.
-        if (draft.isEdit && !draft.sourceUuid) {
-            draft.sourceUuid = state.draftEffect.sourceUuid;
-            draft.isOverride = true;
-        }
-
+        delete draft.wasCustom; 
         const existingIndex = newState.modifications.findIndex(m => m._id === draft._id);
 
-        if (existingIndex > -1) {
-            // This was an edit of an existing custom modification, so replace it.
-            newState.modifications[existingIndex] = draft;
-        } else {
-            // This is a new effect OR an override of an innate effect. Add it to the array.
-            if (!draft._id) draft._id = foundry.utils.randomID();
-            newState.modifications.push(draft);
-        }
+        if (existingIndex > -1) newState.modifications[existingIndex] = draft;
+        else newState.modifications.push(draft);
         
         newState.draftEffect = null; 
         await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, newState);
-        return this.getState();
+        return newState;
     }
 
     /**
-     * Cancels the effect creation process by clearing the draft effect.
-     * @returns {Promise<object>} The updated state object.
+     * Cancels the effect creation. If editing a custom mod, moves it back.
      */
     static async cancelEffectCreation() {
-        await this.updateState({ draftEffect: null });
-        return this.getState();
+        const state = await this.getState();
+        if (!state.draftEffect) return state;
+        const newState = foundry.utils.deepClone(state);
+
+        if (state.draftEffect.wasCustom) {
+            delete state.draftEffect.wasCustom;
+            newState.modifications.push(state.draftEffect);
+        }
+        
+        newState.draftEffect = null;
+        await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, newState);
+        return newState;
     }
 
     /**
-     * Deletes a specific effect from an item in the builder state.
-     * @param {string} effectId - The _id of the effect to delete.
-     * @returns {Promise<object>} The updated state object.
+     * Deletes a custom effect from the 'modifications' array.
      */
     static async deleteEffect(effectId) {
-        const currentState = await this.getState();
-        const newState = foundry.utils.deepClone(currentState);
-
-        if (newState.modifications) {
-            newState.modifications = newState.modifications.filter(m => m._id !== effectId);
-            await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, newState);
+        const state = await this.getState();
+        if (state.modifications) {
+            state.modifications = state.modifications.filter(m => m._id !== effectId);
+            await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, state);
         }
-        return this.getState();
+        return state;
     }
 
     /**
-     * Prepares an effect for editing by moving it to the 'draftEffect' state.
-     * It can find effects that are either custom modifications or innate to an item.
+     * Prepares an effect for editing.
+     * If it's a custom mod, it's MOVED from 'modifications' to 'draftEffect'.
+     * If it's an innate effect, a COPY is created in 'draftEffect'.
      */
     static async startEffectEdit(sourceUuid, effectId) {
         const state = await this.getState();
+        const newState = foundry.utils.deepClone(state);
         let effectToEdit = null;
-        
-        // 1. First, check if we are editing an existing custom modification.
-        effectToEdit = state.modifications?.find(m => m._id === effectId);
 
-        // 2. If not found, search the innate effects of the source item.
-        if (!effectToEdit) {
-            let itemSource = null;
-            if (state.baseItem?.uuid === sourceUuid) itemSource = state.baseItem;
-            else itemSource = Object.values(state.changes).find(c => c.uuid === sourceUuid);
-            
+        const customModIndex = newState.modifications?.findIndex(m => m._id === effectId);
+        if (customModIndex > -1) {
+            effectToEdit = newState.modifications.splice(customModIndex, 1)[0];
+            effectToEdit.wasCustom = true;
+        } else {
+            let itemSource = (newState.baseItem?.uuid === sourceUuid) 
+                ? newState.baseItem 
+                : Object.values(newState.changes).find(c => c.uuid === sourceUuid);
             effectToEdit = itemSource?.effects?.find(e => e._id === effectId);
+            if (effectToEdit) {
+                effectToEdit.originalId = effectToEdit._id;
+                // Generate a new ID for the override to avoid conflicts
+                effectToEdit._id = foundry.utils.randomID();
+            }
         }
 
         if (effectToEdit) {
             const draft = foundry.utils.deepClone(effectToEdit);
-            draft.sourceUuid = sourceUuid; // Always track where it came from
+            draft.sourceUuid = sourceUuid;
             draft.isEdit = true;
-            await this.updateState({ draftEffect: draft });
+            newState.draftEffect = draft;
+            await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, newState);
+            return newState;
         }
-        
-        return this.getState();
+        return state;
     }
 
     /**
