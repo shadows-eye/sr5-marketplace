@@ -123,12 +123,12 @@ export default class ItemDataServices {
      */
     static ITEM_TYPE_ICONS = {
         // Main Types
-        armor: "modules/sr5-marketplace/assets/icons/types/armor.svg",
+        armor: "modules/sr5-marketplace/assets/icons/types/armor.webp",
         device: "modules/sr5-marketplace/assets/icons/types/Kommlink.webp",
         cyberware: "modules/sr5-marketplace/assets/icons/types/scann_woman_2.webp",
-        bioware: "modules/sr5-marketplace/assets/icons/types/bioware.svg",
+        bioware: "modules/sr5-marketplace/assets/icons/types/bioware.webp",
         equipment: "modules/sr5-marketplace/assets/icons/types/kletter.webp",
-        spell: "modules/sr5-marketplace/assets/icons/types/spell.webp",
+        spell: "modules/sr5-marketplace/assets/icons/types/spells.webp",
         modification: "modules/sr5-marketplace/assets/icons/types/modification.webp",
 
         // Weapon Sub-Subtypes

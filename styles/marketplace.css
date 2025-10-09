@@ -513,7 +513,14 @@ select#item-type-selector option {
     border: none;
     background: none;
 }
-.fa-trash { color: var(--color-red-dark); }
+.SR5Marketplace.fas.fa-trash { 
+    color: var(--color-red-dark); 
+    position: absolute;
+    bottom: 2.2em;
+    right: 0.3em;
+    font-size: 14px;
+    text-shadow: 0 0 4px var(--color-black);
+}
 .sr5-marketplace-yen { color: var(--color-red-bright); }
 .fa-circle-star, .sr5-marketplace-karma { color: var(--color-yellow-base); }
 

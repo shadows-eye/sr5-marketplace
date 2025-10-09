@@ -55,7 +55,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     static get DEFAULT_OPTIONS() {
         return foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
             id: "itemBuilder",
-            position: { width: 1600, height: 800 },
+            position: { width: 1600, height: 845 },
             window: { title: "Item Builder", resizable: true },
             actions: {
                 // Core
@@ -262,6 +262,32 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         return themeValue === "dark" ? "theme-dark" : "theme-light";
     }
 
+    /**
+     * A helper to get the most up-to-date version of the draft effect by merging
+     * the last saved state with any unsaved changes currently in the form fields.
+     * @param {HTMLFormElement} form  The form element containing the draft effect fields.
+     * @returns {Promise<object|null>} A complete and updated draft effect object.
+     * @private
+     */
+    static async #_getUpdatedDraft(form) {
+        if (!form) return null;
+        // FIX: Use the new namespaced path for FormDataExtended
+        const formData = new foundry.applications.ux.FormDataExtended(form).object;
+        const currentState = await BuilderStateService.getState();
+        const draft = currentState.draftEffect;
+        if (!draft) return null;
+
+        // Merge the live form data into a deep copy of the last saved state.
+        const updatedDraft = foundry.utils.mergeObject(foundry.utils.deepClone(draft), formData);
+
+        // Correct data types that come from the form as strings.
+        if ( updatedDraft.changes?.[0]?.mode ) {
+            updatedDraft.changes[0].mode = Number(updatedDraft.changes[0].mode);
+        }
+        
+        return updatedDraft;
+    }
+
     // --- Event Listeners (Bound in _onRender) ---
 
     async onChangeCategory(event) {
@@ -367,38 +393,44 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         let { name, value } = target;
         if (!name) return;
 
-        // --- FIX 1: Preserve Scroll Position ---
         const scrollable = this.element.querySelector(".effect-creator-steps");
         const scrollTop = scrollable ? scrollable.scrollTop : 0;
 
-        // --- FIX 2: Correct Data Type ---
-        // The 'mode' value from an HTML element is a string, but it needs to be a number.
-        if (name.endsWith(".mode")) {
-            value = Number(value);
-        }
+        // FIX: Call the static helper using the class name
+        const draft = await ItemBuilderApp.#_getUpdatedDraft(target.closest("form"));
+        if (!draft) return;
 
-        const updateData = { [name]: value };
-        const updates = foundry.utils.expandObject(updateData);
-        const newState = await BuilderStateService.updateDraftEffect(updates);
+        // Apply the specific change from the clicked element
+        foundry.utils.setProperty(draft, name, Number(value) || value);
 
-        // Await the render so we can act on the new DOM.
+        const newState = await BuilderStateService.updateDraftEffect(draft);
+
+        // 'this' is the instance here, so this.render() is correct.
         await this.render(false, { builderData: newState });
 
-        // Restore the scroll position.
         const newScrollable = this.element.querySelector(".effect-creator-steps");
         if (newScrollable) newScrollable.scrollTop = scrollTop;
     }
 
+    /**
+     * Handles selecting an attribute key using the hybrid state/form approach.
+     */
     static async #onSelectDraftKey(event, target) {
-        // Preserve scroll position
         const scrollable = this.element.querySelector(".effect-creator-steps");
         const scrollTop = scrollable ? scrollable.scrollTop : 0;
 
-        const key = target.dataset.path;
-        const newState = await BuilderStateService.updateDraftEffect({ changes: [{ key }] });
+        // FIX: Call the static helper using the class name
+        const draft = await ItemBuilderApp.#_getUpdatedDraft(target.closest("form"));
+        if (!draft) return;
+        
+        if (!draft.changes) draft.changes = [{}];
+        draft.changes[0].key = target.dataset.path;
 
-        // Await the render and then restore scroll
+        const newState = await BuilderStateService.updateDraftEffect(draft);
+        
+        // 'this' is the instance here, so this.render() is correct.
         await this.render(false, { builderData: newState });
+
         const newScrollable = this.element.querySelector(".effect-creator-steps");
         if (newScrollable) newScrollable.scrollTop = scrollTop;
     }
@@ -409,15 +441,20 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      * @private
      */
     static async #onSetEffectTargetType(event, target) {
-        // Preserve scroll position
         const scrollable = this.element.querySelector(".effect-creator-steps");
         const scrollTop = scrollable ? scrollable.scrollTop : 0;
 
-        const targetType = target.dataset.targetType;
-        const newState = await BuilderStateService.updateDraftEffect({ targetType: targetType });
+        // FIX: Call the static helper using the class name
+        const draft = await ItemBuilderApp.#_getUpdatedDraft(target.closest("form"));
+        if (!draft) return;
 
-        // Await the render and then restore scroll
+        draft.targetType = target.dataset.targetType;
+
+        const newState = await BuilderStateService.updateDraftEffect(draft);
+        
+        // 'this' is the instance here, so this.render() is correct.
         await this.render(false, { builderData: newState });
+
         const newScrollable = this.element.querySelector(".effect-creator-steps");
         if (newScrollable) newScrollable.scrollTop = scrollTop;
     }
@@ -430,7 +467,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     static async #onSaveDraftEffect(event, target) {
         const form = target.closest("form");
-        const updates = new FormDataExtended(form).object;
+        const updates = new foundry.applications.ux.FormDataExtended(form).object
         
         await BuilderStateService.updateDraftEffect(updates);
         const newState = await BuilderStateService.saveDraftEffect();
@@ -463,16 +500,24 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      * @private
      */
     static async #onSelectEffectIcon(event, target) {
-        // Find the hidden input to get the current value
-        const currentIcon = target.querySelector('input[name="img"]')?.value;
+        const form = target.closest("form");
+        if (!form) return;
 
-        new FilePicker({
+        const currentIcon = target.querySelector('input[name="img"]')?.value;
+        const app = this;
+
+        // FIX: Use the new namespaced path for FilePicker
+        new foundry.applications.apps.FilePicker.implementation({
             type: "image",
             current: currentIcon,
             callback: async (path) => {
-                // When a new file is picked, update the state and re-render
-                const newState = await BuilderStateService.updateDraftEffect({ img: path });
-                this.render(false, { builderData: newState });
+                const draft = await ItemBuilderApp.#_getUpdatedDraft(form);
+                if (!draft) return;
+
+                draft.img = path;
+
+                const newState = await BuilderStateService.updateDraftEffect(draft);
+                app.render(false, { builderData: newState });
             }
         }).render(true);
     }

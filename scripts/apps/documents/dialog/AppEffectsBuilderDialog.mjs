@@ -74,7 +74,7 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
                 gridSpan = 4;
                 gridRowSpan = 2; // A large square
             } else if (keyCount > 8) {  // Medium Group (e.g., Attributes)
-                gridSpan = 3;
+                gridSpan = 2;
                 gridRowSpan = 1; // A medium rectangle
             }
             // Small groups default to a 1x1 square
@@ -117,37 +117,53 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
     _getEffectGroups(builderState) {
         if (!builderState?.baseItem) return [];
         const groups = [];
-        // Consolidate all items that can have effects
-        const allItems = [builderState.baseItem, ...Object.values(builderState.changes)];
         const customMods = builderState.modifications || [];
 
-        for (const item of allItems) {
+        // --- NEW LOGIC: Always create a group for the base item ---
+        const baseItem = builderState.baseItem;
+        const finalBaseEffects = [];
+        const baseInnateEffects = baseItem.effects || [];
+        const baseCustomMods = customMods.filter(m => m.sourceUuid === baseItem.uuid);
+
+        // Filter out overridden innate effects for the base item
+        for (const innate of baseInnateEffects) {
+            const isOverridden = baseCustomMods.some(m => m.originalId === innate._id);
+            if (!isOverridden) {
+                finalBaseEffects.push(innate);
+            }
+        }
+        finalBaseEffects.push(...baseCustomMods);
+
+        // Add the base item group unconditionally
+        groups.push({
+            groupName: `Base Item: ${baseItem.name}`,
+            sourceUuid: baseItem.uuid,
+            effects: finalBaseEffects
+        });
+        // --- END NEW LOGIC ---
+
+        // Now, process the rest of the items (the slotted modifications)
+        const slottedItems = Object.values(builderState.changes);
+        for (const item of slottedItems) {
             if (!item?.uuid) continue;
 
             const finalEffects = [];
             const itemInnateEffects = item.effects || [];
-            
-            // Get custom mods specific to THIS item
             const itemCustomMods = customMods.filter(m => m.sourceUuid === item.uuid);
 
-            // --- NEW LOGIC: Filter out overridden innate effects ---
             for (const innate of itemInnateEffects) {
-                // Check if any custom mod for this item is overriding this specific innate effect.
                 const isOverridden = itemCustomMods.some(m => m.originalId === innate._id);
-                // Only add the innate effect to the list if it's NOT overridden.
                 if (!isOverridden) {
                     finalEffects.push(innate);
                 }
             }
 
-            // Now, add all the custom mods for this item (including our new overrides).
             finalEffects.push(...itemCustomMods);
             
+            // Only add a group if there are effects to show for slotted items
             if (finalEffects.length > 0) {
                 groups.push({
-                    groupName: (item === builderState.baseItem) 
-                        ? `Base Item: ${item.name}` 
-                        : `Slot (${Object.keys(builderState.changes).find(k => builderState.changes[k] === item)}): ${item.name}`,
+                    groupName: `Slot (${Object.keys(builderState.changes).find(k => builderState.changes[k] === item)}): ${item.name}`,
                     sourceUuid: item.uuid,
                     effects: finalEffects
                 });

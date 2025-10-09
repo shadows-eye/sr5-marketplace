@@ -131,17 +131,36 @@
   height: 100%;
   padding: 10px;
   gap: 10px;
-  grid-template-columns: 120px 1fr 120px;
-  grid-template-rows: auto 1fr 120px;
+  grid-template-columns: 8em 1fr 8em;
+  grid-template-rows: 2.3em 1fr 8em;
   grid-template-areas:
-    "stats stats stats"
+    "slot-l stats slot-r"
     "slot-l center slot-r"
     "bottom bottom bottom";
 }
 
+/* --- SVG Connector Lines --- */
+.itemBuilder .connector-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Allows clicks to pass through to elements underneath */
+    z-index: 50; /* Places it above the background but below slots if needed */
+}
+
+.itemBuilder .connector-line {
+    stroke: var(--color-yellow-base);
+    stroke-width: 1.5;
+    stroke-dasharray: 4, 2; /* Creates a dashed line effect */
+    opacity: 0.6;
+}
+
 /* 6) BUILDER COMPONENTS — POSITIONING ------------------------------- */
 .itemBuilder .item-stats-display { 
-    grid-area: stats; 
+    grid-area: stats;
+    width: fit-content; 
 }
 .itemBuilder .center-display{ 
     grid-area: center; 
@@ -234,12 +253,7 @@
 }
 
 .itemBuilder .item-stats-display {
-  display: flex;
-  justify-content: space-around;
-  padding: 5px;
-  background: var(--collapsible-content-bg);
-  border-radius: 5px;
-  border: 1px solid var(--border-color-dark);
+  display: grid;
 }
 
 .itemBuilder .builder-main-content.blank .placeholder-content {
@@ -247,6 +261,11 @@
   text-shadow: 1px 1px 3px var(--color-black);
   margin: auto;
   text-align: center;
+}
+
+.item-builder .stat-block .item-image{
+  object-fit: contain;
+  max-width: 10em;
 }
 
 
@@ -266,7 +285,6 @@
   justify-content: center;
   align-items: center;
 }
-
 .itemBuilder .slot-item-img {
   max-width: 100%;
   max-height: 100%;
@@ -276,8 +294,8 @@
 
 .itemBuilder .effect-indicator {
   position: absolute;
-  bottom: 8px; /* Adjusted for padding */
-  right: 8px;  /* Adjusted for padding */
+  bottom: 0.4em; /* Adjusted for padding */
+  right: 0.3em;  /* Adjusted for padding */
   font-size: 14px;
   text-shadow: 0 0 4px var(--color-black);
 }
@@ -447,7 +465,7 @@
 }
 
 .itemBuilder .effect-creator-steps{
-  height: 20em;
+  height: 33em;
   overflow-x: auto;
 }
 
@@ -523,10 +541,16 @@
 }
 
 .button-group.mode-selector {
-    display: grid
-;
+    display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 1em;
+}
+.button-group.typeSelector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 20em;
+    gap: 1em;
+    padding-top: 0.5em;
 }
 
 .key-btn {
