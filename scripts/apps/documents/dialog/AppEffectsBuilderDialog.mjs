@@ -55,7 +55,7 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
             context.selection_attribute_options = this._getAttributeOptions();
             context.selection_limit_options = this._getLimitOptions();
             // --- END ---
-
+            context.effectApplyToOptions = game.sr5marketplace.api.effectApplyTo_l;
             context.changeModes = Object.entries(CONST.ACTIVE_EFFECT_MODES).map(([key, value]) => ({
                 value: value, label: `EFFECT.MODE_${key}`
             }));

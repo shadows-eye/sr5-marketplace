@@ -1,8 +1,8 @@
 <div class="effects-container">
     {{!-- PART 1: ALWAYS RENDER THE LIST OF EXISTING EFFECTS --}}
     <header class="itemBuilder effects-header">
-        <h2>Manage Active Effects</h2>
-        <p>Innate effects and custom modifications are listed below.</p>
+        <h2>{{localize 'SR5M.UI.Effects.ManageEffectsHeader'}}</h2>
+        <p>{{localize 'SR5M.UI.Effects.ManageEffectsSubheader'}}</p>
     </header>
     <div class="itemBuilder effects-list">
         {{#each effectGroups}}
@@ -10,7 +10,7 @@
             <div class="group-header">
                 <h3>{{this.groupName}}</h3>
                 <a class="create-effect-button" data-action="createEffect" data-source-uuid="{{this.sourceUuid}}">
-                    <i class="fas fa-plus"></i> Add Effect
+                    <i class="fas fa-plus"></i> {{localize 'SR5M.UI.Effects.AddEffectButton'}}
                 </a>
             </div>
             <div class="item-content-grid effects-grid">
@@ -24,15 +24,15 @@
                         {{/each}}
                     </div>
                     <div class="effect-actions">
-                        <a data-action="editEffect" data-source-uuid="{{../sourceUuid}}" data-effect-id="{{this._id}}" title="Edit Effect">
+                        <a data-action="editEffect" data-source-uuid="{{../sourceUuid}}" data-effect-id="{{this._id}}" title="{{localize 'SR5M.UI.Effects.EditEffectTooltip'}}">
                             <i class="fas fa-edit"></i>
                         </a>
                         {{#if this.sourceUuid}}
-                            <a data-action="deleteEffect" data-effect-id="{{this._id}}" title="Delete Modification">
+                            <a data-action="deleteEffect" data-effect-id="{{this._id}}" title="{{localize 'SR5M.UI.Effects.DeleteEffectTooltip'}}">
                                 <i class="fas fa-trash"></i>
                             </a>
                         {{else}}
-                            <span class="innate-effect" title="Innate effects cannot be deleted."><i class="fas fa-lock"></i></span>
+                            <span class="innate-effect" title="{{localize 'SR5M.UI.Effects.InnateEffectTooltip'}}"><i class="fas fa-lock"></i></span>
                         {{/if}}
                     </div>
                 </div>
@@ -47,7 +47,7 @@
         <div class="effect-creator-container">
             <form autocomplete="off">
                 <header class="itemBuilder effects-header">
-                    <h2>{{#if draftEffect.isEdit}}Edit Effect{{else}}Create New Effect{{/if}}</h2>
+                    <h2>{{#if draftEffect.isEdit}}{{localize 'SR5M.UI.Effects.EditEffectHeader'}}{{else}}{{localize 'SR5M.UI.Effects.CreateEffectHeader'}}{{/if}}</h2>
                 </header>
 
                 <section class="itemBuilder effect-creator-steps">
@@ -55,37 +55,37 @@
 
                         {{!-- Basic Info & Apply To buttons... --}}
                         <div class="form-group">
-                            <label>Effect Name</label>
-                            <input type="text" name="name" value="{{draftEffect.name}}" placeholder="e.g., Strength Boost"/>
+                            <label>{{localize 'SR5M.UI.Effects.EffectNameLabel'}}</label>
+                            <input type="text" name="name" value="{{draftEffect.name}}" placeholder="{{localize 'SR5M.UI.Effects.EffectNamePlaceholder'}}"/>
                         </div>
                         <div class="form-group">
-                            <label>Effect Icon</label>
-                            <div class="icon-selector" data-action="selectEffectIcon" title="Click to select an icon">
-                                <img src="{{@root.draftEffect.img}}" alt="Effect Icon"/>
+                            <label>{{localize 'SR5M.UI.Effects.EffectIconLabel'}}</label>
+                            <div class="icon-selector" data-action="selectEffectIcon" title="{{localize 'SR5M.UI.Effects.SelectIconTooltip'}}">
+                                <img src="{{@root.draftEffect.img}}" alt="{{localize 'SR5M.UI.Effects.EffectIconLabel'}}"/>
                                 <input type="hidden" name="img" value="{{@root.draftEffect.img}}"/>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Anwenden auf (Apply to)</label>
+                            <label>{{localize 'SR5M.UI.Effects.ApplyToLabel'}}</label>
                             <div class="button-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;">
                                 <button type="button" class="{{#if (or (eq @root.draftEffect.targetType 'actor') (eq @root.draftEffect.system.applyTo 'actor'))}}active{{/if}}" 
-                                        data-action="setEffectTargetType" data-target-type="actor">Akteur</button>
+                                        data-action="setEffectTargetType" data-target-type="actor">{{@root.effectApplyToOptions.actor}}</button>
                                 <button type="button" class="{{#if (or (eq @root.draftEffect.targetType 'targeted_actor') (eq @root.draftEffect.system.applyTo 'targeted_actor'))}}active{{/if}}" 
-                                        data-action="setEffectTargetType" data-target-type="targeted_actor">Anvisierten Akteur</button>
+                                        data-action="setEffectTargetType" data-target-type="targeted_actor">{{@root.effectApplyToOptions.targeted_actor}}</button>
                                 <button type="button" class="{{#if (or (eq @root.draftEffect.targetType 'test_all') (eq @root.draftEffect.system.applyTo 'test_all'))}}active{{/if}}" 
-                                        data-action="setEffectTargetType" data-target-type="test_all">Probe</button>
+                                        data-action="setEffectTargetType" data-target-type="test_all">{{@root.effectApplyToOptions.test_all}}</button>
                                 <button type="button" class="{{#if (or (eq @root.draftEffect.targetType 'test_item') (eq @root.draftEffect.system.applyTo 'test_item'))}}active{{/if}}" 
-                                        data-action="setEffectTargetType" data-target-type="test_item">Probe aus Item</button>
+                                        data-action="setEffectTargetType" data-target-type="test_item">{{@root.effectApplyToOptions.test_item}}</button>
                                 <button type="button" class="{{#if (or (eq @root.draftEffect.targetType 'modifier') (eq @root.draftEffect.system.applyTo 'modifier'))}}active{{/if}}" 
-                                        data-action="setEffectTargetType" data-target-type="modifier">Modifikatoren</button>
+                                        data-action="setEffectTargetType" data-target-type="modifier">{{@root.effectApplyToOptions.modifier}}</button>
                             </div>
                         </div>
-                                        
+                                
                         {{!-- Key Selection and Value Section --}}
                         {{#if (or @root.draftEffect.targetType @root.draftEffect.system.applyTo)}}
                             <div class="form-group full-width">
-                                <label>Attribute Key</label>
-                                <input type="text" name="changes.0.key" value="{{@root.draftEffect.changes.[0].key}}" readonly placeholder="Select an attribute..."/>
+                                <label>{{localize 'SR5M.UI.Effects.AttributeKeyLabel'}}</label>
+                                <input type="text" name="changes.0.key" value="{{@root.draftEffect.changes.[0].key}}" readonly placeholder="{{localize 'SR5M.UI.Effects.AttributeKeyPlaceholder'}}"/>
                             </div>
                             <div class="key-selector-container full-width">
                                 <div class="key-groups-wrapper">
@@ -107,42 +107,42 @@
                                     {{#if @root.isTestMode}}
                                     <div class="test-filters-container full-width" style="grid-column: 1 / -1;">
                                         <div class="form-group">
-                                            <label>Test Filter</label>
+                                            <label>{{localize 'SR5M.UI.Effects.TestFilterLabel'}}</label>
                                             <select name="system.selection_tests" multiple>
                                                 {{#each @root.selection_test_options}}
-                                                <option value="{{this.id}}">{{this.label}}</option>
+                                                <option value="{{this.id}}">{{this.value}}</option>
                                                 {{/each}}
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <label>Category Filter</label>
+                                            <label>{{localize 'SR5M.UI.Effects.CategoryFilterLabel'}}</label>
                                             <select name="system.selection_categories" multiple>
                                                 {{#each @root.selection_category_options}}
-                                                <option value="{{this.id}}">{{localize this.label}}</option>
+                                                <option value="{{@key}}">{{this}}</option>
                                                 {{/each}}
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <label>Skill Filter</label>
+                                            <label>{{localize 'SR5M.UI.Effects.SkillFilterLabel'}}</label>
                                             <select name="system.selection_skills" multiple>
                                                 {{#each @root.selection_skill_options}}
-                                                <option value="{{this.id}}">{{localize this.label}}</option>
+                                                <option value="{{@key}}">{{this}}</option>
                                                 {{/each}}
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <label>Attribute Filter</label>
+                                            <label>{{localize 'SR5M.UI.Effects.AttributeFilterLabel'}}</label>
                                             <select name="system.selection_attributes" multiple>
                                                 {{#each @root.selection_attribute_options}}
-                                                <option value="{{this.id}}">{{localize this.label}}</option>
+                                                <option value="{{@key}}">{{this}}</option>
                                                 {{/each}}
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <label>Limit Filter</label>
+                                            <label>{{localize 'SR5M.UI.Effects.LimitFilterLabel'}}</label>
                                             <select name="system.selection_limits" multiple>
                                                 {{#each @root.selection_limit_options}}
-                                                <option value="{{this.id}}">{{localize this.label}}</option>
+                                                <option value="{{@key}}">{{this}}</option>
                                                 {{/each}}
                                             </select>
                                         </div>
@@ -177,16 +177,16 @@
 
                             {{#if @root.draftEffect.changes.[0].key}}
                             <div class="form-group full-width">
-                                <label>Change Mode</label>
+                                <label>{{localize 'SR5M.UI.Effects.ChangeModeLabel'}}</label>
                                 <div class="button-group mode-selector">
                                     {{#each @root.changeModes as |mode|}}<button type="button" class="{{#if (eq mode.value @root.draftEffect.changes.[0].mode)}}active{{/if}}" data-action="updateDraftField" name="changes.0.mode" value="{{mode.value}}">{{localize mode.label}}</button>{{/each}}
                                 </div>
                             </div>
                             <div class="form-group full-width">
-                                <label>Effect Value</label>
+                                <label>{{localize 'SR5M.UI.Effects.EffectValueLabel'}}</label>
                                 <div class="value-input-group">
                                     <input type="text" name="changes.0.value" value="{{@root.draftEffect.changes.[0].value}}"/>
-                                    <a class="toggle-derived-link" data-action="toggleDerivedValueSelector" title="Select a derived value from actor data">
+                                    <a class="toggle-derived-link" data-action="toggleDerivedValueSelector" title="{{localize 'SR5M.UI.Effects.SelectDerivedValueTooltip'}}">
                                         <i class="fas fa-at"></i>
                                     </a>
                                 </div>
@@ -194,7 +194,7 @@
 
                             {{#if @root.isDerivedValueSelectorVisible}}
                             <div class="form-group full-width">
-                                <label>Select Derived Value</label>
+                                <label>{{localize 'SR5M.UI.Effects.SelectDerivedValueLabel'}}</label>
                                 <div class="derived-value-selector">
                                     {{#each @root.actorKeyGroups as |group|}}
                                         <div class="key-group">
@@ -209,12 +209,12 @@
                                 </div>
                             </div>
                             {{/if}}
-                            {{/if}}
                         {{/if}}
+                    {{/if}}
                     </div>
                     <footer class="dialog-footer">
-                        <button type="button" class="cancel-button" data-action="cancelDraftEffect"><i class="fas fa-times"></i> Cancel</button>
-                        <button type="button" data-action="saveDraftEffect"><i class="fas fa-save"></i> Save</button>
+                        <button type="button" class="cancel-button" data-action="cancelDraftEffect"><i class="fas fa-times"></i> {{localize 'SR5M.UI.CancelButton'}}</button>
+                        <button type="submit" data-action="saveDraftEffect"><i class="fas fa-save"></i> {{localize 'SR5M.UI.SaveButton'}}</button>
                     </footer>
                 </section>
             </form>
