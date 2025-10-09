@@ -2,6 +2,7 @@
 import { inGameMarketplace } from "./apps/inGameMarketplace.mjs";
 import { registerBasicHelpers } from "./lib/helpers.js";
 import ItemDataServices from './services/ItemDataServices.mjs';
+import { SR5_API as SR5} from "./lib/systemSR5_API.mjs";
 import { MarketplaceSettingsApp } from "./apps/MarketplaceSettingsApp.mjs";
 import { PurchaseService } from "./services/purchaseService.mjs";
 import { defineShopActorClass } from '../models/actor/shopActor.mjs';
@@ -262,6 +263,7 @@ Hooks.once("init", () => {
  */
 Hooks.on("ready", async () => {
     console.log("SR5 Marketplace | Module is ready!");
+    // Initialize our connection to the SR5e system's API
     await game.sr5marketplace.itemData.initialize();
     if (game.user.isGM) {
         game.socket.on("module.sr5-marketplace", () => {
@@ -275,6 +277,11 @@ Hooks.on("ready", async () => {
     }
   const tests = await import('../utils/tests.mjs');
     tests.registerTests();
+    // Initialize our connection to the SR5e system's API
+    SR5.init();
+
+    // Attach the API to your module's global namespace
+    game.sr5marketplace.api = SR5;
 });
 
 /**

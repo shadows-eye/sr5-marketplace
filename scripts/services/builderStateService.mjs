@@ -23,7 +23,8 @@ export class BuilderStateService {
             modifications: [],
             changes: {}, // later a {object with changes.modslot1 to modslot5 and changes.bottomSlot1 to 4 but can be expanded}
             itemTypeImage: null,
-            draftEffect: null
+            draftEffect: null,
+            isDerivedValueSelectorVisible: false
         };
     }
 
@@ -264,6 +265,18 @@ export class BuilderStateService {
             return newState;
         }
         return state;
+    }
+
+    /**
+     * Toggles the visibility of the derived value selector UI.
+     * @returns {Promise<object>} The updated state object.
+     */
+    static async toggleDerivedValueSelector() {
+        const state = await this.getState();
+        const newStateData = { isDerivedValueSelectorVisible: !state.isDerivedValueSelectorVisible };
+        await this.updateState(newStateData);
+        // Return the full new state for rendering
+        return foundry.utils.mergeObject(state, newStateData);
     }
 
     /**

@@ -53,7 +53,7 @@
                 <section class="itemBuilder effect-creator-steps">
                     <div class="effect-creator-grid">
 
-                        {{!-- Basic Info --}}
+                        {{!-- Basic Info & Apply To buttons... --}}
                         <div class="form-group">
                             <label>Effect Name</label>
                             <input type="text" name="name" value="{{draftEffect.name}}" placeholder="e.g., Strength Boost"/>
@@ -66,65 +66,149 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Target Type</label>
-                            <div class="button-group typeSelector">
-                                <button type="button" class="{{#if (or (eq @root.draftEffect.targetType 'actor') (eq @root.draftEffect.system.applyTo 'actor'))}}active{{/if}}" data-action="setEffectTargetType" data-target-type="actor">Actor</button>
-                                <button type="button" class="{{#if (or (eq @root.draftEffect.targetType 'item') (eq @root.draftEffect.system.applyTo 'item'))}}active{{/if}}" data-action="setEffectTargetType" data-target-type="item">Item</button>
+                            <label>Anwenden auf (Apply to)</label>
+                            <div class="button-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;">
+                                <button type="button" class="{{#if (or (eq @root.draftEffect.targetType 'actor') (eq @root.draftEffect.system.applyTo 'actor'))}}active{{/if}}" 
+                                        data-action="setEffectTargetType" data-target-type="actor">Akteur</button>
+                                <button type="button" class="{{#if (or (eq @root.draftEffect.targetType 'targeted_actor') (eq @root.draftEffect.system.applyTo 'targeted_actor'))}}active{{/if}}" 
+                                        data-action="setEffectTargetType" data-target-type="targeted_actor">Anvisierten Akteur</button>
+                                <button type="button" class="{{#if (or (eq @root.draftEffect.targetType 'test_all') (eq @root.draftEffect.system.applyTo 'test_all'))}}active{{/if}}" 
+                                        data-action="setEffectTargetType" data-target-type="test_all">Probe</button>
+                                <button type="button" class="{{#if (or (eq @root.draftEffect.targetType 'test_item') (eq @root.draftEffect.system.applyTo 'test_item'))}}active{{/if}}" 
+                                        data-action="setEffectTargetType" data-target-type="test_item">Probe aus Item</button>
+                                <button type="button" class="{{#if (or (eq @root.draftEffect.targetType 'modifier') (eq @root.draftEffect.system.applyTo 'modifier'))}}active{{/if}}" 
+                                        data-action="setEffectTargetType" data-target-type="modifier">Modifikatoren</button>
                             </div>
                         </div>
-                        
+                                        
                         {{!-- Key Selection and Value Section --}}
-                        {{!-- This check ensures the section only appears when a target type is determined --}}
                         {{#if (or @root.draftEffect.targetType @root.draftEffect.system.applyTo)}}
                             <div class="form-group full-width">
                                 <label>Attribute Key</label>
-                                <input type="text" name="changes.0.key" value="{{@root.draftEffect.changes.[0].key}}" readonly placeholder="Select an attribute from the list below..."/>
+                                <input type="text" name="changes.0.key" value="{{@root.draftEffect.changes.[0].key}}" readonly placeholder="Select an attribute..."/>
                             </div>
                             <div class="key-selector-container full-width">
-                                {{#if (or (eq @root.draftEffect.targetType "actor") (eq @root.draftEffect.system.applyTo "actor"))}}
-                                    {{#each @root.actorKeyGroups as |group|}}
-                                        <div class="key-group collapsible">
-                                            <input type="checkbox" id="toggle-group-{{group.groupName}}" class="toggle-checkbox" {{#if group.isExpanded}}checked{{/if}}>
-                                            <label for="toggle-group-{{group.groupName}}" class="toggle-label"><h5>{{group.groupName}}</h5><i class="fas fa-chevron-right expand-icon"></i></label>
-                                            <div class="key-buttons toggle-content" style="grid-template-columns: repeat({{group.gridSpan}}, 1fr);">
-                                                {{#each group.groupData}}
-                                                    {{!-- FINAL FIX: Use @root for an absolute path to the key --}}
-                                                    <button type="button" class="key-btn {{#if (eq this.path @root.draftEffect.changes.[0].key)}}selected{{/if}}" data-action="selectDraftKey" data-path="{{this.path}}">{{this.label}}</button>
-                                                {{/each}}
+                                <div class="key-groups-wrapper">
+
+                                    {{!-- DISPLAY FOR ACTOR & TARGETED ACTOR --}}
+                                    {{#if @root.isActorMode}}
+                                        {{#each @root.actorKeyGroups as |group|}}
+                                            <div class="key-group collapsible">
+                                                <input type="checkbox" id="toggle-group-actor-{{group.groupName}}" class="toggle-checkbox" {{#if group.isExpanded}}checked{{/if}}>
+                                                <label for="toggle-group-actor-{{group.groupName}}" class="toggle-label"><h5>{{group.groupName}}</h5><i class="fas fa-chevron-right expand-icon"></i></label>
+                                                <div class="key-buttons toggle-content" style="grid-template-columns: repeat({{group.gridSpan}}, 1fr);">
+                                                    {{#each group.groupData}}<button type="button" class="key-btn {{#if (eq this.path @root.draftEffect.changes.[0].key)}}selected{{/if}}" data-action="selectDraftKey" data-path="{{this.path}}">{{this.label}}</button>{{/each}}
+                                                </div>
                                             </div>
-                                        </div>
-                                    {{/each}}
-                                {{/if}}
+                                        {{/each}}
+                                    {{/if}}
                                     
-                                {{!-- Item key list follows the same pattern --}}
-                                {{#if (or (eq @root.draftEffect.targetType "item") (eq @root.draftEffect.system.applyTo "item"))}}
-                                    {{#each @root.itemKeyGroups as |group|}}
-                                        <div class="key-group collapsible">
-                                            <input type="checkbox" id="toggle-group-item-{{group.groupName}}" class="toggle-checkbox" {{#if group.isExpanded}}checked{{/if}}>
-                                            <label for="toggle-group-item-{{group.groupName}}" class="toggle-label"><h5>{{group.groupName}}</h5><i class="fas fa-chevron-right expand-icon"></i></label>
-                                            <div class="key-buttons toggle-content" style="grid-template-columns: repeat({{group.gridSpan}}, 1fr);">
-                                                {{#each group.groupData}}
-                                                    <button type="button" class="key-btn {{#if (eq this.path @root.draftEffect.changes.[0].key)}}selected{{/if}}" data-action="selectDraftKey" data-path="{{this.path}}">{{this.label}}</button>
+                                    {{!-- DISPLAY FOR PROBE & PROBE AUS ITEM --}}
+                                    {{#if @root.isTestMode}}
+                                    <div class="test-filters-container full-width" style="grid-column: 1 / -1;">
+                                        <div class="form-group">
+                                            <label>Test Filter</label>
+                                            <select name="system.selection_tests" multiple>
+                                                {{#each @root.selection_test_options}}
+                                                <option value="{{this.id}}">{{this.label}}</option>
                                                 {{/each}}
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Category Filter</label>
+                                            <select name="system.selection_categories" multiple>
+                                                {{#each @root.selection_category_options}}
+                                                <option value="{{this.id}}">{{localize this.label}}</option>
+                                                {{/each}}
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Skill Filter</label>
+                                            <select name="system.selection_skills" multiple>
+                                                {{#each @root.selection_skill_options}}
+                                                <option value="{{this.id}}">{{localize this.label}}</option>
+                                                {{/each}}
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Attribute Filter</label>
+                                            <select name="system.selection_attributes" multiple>
+                                                {{#each @root.selection_attribute_options}}
+                                                <option value="{{this.id}}">{{localize this.label}}</option>
+                                                {{/each}}
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Limit Filter</label>
+                                            <select name="system.selection_limits" multiple>
+                                                {{#each @root.selection_limit_options}}
+                                                <option value="{{this.id}}">{{localize this.label}}</option>
+                                                {{/each}}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {{!-- The rollKeyGroups section remains to show the actual keys --}}
+                                    {{#each @root.rollKeyGroups as |group|}}
+                                        <div class="key-group collapsible">
+                                            <input type="checkbox" id="toggle-group-roll-{{group.groupName}}" class="toggle-checkbox" checked>
+                                            <label for="toggle-group-roll-{{group.groupName}}" class="toggle-label"><h5>{{group.groupName}}</h5><i class="fas fa-chevron-right expand-icon"></i></label>
+                                            <div class="key-buttons toggle-content" style="grid-template-columns: repeat(3, 1fr);">
+                                                {{#each group.groupData}}<button type="button" class="key-btn {{#if (eq this.path @root.draftEffect.changes.[0].key)}}selected{{/if}}" data-action="selectDraftKey" data-path="{{this.path}}">{{this.label}}</button>{{/each}}
                                             </div>
                                         </div>
                                     {{/each}}
                                 {{/if}}
-                            <div class="key-selector-container full-width">
+
+                                    {{!-- DISPLAY FOR MODIFIERS --}}
+                                    {{#if @root.isModifierMode}}
+                                        {{#each @root.modifierKeyGroups as |group|}}
+                                            <div class="key-group collapsible">
+                                                <input type="checkbox" id="toggle-group-mod-{{group.groupName}}" class="toggle-checkbox" checked>
+                                                <label for="toggle-group-mod-{{group.groupName}}" class="toggle-label"><h5>{{group.groupName}}</h5><i class="fas fa-chevron-right expand-icon"></i></label>
+                                                <div class="key-buttons toggle-content" style="grid-template-columns: repeat(3, 1fr);">
+                                                    {{#each group.groupData}}<button type="button" class="key-btn {{#if (eq this.path @root.draftEffect.changes.[0].key)}}selected{{/if}}" data-action="selectDraftKey" data-path="{{this.path}}">{{this.label}}</button>{{/each}}
+                                                </div>
+                                            </div>
+                                        {{/each}}
+                                    {{/if}}
+                                </div>
+                            </div>
+
                             {{#if @root.draftEffect.changes.[0].key}}
                             <div class="form-group full-width">
                                 <label>Change Mode</label>
                                 <div class="button-group mode-selector">
-                                    {{#each @root.changeModes as |mode|}}
-                                        <button type="button" class="{{#if (eq mode.value @root.draftEffect.changes.[0].mode)}}active{{/if}}" data-action="updateDraftField" name="changes.0.mode" value="{{mode.value}}">{{localize mode.label}}</button>
-                                    {{/each}}
+                                    {{#each @root.changeModes as |mode|}}<button type="button" class="{{#if (eq mode.value @root.draftEffect.changes.[0].mode)}}active{{/if}}" data-action="updateDraftField" name="changes.0.mode" value="{{mode.value}}">{{localize mode.label}}</button>{{/each}}
+                                </div>
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Effect Value</label>
+                                <div class="value-input-group">
+                                    <input type="text" name="changes.0.value" value="{{@root.draftEffect.changes.[0].value}}"/>
+                                    <a class="toggle-derived-link" data-action="toggleDerivedValueSelector" title="Select a derived value from actor data">
+                                        <i class="fas fa-at"></i>
+                                    </a>
                                 </div>
                             </div>
 
+                            {{#if @root.isDerivedValueSelectorVisible}}
                             <div class="form-group full-width">
-                                <label>Effect Value</label>
-                                <input type="text" name="changes.0.value" value="{{@root.draftEffect.changes.[0].value}}"/>
+                                <label>Select Derived Value</label>
+                                <div class="derived-value-selector">
+                                    {{#each @root.actorKeyGroups as |group|}}
+                                        <div class="key-group">
+                                            <h5>{{group.groupName}}</h5>
+                                            <div class="key-buttons">
+                                                {{#each group.groupData}}
+                                                    <button type="button" class="key-btn" data-action="selectDerivedValue" data-path="{{this.path}}">{{this.label}}</button>
+                                                {{/each}}
+                                            </div>
+                                        </div>
+                                    {{/each}}
+                                </div>
                             </div>
+                            {{/if}}
                             {{/if}}
                         {{/if}}
                     </div>

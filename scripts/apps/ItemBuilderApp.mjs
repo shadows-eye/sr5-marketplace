@@ -75,7 +75,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 cancelDraftEffect: this.#onCancelDraftEffect,
                 selectDerivedValue: this.#onSelectDerivedValue,
                 setEffectTargetType: this.#onSetEffectTargetType,
-                selectEffectIcon: this.#onSelectEffectIcon
+                selectEffectIcon: this.#onSelectEffectIcon,
+                toggleDerivedValueSelector: this.#onToggleDerivedValueSelector
             }
         });
     }
@@ -271,19 +272,19 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      */
     static async #_getUpdatedDraft(form) {
         if (!form) return null;
-        // FIX: Use the new namespaced path for FormDataExtended
         const formData = new foundry.applications.ux.FormDataExtended(form).object;
         const currentState = await BuilderStateService.getState();
         const draft = currentState.draftEffect;
         if (!draft) return null;
 
-        // Merge the live form data into a deep copy of the last saved state.
         const updatedDraft = foundry.utils.mergeObject(foundry.utils.deepClone(draft), formData);
 
-        // Correct data types that come from the form as strings.
         if ( updatedDraft.changes?.[0]?.mode ) {
             updatedDraft.changes[0].mode = Number(updatedDraft.changes[0].mode);
         }
+        
+        // --- NEW: Purge any incorrect top-level keys ---
+        delete updatedDraft.isisDerivedValueSelectorVisible; // Remove the typo'd key
         
         return updatedDraft;
     }
@@ -460,9 +461,26 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     static async #onSelectDerivedValue(event, target) {
+        const scrollable = this.element.querySelector(".effect-creator-steps");
+        const scrollTop = scrollable ? scrollable.scrollTop : 0;
+
+        // Use the helper to get the complete current state of the form
+        const draft = await ItemBuilderApp.#_getUpdatedDraft(target.closest("form"));
+        if (!draft) return;
+
+        // Set the value to the selected path, prepended with '@'
         const path = target.dataset.path;
-        const newState = await BuilderStateService.updateDraftEffect({ changes: [{ value: path, isDerived: true }] });
-        this.render(false, { builderData: newState });
+        draft.changes[0].value = `@${path}`;
+        
+        // Hide the selector after making a selection
+        draft.isDerivedValueSelectorVisible = false;
+
+        const newState = await BuilderStateService.updateDraftEffect(draft);
+        
+        await this.render(false, { builderData: newState });
+
+        const newScrollable = this.element.querySelector(".effect-creator-steps");
+        if (newScrollable) newScrollable.scrollTop = scrollTop;
     }
 
     static async #onSaveDraftEffect(event, target) {
@@ -487,7 +505,12 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     static async #onDeleteEffect(event, target) {
         const { effectId } = target.dataset;
-        const confirmed = await Dialog.confirm({ /* ... */ });
+        // Use the modern Dialog.confirm API
+        const confirmed = await Dialog.confirm({
+            title: "Delete Custom Effect",
+            content: "<p>Are you sure you want to delete this custom effect modification? This cannot be undone.</p>"
+        });
+
         if (confirmed) {
             const newState = await BuilderStateService.deleteEffect(effectId);
             this.render(false, { builderData: newState });
@@ -520,5 +543,20 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 app.render(false, { builderData: newState });
             }
         }).render(true);
+    }
+    /**
+     * Toggles the visibility of the derived value selection panel.
+     * @private
+     */
+    static async #onToggleDerivedValueSelector(event, target) {
+        const scrollable = this.element.querySelector(".effect-creator-steps");
+        const scrollTop = scrollable ? scrollable.scrollTop : 0;
+        
+        const newState = await BuilderStateService.toggleDerivedValueSelector();
+
+        await this.render(false, { builderData: newState });
+
+        const newScrollable = this.element.querySelector(".effect-creator-steps");
+        if (newScrollable) newScrollable.scrollTop = scrollTop;
     }
 }

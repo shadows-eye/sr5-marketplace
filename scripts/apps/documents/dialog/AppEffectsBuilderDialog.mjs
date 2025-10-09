@@ -1,6 +1,7 @@
 import { AppDialogBuilder } from './AppDialogBuilder.mjs';
 import { SystemDataMapperService } from '../../../services/SystemDataMapperService.mjs';
 
+
 /**
  * A specialized dialog builder for the "Effects" tab of the Item Builder.
  * It extends the base AppDialogBuilder to handle the specific logic for
@@ -10,7 +11,7 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
     constructor() {
         super();
     }
-
+    
     /**
      * Builds the complete context for the "Effects" tab.
      * It receives the builderState from the main application.
@@ -21,29 +22,46 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
         const context = {
             isCreating: !!builderState.draftEffect,
             draftEffect: builderState.draftEffect,
-            effectGroups: this._getEffectGroups(builderState)
+            effectGroups: this._getEffectGroups(builderState),
+            isDerivedValueSelectorVisible: builderState.isDerivedValueSelectorVisible 
         };
 
         if (context.isCreating) {
             const mappableKeys = SystemDataMapperService.getMappableKeys();
-            const selectedKey = context.draftEffect.changes[0].key;
+            const selectedKey = context.draftEffect.changes?.[0]?.key ?? "";
 
-            // Prepare actor keys for the grid
-            const mergedActorKeys = this.#_getMergedActorKeys(mappableKeys.actors);
-            context.actorKeyGroups = this.#_prepareGroupsForGrid(mergedActorKeys, selectedKey);
+            context.actorKeyGroups = this.#_prepareGroupsForGrid(this.#_getMergedActorKeys(mappableKeys.actors), selectedKey);
+            context.rollKeyGroups = this.#_prepareGroupsForGrid(mappableKeys.rolls, selectedKey);
+            context.modifierKeyGroups = this.#_prepareGroupsForGrid(mappableKeys.modifiers, selectedKey);
+            
+            const activeMode = context.draftEffect.targetType || context.draftEffect.system?.applyTo;
+            context.isActorMode = (activeMode === 'actor' || activeMode === 'targeted_actor');
+            context.isTestMode = (activeMode === 'test_all' || activeMode === 'test_item');
+            context.isModifierMode = (activeMode === 'modifier');
 
-            // Prepare item keys for the grid
-            const itemType = builderState.baseItem?.type;
-            if (itemType && mappableKeys.items[itemType]) {
-                const itemKeyData = { [`${builderState.baseItem.name} Keys`]: mappableKeys.items[itemType] };
-                context.itemKeyGroups = this.#_prepareGroupsForGrid(itemKeyData, selectedKey);
+            if (context.actorKeyGroups) {
+                context.derivedValueKeyGroups = context.actorKeyGroups.map(group => {
+                    const filteredData = group.groupData.filter(key => key.path.startsWith("system."));
+                    return { ...group, groupData: filteredData };
+                }).filter(group => group.groupData.length > 0);
+            } else {
+                context.derivedValueKeyGroups = [];
             }
+
+            // Prepare data for the Test Filter selectors ---
+            context.selection_test_options = this._getTestOptions();
+            context.selection_category_options = this._getCategoryOptions();
+            context.selection_skill_options = this._getSkillOptions();
+            context.selection_attribute_options = this._getAttributeOptions();
+            context.selection_limit_options = this._getLimitOptions();
+            // --- END ---
 
             context.changeModes = Object.entries(CONST.ACTIVE_EFFECT_MODES).map(([key, value]) => ({
                 value: value, label: `EFFECT.MODE_${key}`
             }));
         }
-        console.log("Marketplace Builder | Effects Tab Context:", context);
+        
+        console.log("Effects Tab Context:", context);
         return context;
     }
 
@@ -94,14 +112,12 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
      * @private
      */
     #_getMergedActorKeys(allActorKeys) {
-        // This method is now simplified to only do the merge.
+        if (!allActorKeys) return {};
         const merged = {};
         for (const actorType in allActorKeys) {
             const keyGroups = allActorKeys[actorType];
             for (const groupName in keyGroups) {
-                if (!merged[groupName]) {
-                    merged[groupName] = [];
-                }
+                if (!merged[groupName]) merged[groupName] = [];
                 const existingPaths = new Set(merged[groupName].map(k => k.path));
                 const newKeys = keyGroups[groupName].filter(k => !existingPaths.has(k.path));
                 merged[groupName].push(...newKeys);
@@ -170,5 +186,26 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
             }
         }
         return groups;
+    }
+    // --- HELPER METHODS using the CORRECT API paths ---
+
+    _getTestOptions() {
+        return game.sr5marketplace.api.tests || [];
+    }
+
+    _getCategoryOptions() {
+        return game.sr5marketplace.api.actionCategories_l || [];
+    }
+
+    _getSkillOptions() {
+        return game.sr5marketplace.api.activeSkills_l || [];
+    }
+
+    _getAttributeOptions() {
+        return game.sr5marketplace.api.attributes_l || [];
+    }
+
+    _getLimitOptions() {
+        return game.sr5marketplace.api.limits_l || [];
     }
 }

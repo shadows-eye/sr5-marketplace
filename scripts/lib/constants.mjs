@@ -9,3 +9,8 @@ export const MARKETPLACE_SETTINGS_TEMPLATE = "modules/sr5-marketplace/templates/
 export const FLAGKEY_Basket = "basket";
 export const FLAG_KEY_AppTest = "appTestState";
 
+/**
+ * @returns {SR5 config object}
+ */
+export const config = CONFIG.SR5;
+

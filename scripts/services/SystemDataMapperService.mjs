@@ -31,72 +31,67 @@ export class SystemDataMapperService {
      * Recursively walks an object to find all valid data paths.
      * @private
      */
+    /**
+     * Recursively walks an object to find all valid, effect-targetable data paths.
+     * @private
+     */
     static _walkObject(obj, path, results) {
         for (const key in obj) {
             if (key.startsWith("_") || key === "flags") continue;
+            
             const newPath = path ? `${path}.${key}` : key;
             const value = obj[key];
-            if (typeof value === 'object' && value !== null && "value" in value) {
-                results.push({ label: this._createLabel(key), path: `${newPath}.value` });
-            }
-            else if (typeof value !== 'object' || value === null) {
-                results.push({ label: this._createLabel(key), path: newPath });
-            } 
-            else if (typeof value === 'object' && !Array.isArray(value)) {
-                this._walkObject(value, newPath, results);
+            const label = this._createLabel(key);
+
+            if (typeof value === 'object' && value !== null) {
+                // Check if this object is a stat block
+                const isStatBlock = "value" in value || "mod" in value || "base" in value;
+
+                if (isStatBlock) {
+                    // If it's a stat block, find the best property to target and stop searching deeper.
+                    if ("value" in value) {
+                        results.push({ label: label, path: `${newPath}.value` });
+                    } else if ("base" in value) {
+                        results.push({ label: label, path: `${newPath}.base` });
+                    } else if ("mod" in value) {
+                        results.push({ label: label, path: `${newPath}.mod` });
+                    }
+                } else if (!Array.isArray(value)) {
+                    // If it's not a stat block, recurse deeper.
+                    this._walkObject(value, newPath, results);
+                }
             }
         }
     }
 
     /**
      * Gets a single, structured object containing all mappable keys for all document types.
-     * @returns {{actors: object, items: object}}
+     * @returns {{actors: object, items: object, rolls: object, modifiers: object}}
      */
     static getMappableKeys() {
+        // --- ACTOR KEYS ---
         const allActorKeys = {};
         for (const type in game.system.documentTypes.Actor) {
             if (type === "base" || type.includes("sr5-marketplace")) continue;
             try {
                 const model = new CONFIG.Actor.documentClass({ name: "temp-mapper", type: type }, { temporary: true });
                 if (!model?.system) continue;
-
                 const typeResults = {};
                 for (const groupKey in model.system) {
-                    // NEW: Exclude unwanted groups
                     if (this.#EXCLUDED_GROUPS.has(groupKey)) continue;
-
-                    const groupData = model.system[groupKey];
-                    if (typeof groupData !== 'object' || groupData === null) continue;
-                    
                     let groupResults = [];
-                    this._walkObject(groupData, `system.${groupKey}`, groupResults);
-
+                    this._walkObject(model.system[groupKey], `system.${groupKey}`, groupResults);
                     if (groupResults.length > 0) {
-                        // NEW: Special filtering for the Initiative group
-                        if (groupKey === "initiative") {
-                            const uniqueKeys = new Map();
-                            const desiredLabels = ["Base", "Dice", "Edge", "Perception"];
-                            for (const key of groupResults) {
-                                if (desiredLabels.includes(key.label) && !uniqueKeys.has(key.label)) {
-                                    uniqueKeys.set(key.label, key);
-                                }
-                            }
-                            groupResults = Array.from(uniqueKeys.values());
-                        }
-                        
-                        if (groupResults.length > 0) {
-                            // NEW: Apply label overrides
-                            const groupLabel = this.#LABEL_OVERRIDES[groupKey] ?? this._createLabel(groupKey);
-                            typeResults[groupLabel] = groupResults;
-                        }
+                        const groupLabel = this.#LABEL_OVERRIDES[groupKey] ?? this._createLabel(groupKey);
+                        typeResults[groupLabel] = groupResults;
                     }
                 }
                 if (Object.keys(typeResults).length > 0) allActorKeys[type] = typeResults;
-            } catch (e) { console.warn(`Could not map Actor type "${type}".`, e); }
+            } catch (e) { console.warn(`Marketplace Builder | Could not map Actor type "${type}".`, e); }
         }
 
+        // --- ITEM KEYS ---
         const allItemKeys = {};
-        // The item mapping logic remains the same...
         for (const type in game.system.documentTypes.Item) {
             if (type === "base" || type.includes("sr5-marketplace")) continue;
             try {
@@ -105,10 +100,30 @@ export class SystemDataMapperService {
                 const groupResults = [];
                 this._walkObject(model.system, "system", groupResults);
                 if (groupResults.length > 0) allItemKeys[type] = groupResults;
-            } catch (e) { console.warn(`Could not map Item type "${type}".`, e); }
+            } catch (e) { console.warn(`Marketplace Builder | Could not map Item type "${type}".`, e); }
         }
         
-        return { actors: allActorKeys, items: allItemKeys };
+        // --- ROLL KEYS ('data.' prefix) ---
+        const allRollKeys = {};
+        if (foundry.utils.hasProperty(game.shadowrun5e, "tests.SuccessTest")) {
+            try {
+                const testInstance = new game.shadowrun5e.tests.SuccessTest({});
+                let rollResults = [];
+                if (testInstance.data) this._walkObject(testInstance.data, "data", rollResults);
+                if (rollResults.length > 0) allRollKeys["Roll Data"] = rollResults;
+            } catch (e) { console.warn("Marketplace Builder | Could not map SR5e roll data keys.", e); }
+        }
+
+        // --- MODIFIER KEYS ---
+        const allModifierKeys = {};
+        const modifiersData = {
+            environmental: { low_light_vision: '', image_magnification: '', tracer_rounds: '', smartlink: '', ultrasound: '', thermographic_vision: '' }
+        };
+        let modifierResults = [];
+        this._walkObject(modifiersData, "", modifierResults);
+        if (modifierResults.length > 0) allModifierKeys["Modifiers"] = modifierResults;
+        
+        return { actors: allActorKeys, items: allItemKeys, rolls: allRollKeys, modifiers: allModifierKeys };
     }
 
     /**
