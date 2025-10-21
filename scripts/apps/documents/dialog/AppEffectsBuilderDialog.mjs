@@ -21,7 +21,8 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
         const context = {
             isCreating: !!builderState.draftEffect,
             draftEffect: builderState.draftEffect,
-            effectGroups: this._getEffectGroups(builderState)
+            effectGroups: this._getEffectGroups(builderState),
+            isDerivedValueSelectorVisible: builderState.isDerivedValueSelectorVisible
         };
 
         if (context.isCreating) {
@@ -44,21 +45,41 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
                 context.itemKeyGroups = this.#_prepareGroupsForGrid(itemKeyData, selectedKey);
             }
 
-            // --- THIS IS THE NEW PART ---
             // Prepare data for the multi-select components.
             context.selection_test_options = this._getTestOptions();
             context.selection_category_options = this._getCategoryOptions();
             context.selection_skill_options = this._getSkillOptions();
             context.selection_attribute_options = this._getAttributeOptions();
             context.selection_limit_options = this._getLimitOptions();
-            // --- END NEW PART ---
-
+            // --- END Multiselect ---
             context.effectApplyToOptions = game.sr5marketplace.api.system.effectApplyTo_l;
             context.changeModes = Object.entries(CONST.ACTIVE_EFFECT_MODES).map(([key, value]) => ({
                 value: value, label: `EFFECT.MODE_${key}`
             }));
+
         }
-        
+        // Find and prepare the derivable keys specifically from the baseItem.
+        if (context.isDerivedValueSelectorVisible && builderState.baseItem?.system) {
+                const itemSystem = builderState.baseItem.system;
+                const derivedKeys = [];
+                
+                // Use our existing service to walk the item's system data to find all possible paths.
+                SystemDataMapperService._walkObject(itemSystem, "system", derivedKeys);
+
+                // Filter the results to only include paths that point to a number.
+                const numericKeys = derivedKeys.filter(key => {
+                const value = foundry.utils.getProperty(builderState.baseItem, key.path.replace(".value", ""));
+                return typeof value === 'number' || (typeof value === 'object' && typeof value?.value === 'number');
+            });
+
+            if (numericKeys.length > 0) {
+                // Create the data structure the template expects.
+                context.derivedValueKeyGroups = [{
+                    groupName: "Base Item Properties",
+                    groupData: numericKeys
+                }];
+            }
+        }
         console.log("Marketplace Builder | Effects Tab Context:", context);
         return context;
     }

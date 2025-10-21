@@ -67,7 +67,7 @@
                         </div>
                         <div class="form-group">
                             <label>{{localize 'SR5M.UI.Effects.ApplyToLabel'}}</label>
-                            <div class="button-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;">
+                            <div class="button-group applyTo">
                                 <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'actor')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="actor">{{@root.effectApplyToOptions.actor}}</button>
                                 <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'targeted_actor')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="targeted_actor">{{@root.effectApplyToOptions.targeted_actor}}</button>
                                 <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'test_all')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="test_all">{{@root.effectApplyToOptions.test_all}}</button>
@@ -192,7 +192,7 @@
                             <div class="form-group full-width">
                                 <label>{{localize 'SR5M.UI.Effects.SelectDerivedValueLabel'}}</label>
                                 <div class="derived-value-selector">
-                                    {{#each @root.actorKeyGroups as |group|}}
+                                    {{#each @root.derivedValueKeyGroups as |group|}}
                                         <div class="key-group">
                                             <h5>{{group.groupName}}</h5>
                                             <div class="key-buttons">

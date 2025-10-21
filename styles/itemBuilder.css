@@ -479,6 +479,7 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
     align-items: start;
+    margin-right: 3px;
 }
 
 .effect-creator-grid .form-group.full-width {
@@ -528,7 +529,7 @@
 
 .key-group.collapsible .toggle-checkbox:checked + .toggle-label + .toggle-content {
     display: grid; /* This is your requested grid for the buttons */
-    gap: 6px;
+    gap: 1em;
     padding: 8px;
     background: var(--color-black-transparent-20);
 }
@@ -544,7 +545,8 @@
     gap: 6px;
 }
 
-.button-group.mode-selector {
+.button-group.mode-selector,
+.button-group.applyTo {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 1em;

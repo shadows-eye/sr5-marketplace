@@ -56,7 +56,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     static get DEFAULT_OPTIONS() {
         return foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
             id: "itemBuilder",
-            position: { width: 1600, height: 845 },
+            position: { width: 1600, height: 860 },
             window: { title: "Item Builder", resizable: true },
             actions: {
                 // Core
@@ -74,6 +74,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 selectDraftKey: this.#onSelectDraftKey,
                 saveDraftEffect: this.#onSaveDraftEffect,
                 cancelDraftEffect: this.#onCancelDraftEffect,
+                toggleDerivedValueSelector: this.#onToggleDerivedValueSelector,
                 selectDerivedValue: this.#onSelectDerivedValue,
                 setEffectTargetType: this.#onSetEffectTargetType,
                 // --- Tagify ---
@@ -401,14 +402,16 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     static async #onSelectDraftKey(event, target) {
-        // Preserve scroll position
         const scrollable = this.element.querySelector(".effect-creator-steps");
         const scrollTop = scrollable ? scrollable.scrollTop : 0;
 
         const key = target.dataset.path;
-        const newState = await BuilderStateService.updateDraftEffect({ changes: [{ key }] });
 
-        // Await the render and then restore scroll
+        const updateData = { "changes.0.key": key };
+        const updates = foundry.utils.expandObject(updateData);
+        
+        const newState = await BuilderStateService.updateDraftEffect(updates);
+
         await this.render(false, { builderData: newState });
         const newScrollable = this.element.querySelector(".effect-creator-steps");
         if (newScrollable) newScrollable.scrollTop = scrollTop;
@@ -436,11 +439,6 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         if (newScrollable) newScrollable.scrollTop = scrollTop;
     }
 
-    static async #onSelectDerivedValue(event, target) {
-        const path = target.dataset.path;
-        const newState = await BuilderStateService.updateDraftEffect({ changes: [{ value: path, isDerived: true }] });
-        this.render(false, { builderData: newState });
-    }
 
     static async #onSaveDraftEffect(event, target) {
         const form = target.closest("form");
@@ -567,5 +565,42 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         // --- 8. Restore Scroll Position ---
         const newScrollable = this.element.querySelector(".effect-creator-steps");
         if (newScrollable) newScrollable.scrollTop = scrollTop;
+    }
+
+    /**
+     * Toggles the visibility of the derived value selection panel.
+     * @private
+     */
+    static async #onToggleDerivedValueSelector(event, target) {
+        const scrollable = this.element.querySelector(".effect-creator-steps");
+        const scrollTop = scrollable ? scrollable.scrollTop : 0;
+        
+        const newState = await BuilderStateService.toggleDerivedValueSelector();
+
+        await this.render(false, { builderData: newState });
+
+        const newScrollable = this.element.querySelector(".effect-creator-steps");
+        if (newScrollable) newScrollable.scrollTop = scrollTop;
+    }
+
+    /**
+     * Sets the Effect Value input to a derived path (e.g., @system.rating).
+     * @private
+     */
+    static async #onSelectDerivedValue(event, target) {
+        const path = target.dataset.path;
+        if (!path) return;
+
+        // Create the update object. We set the value to the selected path, 
+        // prepended with '@', and immediately hide the selector UI.
+        const updates = {
+            changes: [{ value: `@${path}` }],
+            isDerivedValueSelectorVisible: false
+        };
+
+        const newState = await BuilderStateService.updateDraftEffect(updates);
+        
+        // Re-render the app to show the populated input and hide the selector.
+        this.render(false, { builderData: newState });
     }
 }
