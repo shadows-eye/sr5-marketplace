@@ -149,6 +149,13 @@
 --inventory-item-image-bg: ;
 --searbarColor: ;
 
+/* --- Tags --- */
+--Tag-box: ;
+--Tag-box-hover: ;
+--Tag-remove: ;
+--Tag-remove-hover: ;
+--tag-background-dropdown: ;
+
 /* --- Hint Tooltip --- */
 --hint-bg: #2b2b2b85;
 --hint-color: var(--color-yellow-base);
@@ -228,6 +235,11 @@
 --inventory-item-image-bg: var(--color-white-transparent-10);
 --searbarColor: var(--color-red-darkest);
 --actor-background-hover: var(--tab-active-bg);
+
+--tag-background-color: var(--color-red-deep);
+--tag-text-color: var(--color-white);
+--tag-input-border: var(--color-yellow-base);
+--tag-background-dropdown: var(--color-grey-light);
 }
 
 .themed.theme-dark {
@@ -283,4 +295,8 @@
 --inventory-item-image-bg: var(--color-white-transparent-10);
 --searbarColor: var(--color-red-darkest);
 
+--tag-background-color: var(--color-red-base);
+--tag-text-color: var(--color-white);
+--tag-input-border: var(--border-color-dark);
+--tag-background-dropdown: var(--color-red-darkest);
 }

@@ -441,8 +441,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     static async #onSaveDraftEffect(event, target) {
         const form = target.closest("form");
-        const updates = new FormDataExtended(form).object;
+        if (!form) return;
         
+        const updates = new foundry.applications.ux.FormDataExtended(form).object;
+
         await BuilderStateService.updateDraftEffect(updates);
         const newState = await BuilderStateService.saveDraftEffect();
         this.render(false, { builderData: newState });
