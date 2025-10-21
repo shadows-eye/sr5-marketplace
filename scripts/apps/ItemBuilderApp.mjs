@@ -366,8 +366,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     static async #onCreateEffect(event, target) {
         const sourceUuid = target.dataset.sourceUuid;
         if (!sourceUuid) return;
-        const newState = await BuilderStateService.startEffectCreation(sourceUuid);
-        this.render(false, { builderData: newState });
+        
+        ItemBuilderApp.#handleStateUpdate(this, "#onCreateEffect", () => {
+            return BuilderStateService.startEffectCreation(sourceUuid);
+        });
     }
     
     /**
@@ -378,43 +380,21 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     static async #onUpdateDraftField(event, target) {
         let { name, value } = target;
         if (!name) return;
+        if (name.endsWith(".mode")) value = Number(value);
 
-        // --- FIX 1: Preserve Scroll Position ---
-        const scrollable = this.element.querySelector(".effect-creator-steps");
-        const scrollTop = scrollable ? scrollable.scrollTop : 0;
-
-        // --- FIX 2: Correct Data Type ---
-        // The 'mode' value from an HTML element is a string, but it needs to be a number.
-        if (name.endsWith(".mode")) {
-            value = Number(value);
-        }
-
-        const updateData = { [name]: value };
-        const updates = foundry.utils.expandObject(updateData);
-        const newState = await BuilderStateService.updateDraftEffect(updates);
-
-        // Await the render so we can act on the new DOM.
-        await this.render(false, { builderData: newState });
-
-        // Restore the scroll position.
-        const newScrollable = this.element.querySelector(".effect-creator-steps");
-        if (newScrollable) newScrollable.scrollTop = scrollTop;
+        ItemBuilderApp.#handleStateUpdate(this, "#onUpdateDraftField", () => {
+            const updates = foundry.utils.expandObject({ [name]: value });
+            return BuilderStateService.updateDraftEffect(updates);
+        });
     }
 
     static async #onSelectDraftKey(event, target) {
-        const scrollable = this.element.querySelector(".effect-creator-steps");
-        const scrollTop = scrollable ? scrollable.scrollTop : 0;
-
         const key = target.dataset.path;
 
-        const updateData = { "changes.0.key": key };
-        const updates = foundry.utils.expandObject(updateData);
-        
-        const newState = await BuilderStateService.updateDraftEffect(updates);
-
-        await this.render(false, { builderData: newState });
-        const newScrollable = this.element.querySelector(".effect-creator-steps");
-        if (newScrollable) newScrollable.scrollTop = scrollTop;
+        ItemBuilderApp.#handleStateUpdate(this, "#onSelectDraftKey", () => {
+            const updates = foundry.utils.expandObject({ "changes.0.key": key });
+            return BuilderStateService.updateDraftEffect(updates);
+        });
     }
     
     /**
@@ -423,51 +403,50 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      * @private
      */
     static async #onSetEffectTargetType(event, target) {
-        // Preserve scroll position
-        const scrollable = this.element.querySelector(".effect-creator-steps");
-        const scrollTop = scrollable ? scrollable.scrollTop : 0;
-
         const targetType = target.dataset.targetType;
 
-        // We create a nested object to update the correct property in the flag.
-        const updates = { system: { applyTo: targetType } };
-        const newState = await BuilderStateService.updateDraftEffect(updates);
-
-        // Await the render and then restore scroll
-        await this.render(false, { builderData: newState });
-        const newScrollable = this.element.querySelector(".effect-creator-steps");
-        if (newScrollable) newScrollable.scrollTop = scrollTop;
+        ItemBuilderApp.#handleStateUpdate(this, "#onSetEffectTargetType", () => {
+            const updates = { system: { applyTo: targetType } };
+            return BuilderStateService.updateDraftEffect(updates);
+        });
     }
 
 
     static async #onSaveDraftEffect(event, target) {
         const form = target.closest("form");
         if (!form) return;
-        
-        const updates = new foundry.applications.ux.FormDataExtended(form).object;
 
-        await BuilderStateService.updateDraftEffect(updates);
-        const newState = await BuilderStateService.saveDraftEffect();
-        this.render(false, { builderData: newState });
+        this.#handleStateUpdate.call(this, "#onSaveDraftEffect", async () => {
+            const updates = new foundry.applications.ux.FormDataExtended(form).object;
+            await BuilderStateService.updateDraftEffect(updates);
+            // The final state is the result of the save operation
+            return BuilderStateService.saveDraftEffect();
+        });
     }
 
     static async #onCancelDraftEffect(event, target) {
-        const newState = await BuilderStateService.cancelEffectCreation();
-        this.render(false, { builderData: newState });
+        ItemBuilderApp.#handleStateUpdate(this, "#onCancelDraftEffect", () => {
+            return BuilderStateService.cancelEffectCreation();
+        });
     }
     
     static async #onEditEffect(event, target) {
         const { sourceUuid, effectId } = target.dataset;
-        const newState = await BuilderStateService.startEffectEdit(sourceUuid, effectId);
-        this.render(false, { builderData: newState });
+        ItemBuilderApp.#handleStateUpdate(this, "#onEditEffect", () => {
+            return BuilderStateService.startEffectEdit(sourceUuid, effectId);
+        });
     }
 
     static async #onDeleteEffect(event, target) {
         const { effectId } = target.dataset;
-        const confirmed = await Dialog.confirm({ /* ... */ });
+        const confirmed = await Dialog.confirm({
+            title: game.i18n.localize("SR5.DeleteConfirmation"),
+            content: `<p>${game.i18n.localize("SR5.SureToDelete")} <b>${game.i18n.localize("SR5.Modification")}</b>?</p>`
+        });
         if (confirmed) {
-            const newState = await BuilderStateService.deleteEffect(effectId);
-            this.render(false, { builderData: newState });
+            ItemBuilderApp.#handleStateUpdate(this, "#onDeleteEffect", () => {
+                return BuilderStateService.deleteEffect(effectId);
+            });
         }
     }
 
@@ -524,47 +503,30 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      * @private
      */
     static async #onUpdateMultiSelect(event, target) {
-        // --- 1. Preserve Scroll Position ---
-        const scrollable = this.element.querySelector(".effect-creator-steps");
-        const scrollTop = scrollable ? scrollable.scrollTop : 0;
-
-        // --- 2. Get Data from the Clicked Element ---
         const container = target.closest(".multi-select-container");
-        const { name } = container.dataset;      // e.g., "system.selection_skills"
-        const { value: id, mode } = target.dataset; // 'id' of the item, and 'add' or 'remove'
+        const { name } = container.dataset;
+        const { value: id, mode } = target.dataset;
         if (!name || !id || !mode) return;
 
-        // --- 3. Get Current State from the Service ---
-        const currentState = await BuilderStateService.getState();
-        const draft = currentState.draftEffect;
-        if (!draft) return;
+        ItemBuilderApp.#handleStateUpdate(this, "#onUpdateMultiSelect", (oldState) => {
+            const draft = oldState.draftEffect;
+            if (!draft) return oldState;
 
-        // --- 4. Prepare the New Array ---
-        let currentObjects = foundry.utils.getProperty(draft, name) || [];
-        if (!Array.isArray(currentObjects)) currentObjects = [];
+            let currentObjects = foundry.utils.getProperty(draft, name) || [];
+            if (!Array.isArray(currentObjects)) currentObjects = [];
 
-        if (mode === 'add') {
-            if (!currentObjects.some(o => o.id === id)) {
-                const label = target.textContent.trim();
-                currentObjects.push({ id, value: label });
+            if (mode === 'add') {
+                if (!currentObjects.some(o => o.id === id)) {
+                    const label = target.textContent.trim();
+                    currentObjects.push({ id, value: label });
+                }
+            } else if (mode === 'remove') {
+                currentObjects = currentObjects.filter(o => o.id !== id);
             }
-        } else if (mode === 'remove') {
-            currentObjects = currentObjects.filter(o => o.id !== id);
-        }
-
-        // --- 5. Create Update Payload (just like in #onUpdateDraftField) ---
-        const updateData = { [name]: currentObjects };
-        const updates = foundry.utils.expandObject(updateData);
-        
-        // --- 6. Save the Partial Update to the Flag ---
-        const newState = await BuilderStateService.updateDraftEffect(updates);
-        
-        // --- 7. Re-render the Application ---
-        await this.render(false, { builderData: newState });
-
-        // --- 8. Restore Scroll Position ---
-        const newScrollable = this.element.querySelector(".effect-creator-steps");
-        if (newScrollable) newScrollable.scrollTop = scrollTop;
+            
+            const updates = foundry.utils.expandObject({ [name]: currentObjects });
+            return BuilderStateService.updateDraftEffect(updates);
+        });
     }
 
     /**
@@ -572,15 +534,9 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      * @private
      */
     static async #onToggleDerivedValueSelector(event, target) {
-        const scrollable = this.element.querySelector(".effect-creator-steps");
-        const scrollTop = scrollable ? scrollable.scrollTop : 0;
-        
-        const newState = await BuilderStateService.toggleDerivedValueSelector();
-
-        await this.render(false, { builderData: newState });
-
-        const newScrollable = this.element.querySelector(".effect-creator-steps");
-        if (newScrollable) newScrollable.scrollTop = scrollTop;
+        ItemBuilderApp.#handleStateUpdate(this, "#onToggleDerivedValueSelector", () => {
+            return BuilderStateService.toggleDerivedValueSelector();
+        });
     }
 
     /**
@@ -591,16 +547,37 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const path = target.dataset.path;
         if (!path) return;
 
-        // Create the update object. We set the value to the selected path, 
-        // prepended with '@', and immediately hide the selector UI.
-        const updates = {
-            changes: [{ value: `@${path}` }],
-            isDerivedValueSelectorVisible: false
-        };
+        ItemBuilderApp.#handleStateUpdate(this, "#onSelectDerivedValue", () => {
+            const updates = {
+                changes: { "0": { value: `@${path}` } },
+                isDerivedValueSelectorVisible: false
+            };
+            return BuilderStateService.updateDraftEffect(updates);
+        });
+    }
 
-        const newState = await BuilderStateService.updateDraftEffect(updates);
+    /**
+     * A helper to manage the common pattern of updating state and re-rendering with scroll preservation.
+     * @param {ItemBuilderApp} app - The application instance (`this`).
+     * @param {string} handlerName - The name of the calling function for logging purposes.
+     * @param {Function} stateChangeFn - An async function that performs the state update and returns the new state.
+     * @private
+     */
+    static async #handleStateUpdate(app, handlerName, stateChangeFn) {
+        const scrollable = app.element.querySelector(".effect-creator-steps");
+        const scrollTop = scrollable ? scrollable.scrollTop : 0;
+
+        const oldState = await BuilderStateService.getState();
+        console.log(`Marketplace Builder | draftEffect BEFORE ${handlerName}:`, foundry.utils.deepClone(oldState.draftEffect));
+
+        const newState = await stateChangeFn(oldState);
+
+        console.log(`Marketplace Builder | State AFTER ${handlerName}:`, foundry.utils.deepClone(newState));
         
-        // Re-render the app to show the populated input and hide the selector.
-        this.render(false, { builderData: newState });
+        // Use the passed-in application instance to render
+        await app.render(false, { builderData: newState });
+
+        const newScrollable = app.element.querySelector(".effect-creator-steps");
+        if (newScrollable) newScrollable.scrollTop = scrollTop;
     }
 }

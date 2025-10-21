@@ -59,23 +59,16 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
 
         }
         // Find and prepare the derivable keys specifically from the baseItem.
-        if (context.isDerivedValueSelectorVisible && builderState.baseItem?.system) {
-                const itemSystem = builderState.baseItem.system;
-                const derivedKeys = [];
-                
-                // Use our existing service to walk the item's system data to find all possible paths.
-                SystemDataMapperService._walkObject(itemSystem, "system", derivedKeys);
-
-                // Filter the results to only include paths that point to a number.
-                const numericKeys = derivedKeys.filter(key => {
-                const value = foundry.utils.getProperty(builderState.baseItem, key.path.replace(".value", ""));
-                return typeof value === 'number' || (typeof value === 'object' && typeof value?.value === 'number');
-            });
+        if (context.isDerivedValueSelectorVisible && builderState.baseItem) {
+            const numericKeys = this.#_getDerivableItemKeys(builderState.baseItem);
 
             if (numericKeys.length > 0) {
+                const baseItemLabel = game.i18n.localize("SR5.BaseItem") || "Base Item";
+                const propertiesLabel = game.i18n.localize("SR5.Properties") || "Properties";
+                
                 // Create the data structure the template expects.
                 context.derivedValueKeyGroups = [{
-                    groupName: "Base Item Properties",
+                    groupName: `${baseItemLabel} ${propertiesLabel}`,
                     groupData: numericKeys
                 }];
             }
@@ -154,9 +147,11 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
     _getEffectGroups(builderState) {
         if (!builderState?.baseItem) return [];
         const groups = [];
-        // Consolidate all items that can have effects
         const allItems = [builderState.baseItem, ...Object.values(builderState.changes)];
         const customMods = builderState.modifications || [];
+        
+        const baseItemLabel = game.i18n.localize("SR5.BaseItem") || "Base Item";
+        const slotLabel = game.i18n.localize("SR5.Slot") || "Slot";
 
         for (const item of allItems) {
             if (!item?.uuid) continue;
@@ -164,27 +159,22 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
             const finalEffects = [];
             const itemInnateEffects = item.effects || [];
             
-            // Get custom mods specific to THIS item
             const itemCustomMods = customMods.filter(m => m.sourceUuid === item.uuid);
 
-            // --- NEW LOGIC: Filter out overridden innate effects ---
             for (const innate of itemInnateEffects) {
-                // Check if any custom mod for this item is overriding this specific innate effect.
                 const isOverridden = itemCustomMods.some(m => m.originalId === innate._id);
-                // Only add the innate effect to the list if it's NOT overridden.
                 if (!isOverridden) {
                     finalEffects.push(innate);
                 }
             }
 
-            // Now, add all the custom mods for this item (including our new overrides).
             finalEffects.push(...itemCustomMods);
             
             if (finalEffects.length > 0) {
                 groups.push({
                     groupName: (item === builderState.baseItem) 
-                        ? `Base Item: ${item.name}` 
-                        : `Slot (${Object.keys(builderState.changes).find(k => builderState.changes[k] === item)}): ${item.name}`,
+                        ? `${baseItemLabel}: ${item.name}` 
+                        : `${slotLabel} (${Object.keys(builderState.changes).find(k => builderState.changes[k] === item)}): ${item.name}`,
                     sourceUuid: item.uuid,
                     effects: finalEffects
                 });
@@ -216,5 +206,62 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
     _getLimitOptions() {
         const options = game.sr5marketplace.api.system.limits_l || {};
         return Object.entries(options).map(([value, label]) => ({ value, label }));
+    }
+
+    // --- NEW METHOD ---
+    /**
+     * Scans a base item for a curated list of common, numeric properties that
+     * are useful for deriving effect values.
+     * @param {object} baseItem - The base item document data from the builder state.
+     * @returns {Array<object>} An array of {label, path} objects for the selector.
+     * @private
+     */
+    #_getDerivableItemKeys(baseItem) {
+        if (!baseItem?.system) return [];
+
+        const derivableKeys = [];
+        const systemApi = game.sr5marketplace.api.system;
+
+        // A whitelist of common properties to check for.
+        const keyBlueprints = [
+            { path: "system.technology.rating", labelKey: "SR5.Rating" },
+            { path: "system.technology.cost", labelKey: "SR5.Cost" },
+            { path: "system.armor.value", labelKey: "SR5.Armor" },
+            { path: "system.damage.value", labelKey: "SR5.DamageValueAbbr" },
+            { path: "system.accuracy.value", labelKey: "SR5.AccuracyAbbr" },
+            { path: "system.ap.value", labelKey: "SR5.APAbbr" },
+            { path: "system.essence", labelKey: "SR5.Essence" },
+            { path: "system.capacity.value", labelKey: "SR5.Capacity" },
+            { path: "system.range.rc.value", labelKey: "SR5.RecoilComp" },
+            { path: "system.melee.reach", labelKey: "SR5.Reach" },
+        ];
+        
+        for (const blueprint of keyBlueprints) {
+            // Check if the property exists and is a number.
+            const value = foundry.utils.getProperty(baseItem, blueprint.path);
+            if (typeof value === 'number') {
+                derivableKeys.push({
+                    label: game.i18n.localize(blueprint.labelKey) || blueprint.path,
+                    path: blueprint.path
+                });
+            }
+        }
+
+        // Specifically check for Matrix Attributes if the item has them (e.g., Cyberdecks)
+        if (baseItem.system.attributes) {
+            const matrixAttributes_l = systemApi.matrixAttributes_l || {};
+            for (const key in baseItem.system.attributes) {
+                const path = `system.attributes.${key}.value`;
+                const value = foundry.utils.getProperty(baseItem, path);
+                if (typeof value === 'number') {
+                    derivableKeys.push({
+                        label: matrixAttributes_l[key] || key.capitalize(),
+                        path: path
+                    });
+                }
+            }
+        }
+
+        return derivableKeys;
     }
 }

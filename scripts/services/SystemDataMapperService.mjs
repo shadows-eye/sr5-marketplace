@@ -3,47 +3,78 @@
  * structured lists of keys for use in effect builders.
  */
 export class SystemDataMapperService {
-    /** 
-     * @private A set of top-level system keys to completely ignore. 
-     *
+    /** * @private A set of top-level system keys to completely ignore. 
      */
     static #EXCLUDED_GROUPS = new Set([
         "inventories", "npc", "values", "category_visibility", 
         "description", "importFlags", "visibilityChecks"
     ]);
 
-    /** 
-     * @private 
-     * A mapping for renaming specific group labels. 
-    */
-    static #LABEL_OVERRIDES = {
-        "modificationCategories": "Vehicle Modifiers"
-    };
-
-    /** 
-     * @private 
-    */
-    static _createLabel(str) {
+    /**
+     * Creates a title-cased label from a camelCase string as a fallback.
+     * @param {string} str The string to format.
+     * @returns {string} A formatted, title-cased string.
+     * @private
+     */
+    static #createFallbackLabel(str) {
         return str.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
 
     /**
-     * Recursively walks an object to find all valid data paths.
+     * Tries to find a localized label for a data model group key (e.g., 'attributes').
+     * @param {string} key The key from the data model (e.g., 'attributes').
+     * @returns {string} The localized label or a formatted fallback.
      * @private
      */
-    static _walkObject(obj, path, results) {
+    static #createGroupLabel(key) {
+        const systemApi = game.sr5marketplace.api.system;
+
+        // Try common localization patterns for group headers
+        const potentialKeys = [
+            `SR5.${key.charAt(0).toUpperCase() + key.slice(1)}`, // e.g., SR5.Attributes
+            `SR5.Tabs.${key.charAt(0).toUpperCase() + key.slice(1)}`, // e.g., SR5.Tabs.Attributes
+            `SR5.Skills` // A common specific key
+        ];
+
+        for (const pKey of potentialKeys) {
+            const localized = game.i18n.localize(pKey);
+            if (localized !== pKey) return localized;
+        }
+
+        // A special combination for vehicle modifications
+        if (key === "modificationCategories") {
+            const vehicleLabel = systemApi.modificationTypes_l?.vehicle || "Vehicle";
+            const modsLabel = systemApi.itemTypes_l?.modification || "Modifications";
+            return `${vehicleLabel} ${modsLabel}`;
+        }
+        
+        // Final fallback to formatting the key itself
+        return this.#createFallbackLabel(key);
+    }
+    
+    /**
+     * Recursively walks an object to find all valid data paths.
+     * @param {object} obj The object to walk.
+     * @param {string} path The current path prefix.
+     * @param {Array<object>} results The array to push results into.
+     * @param {object} localizedMap A map of keys to their localized labels.
+     * @private
+     */
+    static _walkObject(obj, path, results, localizedMap = {}) {
         for (const key in obj) {
             if (key.startsWith("_") || key === "flags") continue;
             const newPath = path ? `${path}.${key}` : key;
             const value = obj[key];
+            const label = localizedMap[key] || this.#createFallbackLabel(key);
+
             if (typeof value === 'object' && value !== null && "value" in value) {
-                results.push({ label: this._createLabel(key), path: `${newPath}.value` });
+                results.push({ label: label, path: `${newPath}.value` });
             }
             else if (typeof value !== 'object' || value === null) {
-                results.push({ label: this._createLabel(key), path: newPath });
+                results.push({ label: label, path: newPath });
             } 
             else if (typeof value === 'object' && !Array.isArray(value)) {
-                this._walkObject(value, newPath, results);
+                this._walkObject(value, newPath, results, value.skill ? localizedMap : {});
             }
         }
     }
@@ -75,10 +106,16 @@ export class SystemDataMapperService {
                     if (typeof groupData !== 'object' || groupData === null) continue;
                     
                     let groupResults = [];
-                    this._walkObject(groupData, `system.${groupKey}`, groupResults);
+                    // Find the corresponding localized map for the children keys.
+                    // Handles special cases like 'skills' -> 'activeSkills_l'.
+                    const localizedChildren = systemApi[`${groupKey}_l`] 
+                        || systemApi[`active${groupKey.charAt(0).toUpperCase() + groupKey.slice(1)}_l`] 
+                        || {};
+
+                    this._walkObject(groupData, `system.${groupKey}`, groupResults, localizedChildren);
 
                     if (groupResults.length > 0) {
-                        const groupLabel = this.#LABEL_OVERRIDES[groupKey] ?? this._createLabel(groupKey);
+                        const groupLabel = this.#createGroupLabel(groupKey);
                         typeResults[groupLabel] = groupResults;
                     }
                 }
@@ -112,7 +149,7 @@ export class SystemDataMapperService {
                     // Walk the resulting .data object, which is the blueprint for all rolls.
                     this._walkObject(tempRoll.data, "data", groupResults);
                     if (groupResults.length > 0) {
-                        allRollKeys["Roll Data"] = groupResults;
+                        allRollKeys[game.i18n.localize("SR5.RollData")] = groupResults;
                     }
                 }
             }
@@ -122,8 +159,8 @@ export class SystemDataMapperService {
 
         // --- MODIFIERS (Correctly focused) ---
         const allModifierKeys = {
-            "Modifiers": [
-                { label: "Add Situational Modifier", path: "system.modifiers" }
+            [game.i18n.localize("SR5.Modifiers")]: [
+                { label: game.i18n.localize("SR5.AddSituationalModifier"), path: "system.modifiers" }
             ]
         };
         
