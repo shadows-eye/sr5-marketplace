@@ -49,9 +49,8 @@ export class SystemDataMapperService {
     }
 
     /**
-     * Gets a single, structured object containing all mappable keys for all document types,
-     * plus special keys for rolls and modifiers. This version is updated to use the
-     * centralized system API for safer data access.
+     * Gets a structured object of all mappable keys by combining the best dynamic methods,
+     * inspired by the Autocomplete Inline Properties module.
      * @returns {{actors: object, items: object, rolls: object, modifiers: object}}
      */
     static getMappableKeys() {
@@ -62,7 +61,7 @@ export class SystemDataMapperService {
             return { actors: {}, items: {}, rolls: {}, modifiers: {} };
         }
 
-        // --- ACTORS (Correctly uses dynamic grouping) ---
+        // --- ACTORS (Your stable, working logic for dynamic grouping) ---
         const allActorKeys = {};
         for (const type in systemApi.documentTypes.Actor) {
             if (type === "base" || type.includes("sr5-marketplace")) continue;
@@ -87,7 +86,7 @@ export class SystemDataMapperService {
             } catch (e) { console.warn(`Could not map Actor type "${type}".`, e); }
         }
 
-        // --- ITEMS (Correct) ---
+        // --- ITEMS (Your stable, working logic) ---
         const allItemKeys = {};
         for (const type in systemApi.documentTypes.Item) {
             if (type === "base" || type.includes("sr5-marketplace")) continue;
@@ -100,15 +99,22 @@ export class SystemDataMapperService {
             } catch (e) { console.warn(`Could not map Item type "${type}".`, e); }
         }
 
-        // --- ROLLS (Correctly uses SR5Roll schema) ---
+        // --- ROLLS (THE AIP-INSPIRED FIX) ---
         const allRollKeys = {};
         try {
-            const rollClass = game.shadowrun5e.SR5Roll;
-            if (rollClass?.defineSchema) {
-                const schema = rollClass.defineSchema();
-                const groupResults = [];
-                this._walkObject(schema, "data", groupResults);
-                if (groupResults.length > 0) allRollKeys["Roll Data"] = groupResults;
+            // Get the SuccessTest class from the system's registered tests.
+            const TestClass = game.shadowrun5e.tests.SuccessTest;
+            if (TestClass) {
+                // Create a temporary instance, passing an empty object to its constructor.
+                const tempRoll = new TestClass({});
+                if (tempRoll.data) {
+                    const groupResults = [];
+                    // Walk the resulting .data object, which is the blueprint for all rolls.
+                    this._walkObject(tempRoll.data, "data", groupResults);
+                    if (groupResults.length > 0) {
+                        allRollKeys["Roll Data"] = groupResults;
+                    }
+                }
             }
         } catch (e) {
             console.error("SystemDataMapperService | Failed to dynamically map Roll keys.", e);
