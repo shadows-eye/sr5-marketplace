@@ -49,6 +49,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         }
         this.selectedKey = defaultKey;
+        // Tagify Context
     }
 
     /** @override */
@@ -74,7 +75,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 saveDraftEffect: this.#onSaveDraftEffect,
                 cancelDraftEffect: this.#onCancelDraftEffect,
                 selectDerivedValue: this.#onSelectDerivedValue,
-                setEffectTargetType: this.#onSetEffectTargetType
+                setEffectTargetType: this.#onSetEffectTargetType,
+                // --- Tagify ---
+                toggleMultiSelectDropdown: this.#onToggleMultiSelectDropdown,
+                updateMultiSelect: this.#onUpdateMultiSelect
             }
         });
     }
@@ -93,9 +97,17 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      */
     _onRender(context, options) {
         super._onRender(context, options);
-
         // Only initialize services and listeners if the builder tab is active
         if (this.tabGroups.main === "builder") {
+            // --- Tagify ---
+            // Add a global click listener to close dropdowns when clicking outside.
+            window.addEventListener('click', this._onWindowClick);
+
+            // Add input listeners for real-time filtering on multi-select boxes.
+            const multiSelectInputs = this.element.querySelectorAll(".multi-select__input");
+            for (const input of multiSelectInputs) {
+                input.addEventListener("input", this._onFilterMultiSelect);
+            }
             // --- Item Search ---
             this.itemSearchService = new itemSearchService(this.element);
             this.itemSearchService.initialize({
@@ -454,5 +466,101 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             const newState = await BuilderStateService.deleteEffect(effectId);
             this.render(false, { builderData: newState });
         }
+    }
+
+    /**
+     * Toggles the visibility of the multi-select dropdown menu.
+     * When opened, it attaches a single-use listener to the window to handle closing.
+     * @private
+     */
+    static #onToggleMultiSelectDropdown(event, target) {
+        event.stopPropagation();
+        const container = target.closest(".multi-select-container");
+        if (!container) return;
+
+        // Close any other dropdown that might be open
+        if (this.activeDropdown && this.activeDropdown !== container) {
+            this.activeDropdown.querySelector(".dropdown-content")?.classList.remove("show");
+            this.activeDropdown.querySelector(".tags-input")?.classList.remove("active");
+        }
+        
+        // Toggle the current dropdown
+        const dropdown = container.querySelector(".dropdown-content");
+        const tagsInput = container.querySelector(".tags-input");
+        const isNowVisible = dropdown.classList.toggle("show");
+        tagsInput.classList.toggle("active", isNowVisible);
+        this.activeDropdown = isNowVisible ? container : null;
+
+        if (isNowVisible) {
+            // Focus the input so the user can type to filter
+            container.querySelector(".multi-select__input").focus();
+
+            // This is the "second click" listener you suggested.
+            // It listens for the next single click anywhere on the page.
+            const closeListener = (closeEvent) => {
+                // The click on an option is handled by its own action, which triggers a re-render.
+                // This listener just handles closing the dropdown visually.
+                if (this.activeDropdown) {
+                    this.activeDropdown.querySelector(".dropdown-content")?.classList.remove("show");
+                    this.activeDropdown.querySelector(".tags-input")?.classList.remove("active");
+                    this.activeDropdown = null;
+                }
+            };
+            
+            // Attach the listener. The { once: true } option is key:
+            // it automatically removes the listener after it fires once.
+            window.addEventListener('click', closeListener, { once: true });
+        }
+    }
+
+    // Add this method to the end of the ItemBuilderApp class
+
+    /**
+     * Adds or removes a value from a multi-select field, updates the state,
+     * and triggers a re-render, following the established update pattern.
+     * @private
+     */
+    static async #onUpdateMultiSelect(event, target) {
+        // --- 1. Preserve Scroll Position ---
+        const scrollable = this.element.querySelector(".effect-creator-steps");
+        const scrollTop = scrollable ? scrollable.scrollTop : 0;
+
+        // --- 2. Get Data from the Clicked Element ---
+        const container = target.closest(".multi-select-container");
+        const { name } = container.dataset;      // e.g., "system.selection_skills"
+        const { value: id, mode } = target.dataset; // 'id' of the item, and 'add' or 'remove'
+        if (!name || !id || !mode) return;
+
+        // --- 3. Get Current State from the Service ---
+        const currentState = await BuilderStateService.getState();
+        const draft = currentState.draftEffect;
+        if (!draft) return;
+
+        // --- 4. Prepare the New Array ---
+        let currentObjects = foundry.utils.getProperty(draft, name) || [];
+        if (!Array.isArray(currentObjects)) currentObjects = [];
+
+        if (mode === 'add') {
+            if (!currentObjects.some(o => o.id === id)) {
+                const label = target.textContent.trim();
+                currentObjects.push({ id, value: label });
+            }
+        } else if (mode === 'remove') {
+            currentObjects = currentObjects.filter(o => o.id !== id);
+        }
+
+        // --- 5. Create Update Payload (just like in #onUpdateDraftField) ---
+        const updateData = { [name]: currentObjects };
+        const updates = foundry.utils.expandObject(updateData);
+        
+        // --- 6. Save the Partial Update to the Flag ---
+        const newState = await BuilderStateService.updateDraftEffect(updates);
+        
+        // --- 7. Re-render the Application ---
+        await this.render(false, { builderData: newState });
+
+        // --- 8. Restore Scroll Position ---
+        const newScrollable = this.element.querySelector(".effect-creator-steps");
+        if (newScrollable) newScrollable.scrollTop = scrollTop;
     }
 }

@@ -148,4 +148,15 @@ export const registerBasicHelpers = () => {
         }
         return newObj;
     });
+
+    /**
+     * Checks if an object with a given id is present in an array of objects.
+     * @param {Array<object>} arrayOfObjects The array to check within (e.g., [{id: "agility"}, ...]).
+     * @param {string} id The id to search for.
+     * @returns {boolean} True if an object with the id is in the array, false otherwise.
+     */
+    Handlebars.registerHelper('isIdIn', function(arrayOfObjects, id) {
+        if (!Array.isArray(arrayOfObjects)) return false;
+        return arrayOfObjects.some(obj => obj.id === id);
+    });
 };

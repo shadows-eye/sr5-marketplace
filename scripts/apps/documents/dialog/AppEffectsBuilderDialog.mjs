@@ -28,25 +28,37 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
             const mappableKeys = SystemDataMapperService.getMappableKeys();
             const selectedKey = context.draftEffect.changes[0].key;
             
-            // --- NEW LOGIC FOR MODES ---
             const activeMode = context.draftEffect.system?.applyTo;
             context.isActorMode = (activeMode === 'actor' || activeMode === 'targeted_actor');
             context.isTestMode = (activeMode === 'test_all' || activeMode === 'test_item');
-            context.isModifierMode = (activeMode === 'modifier'); // For future use
-            // --- END NEW LOGIC ---
+            context.isModifierMode = (activeMode === 'modifier');
 
-            // Prepare key groups for the grid
-            const mergedActorKeys = this.#_getMergedActorKeys(mappableKeys.actors);
-            context.actorKeyGroups = this.#_prepareGroupsForGrid(mergedActorKeys, selectedKey);
+            const characterActorKeys = mappableKeys.actors.character || {};
+            context.actorKeyGroups = this.#_prepareGroupsForGrid(characterActorKeys, selectedKey);
             context.rollKeyGroups = this.#_prepareGroupsForGrid(mappableKeys.rolls, selectedKey);
             context.modifierKeyGroups = this.#_prepareGroupsForGrid(mappableKeys.modifiers, selectedKey);
             
-            // Get options from our new API
+            const itemType = builderState.baseItem?.type;
+            if (itemType && mappableKeys.items[itemType]) {
+                const itemKeyData = { [`${builderState.baseItem.name} Keys`]: mappableKeys.items[itemType] };
+                context.itemKeyGroups = this.#_prepareGroupsForGrid(itemKeyData, selectedKey);
+            }
+
+            // --- THIS IS THE NEW PART ---
+            // Prepare data for the multi-select components.
+            context.selection_test_options = this._getTestOptions();
+            context.selection_category_options = this._getCategoryOptions();
+            context.selection_skill_options = this._getSkillOptions();
+            context.selection_attribute_options = this._getAttributeOptions();
+            context.selection_limit_options = this._getLimitOptions();
+            // --- END NEW PART ---
+
             context.effectApplyToOptions = game.sr5marketplace.api.system.effectApplyTo_l;
             context.changeModes = Object.entries(CONST.ACTIVE_EFFECT_MODES).map(([key, value]) => ({
                 value: value, label: `EFFECT.MODE_${key}`
             }));
         }
+        
         console.log("Marketplace Builder | Effects Tab Context:", context);
         return context;
     }
@@ -158,5 +170,30 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
             }
         }
         return groups;
+    }
+    
+    _getTestOptions() {
+        const options = game.sr5marketplace.api.system.tests || [];
+        return options.map(opt => ({ value: opt.id, label: opt.value }));
+    }
+
+    _getCategoryOptions() {
+        const options = game.sr5marketplace.api.system.actionCategories_l || {};
+        return Object.entries(options).map(([value, label]) => ({ value, label }));
+    }
+
+    _getSkillOptions() {
+        const options = game.sr5marketplace.api.system.activeSkills_l || {};
+        return Object.entries(options).map(([value, label]) => ({ value, label }));
+    }
+
+    _getAttributeOptions() {
+        const options = game.sr5marketplace.api.system.attributes_l || {};
+        return Object.entries(options).map(([value, label]) => ({ value, label }));
+    }
+
+    _getLimitOptions() {
+        const options = game.sr5marketplace.api.system.limits_l || {};
+        return Object.entries(options).map(([value, label]) => ({ value, label }));
     }
 }
