@@ -50,6 +50,22 @@
         {{!-- If an item IS selected, show the builder interface --}}
         <section class="builder-main-content">
             <div class="builder-area">
+                <!--<svg class="connector-canvas">
+                    <line class="connector-line" x1="550" y1="225" x2="550" y2="250"></line>
+                    <line id="line-slot-top-left" class="connector-line" x1="550" y1="250" x2="900" y2="300"></line>
+                    <line id="line-slot-bottom-left" class="connector-line" x1="550" y1="525" x2="900" y2="525"></line>
+                    <line class="connector-line" x1="550" y1="550" x2="550" y2="525"></line>
+                    <line id="line-slot-top-right" class="connector-line" x1="1100" y1="300" x2="1500" y2="250"></line>
+                    <line class="connector-line" x1="1500" y1="225" x2="1500" y2="250"></line>
+                    <line class="connector-line" x1="1440" y1="390" x2="1420" y2="390"></line>
+                    <line id="line-slot-middle-right" class="connector-line" x1="1180" y1="330" x2="1420" y2="390"></line>
+                    <line class="connector-line" x1="1500" y1="550" x2="1500" y2="525"></line>
+                    <line id="line-slot-bottom-right" class="connector-line" x1="1100" y1="400" x2="1500" y2="525"></line>
+                </svg>
+                -->
+                <!--<div class="item-stats-display">--> 
+                    {{> "modules/sr5-marketplace/templates/apps/itemBuilder/partials/ItemDetails.html"}}
+                <!--</div>-->
                 <div class= "mod-slot slot-top-left"></div>
                 <div class= "mod-slot slot-bottom-left"></div>
                 <div class="center-display">
@@ -60,79 +76,73 @@
                 <div class="mod-slot slot-top-right"></div>
                 <div class="mod-slot slot-middle-right"></div>
                 <div class="mod-slot slot-bottom-right"></div>
-
                 <div class="bottom-slots">
-                <div class="bottom-slots">
-                    {{!-- Slot 1 --}}
-                    <div class="mod-slot" data-slot-id="bottomSlot1">
-                        {{#with builderData.changes.bottomSlot1}}
-                            <div class="slot-content-containment">
-                                <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
-                                
-                                <div class="slot-icon-link effects-link" data-action="editEffects" data-item-uuid="{{this.uuid}}" title="Active Effects">
-                                    <i class="fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}"></i>
-                                </div>
+                    <div class="bottom-slots">
+                        {{!-- Slot 1 --}}
+                        <div class="mod-slot" data-slot-id="bottomSlot1">
+                            {{#with builderData.changes.bottomSlot1}}
+                                <div class="slot-content-containment">
+                                    <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
+                                    
+                                    <div class="slot-icon-link effects-link" data-action="editEffects" data-item-uuid="{{this.uuid}}" title="Active Effects">
+                                        <i class="SR5Marketplace fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}"></i>
+                                    </div>
 
-                                <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomSlot1" title="Remove Mod">
-                                    <i class="fas fa-trash"></i>
+                                    <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomSlot1" title="Remove Mod">
+                                        <i class="SR5Marketplace fas fa-trash"></i>
+                                    </div>
                                 </div>
-                            </div>
-                        {{/with}}
+                            {{/with}}
+                        </div>
+                        {{!-- Slot 2 --}}
+                        <div class="mod-slot" data-slot-id="bottomSlot2">
+                            {{#with builderData.changes.bottomSlot2}}
+                                <div class="slot-content-containment">
+                                    <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
+                                    
+                                    <div class="slot-icon-link effects-link" data-action="editEffects" data-item-uuid="{{this.uuid}}" title="Active Effects">
+                                        <i class="SR5Marketplace fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}"></i>
+                                    </div>
+
+                                    <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomSlot2" title="Remove Mod">
+                                        <i class="SR5Marketplace fas fa-trash"></i>
+                                    </div>
+                                </div>
+                            {{/with}}
+                        </div>
+                        {{!-- Slot 3 --}}
+                        <div class="mod-slot" data-slot-id="bottomSlot3">
+                            {{#with builderData.changes.bottomSlot3}}
+                                <div class="slot-content-containment">
+                                    <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
+                                    
+                                    <div class="slot-icon-link effects-link" data-action="editEffects" data-item-uuid="{{this.uuid}}" title="Active Effects">
+                                        <i class="SR5Marketplace fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}"></i>
+                                    </div>
+
+                                    <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomSlot3" title="Remove Mod">
+                                        <i class="SR5Marketplace fas fa-trash"></i>
+                                    </div>
+                                </div>
+                            {{/with}}
+                        </div>
+                        {{!-- Slot 4--}}
+                        <div class="mod-slot" data-slot-id="bottomSlot4">
+                            {{#with builderData.changes.bottomSlot4}}
+                                <div class="slot-content-containment">
+                                    <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
+                                    
+                                    <div class="slot-icon-link effects-link" data-action="editEffects" data-item-uuid="{{this.uuid}}" title="Active Effects">
+                                        <i class="SR5Marketplace fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}"></i>
+                                    </div>
+
+                                    <div class="slot-icon-link delete-mod-link" data-action="removeChange"  data-slot-id="bottomSlot4"title="Remove Mod">
+                                        <i class="SR5Marketplace fas fa-trash"></i>
+                                    </div>
+                                </div>
+                            {{/with}}
+                        </div>
                     </div>
-                    {{!-- Slot 2 --}}
-                    <div class="mod-slot" data-slot-id="bottomSlot2">
-                        {{#with builderData.changes.bottomSlot2}}
-                            <div class="slot-content-containment">
-                                <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
-                                
-                                <div class="slot-icon-link effects-link" data-action="editEffects" data-item-uuid="{{this.uuid}}" title="Active Effects">
-                                    <i class="fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}"></i>
-                                </div>
-
-                                <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomSlot2" title="Remove Mod">
-                                    <i class="fas fa-trash"></i>
-                                </div>
-                            </div>
-                        {{/with}}
-                    </div>
-                    {{!-- Slot 3 --}}
-                    <div class="mod-slot" data-slot-id="bottomSlot3">
-                        {{#with builderData.changes.bottomSlot3}}
-                            <div class="slot-content-containment">
-                                <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
-                                
-                                <div class="slot-icon-link effects-link" data-action="editEffects" data-item-uuid="{{this.uuid}}" title="Active Effects">
-                                    <i class="fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}"></i>
-                                </div>
-
-                                <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomSlot3" title="Remove Mod">
-                                    <i class="fas fa-trash"></i>
-                                </div>
-                            </div>
-                        {{/with}}
-                    </div>
-                    {{!-- Slot 4--}}
-                    <div class="mod-slot" data-slot-id="bottomSlot4">
-                        {{#with builderData.changes.bottomSlot4}}
-                            <div class="slot-content-containment">
-                                <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
-                                
-                                <div class="slot-icon-link effects-link" data-action="editEffects" data-item-uuid="{{this.uuid}}" title="Active Effects">
-                                    <i class="fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}"></i>
-                                </div>
-
-                                <div class="slot-icon-link delete-mod-link" data-action="removeChange"  data-slot-id="bottomSlot4"title="Remove Mod">
-                                    <i class="fas fa-trash"></i>
-                                </div>
-                            </div>
-                        {{/with}}
-                    </div>
-                </div>
-                </div>
-            </div>
-
-                <div class="item-stats-display">
-                    {{builderData.baseItem.name}}
                 </div>
             </div>
         </section>

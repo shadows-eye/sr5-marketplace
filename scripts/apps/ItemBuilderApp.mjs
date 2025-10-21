@@ -55,7 +55,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     static get DEFAULT_OPTIONS() {
         return foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
             id: "itemBuilder",
-            position: { width: 1600, height: 800 },
+            position: { width: 1600, height: 845 },
             window: { title: "Item Builder", resizable: true },
             actions: {
                 // Core

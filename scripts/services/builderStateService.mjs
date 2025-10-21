@@ -55,7 +55,7 @@ export class BuilderStateService {
     static async setBaseItem(itemData) {
         const newState = this._getDefaultState();
         newState.baseItem = itemData;
-        let itemTypeImagePath= game.sr5marketplace.itemData.getRepresentativeImage(itemData);
+        let itemTypeImagePath= game.sr5marketplace.api.itemData.getRepresentativeImage(itemData);
         newState.itemTypeImage = itemTypeImagePath;
         // Generate and set the title
         if (itemData) {

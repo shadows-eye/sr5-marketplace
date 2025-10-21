@@ -1,0 +1,60 @@
+<div class="item-stats-display">
+    <div class="stat-block item-image">
+        <img src="{{builderData.baseItem.img}}" title="{{builderData.baseItem.name}}"/>
+    </div>
+    <div class="stat-block item-name-block">
+        <h4>{{builderData.baseItem.name}}</h4>
+    </div>
+
+    {{!-- For Cyberware & Bioware --}}
+    {{#if (or (eq builderData.baseItem.type "cyberware") (eq builderData.baseItem.type "bioware"))}}
+        <div class="stat-block">
+            <label>{{localize "SR5.Grade"}}</label>
+            <span>{{builderData.baseItem.system.grade}}</span>
+        </div>
+        <div class="stat-block">
+            <label>{{localize "SR5.Essence"}}</label>
+            <span>{{builderData.baseItem.system.essence}}</span>
+        </div>
+    {{/if}}
+
+    {{!-- For Weapons --}}
+    {{#if (or (eq builderData.baseItem.type "ranged_weapon") (eq builderData.baseItem.type "melee_weapon"))}}
+         <div class="stat-block">
+            <label>{{localize "SR5.DamageValueAbbr"}}</label>
+            <span>{{builderData.baseItem.system.damage.value}}</span>
+        </div>
+        <div class="stat-block">
+            <label>{{localize "SR5.AccuracyAbbr"}}</label>
+            <span>{{builderData.baseItem.system.accuracy.value}}</span>
+        </div>
+        <div class="stat-block">
+            <label>{{localize "SR5.APAbbr"}}</label>
+            <span>{{builderData.baseItem.system.ap.value}}</span>
+        </div>
+    {{/if}}
+
+    {{!-- For Armor --}}
+    {{#if (eq builderData.baseItem.type "armor")}}
+        <div class="stat-block">
+            <label>{{localize "SR5.Armor"}}</label>
+            <span>{{builderData.baseItem.system.armor.value}}</span>
+        </div>
+    {{/if}}
+
+    {{!-- Common stats that appear for most technology items --}}
+
+    <div class="stat-block">
+        <label>{{localize "SR5.Rating"}}</label>
+        <span>{{builderData.baseItem.system.technology.rating}}</span>
+    </div>
+    <div class="stat-block">
+        <label>{{localize "SR5.Availability"}}</label>
+        <span>{{builderData.baseItem.system.technology.availability}}</span>
+    </div>
+    <div class="stat-block">
+        <label>{{localize "SR5.Cost"}}</label>
+        <span>{{builderData.baseItem.system.technology.cost}}</span>
+        <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen"></i>
+    </div>
+</div>

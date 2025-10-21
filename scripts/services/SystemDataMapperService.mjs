@@ -57,29 +57,26 @@ export class SystemDataMapperService {
     static getMappableKeys() {
         const systemApi = game.sr5marketplace.api.system;
 
-        // Safety check: if the API isn't ready, return empty objects to prevent crashes.
         if (!systemApi?.documentTypes || !systemApi.config) {
             console.error("SystemDataMapperService | System API not initialized. Cannot map keys.");
             return { actors: {}, items: {}, rolls: {}, modifiers: {} };
         }
 
-        // --- ACTORS ---
+        // --- ACTORS & ITEMS (This logic remains correct) ---
         const allActorKeys = {};
+        // ... (The existing code for walking actor models is correct and should remain here) ...
         for (const type in systemApi.documentTypes.Actor) {
             if (type === "base" || type.includes("sr5-marketplace")) continue;
             try {
                 const model = new CONFIG.Actor.documentClass({ name: "temp-mapper", type: type }, { temporary: true });
                 if (!model?.system) continue;
-
                 const typeResults = {};
                 for (const groupKey in model.system) {
                     if (this.#EXCLUDED_GROUPS.has(groupKey)) continue;
                     const groupData = model.system[groupKey];
                     if (typeof groupData !== 'object' || groupData === null) continue;
-                    
                     let groupResults = [];
                     this._walkObject(groupData, `system.${groupKey}`, groupResults);
-
                     if (groupResults.length > 0) {
                         const groupLabel = this.#LABEL_OVERRIDES[groupKey] ?? this._createLabel(groupKey);
                         typeResults[groupLabel] = groupResults;
@@ -89,8 +86,8 @@ export class SystemDataMapperService {
             } catch (e) { console.warn(`Could not map Actor type "${type}".`, e); }
         }
 
-        // --- ITEMS ---
         const allItemKeys = {};
+        // ... (The existing code for walking item models is correct and should remain here) ...
         for (const type in systemApi.documentTypes.Item) {
             if (type === "base" || type.includes("sr5-marketplace")) continue;
             try {
@@ -102,23 +99,31 @@ export class SystemDataMapperService {
             } catch (e) { console.warn(`Could not map Item type "${type}".`, e); }
         }
 
-        // --- ROLLS (NEW) ---
+
+        // --- ROLLS (DYNAMICALLY MAPPED) ---
         const allRollKeys = {};
-        if (systemApi.config?.rollData) {
-            const groupResults = [];
-            // We use 'data' as the root path because roll data is not namespaced under 'system'.
-            this._walkObject(systemApi.config.rollData, "data", groupResults);
-            if (groupResults.length > 0) allRollKeys["Roll Data"] = groupResults;
+        try {
+            const rollClass = game.shadowrun5e.SR5Roll;
+            // Check if the class and its static schema definition method exist.
+            if (rollClass?.defineSchema) {
+                const schema = rollClass.defineSchema();
+                const groupResults = [];
+                // The root path for roll modifications is "data", not "system".
+                this._walkObject(schema, "data", groupResults);
+                if (groupResults.length > 0) allRollKeys["Roll Data"] = groupResults;
+            }
+        } catch (e) {
+            console.error("SystemDataMapperService | Failed to dynamically map Roll keys.", e);
         }
 
-        // --- MODIFIERS (NEW) ---
-        const allModifierKeys = {};
-        if (systemApi.config?.actorModifiers) {
-            const groupResults = [];
-            // Modifiers are also not under 'system'. They are at the root of the actor data model.
-            this._walkObject(systemApi.config.actorModifiers, "", groupResults);
-            if (groupResults.length > 0) allModifierKeys["Modifiers"] = groupResults;
-        }
+        // --- MODIFIERS (CORRECTLY FOCUSED) ---
+        // For the 'modifier' applyTo type, the goal is to add a new situational modifier object.
+        // The only valid key for this is the path to the modifiers array itself.
+        const allModifierKeys = {
+            "Modifiers": [
+                { label: "Add Situational Modifier", path: "system.modifiers" }
+            ]
+        };
         
         return { actors: allActorKeys, items: allItemKeys, rolls: allRollKeys, modifiers: allModifierKeys };
     }
