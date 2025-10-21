@@ -415,8 +415,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
     
     /**
-     * Handles selecting the target type (Actor or Item).
-     * It now also preserves scroll position.
+     * Handles selecting the 'applyTo' type for the effect.
+     * It now correctly saves the value to the 'system.applyTo' property.
      * @private
      */
     static async #onSetEffectTargetType(event, target) {
@@ -425,7 +425,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const scrollTop = scrollable ? scrollable.scrollTop : 0;
 
         const targetType = target.dataset.targetType;
-        const newState = await BuilderStateService.updateDraftEffect({ targetType: targetType });
+
+        // We create a nested object to update the correct property in the flag.
+        const updates = { system: { applyTo: targetType } };
+        const newState = await BuilderStateService.updateDraftEffect(updates);
 
         // Await the render and then restore scroll
         await this.render(false, { builderData: newState });

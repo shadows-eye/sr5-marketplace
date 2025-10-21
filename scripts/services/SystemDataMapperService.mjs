@@ -57,14 +57,13 @@ export class SystemDataMapperService {
     static getMappableKeys() {
         const systemApi = game.sr5marketplace.api.system;
 
-        if (!systemApi?.documentTypes || !systemApi.config) {
-            console.error("SystemDataMapperService | System API not initialized. Cannot map keys.");
+        if (!systemApi?.documentTypes) {
+            console.error("SystemDataMapperService | System API not initialized.");
             return { actors: {}, items: {}, rolls: {}, modifiers: {} };
         }
 
-        // --- ACTORS & ITEMS (This logic remains correct) ---
+        // --- ACTORS (Correctly uses dynamic grouping) ---
         const allActorKeys = {};
-        // ... (The existing code for walking actor models is correct and should remain here) ...
         for (const type in systemApi.documentTypes.Actor) {
             if (type === "base" || type.includes("sr5-marketplace")) continue;
             try {
@@ -75,8 +74,10 @@ export class SystemDataMapperService {
                     if (this.#EXCLUDED_GROUPS.has(groupKey)) continue;
                     const groupData = model.system[groupKey];
                     if (typeof groupData !== 'object' || groupData === null) continue;
+                    
                     let groupResults = [];
                     this._walkObject(groupData, `system.${groupKey}`, groupResults);
+
                     if (groupResults.length > 0) {
                         const groupLabel = this.#LABEL_OVERRIDES[groupKey] ?? this._createLabel(groupKey);
                         typeResults[groupLabel] = groupResults;
@@ -86,8 +87,8 @@ export class SystemDataMapperService {
             } catch (e) { console.warn(`Could not map Actor type "${type}".`, e); }
         }
 
+        // --- ITEMS (Correct) ---
         const allItemKeys = {};
-        // ... (The existing code for walking item models is correct and should remain here) ...
         for (const type in systemApi.documentTypes.Item) {
             if (type === "base" || type.includes("sr5-marketplace")) continue;
             try {
@@ -99,16 +100,13 @@ export class SystemDataMapperService {
             } catch (e) { console.warn(`Could not map Item type "${type}".`, e); }
         }
 
-
-        // --- ROLLS (DYNAMICALLY MAPPED) ---
+        // --- ROLLS (Correctly uses SR5Roll schema) ---
         const allRollKeys = {};
         try {
             const rollClass = game.shadowrun5e.SR5Roll;
-            // Check if the class and its static schema definition method exist.
             if (rollClass?.defineSchema) {
                 const schema = rollClass.defineSchema();
                 const groupResults = [];
-                // The root path for roll modifications is "data", not "system".
                 this._walkObject(schema, "data", groupResults);
                 if (groupResults.length > 0) allRollKeys["Roll Data"] = groupResults;
             }
@@ -116,9 +114,7 @@ export class SystemDataMapperService {
             console.error("SystemDataMapperService | Failed to dynamically map Roll keys.", e);
         }
 
-        // --- MODIFIERS (CORRECTLY FOCUSED) ---
-        // For the 'modifier' applyTo type, the goal is to add a new situational modifier object.
-        // The only valid key for this is the path to the modifiers array itself.
+        // --- MODIFIERS (Correctly focused) ---
         const allModifierKeys = {
             "Modifiers": [
                 { label: "Add Situational Modifier", path: "system.modifiers" }

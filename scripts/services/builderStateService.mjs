@@ -1,4 +1,5 @@
 import { MODULE_ID } from '../lib/constants.mjs';
+import { DefaultEffect } from '../lib/DefaultEffect.mjs';
 import ItemDataServices from './ItemDataServices.mjs';
 
 const FLAG_SCOPE = MODULE_ID;
@@ -115,15 +116,10 @@ export class BuilderStateService {
      */
     static async startEffectCreation(sourceUuid) {
         const state = await this.getState();
-        state.draftEffect = {
-            _id: foundry.utils.randomID(),
-            sourceUuid: sourceUuid,
-            name: "",
-            img: "icons/svg/aura.svg",
-            isEdit: false,
-            targetType: null,
-            changes: [{ key: "", mode: CONST.ACTIVE_EFFECT_MODES.ADD, value: "" }]
-        };
+        
+        // Use our new factory to generate a complete and correct default effect object.
+        state.draftEffect = await DefaultEffect.create(sourceUuid);
+        
         await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, state);
         return state;
     }
