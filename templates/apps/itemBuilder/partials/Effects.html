@@ -175,7 +175,11 @@
                             <div class="form-group full-width">
                                 <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.ChangeModeLabel'}}</label>
                                 <div class="button-group mode-selector">
-                                    {{#each @root.changeModes as |mode|}}<button type="button" class="{{#if (eq mode.value @root.draftEffect.changes.[0].mode)}}active{{/if}}" data-action="updateDraftField" name="changes.0.mode" value="{{mode.value}}">{{localize mode.label}}</button>{{/each}}
+                                    {{#each @root.changeModes as |mode|}}
+                                    <button type="button" class="{{#if (eq mode.value @root.draftEffect.changes.[0].mode)}}active{{/if}}" data-action="updateDraftField" name="changes.0.mode" value="{{mode.value}}">
+                                        {{localize mode.label}}
+                                    </button>
+                                    {{/each}}
                                 </div>
                             </div>
                             <div class="form-group full-width">
@@ -196,7 +200,11 @@
                                         <div class="key-group">
                                             <h5>{{group.groupName}}</h5>
                                             <div class="key-buttons">
-                                                {{#each group.groupData}}<button type="button" class="key-btn" data-action="selectDerivedValue" data-path="{{this.path}}">{{this.label}}</button>{{/each}}
+                                                {{#each group.groupData}}
+                                                    <button type="button" class="{{#if (eq (concat "@" this.path) @root.draftEffect.changes.[0].value)}}active{{/if}}" data-action="selectDerivedValue" data-path="{{this.path}}">
+                                                        {{this.label}}
+                                                    </button>
+                                                {{/each}}
                                             </div>
                                         </div>
                                     {{/each}}

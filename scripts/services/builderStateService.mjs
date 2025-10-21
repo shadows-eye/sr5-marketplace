@@ -141,6 +141,27 @@ export class BuilderStateService {
     }
 
     /**
+     * A specialized updater that merges data into the draftEffect AND the top-level state simultaneously.
+     * @param {object} draftUpdate - Data to merge into `state.draftEffect`.
+     * @param {object} stateUpdate - Data to merge into the top-level `state`.
+     * @returns {Promise<object>} The fully updated state object.
+     */
+    static async updateDraftAndState(draftUpdate = {}, stateUpdate = {}) {
+        const state = await this.getState();
+        if (!state.draftEffect) return state;
+
+        // 1. Merge updates into the draft effect first.
+        state.draftEffect = foundry.utils.mergeObject(state.draftEffect, draftUpdate);
+        
+        // 2. Merge updates into the top-level state object.
+        const newState = foundry.utils.mergeObject(state, stateUpdate);
+
+        // 3. Save and return the final, combined state.
+        await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, newState);
+        return newState;
+    }
+
+    /**
      * Finalizes the effect by moving it from draft into the 'modifications' array.
      */
     static async saveDraftEffect() {

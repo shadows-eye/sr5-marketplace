@@ -4,36 +4,37 @@
  */
 export class DefaultEffect {
     /**
-     * Creates a new, default effect object.
-     * @param {string} sourceUuid The UUID of the item this effect will belong to.
-     * @returns {Promise<object>} A promise that resolves to the default effect data object.
+     * Creates a new, default effect data object.
+     * @param {string} sourceUuid - The UUID of the item that will own this effect.
+     * @returns {Promise<object>} A promise that resolves to the default effect data.
      */
     static async create(sourceUuid) {
         const sourceItem = await fromUuid(sourceUuid);
-        const itemName = sourceItem?.name || "New";
+        const effectName = sourceItem ? `${sourceItem.name} Effect` : "New Effect";
 
         return {
             _id: foundry.utils.randomID(),
-            name: `${itemName} Effect`,
+            name: effectName,
             img: "icons/svg/aura.svg",
-            type: "base", // Standard type for custom effects
+            type: "base",
             system: {
-                applyTo: "actor", // Default to 'actor' to ensure the UI renders correctly
-                appliedByTest: false,
-                onlyForEquipped: false,
-                onlyForWireless: false,
-                onlyForItemTest: false,
-                selection_attributes: [],
+                applyTo: null,
+                // ... other system defaults
+                selection_tests: [],
                 selection_categories: [],
-                selection_limits: [],
                 selection_skills: [],
-                selection_tests: []
+                selection_attributes: [],
+                selection_limits: []
             },
-            changes: [{
-                key: "",
-                mode: CONST.ACTIVE_EFFECT_MODES.ADD, // A sensible default mode
-                value: ""
-            }],
+            // --- THIS IS THE FIX ---
+            // Initialize the changes object with all required properties.
+            changes: {
+                "0": {
+                    key: null,
+                    mode: CONST.ACTIVE_EFFECT_MODES.ADD, // A sensible default mode
+                    value: "" // The crucial addition of an empty value
+                }
+            },
             disabled: false,
             duration: { startTime: null, combat: null },
             description: "",
@@ -41,9 +42,9 @@ export class DefaultEffect {
             tint: "#ffffff",
             transfer: true,
             statuses: [],
-            // --- UI-specific properties ---
             sourceUuid: sourceUuid,
-            isEdit: false
+            isEdit: false,
+            targetType: null
         };
     }
 }

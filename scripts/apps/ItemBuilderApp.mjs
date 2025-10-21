@@ -416,7 +416,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const form = target.closest("form");
         if (!form) return;
 
-        this.#handleStateUpdate.call(this, "#onSaveDraftEffect", async () => {
+        ItemBuilderApp.#handleStateUpdate(this, "#onSaveDraftEffect", async () => {
             const updates = new foundry.applications.ux.FormDataExtended(form).object;
             await BuilderStateService.updateDraftEffect(updates);
             // The final state is the result of the save operation
@@ -547,12 +547,20 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const path = target.dataset.path;
         if (!path) return;
 
+        // Call the helper, which will now use our new service method
         ItemBuilderApp.#handleStateUpdate(this, "#onSelectDerivedValue", () => {
-            const updates = {
-                changes: { "0": { value: `@${path}` } },
+            // Define the update for the nested draftEffect object
+            const draftUpdate = {
+                changes: { "0": { value: `@${path}` } }
+            };
+
+            // Define the update for the top-level state object
+            const stateUpdate = {
                 isDerivedValueSelectorVisible: false
             };
-            return BuilderStateService.updateDraftEffect(updates);
+            
+            // Call the new service method that handles both updates correctly
+            return BuilderStateService.updateDraftAndState(draftUpdate, stateUpdate);
         });
     }
 
