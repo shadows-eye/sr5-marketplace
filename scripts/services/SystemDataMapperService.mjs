@@ -49,12 +49,23 @@ export class SystemDataMapperService {
     }
 
     /**
-     * Gets a single, structured object containing all mappable keys for all document types.
-     * @returns {{actors: object, items: object}}
+     * Gets a single, structured object containing all mappable keys for all document types,
+     * plus special keys for rolls and modifiers. This version is updated to use the
+     * centralized system API for safer data access.
+     * @returns {{actors: object, items: object, rolls: object, modifiers: object}}
      */
     static getMappableKeys() {
+        const systemApi = game.sr5marketplace.api.system;
+
+        // Safety check: if the API isn't ready, return empty objects to prevent crashes.
+        if (!systemApi?.documentTypes || !systemApi.config) {
+            console.error("SystemDataMapperService | System API not initialized. Cannot map keys.");
+            return { actors: {}, items: {}, rolls: {}, modifiers: {} };
+        }
+
+        // --- ACTORS ---
         const allActorKeys = {};
-        for (const type in game.system.documentTypes.Actor) {
+        for (const type in systemApi.documentTypes.Actor) {
             if (type === "base" || type.includes("sr5-marketplace")) continue;
             try {
                 const model = new CONFIG.Actor.documentClass({ name: "temp-mapper", type: type }, { temporary: true });
@@ -62,9 +73,7 @@ export class SystemDataMapperService {
 
                 const typeResults = {};
                 for (const groupKey in model.system) {
-                    // NEW: Exclude unwanted groups
                     if (this.#EXCLUDED_GROUPS.has(groupKey)) continue;
-
                     const groupData = model.system[groupKey];
                     if (typeof groupData !== 'object' || groupData === null) continue;
                     
@@ -72,32 +81,17 @@ export class SystemDataMapperService {
                     this._walkObject(groupData, `system.${groupKey}`, groupResults);
 
                     if (groupResults.length > 0) {
-                        // NEW: Special filtering for the Initiative group
-                        if (groupKey === "initiative") {
-                            const uniqueKeys = new Map();
-                            const desiredLabels = ["Base", "Dice", "Edge", "Perception"];
-                            for (const key of groupResults) {
-                                if (desiredLabels.includes(key.label) && !uniqueKeys.has(key.label)) {
-                                    uniqueKeys.set(key.label, key);
-                                }
-                            }
-                            groupResults = Array.from(uniqueKeys.values());
-                        }
-                        
-                        if (groupResults.length > 0) {
-                            // NEW: Apply label overrides
-                            const groupLabel = this.#LABEL_OVERRIDES[groupKey] ?? this._createLabel(groupKey);
-                            typeResults[groupLabel] = groupResults;
-                        }
+                        const groupLabel = this.#LABEL_OVERRIDES[groupKey] ?? this._createLabel(groupKey);
+                        typeResults[groupLabel] = groupResults;
                     }
                 }
                 if (Object.keys(typeResults).length > 0) allActorKeys[type] = typeResults;
             } catch (e) { console.warn(`Could not map Actor type "${type}".`, e); }
         }
 
+        // --- ITEMS ---
         const allItemKeys = {};
-        // The item mapping logic remains the same...
-        for (const type in game.system.documentTypes.Item) {
+        for (const type in systemApi.documentTypes.Item) {
             if (type === "base" || type.includes("sr5-marketplace")) continue;
             try {
                 const model = new CONFIG.Item.documentClass({ name: "temp-mapper", type: type }, { temporary: true });
@@ -107,8 +101,26 @@ export class SystemDataMapperService {
                 if (groupResults.length > 0) allItemKeys[type] = groupResults;
             } catch (e) { console.warn(`Could not map Item type "${type}".`, e); }
         }
+
+        // --- ROLLS (NEW) ---
+        const allRollKeys = {};
+        if (systemApi.config?.rollData) {
+            const groupResults = [];
+            // We use 'data' as the root path because roll data is not namespaced under 'system'.
+            this._walkObject(systemApi.config.rollData, "data", groupResults);
+            if (groupResults.length > 0) allRollKeys["Roll Data"] = groupResults;
+        }
+
+        // --- MODIFIERS (NEW) ---
+        const allModifierKeys = {};
+        if (systemApi.config?.actorModifiers) {
+            const groupResults = [];
+            // Modifiers are also not under 'system'. They are at the root of the actor data model.
+            this._walkObject(systemApi.config.actorModifiers, "", groupResults);
+            if (groupResults.length > 0) allModifierKeys["Modifiers"] = groupResults;
+        }
         
-        return { actors: allActorKeys, items: allItemKeys };
+        return { actors: allActorKeys, items: allItemKeys, rolls: allRollKeys, modifiers: allModifierKeys };
     }
 
     /**

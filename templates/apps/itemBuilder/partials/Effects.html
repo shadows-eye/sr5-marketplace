@@ -63,10 +63,13 @@
                             <input type="text" name="img" value="{{draftEffect.img}}"/>
                         </div>
                         <div class="form-group">
-                            <label>Target Type</label>
-                            <div class="button-group">
-                                <button type="button" class="{{#if (or (eq @root.draftEffect.targetType 'actor') (eq @root.draftEffect.system.applyTo 'actor'))}}active{{/if}}" data-action="setEffectTargetType" data-target-type="actor">Actor</button>
-                                <button type="button" class="{{#if (or (eq @root.draftEffect.targetType 'item') (eq @root.draftEffect.system.applyTo 'item'))}}active{{/if}}" data-action="setEffectTargetType" data-target-type="item">Item</button>
+                            <label>{{localize 'SR5M.UI.Effects.ApplyToLabel'}}</label>
+                            <div class="button-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;">
+                                <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'actor')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="actor">{{@root.effectApplyToOptions.actor}}</button>
+                                <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'targeted_actor')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="targeted_actor">{{@root.effectApplyToOptions.targeted_actor}}</button>
+                                <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'test_all')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="test_all">{{@root.effectApplyToOptions.test_all}}</button>
+                                <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'test_item')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="test_item">{{@root.effectApplyToOptions.test_item}}</button>
+                                <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'modifier')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="modifier">{{@root.effectApplyToOptions.modifier}}</button>
                             </div>
                         </div>
                         

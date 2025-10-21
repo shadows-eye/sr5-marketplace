@@ -1,7 +1,7 @@
 import ItemData from '../services/ItemDataServices.mjs';
 export const registerBasicHelpers = () => {
     Handlebars.registerHelper('hasItemType', function(type, options) {
-        const itemData = new ItemData();
+        const itemData = game.sr5marketplace.api.itemData;
         if (itemData.itemsByType[type] && itemData.itemsByType[type].length > 0) {
             console.log(`Type found: ${type}`);
             return options.fn(this);

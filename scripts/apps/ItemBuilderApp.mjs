@@ -26,7 +26,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         super(options);
 
         // --- State and Services ---
-        this.itemData = game.sr5marketplace.itemData; // Use the global item data service
+        this.itemData = game.sr5marketplace.api.itemData; // Use the global item data service
         console.log(this.itemData);
         this.purchasingActor = null;
         this.itemSearchService = null;

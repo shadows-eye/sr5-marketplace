@@ -9,6 +9,8 @@ import { ShopActorSheet } from '../sheets/ShopActorSheet.mjs';
 import { MODULE_ID, SHOP_ACTOR_TYPE} from "./lib/constants.mjs";
 import { ItemBuilderApp } from "./apps/ItemBuilderApp.mjs";
 import { SystemDataMapperService } from './services/SystemDataMapperService.mjs';
+import { MarketplaceAPI } from './API/marketplaceAPI.mjs';
+import { SR5SystemAPI } from './API/systemAPI.mjs'; // Corrected name
 
 /**
  * Draws the notification badge on the scene control button.
@@ -196,7 +198,7 @@ Hooks.on("renderSettingsConfig", (app, html, data) => {
     if (existingSummary) existingSummary.remove();
 
     // 1. Get ALL types from the indexed item data, just like the settings app does.
-    const allItems = game.sr5marketplace.itemData.getItems();
+    const allItems = game.sr5marketplace.api.itemData.getItems();
     const allTypes = [...new Set(allItems.map(item => item.type))].sort();
 
     // 2. Get the saved behaviors.
@@ -250,9 +252,14 @@ Hooks.once("init", () => {
         label: "SR5Marketplace.Marketplace.Shop.SheetName"
     });
 
+    // 1. The root 'game.sr5marketplace' is the instance of MarketplaceAPI.
+    game.sr5marketplace = new MarketplaceAPI();
 
-    game.sr5marketplace = { itemData: new ItemDataServices() };
-
+    // 2. The other APIs are nested under '.api' property.
+    game.sr5marketplace.api = {
+        system: new SR5SystemAPI(),
+        itemData: new ItemDataServices()
+    };
 });
 
 /**
@@ -261,7 +268,12 @@ Hooks.once("init", () => {
  */
 Hooks.on("ready", async () => {
     console.log("SR5 Marketplace | Module is ready!");
-    await game.sr5marketplace.itemData.initialize();
+
+    // Call the init() and initialize() methods on the correct objects inside the global namespace.
+    await game.sr5marketplace.init();         // Correct path to MarketplaceAPI's init
+    await game.sr5marketplace.api.system.init();          // Correct path to SR5SystemAPI's init
+    await game.sr5marketplace.api.itemData.initialize();  // Correct path to ItemDataServices' initialize
+
     if (game.user.isGM) {
         game.socket.on("module.sr5-marketplace", () => {
             // A real-time event was received. Trigger a re-draw after a short delay.
@@ -272,7 +284,7 @@ Hooks.on("ready", async () => {
         // On first load, render the controls to set the initial badge state.
         setTimeout(() => { if (ui.controls) ui.controls.render(true); }, 1000);
     }
-  const tests = await import('../utils/tests.mjs');
+    const tests = await import('../utils/tests.mjs');
     tests.registerTests();
 });
 

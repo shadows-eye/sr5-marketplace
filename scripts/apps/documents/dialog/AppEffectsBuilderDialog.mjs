@@ -27,18 +27,22 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
         if (context.isCreating) {
             const mappableKeys = SystemDataMapperService.getMappableKeys();
             const selectedKey = context.draftEffect.changes[0].key;
+            
+            // --- NEW LOGIC FOR MODES ---
+            const activeMode = context.draftEffect.system?.applyTo;
+            context.isActorMode = (activeMode === 'actor' || activeMode === 'targeted_actor');
+            context.isTestMode = (activeMode === 'test_all' || activeMode === 'test_item');
+            context.isModifierMode = (activeMode === 'modifier'); // For future use
+            // --- END NEW LOGIC ---
 
-            // Prepare actor keys for the grid
+            // Prepare key groups for the grid
             const mergedActorKeys = this.#_getMergedActorKeys(mappableKeys.actors);
             context.actorKeyGroups = this.#_prepareGroupsForGrid(mergedActorKeys, selectedKey);
-
-            // Prepare item keys for the grid
-            const itemType = builderState.baseItem?.type;
-            if (itemType && mappableKeys.items[itemType]) {
-                const itemKeyData = { [`${builderState.baseItem.name} Keys`]: mappableKeys.items[itemType] };
-                context.itemKeyGroups = this.#_prepareGroupsForGrid(itemKeyData, selectedKey);
-            }
-
+            context.rollKeyGroups = this.#_prepareGroupsForGrid(mappableKeys.rolls, selectedKey);
+            context.modifierKeyGroups = this.#_prepareGroupsForGrid(mappableKeys.modifiers, selectedKey);
+            
+            // Get options from our new API
+            context.effectApplyToOptions = game.sr5marketplace.api.system.effectApplyTo_l;
             context.changeModes = Object.entries(CONST.ACTIVE_EFFECT_MODES).map(([key, value]) => ({
                 value: value, label: `EFFECT.MODE_${key}`
             }));
