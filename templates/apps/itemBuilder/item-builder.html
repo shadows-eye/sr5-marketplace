@@ -6,6 +6,10 @@
         </div> 
         <div class="builderTitle">{{builder.title}}</div>
         <div class="header-right">
+            {{!-- Add this new button --}}
+            <button type="button" class="clear-build-btn" data-action="clearBuild" title="Clear entire build">
+                <i class="fas fa-times-circle"></i>
+            </button>
             <button type="button" class="build-item-btn" data-action="buildItem">
                 <i class="fas fa-save"></i>{{localize "SR5Marketplace.ItemBuilder.BuildItem"}}
             </button>

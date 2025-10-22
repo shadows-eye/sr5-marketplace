@@ -63,6 +63,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 changeTab: this.#onChangeTab,
                 clickItemName: this.#onClickItemName,
                 buildItem: this.#onBuildItem,
+                clearBuild: this.#onClearBuild,
                 // Builder Tab
                 selectBaseItem: this.#onSelectBaseItem,
                 removeChange: this.#onRemoveChange,
@@ -214,43 +215,80 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         switch (this.tabGroups.main) {
             case "effects":
-                // 1. Instantiate the NEW specialized builder
                 const effectsBuilder = new AppEffectsBuilderDialog();
-                // 2. Call the method to get the effects context from the current builderData
                 const effectsContext = await effectsBuilder.buildEffectsContext(builderData);
-                // 3. Render the new Effects.html template with the context
                 foundry.utils.mergeObject(partialContext, effectsContext);
-
-                // Now, render the partial using the complete, unified context.
                 tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/Effects.html", partialContext);
                 break;
             case "dialog":
-                tabContent = `<div class="placeholder">The final Creation Dialog will be here.</div>`;
+                tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/Dialog.html", partialContext);
                 break;
             default: // "builder" tab
                 this.tabGroups.main = "builder";
-                // --- THIS IS THE UPDATE ---
-                // Fetch the specific data sets we need for the builder.
                 const baseItemsByType = this.itemData.baseItemsByType ?? {};
                 const modsByType = this.itemData.modificationsByType ?? {};
-                
-                // Update context for the item selector (now only shows base items)
+
+                // You can keep this log for now to confirm the structure
+                console.log("MARKETPLACE DEBUG | modsByType Object:", modsByType);
+
+                // --- THE CRITICAL FIX ---
+                // We now use the 'allModifications' key as the single, reliable source for all mods.
+                const allMods = modsByType.allModifications?.items || [];
+
+                // --- Item Selector Context (no changes) ---
                 partialContext.itemsByType = baseItemsByType;
                 if (!this.selectedKey || !baseItemsByType[this.selectedKey]) {
                     this.selectedKey = Object.keys(baseItemsByType).find(k => baseItemsByType[k].items.length > 0) || null;
                 }
                 partialContext.selectedKey = this.selectedKey;
                 partialContext.selectedItems = this.selectedKey ? (baseItemsByType[this.selectedKey]?.items || []) : [];
-                
-                // Update context for the mod selector (now shows categorized mods)
-                 // Instead of relying on a single key, we'll combine the 'items' array
-                // from every category within modsByType (weaponMods, armorMods, etc.).
-                // This is a much more robust way to get all modifications.
-                partialContext.mods = Object.values(modsByType).flatMap(category => category.items || []);
-                
-                console.log (partialContext)
-                // Render the single, all-in-one template for the builder tab.
+
+                // --- Logic for when a Base Item IS Selected ---
+                if (builderData.baseItem) {
+                    const baseItemType = builderData.baseItem.type;
+
+                    // --- THE FIX IS HERE ---
+                    // Add "weapon" to this array to match the base item's type
+                    const weaponTypes = ['rangedWeapon', 'meleeWeapon', 'weapon'];
+
+                    const specificMods = [];
+                    const generalMods = [];
+                    const specificModTypes = ['weapon', 'armor', 'vehicle', 'drone'];
+
+                    for (const mod of allMods) {
+                        const modType = mod.system?.type;
+
+                        if (specificModTypes.includes(modType)) {
+                            // This condition will now correctly evaluate to TRUE for weapon mods
+                            if ((modType === 'weapon' && weaponTypes.includes(baseItemType)) || (modType === 'armor' && baseItemType === 'armor')) {
+                                specificMods.push(mod);
+                            }
+                        } else {
+                            generalMods.push(mod);
+                        }
+                    }
+
+                    specificMods.sort((a, b) => (a.system?.mount_point || '').localeCompare(b.system?.mount_point || ''));
+
+                    partialContext.categorizedMods = {
+                        specific: {
+                            label: `${baseItemType.includes('weapon') ? 'Weapon' : 'Armor'} Modifications`,
+                            items: specificMods
+                        },
+                        general: {
+                            label: "General Modifications",
+                            items: generalMods
+                        }
+                    };
+
+                } else {
+                    // --- Logic for when NO Base Item is Selected ---
+                    // Show the entire master list, uncategorized
+                    partialContext.mods = allMods;
+                }
+
                 tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/Builder.html", partialContext);
+                console.log("Marketplace Builder | Builder Tab Context:", partialContext);
                 break;
         }
 
@@ -260,7 +298,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         };
 
         return { 
-            tabContent, // We now pass the single content variable to the main template.
+            tabContent,
             purchasingActor: this.purchasingActor,
             builder: builderContext
         };
@@ -360,6 +398,16 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     
     static #onBuildItem(event, target) {
         ui.notifications.warn("The Item Builder feature is not yet implemented.");
+    }
+
+    /**
+     * Handles clearing the entire builder state and re-rendering to the blank slate.
+     * @private
+     */
+    static async #onClearBuild(event, target) {
+        await BuilderStateService.clearState();
+        this.tabGroups.main = "builder"; // Ensure we are on the builder tab
+        this.render();
     }
 
     // --- Action Handlers for Effects Tab ---

@@ -36,12 +36,39 @@
             <input type="search" name="modSearch" placeholder="{{localize 'SR5Marketplace.ItemBuilder.SearchAllMods'}}"/>
         </header>
         <div class="item-content-grid">
-            {{#each mods}}
-            <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}">
-                <img src="{{this.img}}" alt="{{this.name}}" class="item-image" loading="lazy"/>
-                <a class="item-name" data-action="clickItemName" data-item-uuid="{{this.uuid}}">{{this.name}}</a>
-            </div>
-            {{/each}}
+            {{!-- This block renders if a base item is selected and we have categories --}}
+            {{#if categorizedMods}}
+                {{!-- Render Specific Mods, if any --}}
+                {{#if categorizedMods.specific.items.length}}
+                    <h4 class="category-header">{{categorizedMods.specific.label}}</h4>
+                    {{#each categorizedMods.specific.items}}
+                    <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}" data-tooltip="Cost: {{this.system.cost}}&#10;Avail: {{this.system.availability}}{{this.system.availabilityType}}{{#if this.effects.length}}&#10;Has Effects{{/if}}" data-tooltip-direction="UP">
+                        <img src="{{this.img}}" alt="{{this.name}}" class="item-image" loading="lazy"/>
+                        <a class="item-name" data-action="clickItemName" data-item-uuid="{{this.uuid}}">{{this.name}}</a>
+                    </div>
+                    {{/each}}
+                {{/if}}
+
+                {{!-- Render General Mods, if any --}}
+                {{#if categorizedMods.general.items.length}}
+                    <h4 class="category-header">{{categorizedMods.general.label}}</h4>
+                    {{#each categorizedMods.general.items}}
+                    <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}" data-tooltip="Cost: {{this.system.cost}}&#10;Avail: {{this.system.availability}}{{this.system.availabilityType}}{{#if this.effects.length}}&#10;Has Effects{{/if}}" data-tooltip-direction="UP">
+                        <img src="{{this.img}}" alt="{{this.name}}" class="item-image" loading="lazy"/>
+                        <a class="item-name" data-action="clickItemName" data-item-uuid="{{this.uuid}}">{{this.name}}</a>
+                    </div>
+                    {{/each}}
+                {{/if}}
+
+            {{!-- This is the fallback for when no base item is selected --}}
+            {{else}}
+                {{#each mods}}
+                <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}" data-tooltip="Cost: {{this.system.cost}}&#10;Avail: {{this.system.availability}}{{this.system.availabilityType}}{{#if this.effects.length}}&#10;Has Effects{{/if}}" data-tooltip-direction="UP">
+                    <img src="{{this.img}}" alt="{{this.name}}" class="item-image" loading="lazy"/>
+                    <a class="item-name" data-action="clickItemName" data-item-uuid="{{this.uuid}}">{{this.name}}</a>
+                </div>
+                {{/each}}
+            {{/if}}
         </div>
     </section>
 
