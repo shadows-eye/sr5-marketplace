@@ -241,6 +241,10 @@
   min-width: 100px;
   min-height: 100px;
 }
+.mod-slot.drag-invalid {
+  outline: 2px dashed red;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+}
 
 .itemBuilder .mod-slot:hover {
   border-color: var(--border-color-highlight);
@@ -578,4 +582,26 @@
     margin-top: 15px;
     padding-top: 10px;
     border-top: 1px solid var(--border-color-medium);
+}
+
+/*  Initial green outline for valid slots on drag start */
+.itemBuilder.dragging-mod .mod-slot.initial-valid {
+  outline: 2px dashed green;
+}
+
+/*  Initial red outline for invalid slots on drag start */
+.itemBuilder.dragging-mod .mod-slot.initial-invalid {
+  outline: 2px dashed red;
+}
+
+/* Initial blue outline when the override setting is active */
+.itemBuilder.dragging-mod .mod-slot.initial-override {
+  outline: 2px dashed #00bfff; /* Deep sky blue */
+}
+
+/* MODIFIED: The hover effect now only adds the box-shadow for emphasis */
+.itemBuilder.dragging-mod .mod-slot.valid-drop,
+.itemBuilder.dragging-mod .mod-slot.invalid-drop,
+.itemBuilder.dragging-mod .mod-slot.override-drop {
+  box-shadow: 0 0 15px currentColor; /* Uses the color from the outline */
 }

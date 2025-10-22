@@ -49,7 +49,12 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         }
         this.selectedKey = defaultKey;
-        // Tagify Context
+        this.hoverTimeout = null; 
+        // To hold a reference to the active tooltip application
+        this.tooltipApp = null;
+
+        //Drag data
+        this.draggedModData = null;
     }
 
     /** @override */
@@ -58,6 +63,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             id: "itemBuilder",
             position: { width: 1600, height: 860 },
             window: { title: "Item Builder", resizable: true },
+            dragDrop: [{
+                dragSelector: ".mod-selector-section .item-card[draggable='true']",
+                dropSelector: ".mod-slot[data-slot-id]"
+            }],
             actions: {
                 // Core
                 changeTab: this.#onChangeTab,
@@ -93,105 +102,155 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         main: { template: "modules/sr5-marketplace/templates/apps/itemBuilder/item-builder.html" }
     };
 
-    /** * @override
+    /**
+     * @override
+     * Called when a drag operation starts.
+     */
+    _onDragStart(event) {
+        // --- THIS IS THE FIX ---
+        // Immediately close any active tooltip and clear hover timers.
+        this.#onItemHoverOut(event);
+
+        this.element.classList.add("dragging-mod");
+        const card = event.currentTarget;
+        const data = {
+            uuid: card.dataset.itemUuid,
+            mountPoint: card.dataset.mountPoint
+        };
+        this.draggedModData = { mountPoint: data.mountPoint };
+        event.dataTransfer.setData("text/plain", JSON.stringify(data));
+
+        const override = game.settings.get('sr5-marketplace', 'itemBuilder.ignoreMountRestrictions');
+        const draggedMountPoint = this.draggedModData.mountPoint || "none";
+        const dropTargets = this.element.querySelectorAll('.mod-slot[data-slot-id]');
+
+        dropTargets.forEach(slot => {
+            if (override) {
+                slot.classList.add("initial-override");
+                return;
+            }
+            const targetMountPoint = slot.dataset.mountPoint;
+            if (!targetMountPoint || targetMountPoint === draggedMountPoint) {
+                slot.classList.add("initial-valid");
+            } else {
+                slot.classList.add("initial-invalid");
+            }
+        });
+    }
+
+    /**
+     * @override
+     * Called when a dragged element enters a drop target. Now only adds the hover effect.
+     */
+    _onDragEnter(event) {
+        const slot = event.currentTarget;
+        if (slot.classList.contains("initial-override")) {
+            slot.classList.add("override-drop");
+        } else if (slot.classList.contains("initial-valid")) {
+            slot.classList.add("valid-drop");
+        } else if (slot.classList.contains("initial-invalid")) {
+            slot.classList.add("invalid-drop");
+        }
+    }
+
+    /**
+     * @override
+     * Called when a dragged element leaves a drop target. Now only removes the hover effect.
+     */
+    _onDragLeave(event) {
+        event.currentTarget.classList.remove("valid-drop", "invalid-drop", "override-drop");
+    }
+
+    /**
+     * @override
+     * Called when a drag operation concludes. This is the master cleanup function.
+     */
+    _onDragEnd(event) {
+        this.draggedModData = null;
+        this.element.classList.remove("dragging-mod");
+        
+        // Clean up ALL drag-related classes from ALL slots
+        this.element.querySelectorAll(".mod-slot[data-slot-id]").forEach(s => {
+            s.classList.remove(
+                "valid-drop", "invalid-drop", "override-drop",
+                "initial-valid", "initial-invalid", "initial-override"
+            );
+        });
+    }
+
+    /**
+     * Callback for when a dragged element is dropped on a target.
+     * @param {DragEvent} event The originating DragEvent.
+     */
+    async _onDrop(event) {
+        const data = JSON.parse(event.dataTransfer.getData("text/plain"));
+        const slot = event.currentTarget;
+        const override = game.settings.get('sr5-marketplace', 'itemBuilder.ignoreMountRestrictions');
+        const slotId = slot.dataset.slotId;
+        const targetMountPoint = slot.dataset.mountPoint;
+        const draggedMountPoint = data.mountPoint || "none";
+
+        if (override || !targetMountPoint || targetMountPoint === draggedMountPoint) {
+            const item = await fromUuid(data.uuid);
+            if (!item) return;
+
+            // --- THIS IS THE FIX ---
+            // Create the complete data object from the fetched item.
+            const droppedItemData = {
+                uuid: item.uuid,
+                name: item.name,
+                img: item.img,
+                system: item.system,
+                effects: item.effects.map(e => e.toObject(false))
+            };
+
+            // This will now save the complete object to the correct slot.
+            await BuilderStateService.addChange(slotId, droppedItemData);
+            this.render();
+        } else {
+            ui.notifications.warn("This modification cannot be placed in that slot.");
+        }
+    }
+
+    /** 
+     * @override
      * @param {object} context - The context object on render.
      * @param {object} options - The options from the main app passed down.
      */
     _onRender(context, options) {
         super._onRender(context, options);
-        // Only initialize services and listeners if the builder tab is active
-        if (this.tabGroups.main === "builder") {
-            // --- Tagify ---
-            // Add a global click listener to close dropdowns when clicking outside.
-            window.addEventListener('click', this._onWindowClick);
 
-            // Add input listeners for real-time filtering on multi-select boxes.
-            const multiSelectInputs = this.element.querySelectorAll(".multi-select__input");
-            for (const input of multiSelectInputs) {
-                input.addEventListener("input", this._onFilterMultiSelect);
-            }
-            // --- Item Search ---
+        // --- BIND DRAG & DROP HANDLERS ---
+        this.#dragDrop.forEach(d => d.bind(this.element));
+
+        // --- Logic for the "Builder" Tab ---
+        if (this.tabGroups.main === "builder") {
+            // Initialize Search Services & Category Selector
             this.itemSearchService = new itemSearchService(this.element);
             this.itemSearchService.initialize({
                 searchBox: 'input[name="itemSearch"]',
                 itemsGrid: '.item-selector-section .item-content-grid',
                 nameSelector: ".item-name"
             });
-            
-            // --- Mod Search ---
             this.modSearchService = new itemSearchService(this.element);
             this.modSearchService.initialize({
                 searchBox: 'input[name="modSearch"]',
                 itemsGrid: '.mod-selector-section .item-content-grid',
                 nameSelector: ".item-name"
             });
-
-            // --- Category Filter ---
             const categorySelector = this.element.querySelector("#item-type-selector");
             if (categorySelector) {
                 categorySelector.addEventListener("change", this.onChangeCategory.bind(this));
             }
 
-            // --- Drag and Drop Listeners ---
-            
-            // 1. Make all item cards in the sidebar draggable
-            const draggables = this.element.querySelectorAll('.item-card[draggable="true"]');
-            for (const card of draggables) {
-                card.addEventListener("dragstart", event => {
-                    const data = { uuid: card.dataset.itemUuid };
-                    event.dataTransfer.setData("text/plain", JSON.stringify(data));
-                });
-            }
-
-            // 2. Make the bottom mod slots receptive to drops
-            const dropTargets = this.element.querySelectorAll('.bottom-slots .mod-slot');
-            for (const slot of dropTargets) {
-                slot.addEventListener("dragover", event => {
-                    event.preventDefault(); // This is required to allow a drop
-                    slot.classList.add("drag-over");
-                });
-
-                slot.addEventListener("dragleave", event => {
-                    slot.classList.remove("drag-over");
-                });
-                
-                /**
-                 * Handle the drop event for an item card onto a mod slot.
-                 * @param {DragEvent} event - The drop event.
-                 */
-                slot.addEventListener("drop", async event => {
-                    event.preventDefault();
-                    slot.classList.remove("drag-over");
-
-                    const data = JSON.parse(event.dataTransfer.getData("text/plain"));
-                    const slotId = slot.dataset.slotId;
-
-                    if (data.uuid && slotId) {
-                        // Asynchronously load the full item document from its UUID
-                        const item = await fromUuid(data.uuid);
-                        if (!item) {
-                            console.error("Marketplace Builder | Could not find item from UUID:", data.uuid);
-                            return;
-                        }
-
-                        // Now that we have the full item, we can build the data object
-                        const droppedItemData = {
-                            uuid: item.uuid,
-                            name: item.name,
-                            img: item.img,
-                            // Map the effects to plain data objects for storage
-                            effects: item.effects.map(e => e.toObject(false))
-                        };
-                        
-                        await BuilderStateService.addChange(slotId, droppedItemData);
-                        
-                        // Re-render the app to show the new item in the slot
-                        this.render();
-                    }
-                });
-            }
-        } else {
-            // Clean up services if the tab is not active to prevent memory leaks
+            // Initialize Tooltip Listeners
+            this.element.querySelectorAll('.mod-selector-section .item-card').forEach(card => {
+                card.addEventListener("mouseenter", this.#onItemHoverIn.bind(this));
+                card.addEventListener("mouseleave", this.#onItemHoverOut.bind(this));
+            });
+        }
+        else {
+            // Clean up services if not on the builder tab
             this.itemSearchService = null;
             this.modSearchService = null;
         }
@@ -229,13 +288,12 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 const modsByType = this.itemData.modificationsByType ?? {};
 
                 // You can keep this log for now to confirm the structure
-                console.log("MARKETPLACE DEBUG | modsByType Object:", modsByType);
+                //console.log("MARKETPLACE DEBUG | modsByType Object:", modsByType);
 
-                // --- THE CRITICAL FIX ---
                 // We now use the 'allModifications' key as the single, reliable source for all mods.
                 const allMods = modsByType.allModifications?.items || [];
 
-                // --- Item Selector Context (no changes) ---
+                // --- Item Selector Context ---
                 partialContext.itemsByType = baseItemsByType;
                 if (!this.selectedKey || !baseItemsByType[this.selectedKey]) {
                     this.selectedKey = Object.keys(baseItemsByType).find(k => baseItemsByType[k].items.length > 0) || null;
@@ -246,9 +304,9 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 // --- Logic for when a Base Item IS Selected ---
                 if (builderData.baseItem) {
                     const baseItemType = builderData.baseItem.type;
+                    
+                    partialContext.isWeapon = ['rangedWeapon', 'meleeWeapon', 'weapon'].includes(baseItemType);
 
-                    // --- THE FIX IS HERE ---
-                    // Add "weapon" to this array to match the base item's type
                     const weaponTypes = ['rangedWeapon', 'meleeWeapon', 'weapon'];
 
                     const specificMods = [];
@@ -303,6 +361,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             builder: builderContext
         };
     }
+
 
     // --- Static Helpers ---
 
@@ -636,4 +695,76 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const newScrollable = app.element.querySelector(".effect-creator-steps");
         if (newScrollable) newScrollable.scrollTop = scrollTop;
     }
+
+    /**
+     * Handles the mouse entering an item card to show a preview tooltip.
+     * @param {MouseEvent} event - The mouseenter event.
+     * @private
+     */
+    #onItemHoverIn(event) {
+        const card = event.currentTarget;
+        const uuid = card.dataset.itemUuid;
+        if (!uuid) return;
+
+        // Start a timer to show the tooltip after a short delay (e.g., 500ms)
+        this.hoverTimeout = setTimeout(() => {
+            // Get the position of the card
+            const rect = card.getBoundingClientRect();
+
+            // Create the preview app instance
+            this.tooltipApp = new ItemPreviewApp(uuid, {
+                window: { frame: true }, // Renders without a window frame
+                classes: ["item-preview-tooltip"], // Custom class for styling
+                position: {
+                    // Position the top-left corner of the app at the top-left of the card
+                    top: rect.top,
+                    left: rect.left,
+                    //width: 350 // Set a fixed width for consistency
+                }
+            });
+            this.tooltipApp.render(true);
+
+        }, 500); // 500ms delay
+    }
+
+    /**
+     * Handles the mouse leaving an item card to hide the preview tooltip.
+     * @param {MouseEvent} event - The mouseleave event.
+     * @private
+     */
+    #onItemHoverOut(event) {
+        // Clear any pending tooltip from showing up
+        clearTimeout(this.hoverTimeout);
+
+        // If a tooltip app exists, close and destroy it
+        if (this.tooltipApp) {
+            this.tooltipApp.close();
+            this.tooltipApp = null;
+        }
+    }
+
+    /**
+     * Create drag-and-drop workflow handlers for this Application.
+     * @returns {DragDrop[]} An array of DragDrop handlers.
+     * @private
+     */
+    #createDragDropHandlers() {
+        return this.options.dragDrop.map(d => {
+            d.callbacks = {
+                dragstart: this._onDragStart.bind(this),
+                dragenter: this._onDragEnter.bind(this),
+                dragleave: this._onDragLeave.bind(this),
+                dragend: this._onDragEnd.bind(this),
+                drop: this._onDrop.bind(this)
+            };
+            return new foundry.applications.ux.DragDrop.implementation(d);
+        });
+    }
+
+    /**
+     * The array of DragDrop instances.
+     * @type {DragDrop[]}
+     * @private
+     */
+    #dragDrop = this.#createDragDropHandlers();
 }

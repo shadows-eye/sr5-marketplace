@@ -37,6 +37,10 @@
                 "KarmaComplexForm": {
                     "name": "Karma Komplexe Form Kosten",
                     "hint": "Diese Einstellung ermöglicht es Ihnen, die Karma Kosten für komplexe Formen festzulegen. Wenn auf true gesetzt, werden die Karma Kosten anstelle der Essenzkosten verwendet."
+                },
+                "mountRestrictions": {
+                    "name": "Überschreibe mount Slots Beschränkungen",
+                    "hint": "Wenn ausgewählt können alle modificationen in jedem mount slot gesetzt werden, unabhängig von mount point der modification."
                 }
             },
             "Tests":{

@@ -159,6 +159,15 @@ const initializeSettings = () => {
         },
         default: "opposed", // The default rule will be the core Opposed Test
     });
+    game.settings.register("sr5-marketplace", "itemBuilder.ignoreMountRestrictions", {
+    name: "Override Item Builder Mount Restrictions",
+    hint: "If checked, allows any modification to be placed in any weapon mount slot, ignoring mount point rules.",
+    scope: "world",
+    config: true,
+    restricted: true,
+    type: Boolean,
+    default: false
+    });
 };
 
 /**

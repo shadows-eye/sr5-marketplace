@@ -42,7 +42,7 @@
                 {{#if categorizedMods.specific.items.length}}
                     <h4 class="category-header">{{categorizedMods.specific.label}}</h4>
                     {{#each categorizedMods.specific.items}}
-                    <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}" data-tooltip="Cost: {{this.system.cost}}&#10;Avail: {{this.system.availability}}{{this.system.availabilityType}}{{#if this.effects.length}}&#10;Has Effects{{/if}}" data-tooltip-direction="UP">
+                    <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}" data-mount-point="{{this.system.mount_point}}">
                         <img src="{{this.img}}" alt="{{this.name}}" class="item-image" loading="lazy"/>
                         <a class="item-name" data-action="clickItemName" data-item-uuid="{{this.uuid}}">{{this.name}}</a>
                     </div>
@@ -53,7 +53,7 @@
                 {{#if categorizedMods.general.items.length}}
                     <h4 class="category-header">{{categorizedMods.general.label}}</h4>
                     {{#each categorizedMods.general.items}}
-                    <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}" data-tooltip="Cost: {{this.system.cost}}&#10;Avail: {{this.system.availability}}{{this.system.availabilityType}}{{#if this.effects.length}}&#10;Has Effects{{/if}}" data-tooltip-direction="UP">
+                    <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}" data-mount-point="{{this.system.mount_point}}">
                         <img src="{{this.img}}" alt="{{this.name}}" class="item-image" loading="lazy"/>
                         <a class="item-name" data-action="clickItemName" data-item-uuid="{{this.uuid}}">{{this.name}}</a>
                     </div>
@@ -63,7 +63,7 @@
             {{!-- This is the fallback for when no base item is selected --}}
             {{else}}
                 {{#each mods}}
-                <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}" data-tooltip="Cost: {{this.system.cost}}&#10;Avail: {{this.system.availability}}{{this.system.availabilityType}}{{#if this.effects.length}}&#10;Has Effects{{/if}}" data-tooltip-direction="UP">
+                <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}" data-mount-point="{{this.system.mount_point}}">
                     <img src="{{this.img}}" alt="{{this.name}}" class="item-image" loading="lazy"/>
                     <a class="item-name" data-action="clickItemName" data-item-uuid="{{this.uuid}}">{{this.name}}</a>
                 </div>
@@ -93,16 +93,64 @@
                 <!--<div class="item-stats-display">--> 
                     {{> "modules/sr5-marketplace/templates/apps/itemBuilder/partials/ItemDetails.html"}}
                 <!--</div>-->
-                <div class= "mod-slot slot-top-left"></div>
-                <div class= "mod-slot slot-bottom-left"></div>
+                {{!-- These slots now have unique IDs and conditional mount points for weapons --}}
+                <div class="mod-slot slot-top-left" data-slot-id="topLeft" {{#if isWeapon}}data-mount-point="top"{{/if}}>
+                    {{#with builderData.changes.topLeft}}
+                        <div class="slot-content-containment">
+                            <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
+                            <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="topLeft" title="Remove Mod">
+                                <i class="SR5Marketplace fas fa-trash"></i>
+                            </div>
+                        </div>
+                    {{/with}}
+                </div>
+                <div class="mod-slot slot-bottom-left" data-slot-id="bottomLeft" {{#if isWeapon}}data-mount-point="under"{{/if}}>
+                     {{#with builderData.changes.bottomLeft}}
+                        <div class="slot-content-containment">
+                            <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
+                            <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomLeft" title="Remove Mod">
+                                <i class="SR5Marketplace fas fa-trash"></i>
+                            </div>
+                        </div>
+                    {{/with}}
+                </div>
+
                 <div class="center-display">
                     <img src="modules/sr5-marketplace/assets/frames/ItemRing.svg" alt="Item Build" class="ring-image"/>
                     <img src="{{builderData.itemTypeImage}}" alt="{{builderData.baseItem.name}}" class="base-item-image"/>
                 </div>
 
-                <div class="mod-slot slot-top-right"></div>
-                <div class="mod-slot slot-middle-right"></div>
-                <div class="mod-slot slot-bottom-right"></div>
+                <div class="mod-slot slot-top-right" data-slot-id="topRight" {{#if isWeapon}}data-mount-point="barrel"{{/if}}>
+                     {{#with builderData.changes.topRight}}
+                        <div class="slot-content-containment">
+                            <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
+                            <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="topRight" title="Remove Mod">
+                                <i class="SR5Marketplace fas fa-trash"></i>
+                            </div>
+                        </div>
+                    {{/with}}
+                </div>
+                <div class="mod-slot slot-middle-right" data-slot-id="middleRight" {{#if isWeapon}}data-mount-point="internal"{{/if}}>
+                     {{#with builderData.changes.middleRight}}
+                        <div class="slot-content-containment">
+                            <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
+                            <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="middleRight" title="Remove Mod">
+                                <i class="SR5Marketplace fas fa-trash"></i>
+                            </div>
+                        </div>
+                    {{/with}}
+                </div>
+                <div class="mod-slot slot-bottom-right" data-slot-id="bottomRight" {{#if isWeapon}}data-mount-point="side"{{/if}}>
+                     {{#with builderData.changes.bottomRight}}
+                        <div class="slot-content-containment">
+                            <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
+                            <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomRight" title="Remove Mod">
+                                <i class="SR5Marketplace fas fa-trash"></i>
+                            </div>
+                        </div>
+                    {{/with}}
+                </div>
+                <!-- Bottom Slots -->
                 <div class="bottom-slots">
                     <div class="bottom-slots">
                         {{!-- Slot 1 --}}

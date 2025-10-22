@@ -37,7 +37,12 @@
                 "KarmaComplexForm": {
                     "name": "Karma Complex Form Cost",
                     "hint": "This setting allows you to set the karma cost for complex forms. Value will be used to pay for Complex Forms."
+                },
+                "mountRestrictions": {
+                    "name": "",
+                    "hint": ""
                 }
+
             },
             "Tests":{
                 "title": "Marketplace Tests",
