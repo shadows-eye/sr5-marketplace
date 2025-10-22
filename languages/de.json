@@ -40,7 +40,7 @@
                 }
             },
             "Tests":{
-                "title": "Marketplace Tests",
+                "title": "Marktplatz Tests",
                 "AvailabilityTest": "Verfügbarkeit Test"
             },
             "Source": {
@@ -200,33 +200,79 @@
                 "Failure": "Konnte nicht beschafft werden."
             }
         },
-        "AppDialogItem": {
-                "result": {
-                    "Test": "Testergebnis",
-                    "text": "Du hast ",
-                    "Hits": " Erfolge erzielt!"
-                },
-                "GlitchText": {
-                    "with": "Mit ",
-                    "glitch": " Einsen... ein PATZER!"
-                },
-                "ThresholdInfo": "Dies ist der Schwellenwert für den Widerstandswurf des Gegenstands.",
-                "RollItemResistance": "Gegenstandswiderstand würfeln",
-                "AcquisitionSuccess": "Gegenstände können erworben werden",
-                "AcquisitionFailed": "Erwerb fehlgeschlagen",
-                "YourRoll": "Dein Wurf",
-                "netHits": "Nettoerfolge",
-                "Resistance": "Gegenstandswiderstand",
-                "Hits": "Erfolge",
-                "ExtendedSuccessDetails": "Der Erwerb benötigte {rolls} Würfe, unter Verwendung einer Connection von {connection}. Endgültige Lieferzeit: {timeValue}"
+        "ItemBuilder": {
+            "BuildItem": "Artikel bauen",
+            "SelectAsBase": "Als Basisartikel auswählen",
+            "SearchAllMods": "Alle Modifikationen durchsuchen...",
+            "SearchPlaceholder": "Gegenstände suchen...",
+            "nav": {
+                "builder": "Builder",
+                "effects": "Effekte",
+                "dialog": "Dialog"
             },
-            "Time": {
-                "Hours": "Stunden",
-                "Day": "Tag",
-                "Days": "Tage",
-                "Week": "Woche",
-                "Month": "Monat"
+            "Items": {
+                "Header": "Basisartikel"
+            },
+            "Modifications": {
+                "Header": "Verfügbare Modifikationen"
+            },
+            "Effects": {
+                "ManageEffects": "Effekte verwalten",
+                "ManageEffectsHint": "Aktive Effekte des Basisartikels und seiner Modifikationen ansehen, erstellen und bearbeiten.",
+                "AddEffect": "Effekt hinzufügen",
+                "InnateLockedHint": "Dies ist ein angeborener Effekt des Artikels und kann nicht gelöscht, aber überschrieben werden.",
+                "EditEffectHeader": "Effekt bearbeiten",
+                "CreateEffectHeader": "Neuen Effekt erstellen",
+                "EffectNameLabel": "Effektname",
+                "EffectNamePlaceholder": "z.B., Smartlink-Bonus",
+                "EffectIconLabel": "Symbol",
+                "SelectIconTooltip": "Wähle ein Symbol für diesen Effekt",
+                "ApplyToLabel": "Anwenden auf",
+                "TestFilterLabel": "Nach Probe filtern",
+                "SelectTestsPlaceholder": "Jede Probe",
+                "CategoryFilterLabel": "Nach Kategorie filtern",
+                "SelectCategoriesPlaceholder": "Jede Kategorie",
+                "SkillFilterLabel": "Nach Fertigkeit filtern",
+                "SelectSkillsPlaceholder": "Jede Fertigkeit",
+                "AttributeFilterLabel": "Nach Attribut filtern",
+                "SelectAttributesPlaceholder": "Jedes Attribut",
+                "LimitFilterLabel": "Nach Limit filtern",
+                "SelectLimitsPlaceholder": "Jedes Limit",
+                "AttributeKeyLabel": "Attribut / Eigenschaft",
+                "AttributeKeyPlaceholder": "Wähle eine Eigenschaft aus den Gruppen unten aus.",
+                "ChangeModeLabel": "Änderungsmodus",
+                "EffectValueLabel": "Wert",
+                "SelectDerivedValueTooltip": "Wähle eine Eigenschaft vom Basisartikel, um diesen Wert abzuleiten.",
+                "SelectDerivedValueLabel": "Wähle eine Eigenschaft vom Basisartikel"
             }
+        },
+        "AppDialogItem": {
+            "result": {
+                "Test": "Testergebnis",
+                "text": "Du hast ",
+                "Hits": " Erfolge erzielt!"
+            },
+            "GlitchText": {
+                "with": "Mit ",
+                "glitch": " Einsen... ein PATZER!"
+            },
+            "ThresholdInfo": "Dies ist der Schwellenwert für den Widerstandswurf des Gegenstands.",
+            "RollItemResistance": "Gegenstandswiderstand würfeln",
+            "AcquisitionSuccess": "Gegenstände können erworben werden",
+            "AcquisitionFailed": "Erwerb fehlgeschlagen",
+            "YourRoll": "Dein Wurf",
+            "netHits": "Nettoerfolge",
+            "Resistance": "Gegenstandswiderstand",
+            "Hits": "Erfolge",
+            "ExtendedSuccessDetails": "Der Erwerb benötigte {rolls} Würfe, unter Verwendung einer Connection von {connection}. Endgültige Lieferzeit: {timeValue}"
+        },
+        "Time": {
+            "Hours": "Stunden",
+            "Day": "Tag",
+            "Days": "Tage",
+            "Week": "Woche",
+            "Month": "Monat"
+        }
     },
     "TYPES": {
         "Actor": {
@@ -234,134 +280,134 @@
         }
     },
     "FIELDS": {
-            "description": {
-                "label": "Beschreibung"
+        "description": {
+            "label": "Beschreibung"
+        },
+        "attributes": {
+            "label": "Attribute",
+            "body": { "label": "Konstitution" },
+            "agility": { "label": "Geschicklichkeit" },
+            "reaction": { "label": "Reaktion" },
+            "strength": { "label": "Stärke" },
+            "willpower": { "label": "Willenskraft" },
+            "logic": { "label": "Logik" },
+            "intuition": { "label": "Intuition" },
+            "charisma": { "label": "Charisma" },
+            "magic": { "label": "Magie" },
+            "resonance": { "label": "Resonanz" },
+            "essence": { "label": "Essenz" },
+            "edge": { "label": "Edge" },
+            "initiation": { "label": "Initiation" },
+            "submersion": { "label": "Wandlung" }
+        },
+        "Skill": {
+            "AeronauticsMechanic": "Luftfahrtmechanik",
+            "Alchemy": "Alchemie",
+            "AnimalHandling": "Tierführung",
+            "Arcana": "Arkana",
+            "Archery": "Projektilwaffen",
+            "Armorer": "Waffenbau",
+            "Artificing": "Fokusherstellung",
+            "Artisan": "Handwerk",
+            "Assensing": "Askennen",
+            "AstralCombat": "Astralkampf",
+            "Automatics": "Schnellfeuerwaffen",
+            "AutomotiveMechanic": "Fahrzeugmechanik",
+            "Banishing": "Verbannen",
+            "Binding": "Binden",
+            "Biotechnology": "Biotechnologie",
+            "Blades": "Klingenwaffen",
+            "Chemistry": "Chemie",
+            "Clubs": "Knüppel",
+            "Compiling": "Kompilieren",
+            "Computer": "Computer",
+            "Con": "Überreden",
+            "Counterspelling": "Antimagie",
+            "Cybercombat": "Matrixkampf",
+            "Cybertechnology": "Kybernetik",
+            "Decompiling": "Dekompilieren",
+            "Demolitions": "Sprengstoffe",
+            "Disenchanting": "Entzaubern",
+            "Disguise": "Verkleiden",
+            "Diving": "Tauchen",
+            "ElectronicWarfare": "Elektronische Kriegsführung",
+            "EscapeArtist": "Entfesseln",
+            "Etiquette": "Gebräuche",
+            "ExoticMelee": "Exotische Nahkampfwaffe",
+            "ExoticRange": "Exotische Fernkampfwaffe",
+            "FirstAid": "Erste Hilfe",
+            "Flight": "Fliegen",
+            "Forgery": "Fälschen",
+            "FreeFall": "Freifall",
+            "Gunnery": "Geschütze",
+            "Gymnastics": "Akrobatik",
+            "Hacking": "Hacking",
+            "Hardware": "Hardware",
+            "HeavyWeapons": "Schwere Waffen",
+            "Impersonation": "Verkörperung",
+            "IndustrialMechanic": "Industriemechanik",
+            "Instruction": "Unterricht",
+            "Intimidation": "Einschüchtern",
+            "Leadership": "Führung",
+            "Locksmith": "Schlosser",
+            "Longarms": "Gewehre",
+            "Medicine": "Medizin",
+            "NauticalMechanic": "Seefahrtmechanik",
+            "Navigation": "Navigation",
+            "Negotiation": "Verhandlung",
+            "Palming": "Fingerfertigkeit",
+            "Perception": "Wahrnehmung",
+            "Performance": "Vorführung",
+            "PilotAerospace": "Raumfahrzeuge",
+            "PilotAircraft": "Flugzeuge",
+            "PilotExoticVehicle": "Exotisches Fahrzeug",
+            "PilotGroundCraft": "Bodenfahrzeuge",
+            "PilotWalker": "Läufer",
+            "PilotWaterCraft": "Schiffe",
+            "Pistols": "Pistolen",
+            "Registering": "Registrieren",
+            "RitualSpellcasting": "Ritualzauberei",
+            "Running": "Laufen",
+            "Skill": "Fertigkeit",
+            "Skills": "Fertigkeiten",
+            "Sneaking": "Schleichen",
+            "Software": "Software",
+            "Spellcasting": "Spruchzauberei",
+            "Summoning": "Herbeirufen",
+            "Survival": "Survival",
+            "Swimming": "Schwimmen",
+            "Teamwork": {
+                "Glitched": "Gepatz",
+                "ParticipantActor": "Akteur wählen",
+                "RollIt": "Würfeln",
+                "TakePart": "Teilnehmen"
             },
-            "attributes": {
-                "label": "Attribute",
-                "body": { "label": "Konstitution" },
-                "agility": { "label": "Geschicklichkeit" },
-                "reaction": { "label": "Reaktion" },
-                "strength": { "label": "Stärke" },
-                "willpower": { "label": "Willenskraft" },
-                "logic": { "label": "Logik" },
-                "intuition": { "label": "Intuition" },
-                "charisma": { "label": "Charisma" },
-                "magic": { "label": "Magie" },
-                "resonance": { "label": "Resonanz" },
-                "essence": { "label": "Essenz" },
-                "edge": { "label": "Edge" },
-                "initiation": { "label": "Initiation" },
-                "submersion": { "label": "Wandlung" }
-            },
-            "Skill": {
-                    "AeronauticsMechanic": "Luftfahrtmechanik",
-                    "Alchemy": "Alchemie",
-                    "AnimalHandling": "Tierführung",
-                    "Arcana": "Arkana",
-                    "Archery": "Projektilwaffen",
-                    "Armorer": "Waffenbau",
-                    "Artificing": "Fokusherstellung",
-                    "Artisan": "Handwerk",
-                    "Assensing": "Askennen",
-                    "AstralCombat": "Astralkampf",
-                    "Automatics": "Schnellfeuerwaffen",
-                    "AutomotiveMechanic": "Fahrzeugmechanik",
-                    "Banishing": "Verbannen",
-                    "Binding": "Binden",
-                    "Biotechnology": "Biotechnologie",
-                    "Blades": "Klingenwaffen",
-                    "Chemistry": "Chemie",
-                    "Clubs": "Knüppel",
-                    "Compiling": "Kompilieren",
-                    "Computer": "Computer",
-                    "Con": "Überreden",
-                    "Counterspelling": "Antimagie",
-                    "Cybercombat": "Matrixkampf",
-                    "Cybertechnology": "Kybernetik",
-                    "Decompiling": "Dekompilieren",
-                    "Demolitions": "Sprengstoffe",
-                    "Disenchanting": "Entzaubern",
-                    "Disguise": "Verkleiden",
-                    "Diving": "Tauchen",
-                    "ElectronicWarfare": "Elektronische Kriegsführung",
-                    "EscapeArtist": "Entfesseln",
-                    "Etiquette": "Gebräuche",
-                    "ExoticMelee": "Exotische Nahkampfwaffe",
-                    "ExoticRange": "Exotische Fernkampfwaffe",
-                    "FirstAid": "Erste Hilfe",
-                    "Flight": "Fliegen",
-                    "Forgery": "Fälschen",
-                    "FreeFall": "Freifall",
-                    "Gunnery": "Geschütze",
-                    "Gymnastics": "Akrobatik",
-                    "Hacking": "Hacking",
-                    "Hardware": "Hardware",
-                    "HeavyWeapons": "Schwere Waffen",
-                    "Impersonation": "Verkörperung",
-                    "IndustrialMechanic": "Industriemechanik",
-                    "Instruction": "Unterricht",
-                    "Intimidation": "Einschüchtern",
-                    "Leadership": "Führung",
-                    "Locksmith": "Schlosser",
-                    "Longarms": "Gewehre",
-                    "Medicine": "Medizin",
-                    "NauticalMechanic": "Seefahrtmechanik",
-                    "Navigation": "Navigation",
-                    "Negotiation": "Verhandlung",
-                    "Palming": "Fingerfertigkeit",
-                    "Perception": "Wahrnehmung",
-                    "Performance": "Vorführung",
-                    "PilotAerospace": "Raumfahrzeuge",
-                    "PilotAircraft": "Flugzeuge",
-                    "PilotExoticVehicle": "Exotisches Fahrzeug",
-                    "PilotGroundCraft": "Bodenfahrzeuge",
-                    "PilotWalker": "Läufer",
-                    "PilotWaterCraft": "Schiffe",
-                    "Pistols": "Pistolen",
-                    "Registering": "Registrieren",
-                    "RitualSpellcasting": "Ritualzauberei",
-                    "Running": "Laufen",
-                    "Skill": "Fertigkeit",
-                    "Skills": "Fertigkeiten",
-                    "Sneaking": "Schleichen",
-                    "Software": "Software",
-                    "Spellcasting": "Spruchzauberei",
-                    "Summoning": "Herbeirufen",
-                    "Survival": "Survival",
-                    "Swimming": "Schwimmen",
-                    "Teamwork": {
-                        "Glitched": "Glitched",
-                        "ParticipantActor": "Choose actor",
-                        "RollIt": "Roll it",
-                        "TakePart": "Take part"
-                    },
-                    "ThrowingWeapons": "Wurfwaffen",
-                    "Tracking": "Spurenlesen",
-                    "UnarmedCombat": "Waffenloser Kampf"
-                },
-            "skills": {
-                "label": "Skills"
-            },
-            "limits": {
-                "label": "Limits",
-                "social": { "label": "Social Limit" },
-                "mental": { "label": "Mental Limit" },
-                "physical": { "label": "Physical Limit" },
-                "astral": { "label": "Astral Limit" }
-            },
-            "track": {
-                "label": "Condition Tracks",
-                "physical": { "label": "Physical" },
-                "stun": { "label": "Stun" }
-            },
-            "movement": {
-                "label": "Movement",
-                "walk": { "label": "Walk" },
-                "run": { "label": "Run" }
-            },
-            "nuyen": { "label": "Nuyen" },
-            "karma": { "label": "Karma" 
+            "ThrowingWeapons": "Wurfwaffen",
+            "Tracking": "Spurenlesen",
+            "UnarmedCombat": "Waffenloser Kampf"
+        },
+        "skills": {
+            "label": "Fertigkeiten"
+        },
+        "limits": {
+            "label": "Limits",
+            "social": { "label": "Soziales Limit" },
+            "mental": { "label": "Geistiges Limit" },
+            "physical": { "label": "Körperliches Limit" },
+            "astral": { "label": "Astrales Limit" }
+        },
+        "track": {
+            "label": "Zustandsmonitore",
+            "physical": { "label": "Körperlich" },
+            "stun": { "label": "Geistig" }
+        },
+        "movement": {
+            "label": "Bewegung",
+            "walk": { "label": "Gehen" },
+            "run": { "label": "Laufen" }
+        },
+        "nuyen": { "label": "Nuyen" },
+        "karma": { "label": "Karma" 
         }
     }
 }

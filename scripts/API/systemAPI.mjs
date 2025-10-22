@@ -126,4 +126,29 @@ export class SR5SystemAPI {
         }
         return data;
     }
+
+    /**
+     * Gets the appropriate pre-localized map for a given actor data key.
+     * This centralizes the logic for mapping inconsistent keys (e.g., 'skills' -> 'activeSkills_l').
+     * @param {string} key The key from the actor's system data (e.g., 'skills', 'matrix').
+     * @returns {object} The corresponding localization map or an empty object.
+     */
+    getLocalizationMapForKey(key) {
+        switch (key) {
+            case 'skills':
+                return this.activeSkills_l;
+            case 'matrix':
+                return this.matrixAttributes_l;
+            case 'modifiers':
+                return this.modifierTypes_l;
+            // For single properties that are grouped in a larger map
+            case 'physical_track':
+            case 'stun_track':
+            case 'wounds':
+                return this.actorModifiers_l;
+            // Default case for keys that have a direct _l counterpart
+            default:
+                return this[`${key}_l`] || {};
+        }
+    }
 }

@@ -7,13 +7,13 @@ export class SystemDataMapperService {
      */
     static #EXCLUDED_GROUPS = new Set([
         "inventories", "npc", "values", "category_visibility", 
-        "description", "importFlags", "visibilityChecks"
+        "description", "importFlags", "visibilityChecks",
+        // These are now handled manually
+        "physical_track", "stun_track", "matrix_track", "track"
     ]);
 
     /**
      * Creates a title-cased label from a camelCase string as a fallback.
-     * @param {string} str The string to format.
-     * @returns {string} A formatted, title-cased string.
      * @private
      */
     static #createFallbackLabel(str) {
@@ -21,35 +21,34 @@ export class SystemDataMapperService {
     }
 
     /**
-     * Tries to find a localized label for a data model group key (e.g., 'attributes').
-     * @param {string} key The key from the data model (e.g., 'attributes').
+     * Tries to find a localized label for a data model group key.
+     * @param {string} key The key from the data model.
      * @returns {string} The localized label or a formatted fallback.
      * @private
      */
     static #createGroupLabel(key) {
-        const systemApi = game.sr5marketplace.api.system;
+        // Prioritize specific, known localization keys
+        const keyMap = {
+            skills: "SR5.ActiveSkills",
+            matrix: "SR5.Labels.ActorSheet.Matrix",
+            limits: "SR5.Limit",
+            attributes: "SR5.Attributes",
+            initiative: "SR5.Initiative",
+            modifiers: "SR5.Modifiers"
+        };
 
-        // Try common localization patterns for group headers
-        const potentialKeys = [
-            `SR5.${key.charAt(0).toUpperCase() + key.slice(1)}`, // e.g., SR5.Attributes
-            `SR5.Tabs.${key.charAt(0).toUpperCase() + key.slice(1)}`, // e.g., SR5.Tabs.Attributes
-            `SR5.Skills` // A common specific key
-        ];
-
-        for (const pKey of potentialKeys) {
-            const localized = game.i18n.localize(pKey);
-            if (localized !== pKey) return localized;
+        const specificKey = keyMap[key];
+        if (specificKey) {
+            const localized = game.i18n.localize(specificKey);
+            if (localized !== specificKey) return localized;
         }
 
-        // A special combination for vehicle modifications
-        if (key === "modificationCategories") {
-            const vehicleLabel = systemApi.modificationTypes_l?.vehicle || "Vehicle";
-            const modsLabel = systemApi.itemTypes_l?.modification || "Modifications";
-            return `${vehicleLabel} ${modsLabel}`;
-        }
-        
-        // Final fallback to formatting the key itself
-        return this.#createFallbackLabel(key);
+        // Fallback for other keys, e.g., 'movement'
+        const fallbackKey = `SR5.${key.charAt(0).toUpperCase() + key.slice(1)}`;
+        const fallbackLocalized = game.i18n.localize(fallbackKey);
+        if (fallbackLocalized !== fallbackKey) return fallbackLocalized;
+
+        return this.#createFallbackLabel(key); // Final fallback if nothing else is found
     }
     
     /**
@@ -67,63 +66,85 @@ export class SystemDataMapperService {
             const value = obj[key];
             const label = localizedMap[key] || this.#createFallbackLabel(key);
 
-            if (typeof value === 'object' && value !== null && "value" in value) {
-                results.push({ label: label, path: `${newPath}.value` });
-            }
-            else if (typeof value !== 'object' || value === null) {
+            if (typeof value === 'object' && value !== null) {
+                if ("value" in value) {
+                    results.push({ label: label, path: `${newPath}.value` });
+                }
+                else if (!Array.isArray(value)) {
+                    // Pass the same map down for nested objects to find deeper localizations
+                    this._walkObject(value, newPath, results, localizedMap);
+                }
+            } else if (value !== null) {
                 results.push({ label: label, path: newPath });
-            } 
-            else if (typeof value === 'object' && !Array.isArray(value)) {
-                this._walkObject(value, newPath, results, value.skill ? localizedMap : {});
             }
         }
     }
 
     /**
-     * Gets a structured object of all mappable keys by combining the best dynamic methods,
-     * inspired by the Autocomplete Inline Properties module.
+     * Gets a structured object of all mappable keys.
      * @returns {{actors: object, items: object, rolls: object, modifiers: object}}
      */
     static getMappableKeys() {
         const systemApi = game.sr5marketplace.api.system;
+        if (!systemApi?.documentTypes) return { actors: {}, items: {}, rolls: {}, modifiers: {} };
 
-        if (!systemApi?.documentTypes) {
-            console.error("SystemDataMapperService | System API not initialized.");
-            return { actors: {}, items: {}, rolls: {}, modifiers: {} };
-        }
-
-        // --- ACTORS (Your stable, working logic for dynamic grouping) ---
+        // --- ACTORS ---
         const allActorKeys = {};
         for (const type in systemApi.documentTypes.Actor) {
             if (type === "base" || type.includes("sr5-marketplace")) continue;
             try {
                 const model = new CONFIG.Actor.documentClass({ name: "temp-mapper", type: type }, { temporary: true });
                 if (!model?.system) continue;
+                
                 const typeResults = {};
+
                 for (const groupKey in model.system) {
                     if (this.#EXCLUDED_GROUPS.has(groupKey)) continue;
                     const groupData = model.system[groupKey];
                     if (typeof groupData !== 'object' || groupData === null) continue;
+
+                    const groupLabel = this.#createGroupLabel(groupKey);
+                    const localMap = systemApi.getLocalizationMapForKey(groupKey);
+                    let results = [];
+
+                    this._walkObject(groupData, `system.${groupKey}`, results, localMap);
                     
-                    let groupResults = [];
-                    // Find the corresponding localized map for the children keys.
-                    // Handles special cases like 'skills' -> 'activeSkills_l'.
-                    const localizedChildren = systemApi[`${groupKey}_l`] 
-                        || systemApi[`active${groupKey.charAt(0).toUpperCase() + groupKey.slice(1)}_l`] 
-                        || {};
+                    if (results.length > 0) {
+                        // Post-filter for skills to ensure we only get relevant paths
+                        if (groupKey === 'skills') {
+                            results = results.filter(r => r.path.includes('.active.') || r.path.includes('.knowledge.') || r.path.includes('.language.'));
+                        }
 
-                    this._walkObject(groupData, `system.${groupKey}`, groupResults, localizedChildren);
-
-                    if (groupResults.length > 0) {
-                        const groupLabel = this.#createGroupLabel(groupKey);
-                        typeResults[groupLabel] = groupResults;
+                        // Augment armor to ensure '.mod' is always included if it exists
+                        if (groupKey === 'armor' && model.system.armor.mod !== undefined) {
+                            const modPath = 'system.armor.mod';
+                            if (!results.some(r => r.path === modPath)) {
+                                results.push({ label: game.i18n.localize('SR5.Armor.FIELDS.armor.mod.label'), path: modPath });
+                            }
+                        }
+                        
+                        if (results.length > 0) {
+                           typeResults[groupLabel] = results;
+                        }
                     }
                 }
+
+                // Manually build and localize the Condition Tracks group
+                const tracksGroupName = game.i18n.localize("SR5.ConditionMonitor") || "Condition Monitor";
+                const tracks = [];
+                if (model.system.physical_track) tracks.push({ label: game.i18n.localize("SR5.DmgTypePhysical"), path: "system.physical_track.value" });
+                if (model.system.stun_track) tracks.push({ label: game.i18n.localize("SR5.DmgTypeStun"), path: "system.stun_track.value" });
+                if (model.system.matrix_track) tracks.push({ label: game.i18n.localize("SR5.DmgTypeMatrix"), path: "system.matrix_track.value" });
+                
+                if (tracks.length > 0) {
+                    typeResults[tracksGroupName] = tracks;
+                }
+
                 if (Object.keys(typeResults).length > 0) allActorKeys[type] = typeResults;
             } catch (e) { console.warn(`Could not map Actor type "${type}".`, e); }
         }
 
-        // --- ITEMS (Your stable, working logic) ---
+        // --- ITEMS, ROLLS, MODIFIERS (Unchanged) ---
         const allItemKeys = {};
         for (const type in systemApi.documentTypes.Item) {
             if (type === "base" || type.includes("sr5-marketplace")) continue;
@@ -131,104 +152,32 @@ export class SystemDataMapperService {
                 const model = new CONFIG.Item.documentClass({ name: "temp-mapper", type: type }, { temporary: true });
                 if (!model?.system) continue;
                 const groupResults = [];
-                this._walkObject(model.system, "system", groupResults);
+                SystemDataMapperService._walkObject(model.system, "system", groupResults, {});
                 if (groupResults.length > 0) allItemKeys[type] = groupResults;
             } catch (e) { console.warn(`Could not map Item type "${type}".`, e); }
         }
 
-        // --- ROLLS (THE AIP-INSPIRED FIX) ---
         const allRollKeys = {};
         try {
-            // Get the SuccessTest class from the system's registered tests.
             const TestClass = game.shadowrun5e.tests.SuccessTest;
             if (TestClass) {
-                // Create a temporary instance, passing an empty object to its constructor.
                 const tempRoll = new TestClass({});
                 if (tempRoll.data) {
                     const groupResults = [];
-                    // Walk the resulting .data object, which is the blueprint for all rolls.
-                    this._walkObject(tempRoll.data, "data", groupResults);
+                    SystemDataMapperService._walkObject(tempRoll.data, "data", groupResults, {});
                     if (groupResults.length > 0) {
-                        allRollKeys[game.i18n.localize("SR5.RollData")] = groupResults;
+                        allRollKeys[game.i18n.localize("SR5.Test")] = groupResults;
                     }
                 }
             }
-        } catch (e) {
-            console.error("SystemDataMapperService | Failed to dynamically map Roll keys.", e);
-        }
+        } catch (e) { console.error("SystemDataMapperService | Failed to dynamically map Roll keys.", e); }
 
-        // --- MODIFIERS (Correctly focused) ---
         const allModifierKeys = {
             [game.i18n.localize("SR5.Modifiers")]: [
-                { label: game.i18n.localize("SR5.AddSituationalModifier"), path: "system.modifiers" }
+                { label: game.i18n.localize("SR5.SituationalModifier"), path: "system.modifiers" }
             ]
         };
         
         return { actors: allActorKeys, items: allItemKeys, rolls: allRollKeys, modifiers: allModifierKeys };
-    }
-
-    /**
-     * Gets structured lists of mappable keys for ALL Actor types in the system.
-     * @returns {object}
-     */
-    static getAllMappableActorKeys() {
-        const actorTypes = Object.keys(game.system.documentTypes.Actor);
-        const allActorKeys = {};
-
-        for (const type of actorTypes) {
-            if (type === "base" || type.includes("sr5-marketplace")) continue;
-
-            try {
-                // THIS IS THE CORRECT METHOD - Creating a temporary in-memory document.
-                const model = new CONFIG.Actor.documentClass({ name: "temp-mapper", type: type }, { temporary: true });
-                if (!model?.system) continue;
-
-                const groups = {
-                    Attributes: model.system.attributes,
-                    Limits: model.system.limits,
-                    Skills: model.system.skills?.active
-                };
-
-                const typeResults = {};
-                for (const groupName in groups) {
-                    if (!groups[groupName]) continue;
-                    const groupResults = [];
-                    const initialPath = `system.${groupName.toLowerCase()}`;
-                    this._walkObject(groups[groupName], initialPath, groupResults);
-                    if (groupResults.length > 0) typeResults[groupName] = groupResults;
-                }
-                if (Object.keys(typeResults).length > 0) allActorKeys[type] = typeResults;
-            } catch (e) {
-                console.warn(`SystemDataMapperService | Could not map Actor type "${type}".`, e);
-            }
-        }
-        return allActorKeys;
-    }
-
-    /**
-     * Gets structured lists of mappable keys for ALL Item types in the system.
-     * @returns {object}
-     */
-    static getAllMappableItemKeys() {
-        const itemTypes = Object.keys(game.system.documentTypes.Item);
-        const allItemKeys = {};
-
-        for (const type of itemTypes) {
-            if (type === "base" || type.includes("sr5-marketplace")) continue;
-
-            try {
-                // THIS IS THE CORRECT METHOD - Creating a temporary in-memory document.
-                const model = new CONFIG.Item.documentClass({ name: "temp-mapper", type: type }, { temporary: true });
-                if (!model?.system) continue;
-
-                const groupResults = [];
-                this._walkObject(model.system, "system", groupResults);
-                
-                if (groupResults.length > 0) allItemKeys[type] = groupResults;
-            } catch (e) {
-                console.warn(`SystemDataMapperService | Could not map Item type "${type}".`, e);
-            }
-        }
-        return allItemKeys;
     }
 }
