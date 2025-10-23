@@ -156,6 +156,11 @@
 --Tag-remove-hover: ;
 --tag-background-dropdown: ;
 
+/* ---  Buttons  ---- */
+--button: ;
+--buttonHover: var(--color-red-dark) ;
+--buttonDisabled: ;
+
 /* --- Hint Tooltip --- */
 --hint-bg: #2b2b2b85;
 --hint-color: var(--color-yellow-base);
@@ -240,6 +245,7 @@
 --tag-text-color: var(--color-white);
 --tag-input-border: var(--color-yellow-base);
 --tag-background-dropdown: var(--color-grey-light);
+--buttoHover: var(--color-red-bright);
 }
 
 .themed.theme-dark {
@@ -299,4 +305,6 @@
 --tag-text-color: var(--color-white);
 --tag-input-border: var(--border-color-dark);
 --tag-background-dropdown: var(--color-red-darkest);
+
+--buttoHover: var(--color-red-dark);
 }

@@ -39,8 +39,8 @@
                     "hint": "This setting allows you to set the karma cost for complex forms. Value will be used to pay for Complex Forms."
                 },
                 "mountRestrictions": {
-                    "name": "",
-                    "hint": ""
+                    "name": "Override Item Builder Mount Restrictions",
+                    "hint": "If checked, allows any modification to be placed in any weapon mount slot, ignoring mount point rules."
                 }
 
             },

@@ -34,7 +34,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         this.attribute = null;
         this.modifier = null;
         this.availabilityStr = null;
-        this.itemData = game.sr5marketplace.itemData;
+        this.itemData = game.sr5marketplace.api.itemData;
         this.basketService = new BasketService();
         this.tabGroups = { main: "shop" };
         this.purchasingActor = null;

@@ -62,7 +62,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         return foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
             id: "itemBuilder",
             position: { width: 1600, height: 860 },
-            window: { title: "Item Builder", resizable: true },
+            window: { title: "Item Builder", resizable: false },
             dragDrop: [{
                 dragSelector: ".mod-selector-section .item-card[draggable='true']",
                 dropSelector: ".mod-slot[data-slot-id]"
@@ -243,14 +243,16 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 categorySelector.addEventListener("change", this.onChangeCategory.bind(this));
             }
 
-            // Initialize Tooltip Listeners
-            this.element.querySelectorAll('.mod-selector-section .item-card').forEach(card => {
-                card.addEventListener("mouseenter", this.#onItemHoverIn.bind(this));
-                card.addEventListener("mouseleave", this.#onItemHoverOut.bind(this));
+            // --- UNIFIED TOOLTIP LISTENERS ---
+            // Select all elements that should have a hover tooltip
+            const hoverTargets = this.element.querySelectorAll("[data-hover-delay]");
+            
+            hoverTargets.forEach(target => {
+                target.addEventListener("mouseenter", this.#onItemHoverIn.bind(this));
+                target.addEventListener("mouseleave", this.#onItemHoverOut.bind(this));
             });
         }
         else {
-            // Clean up services if not on the builder tab
             this.itemSearchService = null;
             this.modSearchService = null;
         }
@@ -706,25 +708,27 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const uuid = card.dataset.itemUuid;
         if (!uuid) return;
 
-        // Start a timer to show the tooltip after a short delay (e.g., 500ms)
+        // Read the delay from the element's data attribute, with a 500ms fallback.
+        const delay = parseInt(card.dataset.hoverDelay) || 500;
+
+        // Start a timer to show the tooltip after the specified delay
         this.hoverTimeout = setTimeout(() => {
-            // Get the position of the card
             const rect = card.getBoundingClientRect();
 
-            // Create the preview app instance
             this.tooltipApp = new ItemPreviewApp(uuid, {
-                window: { frame: true }, // Renders without a window frame
-                classes: ["item-preview-tooltip"], // Custom class for styling
+                window: { frame: true },
+                classes: ["item-preview-tooltip"],
                 position: {
-                    // Position the top-left corner of the app at the top-left of the card
                     top: rect.top,
                     left: rect.left,
-                    //width: 350 // Set a fixed width for consistency
+                    width: 500, 
+                    height: 320 // Set a fixed width for consistency
+
                 }
             });
             this.tooltipApp.render(true);
 
-        }, 500); // 500ms delay
+        }, delay); // 500ms delay
     }
 
     /**

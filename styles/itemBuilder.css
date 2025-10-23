@@ -5,7 +5,7 @@
 
 /* 0) RESETS & GLOBALS ---------------------------------------------- */
 .itemBuilder, .itemBuilder * { box-sizing: border-box; }
-.itemBuilder .window-content {            /* prevent outer double-scroll */
+.itemBuilder .window-content {              /* prevent outer double-scroll */
   padding: 0;
   height: 100%;
   overflow: hidden !important;
@@ -32,11 +32,25 @@
 
 .itemBuilder .builder-header {
   display: grid;
-  grid-template-columns: auto 1fr auto;;
+  grid-template-columns: auto 1fr auto;
   justify-content: space-between;
   align-items: center;
   padding: 5px 10px;
   flex-shrink: 0;
+}
+.itemBuilder .builder-header .header-right {
+    display: flex;
+    gap: 0.4rem;
+    width: fit-content;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+}
+.builder-header .header-right button{
+  max-width: fit-content;
+}
+.builder-header .header-right button:hover{
+  background-color: var(--button-hover);
 }
 .itemBuilder .builderTitle{
     font-size: 26px;
@@ -81,7 +95,7 @@
   border: 1px solid var(--border-color-medium);
   border-radius: 5px;
   padding: 5px;
-  overflow: hidden;                           /* container itself won't scroll */
+  overflow: hidden;                       /* container itself won't scroll */
 }
 
 /* 4) COMPONENT HEADERS & LISTS ------------------------------------- */
@@ -119,13 +133,6 @@
 }
 
 /* 5) MAIN BUILDER AREA --------------------------------------------- */
-.itemBuilder .builder-main-content {
-  display: grid;
-  border: 1px solid var(--border-color-medium);
-  border-radius: 5px;
-  background: var(--attribute-group-bg);
-  overflow: auto;          /* scroll inside the right side only */
-}
 
 .itemBuilder .builder-area {
   display: grid;
@@ -139,59 +146,54 @@
     "slot-l center slot-r"
     "bottom bottom bottom";
 }
+.itemBuilder .builder-main-content {
+  /* This IS the grid container that .builder-area needs */
+  display: grid;
 
-/* --- SVG Connector Lines --- */
-.itemBuilder .connector-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none; /* Allows clicks to pass through to elements underneath */
-    z-index: 50; /* Places it above the background but below slots if needed */
+  /* Define a single 1x1 grid for all layers to sit in */
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+
+  /* This is still needed for z-index to work reliably */
+  position: relative; 
+  border: none;
+  overflow: hidden;
 }
 
-.itemBuilder .connector-line {
-    stroke: var(--color-yellow-base);
-    stroke-width: 1.5;
-    stroke-dasharray: 4, 2; /* Creates a dashed line effect */
-    opacity: 0.6;
+/* * This rule targets all three direct children (the layers)
+ * and tells them to occupy the first row and first column.
+*/
+.builder-main-content > * {
+  grid-row: 1 / -1;
+  grid-column: 1 / -1;
+}
+
+/* Now, we just control the stacking order */
+.builder-background-frame {
+  z-index: 0;
+  pointer-events: none; /* Make it non-interactive */
+}
+
+.connector-canvas {
+  z-index: 1;
+  pointer-events: none; /* Make it non-interactive */
+}
+
+.builder-area {
+  z-index: 2;
+  /* pointer-events: auto; is the default, so it remains interactive */
 }
 
 /* 6) BUILDER COMPONENTS — POSITIONING ------------------------------- */
-.itemBuilder .item-stats-display { 
-    grid-area: stats;
-    width: fit-content;
-}
-.stat-block.item-image{
-  max-width: 60px;
-}
-.itemBuilder .center-display{ 
-    grid-area: center; 
-}
-.itemBuilder .slot-top-left{ 
-    grid-area: slot-l; 
-    align-self: start; 
-}
-.itemBuilder .slot-bottom-left{ 
-    grid-area: slot-l; 
-    align-self: end; 
-}
-.itemBuilder .slot-top-right{ 
-    grid-area: slot-r; 
-    align-self: start; 
-}
-.itemBuilder .slot-middle-right{ 
-    grid-area: slot-r; 
-    align-self: center; 
-}
-.itemBuilder .slot-bottom-right{ 
-    grid-area: slot-r; 
-    align-self: end; 
-}
-.itemBuilder .bottom-slots{ 
-    grid-area: bottom; 
-}
+.itemBuilder .item-stats-display { grid-area: stats; width: fit-content; }
+.stat-block.item-image { max-width: 60px; }
+.itemBuilder .center-display { grid-area: center; }
+.itemBuilder .slot-top-left { grid-area: slot-l; align-self: start; }
+.itemBuilder .slot-bottom-left { grid-area: slot-l; align-self: end; }
+.itemBuilder .slot-top-right { grid-area: slot-r; align-self: start; }
+.itemBuilder .slot-middle-right { grid-area: slot-r; align-self: center; }
+.itemBuilder .slot-bottom-right { grid-area: slot-r; align-self: end; }
+.itemBuilder .bottom-slots { grid-area: bottom; }
 
 /* 7) BUILDER COMPONENTS — STYLING ---------------------------------- */
 .itemBuilder .center-display {
@@ -209,9 +211,7 @@
   z-index: 100;
   opacity: 0.5;
 }
-.itemBuilder .center-display .ring-image:hover {
-  opacity: 0.8;
-}
+.itemBuilder .center-display .ring-image:hover { opacity: 0.8; }
 .itemBuilder .center-display .base-item-image {
   max-width: 30em;
   height: auto;
@@ -229,66 +229,49 @@
 }
 
 /* 7.5) MOD SLOT CONTENT STYLING */
+
+/* --- SVG FRAME STYLING --- */
 .itemBuilder .mod-slot {
-  /* This parent must be a positioning anchor and clip overflow */
   position: relative;
   overflow: hidden;
-
-  /* Keep base styling from original file */
-  background: var(--collapsible-content-bg);
-  border: 1px dashed var(--border-color-dark);
-  border-radius: 5px;
   min-width: 100px;
   min-height: 100px;
+  border: none;
+  background: transparent;
+  margin-left: 0.5em;
+  margin-right: 0.5em;
 }
-.mod-slot.drag-invalid {
-  outline: 2px dashed red;
-  box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+.itemBuilder .mod-slot::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100% 100%;
+    background-image: url("data:image/svg+xml,%3Csvg id='b' data-name='BoxFrame' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 116.29 103.99'%3E%3Cdefs%3E%3Cstyle%3E .s %7B fill: %23cecece; %7D .t %7B fill: %23434345; %7D .u %7B fill: %235d142b; %7D %3C/style%3E%3C/defs%3E%3Cg id='c' data-name='Frame_Grey'%3E%3Cg id='d' data-name='Frame'%3E%3Cg id='e' data-name='Whites'%3E%3Cpolygon id='f' data-name='White' class='s' points='113.83 99.54 113.09 99.21 101.09 103.52 21.61 103.52 21.61 103.99 101.42 103.99 101.42 103.99 113.83 99.54'/%3E%3Crect id='g' data-name='White' class='u' x='37.17' y='95.86' width='78.38' height='.47'/%3E%3Crect id='h' data-name='White' class='s' x='-33.15' y='56.26' width='76.19' height='.47' transform='translate(61.45 51.55) rotate(90)'/%3E%3Cpolygon id='i' data-name='White' class='s' points='2.47 4.51 3.2 4.84 15.2 .53 94.69 .53 94.69 .06 14.87 .06 14.87 .06 2.47 4.51'/%3E%3Crect id='j' data-name='White' class='s' x='73.34' y='47.13' width='76' height='.47' transform='translate(63.97 158.71) rotate(-90)'/%3E%3C/g%3E%3Cg id='k' data-name='Colors'%3E%3Crect id='l' data-name='Grey' class='t' x='-44.32' y='51.73' width='91.11' height='2.48' transform='translate(54.21 51.73) rotate(90)'/%3E%3Crect id='m' data-name='Grey' class='t' x='-2.55' y='100.97' width='5.58' height='.47' transform='translate(101.44 100.97) rotate(90)'/%3E%3Cpolygon id='n' data-name='Grey' class='t' points='2.48 4.03 2.48 5.51 81.6 5.51 81.6 5.49 81.6 5.51 95.47 1.54 112.85 1.54 112.85 .06 94.69 .06 94.69 .22 81.4 4.03 2.48 4.03'/%3E%3Crect id='o' data-name='Grey' class='t' x='70.11' y='50.15' width='90.88' height='1.48' transform='translate(64.66 166.44) rotate(-90)'/%3E%3Crect id='p' data-name='Grey' class='t' x='113.27' y='2.55' width='5.56' height='.47' transform='translate(113.27 118.84) rotate(-90)'/%3E%3Cpolygon id='q' data-name='Grey' class='t' points='113.81 100.02 113.81 98.54 34.69 98.54 34.69 98.56 34.69 98.54 20.82 102.51 3.44 102.51 3.44 103.99 21.61 103.99 21.61 103.83 34.9 100.02 113.81 100.02'/%3E%3Crect id='r' data-name='Grey' class='t' y='7.41' width='78.38' height='.47'/%3E%3C/g%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
-
-.itemBuilder .mod-slot:hover {
-  border-color: var(--border-color-highlight);
-  background: var(--color-black-transparent-20);
+/* Valid (Green) Frame State */
+.itemBuilder.dragging-mod .mod-slot.initial-valid::before {
+    background-image: url("data:image/svg+xml,%3Csvg id='b' data-name='Layer 2' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 116.29 103.99'%3E%3Cdefs%3E%3Cstyle%3E .s %7B fill: %23cecece; %7D .t %7B fill: %23015635; %7D .u %7B fill: %235d142b; %7D %3C/style%3E%3C/defs%3E%3Cg id='c' data-name='Frame_Green'%3E%3Cg id='d' data-name='Frame'%3E%3Cg id='e' data-name='Whites'%3E%3Cpolygon id='f' data-name='White' class='s' points='113.83 99.54 113.09 99.21 101.09 103.52 21.61 103.52 21.61 103.99 101.42 103.99 101.42 103.99 113.83 99.54'/%3E%3Crect id='g' data-name='White' class='u' x='37.17' y='95.86' width='78.38' height='.47'/%3E%3Crect id='h' data-name='White' class='s' x='-33.15' y='56.26' width='76.19' height='.47' transform='translate(61.45 51.55) rotate(90)'/%3E%3Cpolygon id='i' data-name='White' class='s' points='2.47 4.51 3.2 4.84 15.2 .53 94.69 .53 94.69 .06 14.87 .06 14.87 .06 2.47 4.51'/%3E%3Crect id='j' data-name='White' class='s' x='73.34' y='47.13' width='76' height='.47' transform='translate(63.97 158.71) rotate(-90)'/%3E%3C/g%3E%3Cg id='k' data-name='Colors'%3E%3Crect id='l' data-name='Green' class='t' x='-44.32' y='51.73' width='91.11' height='2.48' transform='translate(54.21 51.73) rotate(90)'/%3E%3Crect id='m' data-name='Green' class='t' x='-2.55' y='100.97' width='5.58' height='.47' transform='translate(101.44 100.97) rotate(90)'/%3E%3Cpolygon id='n' data-name='Red' class='t' points='2.48 4.03 2.48 5.51 81.6 5.51 81.6 5.49 81.6 5.51 95.47 1.54 112.85 1.54 112.85 .06 94.69 .06 94.69 .22 81.4 4.03 2.48 4.03'/%3E%3Crect id='o' data-name='Green' class='t' x='70.11' y='50.15' width='90.88' height='1.48' transform='translate(64.66 166.44) rotate(-90)'/%3E%3Crect id='p' data-name='Green' class='t' x='113.27' y='2.55' width='5.56' height='.47' transform='translate(113.27 118.84) rotate(-90)'/%3E%3Cpolygon id='q' data-name='Red' class='t' points='113.81 100.02 113.81 98.54 34.69 98.54 34.69 98.56 34.69 98.54 20.82 102.51 3.44 102.51 3.44 103.99 21.61 103.99 21.61 103.83 34.9 100.02 113.81 100.02'/%3E%3Crect id='r' data-name='Green' class='t' y='7.41' width='78.38' height='.47'/%3E%3C/g%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+/* Invalid (Red) Frame State */
+.itemBuilder.dragging-mod .mod-slot.initial-invalid::before {
+    background-image: url("data:image/svg+xml,%3Csvg id='b' data-name='Layer 2' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 116.29 103.99'%3E%3Cdefs%3E%3Cstyle%3E .s %7B fill: %23cecece; %7D .t %7B fill: %235d142b; %7D %3C/style%3E%3C/defs%3E%3Cg id='c' data-name='Frame_Red'%3E%3Cg id='d' data-name='Frame'%3E%3Cg id='e' data-name='Whites'%3E%3Cpolygon id='f' data-name='White' class='s' points='113.83 99.54 113.09 99.21 101.09 103.52 21.61 103.52 21.61 103.99 101.42 103.99 101.42 103.99 113.83 99.54'/%3E%3Crect id='g' data-name='White' class='t' x='37.17' y='95.86' width='78.38' height='.47'/%3E%3Crect id='h' data-name='White' class='s' x='-33.15' y='56.26' width='76.19' height='.47' transform='translate(61.45 51.55) rotate(90)'/%3E%3Cpolygon id='i' data-name='White' class='s' points='2.47 4.51 3.2 4.84 15.2 .53 94.69 .53 94.69 .06 14.87 .06 14.87 .06 2.47 4.51'/%3E%3Crect id='j' data-name='White' class='s' x='73.34' y='47.13' width='76' height='.47' transform='translate(63.97 158.71) rotate(-90)'/%3E%3C/g%3E%3Cg id='k' data-name='Colors'%3E%3Crect id='l' data-name='Red' class='t' x='-44.32' y='51.73' width='91.11' height='2.48' transform='translate(54.21 51.73) rotate(90)'/%3E%3Crect id='m' data-name='Red' class='t' x='-2.55' y='100.97' width='5.58' height='.47' transform='translate(101.44 100.97) rotate(90)'/%3E%3Cpolygon id='n' data-name='Red' class='t' points='2.48 4.03 2.48 5.51 81.6 5.51 81.6 5.49 81.6 5.51 95.47 1.54 112.85 1.54 112.85 .06 94.69 .06 94.69 .22 81.4 4.03 2.48 4.03'/%3E%3Crect id='o' data-name='Red' class='t' x='70.11' y='50.15' width='90.88' height='1.48' transform='translate(64.66 166.44) rotate(-90)'/%3E%3Crect id='p' data-name='Red' class='t' x='113.27' y='2.55' width='5.56' height='.47' transform='translate(113.27 118.84) rotate(-90)'/%3E%3Cpolygon id='q' data-name='Red' class='t' points='113.81 100.02 113.81 98.54 34.69 98.54 34.69 98.56 34.69 98.54 20.82 102.51 3.44 102.51 3.44 103.99 21.61 103.99 21.61 103.83 34.9 100.02 113.81 100.02'/%3E%3Crect id='r' data-name='Red' class='t' y='7.41' width='78.38' height='.47'/%3E%3C/g%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 
 .itemBuilder .bottom-slots {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-  padding: 5px;
-  border-top: 1px solid var(--border-color-medium);
+  gap: 0.3em;
+  padding: 0.3em;
+  padding-top: 0.6em;
 }
-
-.itemBuilder .item-stats-display {
-  display: grid;
-}
-
-.itemBuilder .builder-main-content.blank .placeholder-content {
-  color: var(--text-color-primary);
-  text-shadow: 1px 1px 3px var(--color-black);
-  margin: auto;
-  text-align: center;
-}
-
-.item-builder .stat-block .item-image{
-  object-fit: contain;
-  max-width: 10em;
-}
-
 
 .itemBuilder .slot-content-containment {
-  /* Force this element to fill its parent exactly */
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  
-  /* Use padding inside the container for the image */
-  padding: 5px; 
-
-  /* Center the image within this container */
+  top: 0; left: 0; right: 0; bottom: 0;
+  padding: 5px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -296,14 +279,14 @@
 .itemBuilder .slot-item-img {
   max-width: 100%;
   max-height: 100%;
-  object-fit: contain; /* Scales image down to fit, preserving aspect ratio */
+  object-fit: contain;
   border: none;
 }
 
 .itemBuilder .effect-indicator {
   position: absolute;
-  bottom: 0.4em; /* Adjusted for padding */
-  right: 0.3em;  /* Adjusted for padding */
+  bottom: 0.4em;
+  right: 0.3em;
   font-size: 14px;
   text-shadow: 0 0 4px var(--color-black);
 }
@@ -349,7 +332,11 @@
 .itemBuilder .item-card .select-icon { 
     font-size: 14px; 
 }
-
+.slot-icon-link.delete-mod-link {
+    position: absolute;
+    top: 4.2em;
+    right: 0.2em;
+}
 
 /* ================================================================== */
 /* 9) EFFECTS TAB STYLING                                             */
@@ -582,16 +569,6 @@
     margin-top: 15px;
     padding-top: 10px;
     border-top: 1px solid var(--border-color-medium);
-}
-
-/*  Initial green outline for valid slots on drag start */
-.itemBuilder.dragging-mod .mod-slot.initial-valid {
-  outline: 2px dashed green;
-}
-
-/*  Initial red outline for invalid slots on drag start */
-.itemBuilder.dragging-mod .mod-slot.initial-invalid {
-  outline: 2px dashed red;
 }
 
 /* Initial blue outline when the override setting is active */
