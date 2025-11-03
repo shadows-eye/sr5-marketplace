@@ -1,5 +1,8 @@
 {
     "SR5Marketplace": {
+        "BaseItem": "Base Item",
+        "Properties": "Properties",
+        "Slot": "Slot",
         "PurchaseScreen": "Marketplace Purchase Screen",
         "Marketplace": {
             "Settings": {
@@ -228,6 +231,8 @@
             }
         },
         "ItemBuilder": {
+            "Save": "Save",
+            "Cancel": "Cancel",
             "BuildItem": "Build Item",
             "SelectAsBase": "Select as Base Item",
             "SearchAllMods": "Search all modifications...",
@@ -238,7 +243,11 @@
                 "dialog": "Dialog"
             },
             "Items": {
-                "Header": "Base Items"
+                "Header": "Base Items",
+                "baseItemPlaceholder":{
+                    "title": "Select a Base Item",
+                    "description": "Choose an item from the list on the left to begin building."
+                }
             },
             "Modifications": {
                 "Header": "Available Modifications"

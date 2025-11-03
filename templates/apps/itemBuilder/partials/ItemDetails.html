@@ -3,7 +3,7 @@
         <img src="{{builderData.baseItem.img}}" title="{{builderData.baseItem.name}}"/>
     </div>
     <div class="stat-block item-name-block">
-        <h4>{{builderData.baseItem.name}}</h4>
+        <h4>{{builderData.baseItem.name}}<h4>
     </div>
 
     {{!-- For Cyberware & Bioware --}}
@@ -57,4 +57,31 @@
         <span>{{builderData.baseItem.system.technology.cost}}</span>
         <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen"></i>
     </div>
+
+    {{!-- Add a divider if any effects exist --}}
+    {{#if (or builderData.baseItem.effects.length builderData.modifications.length)}}
+        <div class="stat-block-divider"></div>
+    {{/if}}
+    
+    {{!-- 1. Innate Effects (from Base Item) --}}
+    {{#each builderData.baseItem.effects}}
+        <div class="stat-block effect-stat">
+            {{!-- Tooltip shows it's an innate, locked effect --}}
+            <label title="{{localize 'SR5Marketplace.ItemBuilder.Effects.InnateLockedHint'}}">
+                <i class="fas fa-lock-alt"></i> {{this.name}}
+            </label>
+            <span>{{this.changes.[0].value}}</span>
+        </div>
+    {{/each}}
+    
+    {{!-- 2. Custom Effects (Manually Added) --}}
+    {{#each builderData.modifications}}
+        <div class="stat-block effect-stat custom-effect">
+            {{!-- Tooltip shows it's a custom modification --}}
+            <label title="{{localize 'SR5Marketplace.ItemBuilder.Effects.CustomEffect'}}">
+                <i class="fas fa-bolt"></i> {{this.name}}
+            </label>
+            <span>{{this.changes.[0].value}}</span>
+        </div>
+    {{/each}}
 </div>

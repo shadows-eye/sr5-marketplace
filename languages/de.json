@@ -1,5 +1,8 @@
 {
     "SR5Marketplace": {
+        "BaseItem": "Basisgegenstand",
+        "Properties": "Merkmale",
+        "Slot": "Slot",
         "PurchaseScreen": "Marktplatz Fenster",
         "Marketplace": {
             "Settings": {
@@ -205,6 +208,8 @@
             }
         },
         "ItemBuilder": {
+            "Save": "Speichern",
+            "Cancel": "Abbrechen",
             "BuildItem": "Artikel bauen",
             "SelectAsBase": "Als Basisartikel auswählen",
             "SearchAllMods": "Alle Modifikationen durchsuchen...",
@@ -215,7 +220,11 @@
                 "dialog": "Dialog"
             },
             "Items": {
-                "Header": "Basisartikel"
+                "Header": "Basisartikel",
+                "baseItemPlaceholder":{
+                    "title": "Wähle ein Basisartikel",
+                    "description": "Wähle ein Artikel aus der linken Liste, um es zu bauen."
+                }
             },
             "Modifications": {
                 "Header": "Verfügbare Modifikationen"

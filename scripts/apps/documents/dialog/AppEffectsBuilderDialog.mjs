@@ -63,8 +63,8 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
             const numericKeys = this.#_getDerivableItemKeys(builderState.baseItem);
 
             if (numericKeys.length > 0) {
-                const baseItemLabel = game.i18n.localize("SR5.BaseItem") || "Base Item";
-                const propertiesLabel = game.i18n.localize("SR5.Properties") || "Properties";
+                const baseItemLabel = game.i18n.localize("SR5Marketplace.BaseItem") || "Base Item";
+                const propertiesLabel = game.i18n.localize("SR5Marketplace.Properties") || "Properties";
                 
                 // Create the data structure the template expects.
                 context.derivedValueKeyGroups = [{
@@ -150,8 +150,8 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
         const allItems = [builderState.baseItem, ...Object.values(builderState.changes)];
         const customMods = builderState.modifications || [];
         
-        const baseItemLabel = game.i18n.localize("SR5.BaseItem") || "Base Item";
-        const slotLabel = game.i18n.localize("SR5.Slot") || "Slot";
+        const baseItemLabel = game.i18n.localize("SR5Marketplace.BaseItem") || "Base Item";
+        const slotLabel = game.i18n.localize("SR5Marketplace.Slot") || "Slot";
 
         for (const item of allItems) {
             if (!item?.uuid) continue;
@@ -170,15 +170,14 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
 
             finalEffects.push(...itemCustomMods);
             
-            if (finalEffects.length > 0) {
-                groups.push({
-                    groupName: (item === builderState.baseItem) 
-                        ? `${baseItemLabel}: ${item.name}` 
-                        : `${slotLabel} (${Object.keys(builderState.changes).find(k => builderState.changes[k] === item)}): ${item.name}`,
-                    sourceUuid: item.uuid,
-                    effects: finalEffects
-                });
-            }
+            
+            groups.push({
+                groupName: (item === builderState.baseItem) 
+                    ? `${baseItemLabel}: ${item.name}` 
+                    : `${slotLabel} (${Object.keys(builderState.changes).find(k => builderState.changes[k] === item)}): ${item.name}`,
+                sourceUuid: item.uuid,
+                effects: finalEffects
+            });
         }
         return groups;
     }

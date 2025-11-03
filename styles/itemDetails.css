@@ -1,0 +1,14 @@
+.item-stats-display .stat-block.item-name-block h4{
+    text-shadow: none;
+}
+
+/* ================================================================== */
+/* 14) ITEM DETAILS STAT BLOCK (Continued)                            */
+/* ================================================================== */
+
+/* A simple line to separate base stats from effects */
+.item-stats-display .stat-block-divider {
+  height: 1px;
+  background-color: var(--tag-background-color);
+  margin: 4px 0;
+}

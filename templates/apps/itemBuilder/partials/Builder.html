@@ -3,17 +3,21 @@
 
     {{!-- Item Selector (Top-Left) --}}
     <section class="item-selector-section">
+        <img src="modules/sr5-marketplace/assets/frames/corner.svg" class="sidebar-corner-img corner-tl">
+        <img src="modules/sr5-marketplace/assets/frames/corner.svg" class="sidebar-corner-img corner-tr">
+        <img src="modules/sr5-marketplace/assets/frames/corner.svg" class="sidebar-corner-img corner-bl">
+        <img src="modules/sr5-marketplace/assets/frames/corner.svg" class="sidebar-corner-img corner-br">
         <header class="component-header">
             <h3>{{localize "SR5Marketplace.ItemBuilder.Items.Header"}}</h3>
             <div class="header-controls">
-                <select id="item-type-selector" name="itemType">
+                <select id="item-type-selector" name="itemType" class="itemBuilder">
                     {{#each itemsByType}}
                     <option value="{{@key}}" {{#if (eq @key ../selectedKey)}}selected{{/if}}>
                         {{localize this.label}}
                     </option>
                     {{/each}}
                 </select>
-                <input type="search" name="itemSearch" placeholder="{{localize 'SR5Marketplace.Marketplace.SearchPlaceholder'}}"/>
+                <input type="search" name="itemSearch" placeholder="{{localize 'SR5Marketplace.ItemBuilder.SearchPlaceholder'}}"/>
             </div>
         </header>
         <div class="item-content-grid">
@@ -31,16 +35,22 @@
 
     {{!-- Mod Selector (Bottom-Left) --}}
     <section class="mod-selector-section">
+        <img src="modules/sr5-marketplace/assets/frames/corner.svg" class="sidebar-corner-img corner-tl">
+        <img src="modules/sr5-marketplace/assets/frames/corner.svg" class="sidebar-corner-img corner-tr">
+        <img src="modules/sr5-marketplace/assets/frames/corner.svg" class="sidebar-corner-img corner-bl">
+        <img src="modules/sr5-marketplace/assets/frames/corner.svg" class="sidebar-corner-img corner-br">
         <header class="component-header">
             <h3>{{localize "SR5Marketplace.ItemBuilder.Modifications.Header"}}</h3>
-            <input type="search" name="modSearch" placeholder="{{localize 'SR5Marketplace.ItemBuilder.SearchAllMods'}}"/>
+            <div class="header-controls">
+                <input type="search" name="modSearch" class="mod-search" placeholder="{{localize 'SR5Marketplace.ItemBuilder.SearchAllMods'}}"/>
+            </div>
         </header>
         <div class="item-content-grid">
             {{!-- This block renders if a base item is selected and we have categories --}}
             {{#if categorizedMods}}
                 {{!-- Render Specific Mods, if any --}}
                 {{#if categorizedMods.specific.items.length}}
-                    <h4 class="category-header">{{categorizedMods.specific.label}}</h4>
+                    <h4 class="category-header mods-header">{{categorizedMods.specific.label}}</h4>
                     {{#each categorizedMods.specific.items}}
                     <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}" data-mount-point="{{this.system.mount_point}}" data-hover-delay="500">
                         <img src="{{this.img}}" alt="{{this.name}}" class="item-image" loading="lazy"/>
@@ -51,7 +61,7 @@
 
                 {{!-- Render General Mods, if any --}}
                 {{#if categorizedMods.general.items.length}}
-                    <h4 class="category-header">{{categorizedMods.general.label}}</h4>
+                    <h4 class="category-header mods-header">{{categorizedMods.general.label}}</h4>
                     {{#each categorizedMods.general.items}}
                     <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}" data-mount-point="{{this.system.mount_point}}" data-hover-delay="500">
                         <img src="{{this.img}}" alt="{{this.name}}" class="item-image" loading="lazy"/>
@@ -76,55 +86,12 @@
     {{#if hasBaseItem}}
         {{!-- If an item IS selected, show the builder interface --}}
         <section class="builder-main-content">
-            <svg id="b" data-name="builder-background-frame" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1086.7 701.15">
-                <defs>
-                    <style>
-                    .bh {
-                        fill: #cecece;
-                    }
-
-                    .bi {
-                        fill: #434345;
-                    }
-
-                    .bj {
-                        fill: #5d142b;
-                    }
-                    </style>
-                </defs>
-                <g id="c" data-name="MainBuilder">
-                    <g id="d" data-name="BuilderGroup">
-                    <g id="e" data-name="Builder Frame">
-                        <polygon id="f" data-name="Horizontal_Color" class="bj" points="1070.93 575.07 1070.93 573.58 796.39 573.58 794.96 573.58 290.24 573.58 287.93 573.58 14.26 573.58 14.26 575.07 232.89 575.07 232.89 578.45 29.48 578.45 29.48 579.93 232.89 579.93 289.11 579.93 289.11 578.45 289.11 577.12 796.39 577.12 796.39 578.73 796.39 580.21 852.61 580.21 1056.01 580.21 1056.01 578.73 852.61 578.73 852.61 575.07 1070.93 575.07"/>
-                        <path id="g" data-name="Frame_grey" class="bi" d="M1084.39,0H0v701.15h1086.7V0h-2.31ZM2.89,698.26V2.89h1080.93v695.37H2.89Z"/>
-                        <g id="h" data-name="Redframe_lb">
-                        <polygon id="i" data-name="Color" class="bj" points="7.97 692.38 7.97 434.24 6.49 434.24 6.49 693.87 6.8 693.87 7.97 693.87 266.42 693.87 266.42 692.38 7.97 692.38"/>
-                        <polygon id="j" data-name="White" class="bh" points="9.42 690.8 9.42 615.08 8.94 615.08 8.94 690.8 8.94 691.27 9.42 691.27 85.14 691.27 85.14 690.8 9.42 690.8"/>
-                        </g>
-                        <g id="k" data-name="Redframe_lt">
-                        <polygon id="l" data-name="Color" class="bj" points="7.97 7.71 266.12 7.71 266.12 6.23 6.49 6.23 6.49 6.54 6.49 7.71 6.49 266.16 7.97 266.16 7.97 7.71"/>
-                        <polygon id="m" data-name="White" class="bh" points="9.56 9.16 85.28 9.16 85.28 8.68 9.56 8.68 9.08 8.68 9.08 9.16 9.08 84.88 9.56 84.88 9.56 9.16"/>
-                        </g>
-                        <g id="n" data-name="Redframe_rt">
-                        <polygon id="o" data-name="Color" class="bj" points="1077.94 7.68 1077.94 260.34 1079.38 260.34 1079.38 6.23 1079.08 6.23 1077.94 6.23 825.97 6.23 825.97 7.68 1077.94 7.68"/>
-                        <polygon id="p" data-name="White" class="bh" points="1076.53 9.23 1076.53 83.34 1076.99 83.34 1076.99 9.23 1076.99 8.77 1076.53 8.77 1002.71 8.77 1002.71 9.23 1076.53 9.23"/>
-                        </g>
-                        <g id="q" data-name="RedFrame_rb">
-                        <polygon id="r" data-name="Color" class="bj" points="1077.9 692.38 819.75 692.38 819.75 693.87 1079.38 693.87 1079.38 693.56 1079.38 692.38 1079.38 433.93 1077.9 433.93 1077.9 692.38"/>
-                        <polygon id="s" data-name="White" class="bh" points="1076.32 690.94 1000.59 690.94 1000.59 691.41 1076.32 691.41 1076.79 691.41 1076.79 690.94 1076.79 615.22 1076.32 615.22 1076.32 690.94"/>
-                        </g>
-                    </g>
-                    </g>
-                </g>
-                </svg>
-
-                <svg class="connector-canvas">
-                <defs>
-                    <symbol id="Line-segment">
-                        <path d="M 0 0 L 100 0" stroke="currentColor" stroke-width="2"/>
-                    </symbol>
-                </defs>
-                </svg>
+            {{!-- ADD THESE 4 LINES --}}
+                <img src="modules/sr5-marketplace/assets/frames/corner.svg" class="builder-corner-img corner-tl">
+                <img src="modules/sr5-marketplace/assets/frames/corner.svg" class="builder-corner-img corner-tr">
+                <img src="modules/sr5-marketplace/assets/frames/corner.svg" class="builder-corner-img corner-bl">
+                <img src="modules/sr5-marketplace/assets/frames/corner.svg" class="builder-corner-img corner-br">
+            {{!-- END OF ADDITION --}}
             <div class="builder-area">
                 <!--<svg class="connector-canvas">
                     <line class="connector-line" x1="550" y1="225" x2="550" y2="250"></line>
@@ -200,6 +167,7 @@
                     {{/with}}
                 </div>
                 <!-- Bottom Slots -->
+                <img src="modules/sr5-marketplace/assets/frames/border.svg" class="divider-line">
                 <div class="bottom-slots">
                     <div class="bottom-slots">
                         {{!-- Slot 1 --}}
@@ -273,10 +241,16 @@
     {{else}}
         {{!-- If NO item is selected, show the blank placeholder --}}
         <section class="builder-main-content blank">
+            <img src="modules/sr5-marketplace/assets/frames/corner.svg" class="builder-corner-img corner-tl">
+            <img src="modules/sr5-marketplace/assets/frames/corner.svg" class="builder-corner-img corner-tr">
+            <img src="modules/sr5-marketplace/assets/frames/corner.svg" class="builder-corner-img corner-bl">
+            <img src="modules/sr5-marketplace/assets/frames/corner.svg" class="builder-corner-img corner-br">
             <div class="placeholder-content">
                 <img src="icons/svg/anvil.svg" alt="Select an Item" width="128" height="128"/>
-                <h3>Select a Base Item</h3>
-                <p>Choose an item from the list on the left to begin building.</p>
+                <div class="placeholder-information">
+                    <h3>{{localize "SR5Marketplace.ItemBuilder.Items.baseItemPlaceholder.title"}}</h3>
+                    <p>{{localize "SR5Marketplace.ItemBuilder.Items.baseItemPlaceholder.description"}}</p>
+                </div>
             </div>
         </section>
     {{/if}}

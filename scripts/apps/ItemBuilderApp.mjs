@@ -62,7 +62,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         return foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
             id: "itemBuilder",
             position: { width: 1600, height: 860 },
-            window: { title: "Item Builder", resizable: false },
+            window: { title: "Item Builder", resizable: true },
             dragDrop: [{
                 dragSelector: ".mod-selector-section .item-card[draggable='true']",
                 dropSelector: ".mod-slot[data-slot-id]"
@@ -276,12 +276,14 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         switch (this.tabGroups.main) {
             case "effects":
+                this.tabGroups.main = "effects";
                 const effectsBuilder = new AppEffectsBuilderDialog();
                 const effectsContext = await effectsBuilder.buildEffectsContext(builderData);
                 foundry.utils.mergeObject(partialContext, effectsContext);
                 tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/Effects.html", partialContext);
                 break;
             case "dialog":
+                this.tabGroups.main = "dialog";
                 tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/Dialog.html", partialContext);
                 break;
             default: // "builder" tab
@@ -360,7 +362,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         return { 
             tabContent,
             purchasingActor: this.purchasingActor,
-            builder: builderContext
+            builder: builderContext,
+            activeTab: this.tabGroups.main
         };
     }
 

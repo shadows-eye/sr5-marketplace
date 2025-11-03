@@ -22,6 +22,7 @@
 
     /* --- Greys & Neutrals --- */
     --color-black: #000;
+    --color-dark-back-grey: #252525;
     --color-white: #fff;
     --color-grey-text: #232323;
     --color-grey-darkest: #2b2b2b;
@@ -108,6 +109,7 @@
 /* --- Borders --- */
 --border-color-medium: ;
 --border-color-dark: ;
+--card-border-color: ;
 --border-color-highlight: ;
 
 /* --- Tabs --- */
@@ -138,6 +140,7 @@
 --drop-target-border: ;
 --drop-target-border-hover: ;
 --drop-target-bg-hover: ;
+--text-color-selector: ;
 
 /* --- Form Special --- */
 --Form-background-group: ;
@@ -208,6 +211,7 @@
 
 --border-color-medium: var(--color-grey-medium-light);
 --border-color-dark: var(--color-grey-medium);
+--card-border-color: var(--color-grey-medium);
 --border-color-highlight: var(--color-yellow-dark);
 
 --tab-inactive-bg: var(--attribute-group-bg);
@@ -246,6 +250,7 @@
 --tag-input-border: var(--color-yellow-base);
 --tag-background-dropdown: var(--color-grey-light);
 --buttoHover: var(--color-red-bright);
+--text-color-selector: var(--color-red-darkest);
 }
 
 .themed.theme-dark {
@@ -269,6 +274,7 @@
 
 --border-color-medium: var(--color-grey-medium-light);
 --border-color-dark: var(--color-grey-medium);
+--card-border-color: var(--color-black);
 --border-color-highlight: var(--color-yellow-dark);
 
 --tab-inactive-bg: var(--color-grey-dark);
@@ -307,4 +313,5 @@
 --tag-background-dropdown: var(--color-red-darkest);
 
 --buttoHover: var(--color-red-dark);
+--text-color-selector: var(--color-red-bright);
 }
