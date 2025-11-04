@@ -205,7 +205,10 @@
             "Acquisition":{
                 "Success": "Kauf Erfolg",
                 "Failure": "Konnte nicht beschafft werden."
-            }
+            },
+            "selectActorTooltip": "Akteur auswählen",
+            "AddToCart": "Hinzufügen zum Warenkorb",
+            "AddToBuilder": "Hinzufügen zum Builder"
         },
         "ItemBuilder": {
             "Save": "Speichern",

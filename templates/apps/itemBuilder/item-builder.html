@@ -21,9 +21,30 @@
         </div>
     </header>
     <nav class="builder-nav tabs" data-group="primary">
-        <a class="builder-tabs item{{#if (eq activeTab 'builder')}} active{{/if}}" data-tab="builder" data-action="changeTab">{{localize "SR5Marketplace.ItemBuilder.nav.builder"}}</a>
-        <a class="builder-tabs item{{#if (eq activeTab 'effects')}} active{{/if}}" data-tab="effects" data-action="changeTab">{{localize "SR5Marketplace.ItemBuilder.nav.effects"}}</a>
-        <a class="builder-tabs item{{#if (eq activeTab 'dialog')}} active{{/if}}" data-tab="dialog" data-action="changeTab">{{localize "SR5Marketplace.ItemBuilder.nav.dialog"}}</a>
+    
+        <a class="builder-tabs item{{#if (eq activeTab 'builder')}} active{{/if}}" data-tab="builder" data-action="changeTab">
+            <div class="tab-icon-wrapper">
+                <i class="fa-solid fa-wrench"></i>
+            </div>
+            <span>{{localize "SR5Marketplace.ItemBuilder.nav.builder"}}</span>
+        </a>
+        
+        <a class="builder-tabs item{{#if (eq activeTab 'effects')}} active{{/if}}" data-tab="effects" data-action="changeTab">
+            <div class="tab-icon-wrapper">
+                <i class="fa-solid fa-bolt"></i>
+            </div>
+            <span>{{localize "SR5Marketplace.ItemBuilder.nav.effects"}}</span>
+        </a>
+        
+        <a class="builder-tabs item{{#if (eq activeTab 'dialog')}} active{{/if}}" data-tab="dialog" data-action="changeTab">
+            <div class="tab-icon-wrapper">
+                {{#if builder.queueCount}}
+                    <div class="notification-badge">{{builder.queueCount}}</div>
+                {{/if}}
+                <i class="builder fa-solid fa-comments"></i>
+            </div>
+            <span>{{localize "SR5Marketplace.ItemBuilder.nav.dialog"}}</span>
+        </a>
     </nav>
     
     {{!-- The main content area renders the correct partial based on the active tab --}}

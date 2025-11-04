@@ -228,7 +228,10 @@
             "Acquisition":{
                 "Success": "Success",
                 "Failed": "Could not be acquired."
-            }
+            },
+            "selectActorTooltip": "Select an Actor",
+            "AddToCart": "Add to Cart",
+            "AddToBuilder": "Add to Builder"
         },
         "ItemBuilder": {
             "Save": "Save",

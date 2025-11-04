@@ -1,0 +1,85 @@
+<div class="item-builder-dialog-tab">
+    
+    {{!-- Show a message if the queue is empty --}}
+    {{#if (empty buildQueue)}}
+        <div class="empty-queue-message">
+            <i class="fas fa-box-open"></i>
+            <span>Your build queue is empty.</span>
+            <p>Use the 'Builder' tab to design an item, then click 'Add to Queue' to send it here.</p>
+        </div>
+    {{else}}
+        {{!-- Use your 'basket-items-container' class --}}
+        <div class="basket-items-container">
+
+            {{!-- Headers: Changed to 5 columns for the queue --}}
+            <div class="basket-grid headers five-columns">
+                <div class="grid-item header" style="justify-self: start;">{{localize "SR5Marketplace.Marketplace.Name"}}</div>
+                <div class="grid-item header">Base Item Type</div>
+                <div class="grid-item header">Modifications</div>
+                <div class="grid-item header">Actions</div>
+                <div class="grid-item header"><i class="fas fa-trash"></i></div>
+            </div>
+
+            {{!-- Loop over 'buildQueue' (from _prepareContext) --}}
+            {{#each buildQueue}}
+            {{!-- Use your 'item-row' class, but with 'buildId' --}}
+            <div class="basket-grid item-row five-columns" data-build-id="{{this.buildId}}">
+                
+                {{!-- Use your 'basket-item' and 'item-name' classes --}}
+                <div class="basket-item item-name">
+                    <img class="mini-img" src="{{this.baseItem.img}}" alt="{{this.baseItem.name}}">
+                    <span class="item-tag">{{this.baseItem.name}}</span>
+                </div>
+
+                <div class="basket-item item-type">
+                    {{this.baseItem.type}}
+                </div>
+
+                {{!-- List the slotted items from the 'changes' object --}}
+                <div class="basket-item item-modifications">
+                    {{#if (empty this.changes)}}
+                        &mdash;
+                    {{else}}
+                        <ul>
+                            {{#each this.changes}}
+                            <li>{{this.name}}</li>
+                            {{/each}}
+                        </ul>
+                    {{/if}}
+                </div>
+                
+                <div class="basket-item item-actions">
+                    <button class="build-test-button" data-action="performBuildTest" disabled>
+                        <i class="fas fa-dice-d6"></i> Build Test
+                    </button>
+                </div>
+
+                {{!-- Use your 'remove-item' class, but with 'deleteBuild' action --}}
+                <div class="basket-item remove-item">
+                    <button class="remove-from-basket-btn" title="Remove Item" data-action="deleteBuild">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+    {{/if}}
+
+    {{!-- Footer with actions --}}
+    {{#if (gt buildQueue.length 0)}}
+    <hr class="marketplace-settings-hr">
+    <div class="queue-actions">
+        <button id="submit-all-builds-button" class="send-request-button" data-action="submitAllBuilds" disabled>
+            {{#if @root.isGM}}
+            Create All Items
+            {{else}}
+            Submit All to GM
+            {{/if}}
+        </button>
+        <button id="clear-queue-button" class="send-request-button cancel" data-action="clearBuildQueue">
+            Clear Entire Queue
+        </button>
+    </div>
+    {{/if}}
+
+</div>

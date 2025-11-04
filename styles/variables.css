@@ -163,6 +163,7 @@
 --button: ;
 --buttonHover: var(--color-red-dark) ;
 --buttonDisabled: ;
+--notification-badge: ;
 
 /* --- Hint Tooltip --- */
 --hint-bg: #2b2b2b85;
@@ -251,6 +252,7 @@
 --tag-background-dropdown: var(--color-grey-light);
 --buttoHover: var(--color-red-bright);
 --text-color-selector: var(--color-red-darkest);
+--notification-badge: var(--color-red-dark);
 }
 
 .themed.theme-dark {
