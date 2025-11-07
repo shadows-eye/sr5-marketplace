@@ -8,26 +8,33 @@
         {{else}}
             <img src="{{displayItem.img}}" title="{{displayItem.name}}"/>
         {{/if}}
-    </div>
-    
-    <div class="stat-block item-name-block">
+
         {{#if isEditingBaseItem}}
-            <input type="text" 
-                   name="name" 
-                   value="{{displayItem.name}}" 
-                   class="item-name-input" /> <a class="base-item-edit-icon" 
+            <a class="base-item-edit-icon" 
                data-action="toggleBaseItemEdit" 
                title="{{localize 'SR5Marketplace.ItemBuilder.DoneEditing'}}">
                 <i class="fas fa-check"></i>
             </a>
         {{else}}
-            <h4>{{displayItem.name}}</h4>
             <a class="base-item-edit-icon" 
                data-action="toggleBaseItemEdit" 
                title="{{localize 'SR5Marketplace.ItemBuilder.EditBaseItem'}}">
                 <i class="fas fa-pencil-alt"></i>
             </a>
         {{/if}}
+        </div>
+    
+    <div class="stat-block item-name-block">
+        {{#if isEditingBaseItem}}
+            <input type="text" 
+                   name="name" 
+                   value="{{displayItem.name}}" 
+                   class="item-name-input" /> 
+            
+            {{else}}
+            <h4>{{displayItem.name}}</h4>
+            
+            {{/if}}
     </div>
 
     {{!-- For Cyberware & Bioware --}}
