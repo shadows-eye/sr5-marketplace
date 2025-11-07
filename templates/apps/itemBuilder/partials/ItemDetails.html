@@ -1,87 +1,134 @@
 <div class="item-stats-display">
     <div class="stat-block item-image">
-        <img src="{{builderData.baseItem.img}}" title="{{builderData.baseItem.name}}"/>
+        {{#if isEditingBaseItem}}
+            <a data-action="selectBaseItemImage" 
+               title="{{localize 'SR5Marketplace.ItemBuilder.SelectImage'}}">
+                <img src="{{displayItem.img}}" title="{{displayItem.name}}"/>
+            </a>
+        {{else}}
+            <img src="{{displayItem.img}}" title="{{displayItem.name}}"/>
+        {{/if}}
     </div>
+    
     <div class="stat-block item-name-block">
-        <h4>{{builderData.baseItem.name}}<h4>
+        {{#if isEditingBaseItem}}
+            <input type="text" 
+                   name="name" 
+                   value="{{displayItem.name}}" 
+                   class="item-name-input" /> <a class="base-item-edit-icon" 
+               data-action="toggleBaseItemEdit" 
+               title="{{localize 'SR5Marketplace.ItemBuilder.DoneEditing'}}">
+                <i class="fas fa-check"></i>
+            </a>
+        {{else}}
+            <h4>{{displayItem.name}}</h4>
+            <a class="base-item-edit-icon" 
+               data-action="toggleBaseItemEdit" 
+               title="{{localize 'SR5Marketplace.ItemBuilder.EditBaseItem'}}">
+                <i class="fas fa-pencil-alt"></i>
+            </a>
+        {{/if}}
     </div>
 
     {{!-- For Cyberware & Bioware --}}
-    {{#if (or (eq builderData.baseItem.type "cyberware") (eq builderData.baseItem.type "bioware"))}}
+    {{#if (or (eq displayItem.type "cyberware") (eq displayItem.type "bioware"))}}
         <div class="stat-block">
             <label>{{localize "SR5.Grade"}}</label>
-            <span>{{builderData.baseItem.system.grade}}</span>
+            {{#if isEditingBaseItem}}
+                <input type="text" name="system.grade" value="{{displayItem.system.grade}}" /> {{else}}
+                <span>{{displayItem.system.grade}}</span>
+            {{/if}}
         </div>
         <div class="stat-block">
             <label>{{localize "SR5.Essence"}}</label>
-            <span>{{builderData.baseItem.system.essence}}</span>
+            {{#if isEditingBaseItem}}
+                <input type="text" name="system.essence" value="{{displayItem.system.essence}}" /> {{else}}
+                <span>{{displayItem.system.essence}}</span>
+            {{/if}}
         </div>
     {{/if}}
 
     {{!-- For Weapons --}}
-    {{#if (or (eq builderData.baseItem.type "ranged_weapon") (eq builderData.baseItem.type "melee_weapon"))}}
+    {{#if (or (eq displayItem.type "ranged_weapon") (eq displayItem.type "melee_weapon"))}}
          <div class="stat-block">
             <label>{{localize "SR5.DamageValueAbbr"}}</label>
-            <span>{{builderData.baseItem.system.damage.value}}</span>
+            {{#if isEditingBaseItem}}
+                <input type="text" name="system.damage.value" value="{{displayItem.system.damage.value}}" /> {{else}}
+                <span>{{displayItem.system.damage.value}}</span>
+            {{/if}}
         </div>
         <div class="stat-block">
             <label>{{localize "SR5.AccuracyAbbr"}}</label>
-            <span>{{builderData.baseItem.system.accuracy.value}}</span>
+            {{#if isEditingBaseItem}}
+                <input type="text" name="system.accuracy.value" value="{{displayItem.system.accuracy.value}}" /> {{else}}
+                <span>{{displayItem.system.accuracy.value}}</span>
+            {{/if}}
         </div>
         <div class="stat-block">
             <label>{{localize "SR5.APAbbr"}}</label>
-            <span>{{builderData.baseItem.system.ap.value}}</span>
+            {{#if isEditingBaseItem}}
+                <input type="text" name="system.ap.value" value="{{displayItem.system.ap.value}}" /> {{else}}
+                <span>{{displayItem.system.ap.value}}</span>
+            {{/if}}
         </div>
     {{/if}}
 
     {{!-- For Armor --}}
-    {{#if (eq builderData.baseItem.type "armor")}}
+    {{#if (eq displayItem.type "armor")}}
         <div class="stat-block">
             <label>{{localize "SR5.Armor"}}</label>
-            <span>{{builderData.baseItem.system.armor.value}}</span>
+            {{#if isEditingBaseItem}}
+                <input type="text" name="system.armor.value" value="{{displayItem.system.armor.value}}" /> {{else}}
+                <span>{{displayItem.system.armor.value}}</span>
+            {{/if}}
         </div>
     {{/if}}
 
-    {{!-- Common stats that appear for most technology items --}}
-
+    {{!-- Common stats --}}
     <div class="stat-block">
         <label>{{localize "SR5.Rating"}}</label>
-        <span>{{builderData.baseItem.system.technology.rating}}</span>
+        {{#if isEditingBaseItem}}
+            <input type="text" name="system.technology.rating" value="{{displayItem.system.technology.rating}}" /> {{else}}
+            <span>{{displayItem.system.technology.rating}}</span>
+        {{/if}}
     </div>
     <div class="stat-block">
         <label>{{localize "SR5.Availability"}}</label>
-        <span>{{builderData.baseItem.system.technology.availability}}</span>
+        {{#if isEditingBaseItem}}
+            <input type="text" name="system.technology.availability" value="{{displayItem.system.technology.availability}}" /> {{else}}
+            <span>{{displayItem.system.technology.availability}}</span>
+        {{/if}}
     </div>
     <div class="stat-block">
         <label>{{localize "SR5.Cost"}}</label>
-        <span>{{builderData.baseItem.system.technology.cost}}</span>
+        {{#if isEditingBaseItem}}
+            <input type="text" name="system.technology.cost" value="{{displayItem.system.technology.cost}}" /> {{else}}
+            <span>{{displayItem.system.technology.cost}}</span>
+        {{/if}}
         <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen"></i>
     </div>
 
-    {{!-- Add a divider if any effects exist --}}
-    {{#if (or builderData.baseItem.effects.length builderData.modifications.length)}}
+    {{#unless isEditingBaseItem}}
+        {{#if (or builderData.baseItem.effects.length builderData.modifications.length)}}
+            <div class="stat-block-divider"></div>
+        {{/if}}
+        {{#each builderData.baseItem.effects}}
+            {{/each}}
+        {{#each builderData.modifications}}
+            {{/each}}
         <div class="stat-block-divider"></div>
+        <div class="stat-block description-block">
+            <label>{{localize "SR5.Description"}}</label>
+            <div class="description-content">{{{displayItem.system.description.value}}}</div>
+        </div>
+    {{/unless}}
+
+    {{#if isEditingBaseItem}}
+        <div class="stat-block-divider"></div>
+        <div class="stat-block description-block">
+            <label>{{localize "SR5.Description"}}</label>
+            <textarea name="system.description.value" 
+                      rows="4">{{displayItem.system.description.value}}</textarea> </div>
     {{/if}}
-    
-    {{!-- 1. Innate Effects (from Base Item) --}}
-    {{#each builderData.baseItem.effects}}
-        <div class="stat-block effect-stat">
-            {{!-- Tooltip shows it's an innate, locked effect --}}
-            <label title="{{localize 'SR5Marketplace.ItemBuilder.Effects.InnateLockedHint'}}">
-                <i class="fas fa-lock-alt"></i> {{this.name}}
-            </label>
-            <span>{{this.changes.[0].value}}</span>
-        </div>
-    {{/each}}
-    
-    {{!-- 2. Custom Effects (Manually Added) --}}
-    {{#each builderData.modifications}}
-        <div class="stat-block effect-stat custom-effect">
-            {{!-- Tooltip shows it's a custom modification --}}
-            <label title="{{localize 'SR5Marketplace.ItemBuilder.Effects.CustomEffect'}}">
-                <i class="fas fa-bolt"></i> {{this.name}}
-            </label>
-            <span>{{this.changes.[0].value}}</span>
-        </div>
-    {{/each}}
+
 </div>

@@ -25,7 +25,9 @@ export class BuilderStateService {
             changes: {}, // later a {object with changes.modslot1 to modslot5 and changes.bottomSlot1 to 4 but can be expanded}
             itemTypeImage: null,
             draftEffect: null,
-            isDerivedValueSelectorVisible: false
+            isDerivedValueSelectorVisible: false,
+            isEditingBaseItem: false,
+            baseItemOverrides: {}
         };
     }
 
@@ -310,5 +312,36 @@ export class BuilderStateService {
         let item = fromUuid(uuid);
         let effects = item.effects;
         return effects;
+    }
+
+    /**
+     * Toggles the edit mode for the base item.
+     * @returns {Promise<object>} The updated state.
+     */
+    static async toggleBaseItemEdit() {
+        const state = await this.getState();
+        const isEditing = !state.isEditingBaseItem;
+        
+        await this.updateState({ isEditingBaseItem: isEditing });
+        return foundry.utils.mergeObject(state, { isEditingBaseItem: isEditing });
+    }
+
+    /**
+     * Updates the baseItemOverrides property in the state.
+     * @param {object} updateData - An object with properties to update, e.g., { "system.technology.rating": 5 }
+     * @returns {Promise<object>} The updated state.
+     */
+    static async updateBaseItemOverrides(updateData) {
+        const state = await this.getState();
+        if (!state.baseItem) return state;
+
+        // We use expandObject to handle nested keys like "system.technology.rating"
+        const expandedUpdate = foundry.utils.expandObject(updateData);
+        
+        const newState = foundry.utils.deepClone(state);
+        newState.baseItemOverrides = foundry.utils.mergeObject(newState.baseItemOverrides, expandedUpdate);
+        
+        await this.updateState({ baseItemOverrides: newState.baseItemOverrides });
+        return newState;
     }
 }

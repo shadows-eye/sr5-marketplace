@@ -182,34 +182,12 @@ const initializeSettings = () => {
             if (ui.controls) ui.controls.render(true);
         }
     });
-
-    game.settings.register("sr5-marketplace", "itemBuilder.enableForPlayers", {
-        name: "SR5Marketplace.Marketplace.Settings.ItemBuilder.enableForPlayers.name",
-        hint: "SR5Marketplace.Marketplace.Settings.ItemBuilder.enableForPlayers.hint",
-        scope: "world",
-        config: true,
-        restricted: true, // Only GM can enable it for players
-        type: Boolean,
-        default: false,
-        onChange: () => {
-            // Re-render controls to show/hide the button
-            if (ui.controls) ui.controls.render(true);
-        }
-    });
 };
 
 /**
  * This hook injects our custom button into the settings menu using standard JavaScript.
  */
-Hooks.on("renderSettingsConfig", (app, html, data) => {
-    const playerSettingInput = html.querySelector('[name="sr5-marketplace.itemBuilder.enableForPlayers"]');
-    if (playerSettingInput) {
-        const gmSettingValue = game.settings.get("sr5-marketplace", "itemBuilder.enableForGM");
-        const playerSettingGroup = playerSettingInput.closest(".form-group");
-        if (playerSettingGroup) {
-            playerSettingGroup.style.display = gmSettingValue ? "flex" : "none";
-        }
-    }
+Hooks.on("renderSettingsConfig", (app, html, data) => {  
     // 'html' is a standard HTMLElement.
     const settingInput = html.querySelector(`[name="sr5-marketplace.openSettingsMenu"]`);
     if (!settingInput) return;
@@ -380,9 +358,9 @@ Hooks.on("getSceneControlButtons", (controls) => {
     // Check if the button should be visible based on settings and user role
     const isGM = game.user.isGM;
     const gmEnabled = game.settings.get("sr5-marketplace", "itemBuilder.enableForGM");
-    const playerEnabled = game.settings.get("sr5-marketplace", "itemBuilder.enableForPlayers");
+    //const playerEnabled = game.settings.get("sr5-marketplace", "itemBuilder.enableForPlayers");
     
-    const isVisible = (isGM && gmEnabled) || (!isGM && playerEnabled);
+    const isVisible = (isGM && gmEnabled);
 
     // In V13, the `tools` property is also an ARRAY. We add our new button object to it using .push().
     tokenControls.tools["itemBuilder"] =({

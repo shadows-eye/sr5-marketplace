@@ -55,6 +55,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         //Drag data
         this.draggedModData = null;
+        this.draggedItemType = null;
     }
 
     /** @override */
@@ -63,16 +64,26 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             id: "itemBuilder",
             position: { width: 1600, height: 860 },
             window: { title: "Item Builder", resizable: true },
-            dragDrop: [{
-                dragSelector: ".mod-selector-section .item-card[draggable='true']",
-                dropSelector: ".mod-slot[data-slot-id]"
-            }],
+            dragDrop: [
+                {
+                    // Handler 1: Modifications -> Main Slots
+                    dragSelector: ".mod-selector-section .item-card[draggable='true']",
+                    dropSelector: ".builder-area .mod-slot[data-slot-id]" // <-- More specific selector
+                },
+                {
+                    // Handler 2: Base Items -> Bottom Slots
+                    dragSelector: ".item-selector-section .item-card[draggable='true']",
+                    dropSelector: ".bottom-slots .mod-slot[data-slot-id]"
+                }
+            ],
             actions: {
                 // Core
                 changeTab: this.#onChangeTab,
                 clickItemName: this.#onClickItemName,
                 buildItem: this.#onBuildItem,
                 clearBuild: this.#onClearBuild,
+                toggleBaseItemEdit: this.#onToggleBaseItemEdit,
+                selectBaseItemImage: this.#onSelectBaseItemImage,
                 // Builder Tab
                 selectBaseItem: this.#onSelectBaseItem,
                 removeChange: this.#onRemoveChange,
@@ -121,21 +132,51 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         event.dataTransfer.setData("text/plain", JSON.stringify(data));
 
         const override = game.settings.get('sr5-marketplace', 'itemBuilder.ignoreMountRestrictions');
-        const draggedMountPoint = this.draggedModData.mountPoint || "none";
-        const dropTargets = this.element.querySelectorAll('.mod-slot[data-slot-id]');
+        const allSlots = this.element.querySelectorAll(".mod-slot[data-slot-id]");
 
-        dropTargets.forEach(slot => {
-            if (override) {
-                slot.classList.add("initial-override");
-                return;
-            }
-            const targetMountPoint = slot.dataset.mountPoint;
-            if (!targetMountPoint || targetMountPoint === draggedMountPoint) {
-                slot.classList.add("initial-valid");
-            } else {
-                slot.classList.add("initial-invalid");
-            }
-        });
+        // 1. Determine Drag Type (Mod or Item)
+        if (card.closest(".mod-selector-section")) {
+            this.draggedItemType = "mod";
+            this.draggedModData = { mountPoint: data.mountPoint || "none" };
+            const draggedMountPoint = this.draggedModData.mountPoint;
+
+            // 2. Apply visuals for MOD drag
+            allSlots.forEach(slot => {
+                const targetMountPoint = slot.dataset.mountPoint;
+                const isBottomSlot = !!slot.closest(".bottom-slots");
+
+                if (isBottomSlot) {
+                    slot.classList.add("initial-invalid"); // Mods can't go in bottom slots
+                    return;
+                }
+
+                if (override) {
+                    slot.classList.add("initial-override");
+                    return;
+                }
+                
+                if (!targetMountPoint || targetMountPoint === draggedMountPoint) {
+                    slot.classList.add("initial-valid");
+                } else {
+                    slot.classList.add("initial-invalid");
+                }
+            });
+
+        } else if (card.closest(".item-selector-section")) {
+            this.draggedItemType = "item";
+            this.draggedModData = null; // Not dragging a mod
+
+            // 2. Apply visuals for ITEM drag
+            allSlots.forEach(slot => {
+                const isBottomSlot = !!slot.closest(".bottom-slots");
+                if (isBottomSlot) {
+                    slot.classList.add("initial-valid"); // Items can *only* go in bottom slots
+                } else {
+                    slot.classList.add("initial-invalid");
+                }
+            });
+        }
+
     }
 
     /**
@@ -167,6 +208,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      */
     _onDragEnd(event) {
         this.draggedModData = null;
+        this.draggedItemType = null;
         this.element.classList.remove("dragging-mod");
         
         // Clean up ALL drag-related classes from ALL slots
@@ -200,15 +242,43 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 uuid: item.uuid,
                 name: item.name,
                 img: item.img,
+                type: item.type,
                 system: item.system,
                 effects: item.effects.map(e => e.toObject(false))
             };
 
-            // This will now save the complete object to the correct slot.
-            await BuilderStateService.addChange(slotId, droppedItemData);
-            this.render();
-        } else {
-            ui.notifications.warn("This modification cannot be placed in that slot.");
+            // 2. Handle drop based on the drag type set in _onDragStart
+            switch (this.draggedItemType) {
+                case "mod": {
+                    const override = game.settings.get('sr5-marketplace', 'itemBuilder.ignoreMountRestrictions');
+                    const targetMountPoint = slot.dataset.mountPoint;
+                    const draggedMountPoint = this.draggedModData?.mountPoint || "none";
+
+                    if (override || !targetMountPoint || targetMountPoint === draggedMountPoint) {
+                        await BuilderStateService.addChange(slotId, droppedItemData);
+                        this.render();
+                    } else {
+                        ui.notifications.warn("This modification cannot be placed in that slot.");
+                    }
+                    break;
+                }
+
+                case "item": {
+                    const isBottomSlot = !!slot.closest(".bottom-slots");
+                    if (isBottomSlot) {
+                        await BuilderStateService.addChange(slotId, droppedItemData);
+                        this.render();
+                    } else {
+                        // This should be impossible if _onDragStart is correct, but good to have
+                        ui.notifications.error("Items can only be placed in the bottom slots.");
+                    }
+                    break;
+                }
+
+                default:
+                    console.warn("Marketplace Builder | Unknown drag type ended.");
+                    break;
+            }
         }
     }
 
@@ -282,17 +352,19 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 foundry.utils.mergeObject(partialContext, effectsContext);
                 tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/Effects.html", partialContext);
                 break;
-            case "dialog":
-                this.tabGroups.main = "dialog";
-                tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/Dialog.html", partialContext);
-                break;
             default: // "builder" tab
                 this.tabGroups.main = "builder";
+                let displayItem = null;
+                if (builderData.baseItem) {
+                    displayItem = foundry.utils.deepClone(builderData.baseItem);
+                    // Merge the overrides on top for display
+                    foundry.utils.mergeObject(displayItem, builderData.baseItemOverrides);
+                }
+                partialContext.displayItem = displayItem;
+                partialContext.isEditingBaseItem = builderData.isEditingBaseItem;
+
                 const baseItemsByType = this.itemData.baseItemsByType ?? {};
                 const modsByType = this.itemData.modificationsByType ?? {};
-
-                // You can keep this log for now to confirm the structure
-                //console.log("MARKETPLACE DEBUG | modsByType Object:", modsByType);
 
                 // We now use the 'allModifications' key as the single, reliable source for all mods.
                 const allMods = modsByType.allModifications?.items || [];
@@ -402,7 +474,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     /**
      * Handles selecting a base item from the sidebar.
-     * It saves the selected item to the state flag and triggers a re-render.
+     * It saves the selected item to the state flag, loads any linked items,
+     * and triggers a re-render.
      * @private
      */
     static async #onSelectBaseItem(event, target) {
@@ -414,6 +487,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         if (!item) {
             return ui.notifications.warn("Could not find the selected item.");
         }
+
+        // 2. Prepare the clean data for the base item
         const cleanItemData = {
             uuid: item.uuid,
             name: item.name,
@@ -423,10 +498,40 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             technology: item.technology,
             effects: item.effects?.map(e => e.toObject(false)) ?? []
         };
-        await BuilderStateService.setBaseItem(cleanItemData);
         
-        // 3. Re-render the application to reflect the new state.
-        //    The UI will now switch from the blank placeholder to the builder view.
+        // 3. Set the base item. This clears the builder state (which is what we want).
+        await BuilderStateService.setBaseItem(cleanItemData);
+
+        // --- 4. NEW: Check for and load linked items ---
+        const linkedItems = item.getFlag("sr5-marketplace", "linkedItems");
+        
+        if (linkedItems && Array.isArray(linkedItems) && linkedItems.length > 0) {
+            // If we have links, load them one by one into the state
+            for (const link of linkedItems) {
+                const { slotId, uuid } = link;
+                if (!slotId || !uuid) continue;
+
+                const linkedItem = await fromUuid(uuid);
+                if (linkedItem) {
+                    // Prepare the item data just as _onDrop would
+                    const linkedItemData = {
+                        uuid: linkedItem.uuid,
+                        name: linkedItem.name,
+                        img: linkedItem.img,
+                        type: linkedItem.type,
+                        system: linkedItem.system,
+                        effects: linkedItem.effects?.map(e => e.toObject(false)) ?? []
+                    };
+                    // Add this item to the correct slot in the state
+                    await BuilderStateService.addChange(slotId, linkedItemData);
+                } else {
+                    console.warn(`Marketplace Builder | Could not find linked item with UUID: ${uuid}`);
+                }
+            }
+        }
+        
+        // 5. Re-render the application.
+        // The UI will now show the base item AND any linked items in their slots.
         this.render();
     }
 
@@ -459,9 +564,152 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         //    The _prepareContext method will now run again and fetch the new state from the flag.
         this.render();
     }
-    
-    static #onBuildItem(event, target) {
-        ui.notifications.warn("The Item Builder feature is not yet implemented.");
+
+    /**
+     * Toggles the base item edit mode.
+     * When finishing an edit (clicking 'check'), it gathers all input values
+     * from the .item-stats-display block and saves them to baseItemOverrides.
+     * @private
+     */
+    static async #onToggleBaseItemEdit(event, target) {
+        const state = await BuilderStateService.getState();
+        
+        if (state.isEditingBaseItem) {
+            // We are CLICKING THE CHECKMARK (finishing the edit)
+            // 1. Find all inputs within the stats display
+            const statsContainer = this.element.querySelector(".item-stats-display");
+            if (statsContainer) {
+                const inputs = statsContainer.querySelectorAll('input[name], textarea[name]');
+                const updateData = {};
+                
+                // 2. Build the update object from all input values
+                inputs.forEach(input => {
+                    updateData[input.name] = input.value;
+                });
+                
+                // 3. Save all overrides in one go
+                // We await this to ensure it's saved before we toggle
+                await BuilderStateService.updateBaseItemOverrides(updateData);
+            }
+        }
+        
+        // 4. Toggle the edit state (for both starting and finishing)
+        const newState = await BuilderStateService.toggleBaseItemEdit();
+        
+        // 5. Re-render
+        this.render(false, { builderData: newState });
+    }
+
+    /**
+     * Opens a FilePicker to select a new image for the base item.
+     * This saves immediately to give the user instant feedback.
+     * @private
+     */
+    static #onSelectBaseItemImage(event, target) {
+        new foundry.applications.apps.FilePicker.implementation({
+            type: "image",
+            current: target.src,
+            callback: (path) => {
+                // We update the override immediately for the image
+                BuilderStateService.updateBaseItemOverrides({ "img": path }).then(async () => {
+                    // Re-render to show the new image right away
+                    // We need to fetch the state again to pass it to render
+                    const newState = await BuilderStateService.getState();
+                    this.render(false, { builderData: newState });
+                });
+            }
+        }).browse();
+    }
+
+    /**
+     * 
+     * @param {*} event 
+     * @param {*} target 
+     * @returns 
+     */
+    static async #onBuildItem(event, target) {
+        // 1. Get the current state
+        const state = await BuilderStateService.getState();
+        if (!state.baseItem) {
+            ui.notifications.warn("Please select a base item before building.");
+            return;
+        }
+
+        // 2. Clone base item to create our new item payload
+        const baseItemData = foundry.utils.deepClone(state.baseItem);
+        foundry.utils.mergeObject(baseItemData, state.baseItemOverrides);
+        const baseItemName = baseItemData.name; // Store name *after* overrides
+
+        // --- 3. Process ALL Effects and Slotted Items ---
+
+        // A. Start with base item's effects
+        const allEffects = [...baseItemData.effects];
+
+        // B. Add all custom-created effects (from the 'Effects' tab)
+        //    THIS IS THE FIX FOR THE MISSING EFFECTS
+        if (state.modifications && state.modifications.length > 0) {
+            allEffects.push(...foundry.utils.deepClone(state.modifications));
+        }
+
+        const linkedItemsFlag = [];   // For the actor hook
+        const descriptionModList = [];    // For "consumed" mods
+        const descriptionLinkList = [];   // For "linked" items
+
+        // C. Loop through every single item in a slot
+        for (const [slotId, item] of Object.entries(state.changes)) {
+            
+            // D. MERGE EFFECTS from slotted items
+            if (item.effects && item.effects.length > 0) {
+                allEffects.push(...foundry.utils.deepClone(item.effects));
+            }
+
+            // E. CHECK IF ITEM SHOULD BE "LINKED" vs. "CONSUMED"
+            if (item.type === 'modification' || item.type === 'ammo') {
+                // "Consumed" Mod/Ammo
+                descriptionModList.push(`<li>${item.name}</li>`);
+            } else {
+                // "Linkable Item"
+                linkedItemsFlag.push({ 
+                    uuid: item.uuid, 
+                    slotId: slotId 
+                });
+                
+                // THIS IS THE NEW DESCRIPTION FORMAT
+                descriptionLinkList.push(`<b>@UUID[${item.uuid}]</b>`);
+            }
+        }
+
+        // --- 4. Finalize the new item data ---
+
+        // A. Set all merged effects
+        baseItemData.effects = allEffects;
+
+        // B. Update name
+        if (descriptionModList.length > 0) {
+            baseItemData.name = `${baseItemName} (Modified)`;
+        }
+
+        // C. Update description
+        let description = baseItemData.system.description?.value || "";
+        if (descriptionModList.length > 0) {
+            description += `<hr><p><b>Embedded Modifications:</b><ul>${descriptionModList.join('')}</ul></p>`;
+        }
+        if (descriptionLinkList.length > 0) {
+            // THIS IS THE NEW DESCRIPTION FORMAT
+            description += `<hr><p><b>Linked Items: </b>${descriptionLinkList.join(' ')}</p>`;
+        }
+        baseItemData.system.description.value = description;
+
+        // D. Update flags
+        if (!baseItemData.flags) baseItemData.flags = {};
+        baseItemData.flags['sr5-marketplace'] = {
+            ...baseItemData.flags['sr5-marketplace'],
+            linkedItems: linkedItemsFlag 
+        };
+        
+        // --- 5. Log the final single item payload ---
+        console.log("Marketplace Builder | Payload for new item (log only):", baseItemData);
+        //ui.notifications.info("New item payload logged to console (F12).");
     }
 
     /**
