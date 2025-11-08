@@ -31,10 +31,10 @@
                    value="{{displayItem.name}}" 
                    class="item-name-input" /> 
             
-            {{else}}
+           {{else}}
             <h4>{{displayItem.name}}</h4>
             
-            {{/if}}
+           {{/if}}
     </div>
 
     {{!-- For Cyberware & Bioware --}}
@@ -42,14 +42,16 @@
         <div class="stat-block">
             <label>{{localize "SR5.Grade"}}</label>
             {{#if isEditingBaseItem}}
-                <input type="text" name="system.grade" value="{{displayItem.system.grade}}" /> {{else}}
+                <input type="text" name="system.grade" value="{{displayItem.system.grade}}" class="item-input"/> 
+            {{else}}
                 <span>{{displayItem.system.grade}}</span>
             {{/if}}
         </div>
         <div class="stat-block">
             <label>{{localize "SR5.Essence"}}</label>
             {{#if isEditingBaseItem}}
-                <input type="text" name="system.essence" value="{{displayItem.system.essence}}" /> {{else}}
+                <input type="text" name="system.essence" value="{{displayItem.system.essence}}" class="item-input"/> 
+            {{else}}
                 <span>{{displayItem.system.essence}}</span>
             {{/if}}
         </div>
@@ -60,21 +62,24 @@
          <div class="stat-block">
             <label>{{localize "SR5.DamageValueAbbr"}}</label>
             {{#if isEditingBaseItem}}
-                <input type="text" name="system.damage.value" value="{{displayItem.system.damage.value}}" /> {{else}}
+                <input type="text" name="system.damage.value" value="{{displayItem.system.damage.value}}" class="item-input"/> 
+            {{else}}
                 <span>{{displayItem.system.damage.value}}</span>
             {{/if}}
         </div>
         <div class="stat-block">
             <label>{{localize "SR5.AccuracyAbbr"}}</label>
             {{#if isEditingBaseItem}}
-                <input type="text" name="system.accuracy.value" value="{{displayItem.system.accuracy.value}}" /> {{else}}
+                <input type="text" name="system.accuracy.value" value="{{displayItem.system.accuracy.value}}" class="item-input"/> 
+            {{else}}
                 <span>{{displayItem.system.accuracy.value}}</span>
             {{/if}}
         </div>
         <div class="stat-block">
             <label>{{localize "SR5.APAbbr"}}</label>
             {{#if isEditingBaseItem}}
-                <input type="text" name="system.ap.value" value="{{displayItem.system.ap.value}}" /> {{else}}
+                <input type="text" name="system.ap.value" value="{{displayItem.system.ap.value}}" class="item-input"/> 
+            {{else}}
                 <span>{{displayItem.system.ap.value}}</span>
             {{/if}}
         </div>
@@ -85,7 +90,8 @@
         <div class="stat-block">
             <label>{{localize "SR5.Armor"}}</label>
             {{#if isEditingBaseItem}}
-                <input type="text" name="system.armor.value" value="{{displayItem.system.armor.value}}" /> {{else}}
+                <input type="text" name="system.armor.value" value="{{displayItem.system.armor.value}}" class="item-input"/> 
+            {{else}}
                 <span>{{displayItem.system.armor.value}}</span>
             {{/if}}
         </div>
@@ -95,34 +101,53 @@
     <div class="stat-block">
         <label>{{localize "SR5.Rating"}}</label>
         {{#if isEditingBaseItem}}
-            <input type="text" name="system.technology.rating" value="{{displayItem.system.technology.rating}}" /> {{else}}
+            <input type="text" name="system.technology.rating" value="{{displayItem.system.technology.rating}}" class="item-input"/> 
+        {{else}}
             <span>{{displayItem.system.technology.rating}}</span>
         {{/if}}
     </div>
     <div class="stat-block">
         <label>{{localize "SR5.Availability"}}</label>
         {{#if isEditingBaseItem}}
-            <input type="text" name="system.technology.availability" value="{{displayItem.system.technology.availability}}" /> {{else}}
+            <input type="text" name="system.technology.availability" value="{{displayItem.system.technology.availability}}" class="item-input"/> 
+        {{else}}
             <span>{{displayItem.system.technology.availability}}</span>
         {{/if}}
     </div>
     <div class="stat-block">
         <label>{{localize "SR5.Cost"}}</label>
         {{#if isEditingBaseItem}}
-            <input type="text" name="system.technology.cost" value="{{displayItem.system.technology.cost}}" /> {{else}}
+            <input type="text" name="system.technology.cost" value="{{displayItem.system.technology.cost}}" class="item-input"/>
+            <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen details"></i> 
+        {{else}}
             <span>{{displayItem.system.technology.cost}}</span>
+            <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen"></i>
         {{/if}}
-        <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen"></i>
     </div>
 
     {{#unless isEditingBaseItem}}
         {{#if (or builderData.baseItem.effects.length builderData.modifications.length)}}
             <div class="stat-block-divider"></div>
         {{/if}}
+        
         {{#each builderData.baseItem.effects}}
-            {{/each}}
+            <div class="stat-block effect-stat">
+                <label title="{{localize 'SR5Marketplace.ItemBuilder.Effects.InnateLockedHint'}}">
+                    <i class="fas fa-lock-alt"></i> {{this.name}}
+                </label>
+                <span>{{this.changes.[0].value}}</span>
+            </div>
+        {{/each}}
+        
         {{#each builderData.modifications}}
-            {{/each}}
+            <div class="stat-block effect-stat custom-effect">
+                <label title="{{localize 'SR5Marketplace.ItemBuilder.Effects.CustomEffect'}}">
+                    <i class="fas fa-bolt"></i> {{this.name}}
+                </label>
+                <span>{{this.changes.[0].value}}</span>
+            </div>
+        {{/each}}
+        
         <div class="stat-block-divider"></div>
         <div class="stat-block description-block">
             <label>{{localize "SR5.Description"}}</label>
@@ -135,7 +160,8 @@
         <div class="stat-block description-block">
             <label>{{localize "SR5.Description"}}</label>
             <textarea name="system.description.value" 
-                      rows="4">{{displayItem.system.description.value}}</textarea> </div>
+                      rows="4">{{displayItem.system.description.value}}</textarea> 
+        </div>
     {{/if}}
 
 </div>

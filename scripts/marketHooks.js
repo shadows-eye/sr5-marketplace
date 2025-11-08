@@ -267,23 +267,26 @@ Hooks.once("init", () => {
     console.log("SR5 Marketplace | Initializing module...");
     initializeTemplates();
     initializeSettings();
-    // Register the custom ShopActor class
     defineShopActorClass();
 
-    // Register the custom ShopActorSheet
     foundry.documents.collections.Actors.registerSheet("sr5-marketplace", ShopActorSheet, {
         types: [SHOP_ACTOR_TYPE],
         makeDefault: true,
         label: "SR5Marketplace.Marketplace.Shop.SheetName"
     });
 
-    // 1. The root 'game.sr5marketplace' is the instance of MarketplaceAPI.
+    // --- NEW API REGISTRATION ---
+    
+    // 1. Instantiate the main API container and assign it to the root
     game.sr5marketplace = new MarketplaceAPI();
 
-    // 2. The other APIs are nested under '.api' property.
+    // 2. Nest all other API services under the '.api' property
     game.sr5marketplace.api = {
         system: new SR5SystemAPI(),
-        itemData: new ItemDataServices()
+        itemData: new ItemDataServices(),
+        // 3. Instantiate your sub-APIs using the static properties
+        marketplace: new MarketplaceAPI.Marketplace(),
+        itemBuilder: new MarketplaceAPI.ItemBuilder()
     };
 });
 
@@ -294,10 +297,13 @@ Hooks.once("init", () => {
 Hooks.on("ready", async () => {
     console.log("SR5 Marketplace | Module is ready!");
 
-    // Call the init() and initialize() methods on the correct objects inside the global namespace.
-    await game.sr5marketplace.init();         // Correct path to MarketplaceAPI's init
-    await game.sr5marketplace.api.system.init();          // Correct path to SR5SystemAPI's init
-    await game.sr5marketplace.api.itemData.initialize();  // Correct path to ItemDataServices' initialize
+    // --- UPDATED INIT CALLS ---
+    // Call the init() methods on all your API objects
+    await game.sr5marketplace.init();                     // Calls MarketplaceAPI.init()
+    await game.sr5marketplace.api.system.init();          // Calls SR5SystemAPI.init()
+    await game.sr5marketplace.api.itemData.initialize();  // Calls ItemDataServices.initialize()
+    await game.sr5marketplace.api.marketplace.init();     // Calls _inGameMarketplaceAPI.init()
+    await game.sr5marketplace.api.itemBuilder.init();     // Calls _ItemBuilderAPI.init()
 
     if (game.user.isGM) {
         game.socket.on("module.sr5-marketplace", () => {
@@ -326,6 +332,7 @@ Hooks.on("updateUser", (user, changes) => {
         }, 250);
     }
 });
+
 // Add a control button for opening the Marketplace
 Hooks.on("getSceneControlButtons", (controls) => {
   const tokenControls = controls["tokens"];
@@ -338,9 +345,10 @@ Hooks.on("getSceneControlButtons", (controls) => {
     icon: "fas fa-shopping-cart",
     visible: true,
     toggle: true,
-    active: Object.values(ui.windows).some(app => app.id === "inGameMarketplace"),
+    active: !!foundry.applications.instances.get("inGameMarketplace"),
+    
     onChange: (toggled) => {
-      const app = Object.values(ui.windows).find(app => app.id === "inGameMarketplace");
+      const app = foundry.applications.instances.get("inGameMarketplace");
       if (toggled) {
         if (!app) new inGameMarketplace().render(true);
       } else {
@@ -354,28 +362,24 @@ Hooks.on("getSceneControlButtons", (controls) => {
     const tokenControls = controls["tokens"];
     if (!tokenControls) return;
 
-    // --- REPLACE THIS VISIBILITY LOGIC ---
-    // Check if the button should be visible based on settings and user role
+    // ... (visibility logic is unchanged) ...
     const isGM = game.user.isGM;
     const gmEnabled = game.settings.get("sr5-marketplace", "itemBuilder.enableForGM");
-    //const playerEnabled = game.settings.get("sr5-marketplace", "itemBuilder.enableForPlayers");
-    
     const isVisible = (isGM && gmEnabled);
 
-    // In V13, the `tools` property is also an ARRAY. We add our new button object to it using .push().
     tokenControls.tools["itemBuilder"] =({
         name: "itemBuilder",
-        title: "Open Item Builder", // Will be localized later
+        title: "Open Item Builder",
         icon: "fas fa-wrench",
-        visible: isVisible, // Use our calculated visibility
-
+        visible: isVisible, 
         toggle: true,
-        active: Object.values(ui.windows).some(app => app.id === "itemBuilderApp"),
+        active: !!foundry.applications.instances.get("itemBuilder"),
+
         onChange: (toggled) => {
+            const app = foundry.applications.instances.get("itemBuilder");
             if (toggled) {
-                new ItemBuilderApp().render(true);
+                if (!app) new ItemBuilderApp().render(true);
             } else {
-                const app = Object.values(ui.windows).find(app => app.id === "itemBuilderApp");
                 if (app) app.close();
             }
         }

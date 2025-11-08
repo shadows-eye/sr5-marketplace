@@ -12,3 +12,54 @@
   background-color: var(--tag-background-color);
   margin: 4px 0;
 }
+
+/* Puts label and value/input on one line */
+.stat-block {
+  display: flex;
+  justify-content: space-between; /* Pushes label and input apart */
+  align-items: center;
+  margin: 0.2em;
+  gap: 0.5em; /* Space between label and input */
+}
+
+/* Allows description to stack vertically */
+.stat-block.description-block {
+  flex-direction: column;
+  align-items: stretch; /* Makes textarea full-width */
+  gap: 0.3em;
+}
+
+/* This targets all small inputs */
+.stat-block .item-input {
+  flex-basis: 80px; /* Give a fixed base width */
+  flex-grow: 0;
+  flex-shrink: 0;
+  text-align: right;
+  /* Your other styles */
+  gap: 0.2em;
+  margin: 0.2em;
+} 
+
+/* This targets the name input specifically */
+.stat-block .item-name-input {
+  flex-grow: 1; /* Allows the name to fill the available space */
+  flex-basis: 100px; /* Give it a minimum width */
+  /* Your other styles */
+  gap: 0.2em;
+  margin: 0.2em;
+}
+
+/* Styles the edit icon next to the image */
+.stat-block.item-image {
+    justify-content: flex-start; /* Aligns image and icon to the left */
+}
+
+.base-item-edit-icon {
+    cursor: pointer;
+    margin-left: 0.5em;
+    font-size: 1.1em;
+}
+
+.sr5-marketplace-yen.details {
+  margin-left: -88px
+}

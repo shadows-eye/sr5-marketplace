@@ -84,7 +84,14 @@ export class ItemPreviewApp extends HandlebarsApplicationMixin(ApplicationV2) {
         }
     }
 
-    static #onAddToItemBuilder(event, target) {
-        ui.notifications.warn("The Item Builder feature is not yet implemented.");
+    static async #onAddToItemBuilder(event, target) {
+        const itemUuid = target.dataset.itemId;
+        if (!itemUuid) return;
+
+        // 1. Call the new central API function
+        await game.sr5marketplace.setBuilderBaseItem(itemUuid);
+
+        // 2. Close this preview window
+        this.close();
     }
 }
