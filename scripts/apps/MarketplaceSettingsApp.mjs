@@ -42,7 +42,7 @@ export class MarketplaceSettingsApp extends HandlebarsApplicationMixin(Applicati
      * Prepares the data context to be rendered in the template.
      */
     async _prepareContext(options) {
-        const allItems = game.sr5marketplace.api.itemData.getItems();
+        const allItems = game.sr5marketplace.itemData.getItems();
         const allTypes = [...new Set(allItems.map(item => item.type))].sort();
         const behaviors = game.settings.get("sr5-marketplace", "itemTypeBehaviors");
 

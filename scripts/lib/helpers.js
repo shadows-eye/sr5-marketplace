@@ -1,7 +1,7 @@
 import ItemData from '../services/ItemDataServices.mjs';
 export const registerBasicHelpers = () => {
     Handlebars.registerHelper('hasItemType', function(type, options) {
-        const itemData = game.sr5marketplace.api.itemData;
+        const itemData = new ItemData();
         if (itemData.itemsByType[type] && itemData.itemsByType[type].length > 0) {
             console.log(`Type found: ${type}`);
             return options.fn(this);
@@ -137,26 +137,5 @@ export const registerBasicHelpers = () => {
     Handlebars.registerHelper('loc', function(key, options) {
         // 'options.hash' contains all the key=value pairs from the helper call (e.g., rolls=totalRolls)
         return game.i18n.format(key, options.hash);
-    });
-    Handlebars.registerHelper("invert", obj => {
-        if (typeof obj !== 'object' || obj === null) return {};
-        const newObj = {};
-        for (const key in obj) {
-            if (Object.hasOwn(obj, key)) {
-                newObj[obj[key]] = key;
-            }
-        }
-        return newObj;
-    });
-
-    /**
-     * Checks if an object with a given id is present in an array of objects.
-     * @param {Array<object>} arrayOfObjects The array to check within (e.g., [{id: "agility"}, ...]).
-     * @param {string} id The id to search for.
-     * @returns {boolean} True if an object with the id is in the array, false otherwise.
-     */
-    Handlebars.registerHelper('isIdIn', function(arrayOfObjects, id) {
-        if (!Array.isArray(arrayOfObjects)) return false;
-        return arrayOfObjects.some(obj => obj.id === id);
     });
 };
