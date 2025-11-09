@@ -148,7 +148,7 @@ export default class ItemDataServices {
             default: "modules/sr5-marketplace/assets/icons/weapons/light_pistol.webp"
         },
         
-        default: "icons/svg/item-bag.svg"
+        default: "modules/sr5-marketplace/assets/icons/types/equipment.webp"
     };
 
     constructor() {
