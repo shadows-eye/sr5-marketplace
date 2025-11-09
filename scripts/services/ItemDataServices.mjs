@@ -123,21 +123,22 @@ export default class ItemDataServices {
      */
     static ITEM_TYPE_ICONS = {
         // Main Types
-        armor: "modules/sr5-marketplace/assets/icons/types/armor.svg",
-        device: "modules/sr5-marketplace/assets/icons/types/Kommlink.webp",
-        cyberware: "modules/sr5-marketplace/assets/icons/types/scann_woman_2.webp",
-        bioware: "modules/sr5-marketplace/assets/icons/types/bioware.svg",
-        equipment: "modules/sr5-marketplace/assets/icons/types/kletter.webp",
+        armor: "modules/sr5-marketplace/assets/icons/types/armor.webp",
+        device: "modules/sr5-marketplace/assets/icons/types/commlink.webp",
+        cyberware: "modules/sr5-marketplace/assets/icons/types/cyberware.webp",
+        bioware: "modules/sr5-marketplace/assets/icons/types/bioware.webp",
+        equipment: "modules/sr5-marketplace/assets/icons/types/equipment.webp",
         spell: "modules/sr5-marketplace/assets/icons/types/spell.webp",
         modification: "modules/sr5-marketplace/assets/icons/types/modification.webp",
 
         // Weapon Sub-Subtypes
         weapon: {
             lightPistol: "modules/sr5-marketplace/assets/icons/weapons/light_pistol.webp",
+            taser: "modules/sr5-marketplace/assets/icons/weapons/taser.webp",
             heavyPistol: "modules/sr5-marketplace/assets/icons/weapons/heavy_pistol.webp",
             machinePistol: "modules/sr5-marketplace/assets/icons/weapons/machine_pistol.webp",
             smg: "modules/sr5-marketplace/assets/icons/weapons/smg.webp",
-            assaultRifle: "modules/sr5-marketplace/assets/icons/weapons/StormGun.webp",
+            assaultRifle: "modules/sr5-marketplace/assets/icons/weapons/stormgun.webp",
             shotgun: "modules/sr5-marketplace/assets/icons/weapons/shotgun.webp",
             sniperRifle: "modules/sr5-marketplace/assets/icons/weapons/sniper_rifle.webp",
             bow: "modules/sr5-marketplace/assets/icons/weapons/bow.webp",
