@@ -145,7 +145,7 @@ export default class ItemDataServices {
             blades: "modules/sr5-marketplace/assets/icons/weapons/melee_blade.webp",
             clubs: "modules/sr5-marketplace/assets/icons/weapons/melee_club.webp",
             thrown: "modules/sr5-marketplace/assets/icons/weapons/thrown.webp",
-            default: "modules/sr5-marketplace/assets/icons/weapons/light_pistol.webp"
+            default: "modules/sr5-marketplace/assets/icons/weapons/default.webp"
         },
         
         default: "modules/sr5-marketplace/assets/icons/types/equipment.webp"

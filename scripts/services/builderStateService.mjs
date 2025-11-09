@@ -52,24 +52,40 @@ export class BuilderStateService {
     }
 
     /**
-     * Sets the base item, its image, and the dynamic title, clearing any previous build state.
+     * Sets the base item, its image, and the dynamic title.
+     * If the new item is DIFFERENT from the current base item, this clears any previous build state.
+     * If the new item is the SAME as the current one, the state is preserved.
      * @param {object|null} itemData - The data object for the base item.
-     * @returns {Promise<void>} object - item Obeject with item and image
+     * @returns {Promise<void>}
      */
     static async setBaseItem(itemData) {
-        const newState = this._getDefaultState();
-        newState.baseItem = itemData;
-        let itemTypeImagePath= game.sr5marketplace.api.itemData.getRepresentativeImage(itemData);
-        newState.itemTypeImage = itemTypeImagePath;
-        // Generate and set the title
+
+        const currentState = await this.getState();
+        const newBaseItemUuid = itemData?.uuid || null;
+        const oldBaseItemUuid = currentState.baseItem?.uuid || null;
+
+        if (newBaseItemUuid === oldBaseItemUuid) {
+
+            return; 
+        }
+
+        // --- IT'S A DIFFERENT ITEM (or null) ---
+        
+        await game.user.unsetFlag(FLAG_SCOPE, FLAG_KEY);
+
         if (itemData) {
+            const newState = this._getDefaultState();
+            newState.baseItem = itemData;
+            
+            let itemTypeImagePath = game.sr5marketplace.api.itemData.getRepresentativeImage(itemData);
+            newState.itemTypeImage = itemTypeImagePath;
+
             const typeLabel = itemData.type.charAt(0).toUpperCase() + itemData.type.slice(1);
             newState.title = `${typeLabel}: ${itemData.name}`;
-        } else {
-            newState.title = "Select a Base Item"; // Default title
+
+            await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, newState);
         }
         
-        await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, newState);
     }
 
     /**
