@@ -22,6 +22,7 @@
 
     /* --- Greys & Neutrals --- */
     --color-black: #000;
+    --color-dark-back-grey: #252525;
     --color-white: #fff;
     --color-grey-text: #232323;
     --color-grey-darkest: #2b2b2b;
@@ -108,6 +109,7 @@
 /* --- Borders --- */
 --border-color-medium: ;
 --border-color-dark: ;
+--card-border-color: ;
 --border-color-highlight: ;
 
 /* --- Tabs --- */
@@ -138,6 +140,7 @@
 --drop-target-border: ;
 --drop-target-border-hover: ;
 --drop-target-bg-hover: ;
+--text-color-selector: ;
 
 /* --- Form Special --- */
 --Form-background-group: ;
@@ -148,6 +151,19 @@
 --inventory-item-border: ;
 --inventory-item-image-bg: ;
 --searbarColor: ;
+
+/* --- Tags --- */
+--Tag-box: ;
+--Tag-box-hover: ;
+--Tag-remove: ;
+--Tag-remove-hover: ;
+--tag-background-dropdown: ;
+
+/* ---  Buttons  ---- */
+--button: ;
+--buttonHover: var(--color-red-dark) ;
+--buttonDisabled: ;
+--notification-badge: ;
 
 /* --- Hint Tooltip --- */
 --hint-bg: #2b2b2b85;
@@ -196,6 +212,7 @@
 
 --border-color-medium: var(--color-grey-medium-light);
 --border-color-dark: var(--color-grey-medium);
+--card-border-color: var(--color-grey-medium);
 --border-color-highlight: var(--color-yellow-dark);
 
 --tab-inactive-bg: var(--attribute-group-bg);
@@ -228,6 +245,14 @@
 --inventory-item-image-bg: var(--color-white-transparent-10);
 --searbarColor: var(--color-red-darkest);
 --actor-background-hover: var(--tab-active-bg);
+
+--tag-background-color: var(--color-red-deep);
+--tag-text-color: var(--color-white);
+--tag-input-border: var(--color-yellow-base);
+--tag-background-dropdown: var(--color-grey-light);
+--buttoHover: var(--color-red-bright);
+--text-color-selector: var(--color-red-darkest);
+--notification-badge: var(--color-red-dark);
 }
 
 .themed.theme-dark {
@@ -251,6 +276,7 @@
 
 --border-color-medium: var(--color-grey-medium-light);
 --border-color-dark: var(--color-grey-medium);
+--card-border-color: var(--color-black);
 --border-color-highlight: var(--color-yellow-dark);
 
 --tab-inactive-bg: var(--color-grey-dark);
@@ -283,4 +309,11 @@
 --inventory-item-image-bg: var(--color-white-transparent-10);
 --searbarColor: var(--color-red-darkest);
 
+--tag-background-color: var(--color-red-base);
+--tag-text-color: var(--color-white);
+--tag-input-border: var(--border-color-dark);
+--tag-background-dropdown: var(--color-red-darkest);
+
+--buttoHover: var(--color-red-dark);
+--text-color-selector: var(--color-red-bright);
 }

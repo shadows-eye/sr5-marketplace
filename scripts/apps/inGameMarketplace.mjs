@@ -34,7 +34,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         this.attribute = null;
         this.modifier = null;
         this.availabilityStr = null;
-        this.itemData = game.sr5marketplace.itemData;
+        this.itemData = game.sr5marketplace.api.itemData;
         this.basketService = new BasketService();
         this.tabGroups = { main: "shop" };
         this.purchasingActor = null;
@@ -119,7 +119,12 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         if (this.tabGroups.main === "shop") {
             this.searchService = new SearchService(this.element);
-            this.searchService.initialize();
+            this.searchService.initialize({
+                searchBox: "#search-box",
+                itemsGrid: "#marketplace-items",
+                tagsContainer: "#filter-tags-container",
+                nameSelector: ".marketplace_h4" // <-- ADD THIS LINE
+            });
             
             const categorySelector = this.element.querySelector("#item-type-selector");
             if (categorySelector) {
@@ -182,6 +187,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         const ownedActors = game.actors.filter(a => a.isOwner).map(a => ({ uuid: a.uuid, name: a.name, img: a.img }));
         const itemsByType = this.itemData.itemsByType;
+        console.log(itemsByType);
         const basket = await this.basketService.getBasket();
         console.log(basket);
         const basketItemCount = basket.shoppingCartItems.length;

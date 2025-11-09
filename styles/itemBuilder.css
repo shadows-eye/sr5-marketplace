@@ -1,0 +1,860 @@
+@import "multi-select.css";
+@import "itemDetails.css";
+/* ================================================================== */
+/* Item Builder — Clean CSS (with labeled sections)                   */
+/* ================================================================== */
+
+/* 0) RESETS & GLOBALS ---------------------------------------------- */
+.itemBuilder, .itemBuilder * { box-sizing: border-box; }
+.itemBuilder .window-content {              /* prevent outer double-scroll */
+  padding: 0;
+  height: 100%;
+  overflow: hidden !important;
+}
+
+div#itemBuilder.application.sr5-marketplace.itemBuilder {
+    min-height: 760px;
+    min-width: 1312px;
+}
+
+
+/* Allow nested CSS-Grid children to shrink & scroll correctly */
+.itemBuilder .item-builder-container,
+.itemBuilder .builder-body,
+.itemBuilder .builder-container,
+.itemBuilder .builder-main-content,
+.itemBuilder .item-selector-section,
+.itemBuilder .mod-selector-section {
+  min-height: 0 !important;
+  min-width: 0 !important;
+}
+
+/* 1) TOP-LEVEL APP LAYOUT ------------------------------------------ */
+.itemBuilder .item-builder-container {
+  display: grid;
+  grid-template-rows: auto auto 1fr;   /* Header | Nav | Body */
+  height: 100%;
+  overflow: hidden;
+}
+
+.itemBuilder .builder-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 10px;
+  flex-shrink: 0;
+}
+.itemBuilder .builder-header .header-right {
+    display: flex;
+    gap: 0.4rem;
+    width: fit-content;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+}
+.builder-header .header-right button{
+  max-width: fit-content;
+}
+.builder-header .header-right button:hover{
+  background-color: var(--button-hover);
+}
+.itemBuilder .builderTitle{
+    font-size: 26px;
+    margin-left: 0.5em;
+}
+
+.itemBuilder .builder-nav {
+  border-top: 1px solid var(--border-color-medium);
+  border-bottom: 1px solid var(--border-color-medium);
+  flex-shrink: 0;
+}
+/*--- TAB Styling ---*/
+a.builder-tabs.item.active{
+  background: var(--color-white-transparent-05);
+  width: fit-content;
+  padding-left: 1em;
+  padding-right: 1em;
+  border: 1px solid black;
+  border-radius: 5px;
+}
+a.builder-tabs.item{
+  width: fit-content;
+  padding-left: 1em;
+  padding-right: 1em;
+  border: 1px solid rgba(0, 0, 0, 0);
+  border-radius: 5px;
+}
+
+a.builder-tabs.item:hover{
+  background: var(--color-white-transparent-05);
+  border: 1px solid black;
+}
+
+a.builder-tabs.item.active:hover{
+  background: var(--color-red-darkest);
+}
+
+/*--- End TAB Styling ---*/
+
+.itemBuilder .builder-body {
+  display: grid;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 2) MAIN BUILDER TAB LAYOUT --------------------------------------- */
+.itemBuilder .builder-container {
+  display: grid;
+  grid-template-columns: 450px minmax(0, 1fr);   /* left fixed, right flexible */
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    "sidebarTop    mainBuilder"
+    "sidebarBottom mainBuilder";
+  gap: 10px;
+  height: 100%;
+  padding: 10px;
+  overflow: hidden;
+}
+
+.placeholder-content{
+  display: flex;
+}
+
+.placeholder-content img{
+  margin-top: 2em;
+  margin-left: 2em;
+}
+
+.placeholder-information{
+  margin-top: 2em;
+}
+
+/* 3) SIDEBAR SECTIONS ---------------------------------------------- */
+.itemBuilder .item-selector-section { grid-area: sidebarTop; }
+.itemBuilder .mod-selector-section  { grid-area: sidebarBottom; }
+.itemBuilder .builder-main-content  { grid-area: mainBuilder; }
+
+.itemBuilder .item-selector-section,
+.itemBuilder .mod-selector-section {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);   /* header auto, list scrolls */
+  background: var(--attribute-group-bg);
+  /* border: 1px solid var(--border-color-medium); */
+  /*border-radius: 5px;*/
+  padding: 5px;
+  overflow: hidden; /* container itself won't scroll */
+  position: relative;
+}
+
+/* 4) COMPONENT HEADERS & LISTS ------------------------------------- */
+.itemBuilder .component-header {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-bottom: 5px;
+}
+
+.itemBuilder .component-header h3 {
+    text-align: center;
+    padding: 0.2em;
+    background-color: var(--collapsible-content-bg);
+    border-radius: 3px;
+    margin: 0;
+    font-size: 0.9em;
+    padding-bottom: 0;
+    margin-top: 0.2em;
+}
+
+.itemBuilder .header-controls {
+  display: flex; 
+  gap: 8px; 
+}
+.itemBuilder .header-controls input[type="search"] {
+  flex-grow: 1; 
+  min-width: 50px;
+  margin-right: 1em;
+}
+.itemBuilder .header-controls input[type="search"].mod-search {
+  flex-grow: 1; 
+  min-width: 50px;
+  margin-right: 1em;
+  margin-left: 1em;
+}
+.itemBuilder .item-content-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding-top: 5px;
+  align-content: start;
+  overflow-y: auto;        /* <- the only scrollbars on the left */
+  overflow-x: hidden;      /* remove tiny horizontal bars */
+  overscroll-behavior: contain;
+}
+
+/* ================================================================== */
+/* 5) MAIN BUILDER AREA (CENTER) ------------------------------------ */
+/* ================================================================== */
+
+/* This is the 1x1 parent cell for the 3-layer stack AND absolute positioning context */
+.itemBuilder .builder-main-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  position: relative; /* <-- CRITICAL: This makes children absolute to this container */
+  border: none;
+  overflow: hidden;
+}
+
+/* This rule makes the SVG canvas and .builder-area stack on top of each other */
+/* We explicitly EXCLUDE the new corners from this rule */
+.builder-main-content > .connector-canvas,
+.builder-main-content > .builder-area {
+  grid-row: 1 / -1;
+  grid-column: 1 / -1;
+}
+
+/* Layer 1: Connector Canvas (unchanged) */
+.connector-canvas {
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Layer 2: Foreground Slots & Content */
+.builder-area {
+  z-index: 2;
+  display: grid;
+  height: 100%;
+  gap: 10px;
+  padding: 0; /* Remove any padding that might offset the frame */
+  
+  /* UPDATED: Define the 4-row content grid */
+  grid-template-columns: 8em 1fr 8em; /* Left sidebar, Center, Right sidebar */
+  grid-template-rows: 8em 1fr 1.3em 7em; /* Top row, Middle content, Divider, Bottom slots */
+
+  grid-template-areas:
+    "slot-l  temp    slot-r"
+    "slot-l  center  slot-r"
+    "divider divider divider"
+    "bottom  bottom  bottom"; 
+}
+
+/* ================================================================== */
+/* 6) FRAME & DIVIDER STYLING (NEW & CORRECTED) ------------------- */
+/* ================================================================== */
+
+/* --- ABSOLUTELY POSITIONED CORNERS --- */
+/* This targets the 4 <img> tags that are direct children of builder-main-content */
+.builder-main-content .builder-corner-img {
+  position: absolute; /* Position relative to .builder-main-content */
+  /* SIZE of the CORNERS */
+  width: 20em;     /* Both need the same size to scale correct */
+  height: 20em;
+  /* SIZE END */
+  object-fit: fill; /* Stretch corner SVG to fill its space */
+  z-index: 3;     /* Place on top of everything */
+  pointer-events: none;
+  border: none;
+}
+
+/* Top-Left Corner */
+.builder-main-content .corner-tl {
+  top: 0;
+  left: 0;
+  /*height: 2.3em; Match TOP row height */
+  transform: scale(-1, -1); /* Flip X and Y */
+}
+
+/* Top-Right Corner */
+.builder-main-content .corner-tr {
+  top: 0;
+  right: 0;
+  /*height: 2.3em; Match TOP row height */
+  transform: scaleY(-1); /* Flip Y */
+}
+
+/* Bottom-Left Corner */
+.builder-main-content .corner-bl {
+  bottom: 0;
+  left: 0;
+  /* height: 8em; (default) */
+  transform: scaleX(-1); /* Flip X */
+}
+
+/* Bottom-Right Corner */
+.builder-main-content .corner-br {
+  bottom: 0;
+  right: 0;
+  /* height: 8em; (default) */
+  /* No transform needed */
+}
+
+/* --- HORIZONTAL DIVIDER LINE --- */
+/* This targets the <img> tag you added INSIDE .builder-area */
+.builder-area .divider-line {
+  grid-area: divider; /* Place it in the 'divider' grid area */
+  width: 100%;
+  height: 10px; /* Explicit height for the border.svg */
+  object-fit: fill; /* Stretch border.svg horizontally */
+  align-self: center; /* Center vertically in its row */
+  z-index: 3; /* Place on top */
+  pointer-events: none;
+  border: none;
+}
+
+
+/* ================================================================== */
+/* 7) BUILDER COMPONENTS — POSITIONING ------------------------------- */
+/* ================================================================== */
+
+.itemBuilder .item-stats-display {
+  grid-area: slot-l;
+  grid-row: 2;
+  grid-column: 1 / 3;
+  align-self: start;
+  justify-self: start;
+  margin-left: 1.5em;
+  width: fit-content;
+  height: 20px;
+  z-index: 10;
+}
+
+.stat-block.item-image { max-width: 60px; }
+.itemBuilder .center-display { 
+  grid-area: center; 
+  grid-row: 2 / span 2;
+}
+.itemBuilder .slot-top-left { 
+grid-area: slot-l;
+grid-row: 1; 
+align-self: start;
+margin-left: 1.5em;
+padding-top: 9em; 
+
+}
+.itemBuilder .slot-bottom-left {
+  grid-area: slot-l; 
+  align-self: end; 
+  margin-left: 1.5em;
+}
+.itemBuilder .slot-top-right {
+  grid-area: slot-r;
+  grid-row: 1;
+  align-self: start;
+  margin-right: 1.5em;
+  padding-top: 9em;
+}
+.itemBuilder .slot-middle-right {
+  grid-area: slot-r; 
+  align-self: center;
+  margin-right: 1.5em;
+}
+.itemBuilder .slot-bottom-right {
+  grid-area: slot-r; 
+  align-self: end;
+  margin-right: 1.5em;
+}
+.itemBuilder .bottom-slots { 
+  grid-area: bottom; 
+}
+
+/* ================================================================== */
+/* 8) BUILDER COMPONENTS — STYLING ---------------------------------- */
+/* ================================================================== */
+
+.itemBuilder .center-display {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.itemBuilder .center-display .ring-image {
+  width: 100%;
+  max-width: 36em;
+  height: auto;
+  position: absolute;
+  z-index: 100;
+  opacity: 0.5;
+  border: none;
+  margin-bottom: 3em;
+}
+.itemBuilder .center-display .ring-image:hover { opacity: 0.8; }
+.itemBuilder .center-display .base-item-image {
+  max-width: 30em;
+  height: auto;
+  position: relative;
+  z-index: 1;
+  border: none;
+  filter: drop-shadow(2px 2px 5px var(--color-black-transparent-30));
+}
+.itemBuilder .center-display h4 {
+  margin-top: auto;
+  padding-bottom: 20px;
+  font-size: 1.2em;
+  color: var(--text-color-subheader);
+  z-index: 1;
+}
+
+/* ================================================================== */
+/* 9) MOD SLOT STYLING ----------------------------------------------- */
+/* ================================================================== */
+
+/* --- SVG FRAME STYLING --- */
+.itemBuilder .mod-slot {
+  position: relative;
+  overflow: hidden;
+  min-width: 100px;
+  min-height: 100px;
+  border: none;
+  background: transparent;
+}
+.itemBuilder .mod-slot::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100% 100%;
+    background-image: url("data:image/svg+xml,%3Csvg id='b' data-name='BoxFrame' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 116.29 103.99'%3E%3Cdefs%3E%3Cstyle%3E .s %7B fill: %23cecece; %7D .t %7B fill: %23434345; %7D .u %7B fill: %235d142b; %7D %3C/style%3E%3C/defs%3E%3Cg id='c' data-name='Frame_Grey'%3E%3Cg id='d' data-name='Frame'%3E%3Cg id='e' data-name='Whites'%3E%3Cpolygon id='f' data-name='White' class='s' points='113.83 99.54 113.09 99.21 101.09 103.52 21.61 103.52 21.61 103.99 101.42 103.99 101.42 103.99 113.83 99.54'/%3E%3Crect id='g' data-name='White' class='u' x='37.17' y='95.86' width='78.38' height='.47'/%3E%3Crect id='h' data-name='White' class='s' x='-33.15' y='56.26' width='76.19' height='.47' transform='translate(61.45 51.55) rotate(90)'/%3E%3Cpolygon id='i' data-name='White' class='s' points='2.47 4.51 3.2 4.84 15.2 .53 94.69 .53 94.69 .06 14.87 .06 14.87 .06 2.47 4.51'/%3E%3Crect id='j' data-name='White' class='s' x='73.34' y='47.13' width='76' height='.47' transform='translate(63.97 158.71) rotate(-90)'/%3E%3C/g%3E%3Cg id='k' data-name='Colors'%3E%3Crect id='l' data-name='Grey' class='t' x='-44.32' y='51.73' width='91.11' height='2.48' transform='translate(54.21 51.73) rotate(90)'/%3E%3Crect id='m' data-name='Grey' class='t' x='-2.55' y='100.97' width='5.58' height='.47' transform='translate(101.44 100.97) rotate(90)'/%3E%3Cpolygon id='n' data-name='Grey' class='t' points='2.48 4.03 2.48 5.51 81.6 5.51 81.6 5.49 81.6 5.51 95.47 1.54 112.85 1.54 112.85 .06 94.69 .06 94.69 .22 81.4 4.03 2.48 4.03'/%3E%3Crect id='o' data-name='Grey' class='t' x='70.11' y='50.15' width='90.88' height='1.48' transform='translate(64.66 166.44) rotate(-990)'/%3E%3Crect id='p' data-name='Grey' class='t' x='113.27' y='2.55' width='5.56' height='.47' transform='translate(113.27 118.84) rotate(-90)'/%3E%3Cpolygon id='q' data-name='Grey' class='t' points='113.81 100.02 113.81 98.54 34.69 98.54 34.69 98.56 34.69 98.54 20.82 102.51 3.44 102.51 3.44 103.99 21.61 103.99 21.61 103.83 34.9 100.02 113.81 100.02'/%3E%3Crect id='r' data-name='Grey' class='t' y='7.41' width='78.38' height='.47'/%3E%3C/g%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+/* Valid (Green) Frame State */
+.itemBuilder.dragging-mod .mod-slot.initial-valid::before {
+    background-image: url("data:image/svg+xml,%3Csvg id='b' data-name='Layer 2' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 116.29 103.99'%3E%3Cdefs%3E%3Cstyle%3E .s %7B fill: %23cecece; %7D .t %7B fill: %23015635; %7D .u %7B fill: %235d142b; %7D %3C/style%3E%3C/defs%3E%3Cg id='c' data-name='Frame_Green'%3E%3Cg id='d' data-name='Frame'%3E%3Cg id='e' data-name='Whites'%3E%3Cpolygon id='f' data-name='White' class='s' points='113.83 99.54 113.09 99.21 101.09 103.52 21.61 103.52 21.61 103.99 101.42 103.99 101.42 103.99 113.83 99.54'/%3E%3Crect id='g' data-name='White' class='u' x='37.17' y='95.86' width='78.38' height='.47'/%3E%3Crect id='h' data-name='White' class='s' x='-33.15' y='56.26' width='76.19' height='.47' transform='translate(61.45 51.55) rotate(90)'/%3E%3Cpolygon id='i' data-name='White' class='s' points='2.47 4.51 3.2 4.84 15.2 .53 94.69 .53 94.69 .06 14.87 .06 14.87 .06 2.47 4.51'/%3E%3Crect id='j' data-name='White' class='s' x='73.34' y='47.13' width='76' height='.47' transform='translate(63.97 158.71) rotate(-90)'/%3E%3C/g%3E%3Cg id='k' data-name='Colors'%3E%3Crect id='l' data-name='Green' class='t' x='-44.32' y='51.73' width='91.11' height='2.48' transform='translate(54.21 51.73) rotate(90)'/%3E%3Crect id='m' data-name='Green' class='t' x='-2.55' y='100.97' width='5.58' height='.47' transform='translate(101.44 100.97) rotate(90)'/%3E%3Cpolygon id='n' data-name='Red' class='t' points='2.48 4.03 2.48 5.51 81.6 5.51 81.6 5.49 81.6 5.51 95.47 1.54 112.85 1.54 112.85 .06 94.69 .06 94.69 .22 81.4 4.03 2.48 4.03'/%3E%3Crect id='o' data-name='Green' class='t' x='70.11' y='50.15' width='90.88' height='1.48' transform='translate(64.66 166.44) rotate(-90)'/%3E%3Crect id='p' data-name='Green' class='t' x='113.27' y='2.55' width='5.56' height='.47' transform='translate(113.27 118.84) rotate(-90)'/%3E%3Cpolygon id='q' data-name='Red' class='t' points='113.81 100.02 113.81 98.54 34.69 98.54 34.69 98.56 34.69 98.54 20.82 102.51 3.44 102.51 3.44 103.99 21.61 103.99 21.61 103.83 34.9 100.02 113.81 100.02'/%3E%3Crect id='r' data-name='Green' class='t' y='7.41' width='78.38' height='.47'/%3E%3C/g%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+/* Invalid (Red) Frame State */
+.itemBuilder.dragging-mod .mod-slot.initial-invalid::before {
+    background-image: url("data:image/svg+xml,%3Csvg id='b' data-name='Layer 2' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 116.29 103.99'%3E%3Cdefs%3E%3Cstyle%3E .s %7B fill: %23cecece; %7D .t %7B fill: %235d142b; %7D %3C/style%3E%3C/defs%3E%3Cg id='c' data-name='Frame_Red'%3E%3Cg id='d' data-name='Frame'%3E%3Cg id='e' data-name='Whites'%3E%3Cpolygon id='f' data-name='White' class='s' points='113.83 99.54 113.09 99.21 101.09 103.52 21.61 103.52 21.61 103.99 101.42 103.99 101.42 103.99 113.83 99.54'/%3E%3Crect id='g' data-name='White' class='t' x='37.17' y='95.86' width='78.38' height='.47'/%3E%3Crect id='h' data-name='White' class='s' x='-33.15' y='56.26' width='76.19' height='.47' transform='translate(61.45 51.55) rotate(90)'/%3E%3Cpolygon id='i' data-name='White' class='s' points='2.47 4.51 3.2 4.84 15.2 .53 94.69 .53 94.69 .06 14.87 .06 14.87 .06 2.47 4.51'/%3E%3Crect id='j' data-name='White' class='s' x='73.34' y='47.13' width='76' height='.47' transform='translate(63.97 158.71) rotate(-90)'/%3E%3C/g%3E%3Cg id='k' data-name='Colors'%3E%3Crect id='l' data-name='Red' class='t' x='-44.32' y='51.73' width='91.11' height='2.48' transform='translate(54.21 51.73) rotate(90)'/%3E%3Crect id='m' data-name='Red' class='t' x='-2.55' y='100.97' width='5.58' height='.47' transform='translate(101.44 100.97) rotate(90)'/%3E%3Cpolygon id='n' data-name='Red' class='t' points='2.48 4.03 2.48 5.51 81.6 5.51 81.6 5.49 81.6 5.51 95.47 1.54 112.85 1.54 112.85 .06 94.69 .06 94.69 .22 81.4 4.03 2.48 4.03'/%3E%3Crect id='o' data-name='Red' class='t' x='70.11' y='50.15' width='90.88' height='1.48' transform='translate(64.66 166.44) rotate(-90)'/%3E%3Crect id='p' data-name='Red' class='t' x='113.27' y='2.55' width='5.56' height='.47' transform='translate(113.27 118.84) rotate(-90)'/%3E%3Cpolygon id='q' data-name='Red' class='t' points='113.81 100.02 113.81 98.54 34.69 98.54 34.69 98.56 34.69 98.54 20.82 102.51 3.44 102.51 3.44 103.99 21.61 103.99 21.61 103.83 34.9 100.02 113.81 100.02'/%3E%3Crect id='r' data-name='Red' class='t' y='7.41' width='78.38' height='.47'/%3E%3C/g%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Initial blue outline when the override setting is active */
+.itemBuilder.dragging-mod .mod-slot.initial-override {
+  outline: 2px dashed #00bfff; /* Deep sky blue */
+}
+
+/* MODIFIED: The hover effect now only adds the box-shadow for emphasis */
+.itemBuilder.dragging-mod .mod-slot.valid-drop,
+.itemBuilder.dragging-mod .mod-slot.invalid-drop,
+.itemBuilder.dragging-mod .mod-slot.override-drop {
+  box-shadow: 0 0 7px currentColor; /* Uses the color from the outline */
+}
+
+/* --- Content inside slots --- */
+.itemBuilder .bottom-slots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.3em;
+  padding-bottom: 1.5em;
+}
+
+.itemBuilder .slot-content-containment {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  padding: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.itemBuilder .slot-item-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border: none;
+}
+
+.itemBuilder .effect-indicator {
+  position: absolute;
+  bottom: 0.4em;
+  right: 0.3em;
+  font-size: 14px;
+  text-shadow: 0 0 4px var(--color-black);
+}
+
+.itemBuilder .effect-indicator.has-effects {
+  color: var(--color-red-bright);
+}
+
+.itemBuilder .effect-indicator.no-effects {
+  color: var(--color-grey-medium-light);
+}
+
+.slot-icon-link.delete-mod-link {
+    position: absolute;
+    top: 4.2em;
+    right: 0.2em;
+}
+
+/* ================================================================== */
+/* 10) COMPACT ITEM CARD (SIDEBAR) ---------------------------------- */
+/* ================================================================== */
+
+.itemBuilder .item-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 5px;
+  padding: 4px;
+  min-height: 40px;
+  overflow: hidden;
+  border: 1px solid var(--card-border-color);
+  background-color: var(--collapsible-content-bg);
+  border-radius: 5px;
+  min-width: 0; /* cards can’t force the column wider */
+}
+.itemBuilder .item-card:hover {
+  border-color: var(--border-color-highlight);
+  background: var(--bg-dark-section-hover);
+}
+.itemBuilder .item-card .item-image { 
+    width: 16px; 
+    height: 16px; 
+}
+.itemBuilder .item-card .item-name {
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+  min-width: 0;  /* text won’t expand the grid */
+}
+.itemBuilder .item-card .select-icon { 
+    font-size: 14px; 
+}
+
+/* ================================================================== */
+/* 11) EFFECTS TAB STYLING ------------------------------------------ */
+/* ================================================================== */
+
+/* --- General Layout --- */
+.itemBuilder .effect-creator-container {
+    border-top: 2px solid var(--border-color-highlight);
+    margin-top: 0.5em;
+    padding-top: 0.5em;
+}
+
+.itemBuilder .icon-selector {
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--border-color-dark);
+    border-radius: 4px;
+    padding: 4px;
+    background: var(--collapsible-content-bg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s ease;
+}
+
+.itemBuilder .icon-selector:hover {
+    border-color: var(--border-color-highlight);
+}
+
+.itemBuilder .icon-selector img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border: none;
+}
+.itemBuilder .effect-creator-steps .form-group {
+    margin-bottom: 10px;
+}
+
+/* Custom Radio/Checkbox Selectors */
+.itemBuilder .custom-radios {
+    display: flex;
+    gap: 5px;
+}
+
+.itemBuilder .custom-radios input[type="radio"] {
+    display: none; /* Hide the actual radio button */
+}
+
+.itemBuilder .custom-radios label {
+    padding: 5px 15px;
+    border: 1px solid var(--border-color-dark);
+    border-radius: 5px;
+    background: var(--collapsible-content-bg);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.itemBuilder .custom-radios input[type="radio"]:checked + label {
+    background: var(--color-red-bright);
+    color: var(--color-white);
+    border-color: var(--color-red-dark);
+}
+
+/* Key Selector Buttons */
+.itemBuilder .key-selector h4 {
+    margin: 10px 0 5px;
+    font-size: 1em;
+    border-bottom: 1px solid var(--border-color-medium);
+    padding-bottom: 3px;
+}
+
+.itemBuilder .key-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.itemBuilder .key-btn {
+    flex-basis: content;
+}
+
+/* Value Input Group */
+.itemBuilder .value-input-group {
+    display: flex;
+    align-items: center;
+}
+
+.itemBuilder .value-input-group input[type="text"] {
+    flex-grow: 1;
+}
+
+.itemBuilder .value-input-group input[type="checkbox"] {
+    display: none; /* Hide the actual checkbox */
+}
+
+.itemBuilder .value-input-group label {
+    flex-shrink: 0;
+    margin-left: 5px;
+    padding: 5px 8px;
+    border: 1px solid var(--border-color-dark);
+    border-radius: 3px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.itemBuilder .value-input-group input[type="checkbox"]:checked + label {
+    background: var(--color-red-bright);
+    color: var(--color-white);
+    border-color: var(--color-red-dark);
+}
+
+.itemBuilder .derived-value-selector {
+    border: 1px dashed var(--border-color-medium);
+    padding: 10px;
+    margin-top: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: var(--color-black-transparent-15);
+}
+
+.itemBuilder .effect-creator-steps{
+  height: 33em;
+  overflow-x: auto;
+}
+
+/* --- Main Creator Layout --- */
+.effect-creator-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    align-items: start;
+    margin-right: 3px;
+}
+
+.effect-creator-grid .form-group.full-width {
+    grid-column: 1 / -1; /* Make an element span all 3 columns */
+}
+
+.key-selector-container.full-width {
+    grid-column: 1 / -1;
+}
+
+/* --- Collapsible Key Groups --- */
+.key-group.collapsible {
+    border: 1px solid var(--border-color-dark);
+    border-radius: 3px;
+    margin-bottom: 5px; /* Spacing between collapsible groups */
+}
+
+.key-group.collapsible .toggle-checkbox {
+    display: none;
+}
+
+.key-group.collapsible .toggle-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 6px 8px;
+    background: var(--collapsible-content-bg);
+}
+.key-group.collapsible .toggle-label:hover {
+    background: var(--Form-background-group-hover);
+}
+
+.key-group.collapsible .toggle-label h5 {
+    margin: 0;
+    border: none;
+}
+
+.key-group.collapsible .expand-icon {
+    transition: transform 0.2s ease-in-out;
+}
+
+/* --- Content Grid INSIDE Collapsibles --- */
+.key-group.collapsible .toggle-content {
+    display: none; /* Hidden by default */
+}
+
+.key-group.collapsible .toggle-checkbox:checked + .toggle-label + .toggle-content {
+    display: grid; /* This is your requested grid for the buttons */
+    gap: 1em;
+    padding: 8px;
+    background: var(--color-black-transparent-20);
+}
+
+.key-group.collapsible .toggle-checkbox:checked + .toggle-label .expand-icon {
+    transform: rotate(90deg);
+}
+
+/* --- Buttons --- */
+.mode-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+}
+
+.button-group.mode-selector,
+.button-group.applyTo {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1em;
+}
+.button-group.typeSelector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 20em;
+    gap: 1em;
+    padding-top: 0.5em;
+}
+
+.key-btn {
+    text-align: center;
+}
+/* Style for any selected or active button in the effect creator */
+.itemBuilder .key-btn.selected,
+.itemBuilder .button-group button.active {
+    background: var(--color-red-dark);
+    color: var(--color-white);
+    border-color: var(--color-red-dark);
+    text-shadow: none;
+}
+
+/* --- Footer --- */
+.dialog-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color-medium);
+}
+/* ================================================================== */
+/* 12) BUILDER CORNER IMAGES (NEW)                                    */
+/* ================================================================== */
+
+/* Base style for all 4 corners */
+.builder-area .builder-corner-img {
+  /* This makes them stretch to fill their grid cell */
+  width: 100%;
+  height: 100%;
+  object-fit: fill; 
+  
+  /* Place them on top of other slots, but behind items */
+  z-index: 3; 
+  pointer-events: none;
+}
+
+/* --- Position each corner in the 3x3 grid --- */
+
+/* Top-Left: Column 1, Row 1 */
+.builder-area .corner-tl {
+  grid-column: 1;
+  grid-row: 1;
+  transform: scale(-1, -1); /* Flip X and Y */
+}
+
+/* Top-Right: Column 3, Row 1 */
+.builder-area .corner-tr {
+  grid-column: 3;
+  grid-row: 1;
+  transform: scaleY(-1); /* Flip Y */
+}
+
+/* Bottom-Left: Column 1, Row 3 */
+.builder-area .corner-bl {
+  grid-column: 1;
+  grid-row: 3;
+  transform: scaleX(-1); /* Flip X */
+}
+
+/* Bottom-Right: Column 3, Row 3 */
+.builder-area .corner-br {
+  grid-column: 3;
+  grid-row: 3;
+  /* No transform needed */
+}
+
+/* ================================================================== */
+/* 13) SIDEBAR CORNER IMAGES (NEW)                                    */
+/* ================================================================== */
+
+/* --- Base style for all 8 sidebar corners --- */
+.sidebar-corner-img {
+  position: absolute; /* Position relative to the parent section */
+  object-fit: fill;   /* Stretch the SVG */
+  z-index: 1;         /* Place above the background, but below text */
+  pointer-events: none;
+
+  /* --- 🖌️ THIS IS HOW YOU CHANGE THE SIZE --- */
+  /* Adjust these values to make the corners bigger or smaller */
+  width: 15em;
+  height: 15em;
+  /* --- 🖌️ END OF SIZE CONTROL --- */
+  border: none;
+}
+
+/* --- Position each corner --- */
+
+.sidebar-corner-img.corner-tl {
+  top: 0;
+  left: 0;
+  transform: scale(-1, -1); /* Flip X and Y */
+}
+
+.sidebar-corner-img.corner-tr {
+  top: 0;
+  right: 0;
+  transform: scaleY(-1); /* Flip Y */
+}
+
+.sidebar-corner-img.corner-bl {
+  bottom: 0;
+  left: 0;
+  transform: scaleX(-1); /* Flip X */
+}
+
+.sidebar-corner-img.corner-br {
+  bottom: 0;
+  right: 0;
+  /* No transform needed */
+}
+
+select#item-type-selector.itemBuilder{
+  margin-left: 1em;
+  max-width: 11em;
+  background: var(--input-background-color);
+  color: var(--text-color-selector);
+}
+
+h4.category-header.mods-header{
+    margin-left: 1em;
+    margin-top: 1em;
+    text-shadow: none;
+}

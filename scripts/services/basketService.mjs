@@ -54,13 +54,12 @@ export class BasketService {
      * @param {string} itemUuid The UUID of the item to add.
      * @param {string} actorUuid The UUID of the actor this basket is for.
      */
-    async addToBasket(itemUuid, actorUuid) {
+    async addToBasket(itemUuid, actorUuid, userId = null) {
         if (!itemUuid || !actorUuid) {
             ui.notifications.error("Cannot add item to cart without a purchasing actor.");
             return;
         }
-
-        const basket = await this.getBasket();
+        const basket = await this.getBasket(userId);
         // This is the fix: The createdForActor is now always set from the actorUuid passed by the application.
         basket.createdForActor = actorUuid;
 

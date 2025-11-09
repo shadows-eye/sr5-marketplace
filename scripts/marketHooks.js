@@ -7,6 +7,10 @@ import { PurchaseService } from "./services/purchaseService.mjs";
 import { defineShopActorClass } from '../models/actor/shopActor.mjs';
 import { ShopActorSheet } from '../sheets/ShopActorSheet.mjs';
 import { MODULE_ID, SHOP_ACTOR_TYPE} from "./lib/constants.mjs";
+import { ItemBuilderApp } from "./apps/ItemBuilderApp.mjs";
+import { SystemDataMapperService } from './services/SystemDataMapperService.mjs';
+import { MarketplaceAPI } from './API/marketplaceAPI.mjs';
+import { SR5SystemAPI } from './API/systemAPI.mjs'; // Corrected name
 
 /**
  * Draws the notification badge on the scene control button.
@@ -55,7 +59,10 @@ const initializeTemplates = () => {
         "modules/sr5-marketplace/templates/documents/actor/partials/shop-skills.html",
         "modules/sr5-marketplace/templates/documents/actor/partials/shop-inventory.html",
         "modules/sr5-marketplace/templates/documents/items/itemPreviewApp/item-preview.html",
-        "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html"
+        "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html",
+        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/Builder.html",
+        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/ItemDetails.html",
+        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/multi-select.html"
     ]);
 };
 // Initialize module settings
@@ -152,12 +159,35 @@ const initializeSettings = () => {
         },
         default: "opposed", // The default rule will be the core Opposed Test
     });
+    game.settings.register("sr5-marketplace", "itemBuilder.ignoreMountRestrictions", {
+    name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.mountRestrictions.name"),// "Override Item Builder Mount Restrictions"
+    hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.mountRestrictions.hint"), // "If checked, allows any modification to be placed in any weapon mount slot, ignoring mount point rules."
+    scope: "world",
+    config: true,
+    restricted: true,
+    type: Boolean,
+    default: false
+    });
+
+    game.settings.register("sr5-marketplace", "itemBuilder.enableForGM", {
+        name: "SR5Marketplace.Marketplace.Settings.ItemBuilder.enableForGM.name",
+        hint: "SR5Marketplace.Marketplace.Settings.ItemBuilder.enableForGM.hint",
+        scope: "world",
+        config: true,
+        restricted: true,
+        type: Boolean,
+        default: true,
+        onChange: () => {
+            // Re-render controls to show/hide the button
+            if (ui.controls) ui.controls.render(true);
+        }
+    });
 };
 
 /**
  * This hook injects our custom button into the settings menu using standard JavaScript.
  */
-Hooks.on("renderSettingsConfig", (app, html, data) => {
+Hooks.on("renderSettingsConfig", (app, html, data) => {  
     // 'html' is a standard HTMLElement.
     const settingInput = html.querySelector(`[name="sr5-marketplace.openSettingsMenu"]`);
     if (!settingInput) return;
@@ -193,7 +223,7 @@ Hooks.on("renderSettingsConfig", (app, html, data) => {
     if (existingSummary) existingSummary.remove();
 
     // 1. Get ALL types from the indexed item data, just like the settings app does.
-    const allItems = game.sr5marketplace.itemData.getItems();
+    const allItems = game.sr5marketplace.api.itemData.getItems();
     const allTypes = [...new Set(allItems.map(item => item.type))].sort();
 
     // 2. Get the saved behaviors.
@@ -237,19 +267,27 @@ Hooks.once("init", () => {
     console.log("SR5 Marketplace | Initializing module...");
     initializeTemplates();
     initializeSettings();
-    // Register the custom ShopActor class
     defineShopActorClass();
 
-    // Register the custom ShopActorSheet
     foundry.documents.collections.Actors.registerSheet("sr5-marketplace", ShopActorSheet, {
         types: [SHOP_ACTOR_TYPE],
         makeDefault: true,
         label: "SR5Marketplace.Marketplace.Shop.SheetName"
     });
 
+    // --- NEW API REGISTRATION ---
+    
+    // 1. Instantiate the main API container and assign it to the root
+    game.sr5marketplace = new MarketplaceAPI();
 
-    game.sr5marketplace = { itemData: new ItemDataServices() };
-
+    // 2. Nest all other API services under the '.api' property
+    game.sr5marketplace.api = {
+        system: new SR5SystemAPI(),
+        itemData: new ItemDataServices(),
+        // 3. Instantiate your sub-APIs using the static properties
+        marketplace: new MarketplaceAPI.Marketplace(),
+        itemBuilder: new MarketplaceAPI.ItemBuilder()
+    };
 });
 
 /**
@@ -258,7 +296,15 @@ Hooks.once("init", () => {
  */
 Hooks.on("ready", async () => {
     console.log("SR5 Marketplace | Module is ready!");
-    await game.sr5marketplace.itemData.initialize();
+
+    // --- UPDATED INIT CALLS ---
+    // Call the init() methods on all your API objects
+    await game.sr5marketplace.init();                     // Calls MarketplaceAPI.init()
+    await game.sr5marketplace.api.system.init();          // Calls SR5SystemAPI.init()
+    await game.sr5marketplace.api.itemData.initialize();  // Calls ItemDataServices.initialize()
+    await game.sr5marketplace.api.marketplace.init();     // Calls _inGameMarketplaceAPI.init()
+    await game.sr5marketplace.api.itemBuilder.init();     // Calls _ItemBuilderAPI.init()
+
     if (game.user.isGM) {
         game.socket.on("module.sr5-marketplace", () => {
             // A real-time event was received. Trigger a re-draw after a short delay.
@@ -269,7 +315,7 @@ Hooks.on("ready", async () => {
         // On first load, render the controls to set the initial badge state.
         setTimeout(() => { if (ui.controls) ui.controls.render(true); }, 1000);
     }
-  const tests = await import('../utils/tests.mjs');
+    const tests = await import('../utils/tests.mjs');
     tests.registerTests();
 });
 
@@ -286,6 +332,7 @@ Hooks.on("updateUser", (user, changes) => {
         }, 250);
     }
 });
+
 // Add a control button for opening the Marketplace
 Hooks.on("getSceneControlButtons", (controls) => {
   const tokenControls = controls["tokens"];
@@ -298,9 +345,10 @@ Hooks.on("getSceneControlButtons", (controls) => {
     icon: "fas fa-shopping-cart",
     visible: true,
     toggle: true,
-    active: Object.values(ui.windows).some(app => app.id === "inGameMarketplace"),
+    active: !!foundry.applications.instances.get("inGameMarketplace"),
+    
     onChange: (toggled) => {
-      const app = Object.values(ui.windows).find(app => app.id === "inGameMarketplace");
+      const app = foundry.applications.instances.get("inGameMarketplace");
       if (toggled) {
         if (!app) new inGameMarketplace().render(true);
       } else {
@@ -309,8 +357,33 @@ Hooks.on("getSceneControlButtons", (controls) => {
     }
   };
 });
-Hooks.on("renderSceneControls", (app, html) => {
-    drawBadge(html);
+
+Hooks.on("getSceneControlButtons", (controls) => {
+    const tokenControls = controls["tokens"];
+    if (!tokenControls) return;
+
+    // ... (visibility logic is unchanged) ...
+    const isGM = game.user.isGM;
+    const gmEnabled = game.settings.get("sr5-marketplace", "itemBuilder.enableForGM");
+    const isVisible = (isGM && gmEnabled);
+
+    tokenControls.tools["itemBuilder"] =({
+        name: "itemBuilder",
+        title: "Open Item Builder",
+        icon: "fas fa-wrench",
+        visible: isVisible, 
+        toggle: true,
+        active: !!foundry.applications.instances.get("itemBuilder"),
+
+        onChange: (toggled) => {
+            const app = foundry.applications.instances.get("itemBuilder");
+            if (toggled) {
+                if (!app) new ItemBuilderApp().render(true);
+            } else {
+                if (app) app.close();
+            }
+        }
+    });
 });
 
 /**
@@ -345,4 +418,31 @@ Hooks.on("canvasReady", () => {
   // Set the flag so this hook only runs once per canvas session.
   canvas.marketplaceListenerAttached = true;
   console.log("Marketplace | Double-click listener for shops is now active.");
+});
+
+// We use the "ready" hook to ensure the game system is fully loaded.
+Hooks.once("ready", () => {
+    
+    // Create a unique namespace for your module on the game object.
+    game.sr5marketplace = game.sr5marketplace || {};
+
+    // Create a dedicated space for debug tools.
+    game.sr5marketplace.debug = {
+        mapAllSystemKeys: () => {
+            console.log("--- 🚀 Running Full System Key Mapper ---");
+            try {
+                console.log("--- All Mappable Actor Keys ---");
+                const actorKeys = SystemDataMapperService.getAllMappableActorKeys();
+                console.log(actorKeys);
+
+                console.log("--- All Mappable Item Keys ---");
+                const itemKeys = SystemDataMapperService.getAllMappableItemKeys();
+                console.log(itemKeys);
+
+                console.log("--- ✅ Mapping Complete ---");
+            } catch (e) {
+                console.error("❌ Failed to run the SystemDataMapperService.", e);
+            }
+        }
+    };
 });

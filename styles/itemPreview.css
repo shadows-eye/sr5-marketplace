@@ -30,3 +30,56 @@ h1.sr5-marketplace-sr5Type-header {
     border-bottom: none
 
 }
+.ItemPreviewApp .sr5marketplaceGrid.item-header {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 0.1rem;
+}
+.ItemPreviewApp .sr5marketplace.item-image img{
+    width: 80px;
+    height: 80px;
+}
+
+
+.display {
+  display: flex;
+  flex-grow: 0;
+  margin-left: 1em;
+}
+.flexrow .item-name {
+    flex-grow: 2;
+}
+.flexrow .item-type {
+    display: block;
+    width: 6em;
+    flex-grow: 0;
+    margin-top: 2em;
+}
+
+.sr5-marketplace-yen.preview{
+  margin-left: 0.2em;
+}
+/* --- Tooltip --- */
+
+/*
+  This class is applied to our frameless ItemPreviewApp instance.
+*/
+.item-preview-tooltip {
+  /* This is the key to the positioning you want */
+  transform: translateY(calc(-100% - 5px));
+  transition: transform 0.1s ease-out; /* Optional: Smooth appearance */
+
+  /* Standard tooltip styling */
+  z-index: 100;
+}
+
+/* The form inside the app needs a background color to be visible.
+  Let's use Foundry's variables so it adapts to light/dark mode.
+*/
+
+
+/* Hide the footer with "Add to Cart" buttons, as it's not needed for a tooltip.
+*/
+.item-preview-tooltip .preview-footer {
+  display: none;
+}

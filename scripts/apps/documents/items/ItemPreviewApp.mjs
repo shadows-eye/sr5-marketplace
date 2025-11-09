@@ -4,6 +4,8 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 /**
  * A standalone, read-only preview window for an Item that mimics the SR5 system's sheet style.
+ * @param {const} ApplicationV2 - Provided by foundry API foundry.applications.api
+ * @returns {object} render - Provides the object for render.
  */
 export class ItemPreviewApp extends HandlebarsApplicationMixin(ApplicationV2) {
     constructor(itemUuid, options = {}) {
@@ -48,11 +50,6 @@ export class ItemPreviewApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const selectedActorUuid = game.user.getFlag("sr5-marketplace", "selectedActorUuid");
         this.purchasingActor = selectedActorUuid ? await fromUuid(selectedActorUuid) : (game.user.character || null);
 
-        //options.window.title = itemData.name;
-
-        // --- THIS IS THE FIX ---
-        // We now nest the item's data inside an 'item' property.
-        // This makes the template paths like 'item.system.technology.cost' work correctly.
         return {
             item: itemData,
             purchasingActor: this.purchasingActor
@@ -72,7 +69,7 @@ export class ItemPreviewApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const itemUuid = target.dataset.itemId;
 
         // Call the existing service with the correct data.
-        await this.basketService.addToBasket(itemUuid, this.purchasingActor.uuid);
+        await BasketService.addToBasket(itemUuid, this.purchasingActor.uuid);
         
         // Close the preview window for a smooth user experience.
         this.close();
@@ -87,7 +84,14 @@ export class ItemPreviewApp extends HandlebarsApplicationMixin(ApplicationV2) {
         }
     }
 
-    static #onAddToItemBuilder(event, target) {
-        ui.notifications.warn("The Item Builder feature is not yet implemented.");
+    static async #onAddToItemBuilder(event, target) {
+        const itemUuid = target.dataset.itemId;
+        if (!itemUuid) return;
+
+        // 1. Call the new central API function
+        await game.sr5marketplace.setBuilderBaseItem(itemUuid);
+
+        // 2. Close this preview window
+        this.close();
     }
 }

@@ -2,12 +2,12 @@
 /* Main Dialog Container & Typography                                 */
 /* ================================================================== */
 
-.roll-dialog-container {
+.sr5marketplace .roll-dialog-container {
     padding: 10px;
 }
 
-.roll-dialog-content h2,
-.roll-dialog-content .result-title {
+.sr5marketplace .roll-dialog-content h2,
+.sr5marketplace .roll-dialog-content .result-title {
     margin-top: 0;
     font-family: "Modesto Condensed", "Palatino Linotype", serif;
     text-align: center;
@@ -21,19 +21,17 @@
 /* 1. Initial State (The Form)                                        */
 /* ================================================================== */
 
-/* NEW: The main grid container for the header */
-.dialog-header-grid {
+.sr5marketplace .dialog-header-grid {
     display: grid;
-    /* Create 4 columns: Actor (auto-sized), and 3 flexible columns for the fields */
     grid-template-columns: auto 1fr 1fr 1fr;
     gap: 15px;
-    align-items: end; /* Aligns the bottom of the actor icon with the form fields */
+    align-items: end;
     margin-bottom: 15px;
     padding-bottom: 15px;
     border-bottom: 1px solid var(--border-color-medium);
 }
 
-.availability-dialog-form .actor-info img {
+.sr5marketplace .availability-dialog-form .actor-info img {
     height: 48px;
     width: 48px;
     border: none;
@@ -41,7 +39,7 @@
     margin-right: 8px;
 }
 
-.availability-dialog-form .actor-info .selectable-actor {
+.sr5marketplace .availability-dialog-form .actor-info .selectable-actor {
     display: flex;
     align-items: center;
     font-size: 1.2em;
@@ -49,28 +47,27 @@
     color: var(--text-color-primary);
 }
 
-.availability-dialog-form .form-group {
+.sr5marketplace .availability-dialog-form .form-group {
     display: flex;
     flex-direction: column;
     background-color: var(--Form-background-group);
     border-radius: 5px;
 }
 
-.availability-dialog-form .form-group label {
+.sr5marketplace .availability-dialog-form .form-group label {
     font-weight: bold;
     color: var(--text-color-subheader);
     margin-bottom: 4px;
     font-size: 0.9em;
 }
 
-.availability-dialog-form select {
+.sr5marketplace .availability-dialog-form select {
     background: var(--input-bg-transparent);
     color: var(--input-color);
     border: 1px solid var(--border-color-dark);
 }
 
-/* NEW: Style for the non-input availability display */
-.availability-display {
+.sr5marketplace .availability-display {
     background: var(--input-bg-transparent);
     color: var(--input-color);
     padding: 0.5em;
@@ -79,7 +76,7 @@
     text-align: center;
 }
 
-.dice-pool-summary {
+.sr5marketplace .dice-pool-summary {
     display: grid;
     grid-template-columns: 3fr 1fr;
     align-items: center;
@@ -92,50 +89,50 @@
     color: var(--text-color-primary);
 }
 
-.dice-pool-summary .pool-parts {
+.sr5marketplace .dice-pool-summary .pool-parts {
     flex-grow: 1;
     text-align: right;
 }
 
-.dice-pool-summary .pool-total {
+.sr5marketplace .dice-pool-summary .pool-total {
     font-weight: bold;
     color: var(--text-color-subheader);
 }
 
-.dice-pool-summary .pool-total strong {
+.sr5marketplace .dice-pool-summary .pool-total strong {
     font-size: 1.5em;
     margin-right: 5px;
 }
 
 /* ================================================================== */
-/* 2. Result & Resolved States                                      */
+/* 2. Result & Resolved States                                        */
 /* ================================================================== */
 
-.MarketAppDialog-test-result-container,
-.MarketAppDialog-final-result-container {
+.sr5marketplace .MarketAppDialog-test-result-container,
+.sr5marketplace .MarketAppDialog-final-result-container {
     padding: 10px;
     color: var(--text-color-primary);
 }
 
-.MarketAppDialog-result-summary {
+.sr5marketplace .MarketAppDialog-result-summary {
     text-align: center;
     font-size: 1.1em;
     margin-bottom: 10px;
 }
 
-.glitch-text {
-    color: var(--color-red-base); /* Using a base color for high alert */
+.sr5marketplace .glitch-text {
+    color: var(--color-red-base);
     font-weight: bold;
 }
 
-.threshold-info {
+.sr5marketplace .threshold-info {
     text-align: center;
     font-style: italic;
     opacity: 0.8;
     margin-bottom: 15px;
 }
 
-.threshold-display {
+.sr5marketplace .threshold-display {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -149,33 +146,32 @@
     margin-bottom: 15px;
 }
 
-/* Final Result Accordion */
-.MarketAppDialog-final-summary summary {
+.sr5marketplace .MarketAppDialog-final-summary summary {
     cursor: pointer;
-    list-style: none; /* Hide default dropdown arrow */
+    list-style: none;
     transition: background-color 0.2s ease;
     border-radius: 3px;
 }
-.MarketAppDialog-final-summary summary::-webkit-details-marker {
-    display: none; /* Hide arrow in Chrome/Safari */
+.sr5marketplace .MarketAppDialog-final-summary summary::-webkit-details-marker {
+    display: none;
 }
-.MarketAppDialog-final-summary summary:hover {
+.sr5marketplace .MarketAppDialog-final-summary summary:hover {
     background-color: var(--collapsible-label-hover-bg);
 }
-.MarketAppDialog-final-summary h3 {
+.sr5marketplace .MarketAppDialog-final-summary h3 {
     margin: 0;
     padding: 5px;
     text-align: center;
     font-family: "Modesto Condensed", "Palatino Linotype", serif;
 }
-.MarketAppDialog-final-summary h3.success .marketplace-success-icon {
+.sr5marketplace .MarketAppDialog-final-summary h3.success .marketplace-success-icon {
     color: var(--color-green-button);
 }
-.MarketAppDialog-final-summary h3.failure .marketplace-failure-icon {
+.sr5marketplace .MarketAppDialog-final-summary h3.failure .marketplace-failure-icon {
     color: var(--color-red-dark);
 }
 
-.final-result-grid {
+.sr5marketplace .final-result-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px 20px;
@@ -184,7 +180,7 @@
     border-top: 1px solid var(--border-color-medium);
 }
 
-.result-column .result-title {
+.sr5marketplace .result-column .result-title {
     font-size: 1.1em;
     color: var(--text-color-subheader);
     margin-bottom: 5px;
@@ -195,7 +191,7 @@
 /* 3. Dice Display (Theme-Independent Colors)                         */
 /* ================================================================== */
 
-.MarketAppDialog-dice-tray {
+.sr5marketplace .MarketAppDialog-dice-tray {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -203,10 +199,10 @@
     background-color: rgba(0,0,0,0.2);
     border-radius: 5px;
     margin-bottom: 15px;
-    min-height: 50px; /* Ensure tray has height even if empty */
+    min-height: 50px;
 }
 
-.MarketAppDialog-die-result {
+.sr5marketplace .MarketAppDialog-die-result {
     width: 30px;
     height: 30px;
     display: flex;
@@ -219,26 +215,23 @@
     box-shadow: inset 0 0 5px rgba(0,0,0,0.4);
 }
 
-.MarketAppDialog-die-text {
+.sr5marketplace .MarketAppDialog-die-text {
     text-shadow: 1px 1px 2px black;
 }
 
-/* Success: green text, black die */
-.MarketAppDialog-die-result.success {
+.sr5marketplace .MarketAppDialog-die-result.success {
     background-color: #222;
     color: #4CAF50;
-    border: 1px solid #376b0f
+    border: 1px solid #376b0f;
 }
 
-/* Glitch: red text, grey die */
-.MarketAppDialog-die-result.glitch {
+.sr5marketplace .MarketAppDialog-die-result.glitch {
     background-color: #555;
     color: #F44336;
-    border: 1px solid #5f0303
+    border: 1px solid #5f0303;
 }
 
-/* Failure: white text, grey die */
-.MarketAppDialog-die-result.failure {
+.sr5marketplace .MarketAppDialog-die-result.failure {
     background-color: #777;
     color: #f0f0f0;
 }
@@ -248,7 +241,7 @@
 /* 4. Common Elements (Buttons, etc.)                                 */
 /* ================================================================== */
 
-.roll-button {
+.sr5marketplace .roll-button {
     display: block;
     width: 100%;
     padding: 10px;
@@ -260,7 +253,7 @@
     transition: all 0.2s ease;
 }
 
-.roll-button:hover {
+.sr5marketplace .roll-button:hover {
     background: var(--tab-active-bg);
     border-color: var(--border-color-highlight);
     text-shadow: var(--tab-active-text-shadow);
@@ -270,13 +263,11 @@
 /* 5. Collapsible Modifier Section                                    */
 /* ================================================================== */
 
-/* Hide the checkbox itself from view */
-.toggle-checkbox {
+.sr5marketplace .toggle-checkbox {
     display: none;
 }
 
-/* Style the clickable header (our new <label>) */
-.collapsible-header {
+.sr5marketplace .collapsible-header {
     display: block;
     cursor: pointer;
     padding: 8px;
@@ -287,15 +278,14 @@
     color: var(--text-color-subheader);
     transition: background-color 0.2s ease;
     position: relative;
-    padding-left: 30px; /* Make space for the icon */
+    padding-left: 30px;
 }
 
-.collapsible-header:hover {
+.sr5marketplace .collapsible-header:hover {
     background: var(--collapsible-label-hover-bg);
 }
 
-/* Add a dropdown arrow icon */
-.collapsible-header::before {
+.sr5marketplace .collapsible-header::before {
     content: '▼';
     position: absolute;
     left: 10px;
@@ -305,27 +295,23 @@
     font-size: 0.8em;
 }
 
-/* The content that will be toggled */
-.collapsible-content {
+.sr5marketplace .collapsible-content {
     padding: 15px 10px 5px 10px;
     border: 1px solid var(--border-color-medium);
     border-top: none;
     border-radius: 0 0 3px 3px;
     overflow: hidden;
-    /* Smooth transition for the collapse/expand animation */
-    max-height: 1000px; /* A large value to allow content to expand */
+    max-height: 1000px;
     transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
 }
 
-/* --- THE TOGGLE MAGIC --- */
-/* When the checkbox is NOT checked, collapse the content and rotate the arrow */
-.toggle-checkbox:not(:checked) ~ .collapsible-content {
+.sr5marketplace .toggle-checkbox:not(:checked) ~ .collapsible-content {
     max-height: 0;
     padding-top: 0;
     padding-bottom: 0;
     border-width: 0;
 }
 
-.toggle-checkbox:not(:checked) ~ .collapsible-header::before {
+.sr5marketplace .toggle-checkbox:not(:checked) ~ .collapsible-header::before {
     transform: translateY(-50%) rotate(-90deg);
 }
