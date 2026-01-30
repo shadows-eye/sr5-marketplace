@@ -1,0 +1,1535 @@
+LEGACY CSS CLASSES STILL IN USE
+================================
+
+--- CLASS: .skill-group ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.skill-group {
+border-radius: 5px;
+padding: 8px;
+}
+
+--- CLASS: .connection ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.connection { grid-area: connection; min-height: inherit; }
+
+--- CLASS: .toggle-label ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.toggle-label {
+cursor: pointer;
+display: block;
+user-select: none;
+padding: 2px 5px;
+transition: background 0.2s ease;
+position: sticky;
+z-index: 1;
+}
+
+--- CLASS: .toggle-label ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.toggle-label {
+cursor: pointer;
+display: flex;
+align-items: center;
+gap: 8px;
+user-select: none;
+padding: 5px;
+transition: background 0.2s ease;
+}
+
+--- CLASS: .drop-hint ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.drop-hint {
+color: var(--color-grey-light);
+text-align: center;
+margin-top: 5px;
+}
+
+--- CLASS: .skills-list ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.skills-list {
+display: flex;
+flex-direction: column;
+gap: 15px;
+}
+
+--- CLASS: .skills-list ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.skills-list {
+display: block;
+overflow-y: auto;
+padding-right: 5px;
+flex-grow: 1;
+}
+
+--- CLASS: .marketplace-collapsible-header ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.marketplace-collapsible-header {
+color: var(--text-color-subheader);
+padding-left: 4px;
+cursor: pointer;
+transition: color 0.2s ease;
+}
+
+--- CLASS: .skill-header ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.skill-header {
+font-weight: bold;
+color: var(--skill-header-color);
+border-bottom: 1px solid var(--skill-header-border);
+padding-bottom: 5px;
+margin-bottom: 5px;
+}
+
+--- CLASS: .sr5-marketplace-shop-fields ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.sr5-marketplace-shop-fields {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 10px 15px;
+align-items: start;
+grid-template-areas:
+"owner      connection employees"
+"modifier  modifier  radius"
+"inventory  inventory inventory";
+margin-right: -1px;
+border: none;
+min-height: 100px;
+color: var(--text-color-subheader);
+}
+
+--- CLASS: .inventory ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.inventory { grid-area: inventory; border: none; height: 65%; width: 100%; display: block; overflow: hidden; }
+
+--- CLASS: .owner ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.owner { grid-area: owner; min-height: inherit; }
+
+--- CLASS: .attribute-group ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.attribute-group {
+background: var(--attribute-group-bg);
+border-radius: 5px;
+padding: 8px;
+}
+
+--- CLASS: .sr5-grid-3c ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.sr5-grid-3c {
+display: grid;
+grid-template-columns: 40px 1fr auto;
+gap: 5px 10px;
+align-items: center;
+}
+
+--- CLASS: .sr5-marketplace-attribute ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.sr5-marketplace-attribute{
+color: var(--attribute-text-color);
+}
+
+--- CLASS: .sr5-marketplace-attribute ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.sr5-marketplace-attribute {
+display: grid;
+grid-template-columns: 3fr 1fr;
+justify-content: space-between;
+align-items: center;
+padding: 2px 5px;
+}
+
+--- CLASS: .toggle ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.toggle {
+display: none;
+}
+
+--- CLASS: .toggle ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.toggle {
+display: none;
+}
+
+--- CLASS: .inventory-list ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.inventory-list{
+overflow: auto;
+}
+
+--- CLASS: .sr5-marketplace-skills-fields ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.sr5-marketplace-skills-fields {
+display: flex;
+flex-direction: column;
+flex-grow: 1;
+max-height:400px;
+border: none;
+}
+
+--- CLASS: .value ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.value {
+border: none;
+background: #00ffff00;
+text-align: center;
+max-width: 18px;
+max-height: 18px;
+padding: 0px;
+}
+
+--- CLASS: .shop-column-2 ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.shop-column-2{
+background: var(--attribute-group-bg);
+}
+
+--- CLASS: .shop-column-2 ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.shop-column-2 {
+display: flex;
+flex-direction: column;
+min-height: 0;
+}
+
+--- CLASS: .employees ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.employees { grid-area: employees; min-height: inherit; }
+
+--- CLASS: .sr5-marketplace-attributes ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.sr5-marketplace-attributes {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 10px;
+padding: 10px 0;
+border-top: 1px solid var(--border-color-medium);
+margin-top: 10px;
+}
+
+--- CLASS: .item-name ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.item-name {
+text-align: left;
+}
+
+--- CLASS: .toggle-content ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.toggle-content {
+max-height: 0;
+overflow: hidden;
+transition: max-height 0.3s ease-out;
+padding-left: 20px;
+}
+
+--- CLASS: .toggle-content ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.toggle-content {
+min-height: fit-content;
+transition: max-height 0.5s ease-in;
+}
+
+--- CLASS: .toggle-content ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.toggle-content {
+max-height: 0;
+overflow: hidden;
+transition: max-height 0.3s ease-out;
+padding: 10px 10px 10px 42px;
+background: var(--collapsible-content-bg);
+border-top: 1px solid var(--border-color-dark);
+}
+
+--- CLASS: .toggle-content ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.toggle-content {
+max-height: 100px;
+transition: max-height 0.5s ease-in;
+}
+
+--- CLASS: .inventory-header ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.inventory-header {
+font-weight: bold;
+color: var(--inventory-header-color);
+padding-bottom: 1px;
+margin-bottom: 5px;
+}
+
+--- CLASS: .sr5-grid-c2 ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.sr5-grid-c2 {
+display: grid;
+grid-template-columns: 2fr 1fr;
+gap: 15px;
+align-items: stretch;
+}
+
+--- CLASS: .skill-rating ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.skill-rating {
+text-align: right;
+}
+
+--- CLASS: .c10 ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.c10 {
+display: grid;
+grid-template-columns: 30px 2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1em;
+gap: 5px 10px;
+align-items: center;
+text-align: center;
+}
+
+--- CLASS: .subHeading ---
+SOURCE: ./styles\actor.css
+CONTENT:
+.subHeading {
+color: var(--text-color-subheader);
+}
+
+--- CLASS: .tab-icon-wrapper ---
+SOURCE: ./styles\Dialog.css
+CONTENT:
+.tab-icon-wrapper {
+  position: relative;
+  display: inline-block; /* So it sits next to the text span */
+  vertical-align: middle; /* Helps align icon with text */
+  line-height: 1; /* Prevents extra vertical space */
+}
+
+--- CLASS: .corner-tr ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.corner-tr {
+  top: 0;
+  right: 0;
+  /*height: 2.3em; Match TOP row height */
+  transform: scaleY(-1); /* Flip Y */
+}
+
+--- CLASS: .corner-tr ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.corner-tr {
+  grid-column: 3;
+  grid-row: 1;
+  transform: scaleY(-1); /* Flip Y */
+}
+
+--- CLASS: .corner-tr ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.corner-tr {
+  top: 0;
+  right: 0;
+  transform: scaleY(-1); /* Flip Y */
+}
+
+--- CLASS: .bottom-slots ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.bottom-slots { 
+  grid-area: bottom; 
+}
+
+--- CLASS: .bottom-slots ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.bottom-slots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.3em;
+  padding-bottom: 1.5em;
+}
+
+--- CLASS: .effect-indicator ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.effect-indicator {
+  position: absolute;
+  bottom: 0.4em;
+  right: 0.3em;
+  font-size: 14px;
+  text-shadow: 0 0 4px var(--color-black);
+}
+
+--- CLASS: .placeholder-content ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.placeholder-content{
+  display: flex;
+}
+
+--- CLASS: .expand-icon ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.expand-icon {
+    transition: transform 0.2s ease-in-out;
+}
+
+--- CLASS: .expand-icon ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.expand-icon {
+    transform: rotate(90deg);
+}
+
+--- CLASS: .slot-content-containment ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.slot-content-containment {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  padding: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+--- CLASS: .corner-tl ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.corner-tl {
+  top: 0;
+  left: 0;
+  /*height: 2.3em; Match TOP row height */
+  transform: scale(-1, -1); /* Flip X and Y */
+}
+
+--- CLASS: .corner-tl ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.corner-tl {
+  grid-column: 1;
+  grid-row: 1;
+  transform: scale(-1, -1); /* Flip X and Y */
+}
+
+--- CLASS: .corner-tl ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.corner-tl {
+  top: 0;
+  left: 0;
+  transform: scale(-1, -1); /* Flip X and Y */
+}
+
+--- CLASS: .derived-value-selector ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.derived-value-selector {
+    border: 1px dashed var(--border-color-medium);
+    padding: 10px;
+    margin-top: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: var(--color-black-transparent-15);
+}
+
+--- CLASS: .form-group ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.form-group {
+    margin-bottom: 10px;
+}
+
+--- CLASS: .toggle-label ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.toggle-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 6px 8px;
+    background: var(--collapsible-content-bg);
+}
+
+--- CLASS: .builder-main-content ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.builder-main-content  { grid-area: mainBuilder; }
+
+--- CLASS: .builder-main-content ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.builder-main-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  position: relative; /* <-- CRITICAL: This makes children absolute to this container */
+  border: none;
+  overflow: hidden;
+}
+
+--- CLASS: .mod-search ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.mod-search {
+  flex-grow: 1; 
+  min-width: 50px;
+  margin-right: 1em;
+  margin-left: 1em;
+}
+
+--- CLASS: .builder-nav ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.builder-nav {
+  border-top: 1px solid var(--border-color-medium);
+  border-bottom: 1px solid var(--border-color-medium);
+  flex-shrink: 0;
+}
+
+--- CLASS: .item-image ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.item-image { max-width: 60px; }
+
+--- CLASS: .item-image ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.item-image { 
+    width: 16px; 
+    height: 16px; 
+}
+
+--- CLASS: .item-content-grid ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.item-content-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding-top: 5px;
+  align-content: start;
+  overflow-y: auto;        /* <- the only scrollbars on the left */
+  overflow-x: hidden;      /* remove tiny horizontal bars */
+  overscroll-behavior: contain;
+}
+
+--- CLASS: .ring-image ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.ring-image {
+  width: 100%;
+  max-width: 36em;
+  height: auto;
+  position: absolute;
+  z-index: 100;
+  opacity: 0.5;
+  border: none;
+  margin-bottom: 3em;
+}
+
+--- CLASS: .item-card ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.item-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 5px;
+  padding: 4px;
+  min-height: 40px;
+  overflow: hidden;
+  border: 1px solid var(--card-border-color);
+  background-color: var(--collapsible-content-bg);
+  border-radius: 5px;
+  min-width: 0; /* cards can’t force the column wider */
+}
+
+--- CLASS: .effect-creator-steps ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.effect-creator-steps{
+  height: 33em;
+  overflow-x: auto;
+}
+
+--- CLASS: .slot-middle-right ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.slot-middle-right {
+  grid-area: slot-r; 
+  align-self: center;
+  margin-right: 1.5em;
+}
+
+--- CLASS: .collapsible ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.collapsible {
+    border: 1px solid var(--border-color-dark);
+    border-radius: 3px;
+    margin-bottom: 5px; /* Spacing between collapsible groups */
+}
+
+--- CLASS: .value-input-group ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.value-input-group {
+    display: flex;
+    align-items: center;
+}
+
+--- CLASS: .component-header ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.component-header {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-bottom: 5px;
+}
+
+--- CLASS: .slot-top-left ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.slot-top-left { 
+grid-area: slot-l;
+grid-row: 1; 
+align-self: start;
+margin-left: 1.5em;
+padding-top: 9em; 
+
+}
+
+--- CLASS: .header-right ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.header-right {
+    display: flex;
+    gap: 0.4rem;
+    width: fit-content;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+}
+
+--- CLASS: .mod-selector-section ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.mod-selector-section {
+  min-height: 0 !important;
+  min-width: 0 !important;
+}
+
+--- CLASS: .mod-selector-section ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.mod-selector-section  { grid-area: sidebarBottom; }
+
+--- CLASS: .mod-selector-section ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.mod-selector-section {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);   /* header auto, list scrolls */
+  background: var(--attribute-group-bg);
+  /* border: 1px solid var(--border-color-medium); */
+  /*border-radius: 5px;*/
+  padding: 5px;
+  overflow: hidden; /* container itself won't scroll */
+  position: relative;
+}
+
+--- CLASS: .header-controls ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.header-controls {
+  display: flex; 
+  gap: 8px; 
+}
+
+--- CLASS: .key-buttons ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.key-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+--- CLASS: .icon-selector ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.icon-selector {
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--border-color-dark);
+    border-radius: 4px;
+    padding: 4px;
+    background: var(--collapsible-content-bg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s ease;
+}
+
+--- CLASS: .mods-header ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.mods-header{
+    margin-left: 1em;
+    margin-top: 1em;
+    text-shadow: none;
+}
+
+--- CLASS: .builder-body ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.builder-body {
+  display: grid;
+  height: 100%;
+  overflow: hidden;
+}
+
+--- CLASS: .mod-slot ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.mod-slot {
+  position: relative;
+  overflow: hidden;
+  min-width: 100px;
+  min-height: 100px;
+  border: none;
+  background: transparent;
+}
+
+--- CLASS: .base-item-image ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.base-item-image {
+  max-width: 30em;
+  height: auto;
+  position: relative;
+  z-index: 1;
+  border: none;
+  filter: drop-shadow(2px 2px 5px var(--color-black-transparent-30));
+}
+
+--- CLASS: .item-selector-section ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.item-selector-section { grid-area: sidebarTop; }
+
+--- CLASS: .slot-bottom-left ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.slot-bottom-left {
+  grid-area: slot-l; 
+  align-self: end; 
+  margin-left: 1.5em;
+}
+
+--- CLASS: .slot-bottom-right ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.slot-bottom-right {
+  grid-area: slot-r; 
+  align-self: end;
+  margin-right: 1.5em;
+}
+
+--- CLASS: .applyTo ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.applyTo {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1em;
+}
+
+--- CLASS: .center-display ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.center-display { 
+  grid-area: center; 
+  grid-row: 2 / span 2;
+}
+
+--- CLASS: .center-display ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.center-display {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+--- CLASS: .corner-bl ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.corner-bl {
+  bottom: 0;
+  left: 0;
+  /* height: 8em; (default) */
+  transform: scaleX(-1); /* Flip X */
+}
+
+--- CLASS: .corner-bl ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.corner-bl {
+  grid-column: 1;
+  grid-row: 3;
+  transform: scaleX(-1); /* Flip X */
+}
+
+--- CLASS: .corner-bl ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.corner-bl {
+  bottom: 0;
+  left: 0;
+  transform: scaleX(-1); /* Flip X */
+}
+
+--- CLASS: .itemBuilder ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.itemBuilder {
+    min-height: 760px;
+    min-width: 1312px;
+}
+
+--- CLASS: .itemBuilder ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.itemBuilder{
+  margin-left: 1em;
+  max-width: 11em;
+  background: var(--input-background-color);
+  color: var(--text-color-selector);
+}
+
+--- CLASS: .slot-item-img ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.slot-item-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border: none;
+}
+
+--- CLASS: .item-builder-container ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.item-builder-container {
+  display: grid;
+  grid-template-rows: auto auto 1fr;   /* Header | Nav | Body */
+  height: 100%;
+  overflow: hidden;
+}
+
+--- CLASS: .effect-creator-container ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.effect-creator-container {
+    border-top: 2px solid var(--border-color-highlight);
+    margin-top: 0.5em;
+    padding-top: 0.5em;
+}
+
+--- CLASS: .item-stats-display ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.item-stats-display {
+  grid-area: slot-l;
+  grid-row: 2;
+  grid-column: 1 / 3;
+  align-self: start;
+  justify-self: start;
+  margin-left: 1.5em;
+  width: fit-content;
+  height: 20px;
+  z-index: 10;
+}
+
+--- CLASS: .mode-selector ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.mode-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+}
+
+--- CLASS: .slot-top-right ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.slot-top-right {
+  grid-area: slot-r;
+  grid-row: 1;
+  align-self: start;
+  margin-right: 1.5em;
+  padding-top: 9em;
+}
+
+--- CLASS: .placeholder-information ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.placeholder-information{
+  margin-top: 2em;
+}
+
+--- CLASS: .delete-mod-link ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.delete-mod-link {
+    position: absolute;
+    top: 4.2em;
+    right: 0.2em;
+}
+
+--- CLASS: .key-btn ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.key-btn {
+    flex-basis: content;
+}
+
+--- CLASS: .key-btn ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.key-btn {
+    text-align: center;
+}
+
+--- CLASS: .dialog-footer ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.dialog-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color-medium);
+}
+
+--- CLASS: .select-icon ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.select-icon { 
+    font-size: 14px; 
+}
+
+--- CLASS: .item-name ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.item-name {
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+  min-width: 0;  /* text won’t expand the grid */
+}
+
+--- CLASS: .connector-canvas ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.connector-canvas {
+  z-index: 1;
+  pointer-events: none;
+}
+
+--- CLASS: .builderTitle ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.builderTitle{
+    font-size: 26px;
+    margin-left: 0.5em;
+}
+
+--- CLASS: .toggle-content ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.toggle-content {
+    display: none; /* Hidden by default */
+}
+
+--- CLASS: .toggle-content ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.toggle-content {
+    display: grid; /* This is your requested grid for the buttons */
+    gap: 1em;
+    padding: 8px;
+    background: var(--color-black-transparent-20);
+}
+
+--- CLASS: .sidebar-corner-img ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.sidebar-corner-img {
+  position: absolute; /* Position relative to the parent section */
+  object-fit: fill;   /* Stretch the SVG */
+  z-index: 1;         /* Place above the background, but below text */
+  pointer-events: none;
+
+  /* --- 🖌️ THIS IS HOW YOU CHANGE THE SIZE --- */
+  /* Adjust these values to make the corners bigger or smaller */
+  width: 15em;
+  height: 15em;
+  /* --- 🖌️ END OF SIZE CONTROL --- */
+  border: none;
+}
+
+--- CLASS: .full-width ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.full-width {
+    grid-column: 1 / -1; /* Make an element span all 3 columns */
+}
+
+--- CLASS: .full-width ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.full-width {
+    grid-column: 1 / -1;
+}
+
+--- CLASS: .builder-container ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.builder-container {
+  display: grid;
+  grid-template-columns: 450px minmax(0, 1fr);   /* left fixed, right flexible */
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    "sidebarTop    mainBuilder"
+    "sidebarBottom mainBuilder";
+  gap: 10px;
+  height: 100%;
+  padding: 10px;
+  overflow: hidden;
+}
+
+--- CLASS: .divider-line ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.divider-line {
+  grid-area: divider; /* Place it in the 'divider' grid area */
+  width: 100%;
+  height: 10px; /* Explicit height for the border.svg */
+  object-fit: fill; /* Stretch border.svg horizontally */
+  align-self: center; /* Center vertically in its row */
+  z-index: 3; /* Place on top */
+  pointer-events: none;
+  border: none;
+}
+
+--- CLASS: .builder-area ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.builder-area {
+  grid-row: 1 / -1;
+  grid-column: 1 / -1;
+}
+
+--- CLASS: .builder-area ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.builder-area {
+  z-index: 2;
+  display: grid;
+  height: 100%;
+  gap: 10px;
+  padding: 0; /* Remove any padding that might offset the frame */
+  
+  /* UPDATED: Define the 4-row content grid */
+  grid-template-columns: 8em 1fr 8em; /* Left sidebar, Center, Right sidebar */
+  grid-template-rows: 8em 1fr 1.3em 7em; /* Top row, Middle content, Divider, Bottom slots */
+
+  grid-template-areas:
+    "slot-l  temp    slot-r"
+    "slot-l  center  slot-r"
+    "divider divider divider"
+    "bottom  bottom  bottom"; 
+}
+
+--- CLASS: .builder-corner-img ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.builder-corner-img {
+  position: absolute; /* Position relative to .builder-main-content */
+  /* SIZE of the CORNERS */
+  width: 20em;     /* Both need the same size to scale correct */
+  height: 20em;
+  /* SIZE END */
+  object-fit: fill; /* Stretch corner SVG to fill its space */
+  z-index: 3;     /* Place on top of everything */
+  pointer-events: none;
+  border: none;
+}
+
+--- CLASS: .builder-corner-img ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.builder-corner-img {
+  /* This makes them stretch to fill their grid cell */
+  width: 100%;
+  height: 100%;
+  object-fit: fill; 
+  
+  /* Place them on top of other slots, but behind items */
+  z-index: 3; 
+  pointer-events: none;
+}
+
+--- CLASS: .builder-header ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.builder-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 10px;
+  flex-shrink: 0;
+}
+
+--- CLASS: .effect-creator-grid ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.effect-creator-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    align-items: start;
+    margin-right: 3px;
+}
+
+--- CLASS: .toggle-checkbox ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.toggle-checkbox {
+    display: none;
+}
+
+--- CLASS: .corner-br ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.corner-br {
+  bottom: 0;
+  right: 0;
+  /* height: 8em; (default) */
+  /* No transform needed */
+}
+
+--- CLASS: .corner-br ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.corner-br {
+  grid-column: 3;
+  grid-row: 3;
+  /* No transform needed */
+}
+
+--- CLASS: .corner-br ---
+SOURCE: ./styles\itemBuilder.css
+CONTENT:
+.corner-br {
+  bottom: 0;
+  right: 0;
+  /* No transform needed */
+}
+
+--- CLASS: .details ---
+SOURCE: ./styles\itemDetails.css
+CONTENT:
+.details {
+  margin-left: -88px
+}
+
+--- CLASS: .description-block ---
+SOURCE: ./styles\itemDetails.css
+CONTENT:
+.description-block {
+  flex-direction: column;
+  align-items: stretch; /* Makes textarea full-width */
+  gap: 0.3em;
+}
+
+--- CLASS: .item-image ---
+SOURCE: ./styles\itemDetails.css
+CONTENT:
+.item-image {
+    justify-content: flex-start; /* Aligns image and icon to the left */
+}
+
+--- CLASS: .stat-block ---
+SOURCE: ./styles\itemDetails.css
+CONTENT:
+.stat-block {
+  display: flex;
+  justify-content: space-between; /* Pushes label and input apart */
+  align-items: center;
+  margin: 0.2em;
+  gap: 0.5em; /* Space between label and input */
+}
+
+--- CLASS: .item-input ---
+SOURCE: ./styles\itemDetails.css
+CONTENT:
+.item-input {
+  flex-basis: 80px; /* Give a fixed base width */
+  flex-grow: 0;
+  flex-shrink: 0;
+  text-align: right;
+  /* Your other styles */
+  gap: 0.2em;
+  margin: 0.2em;
+}
+
+--- CLASS: .item-name-input ---
+SOURCE: ./styles\itemDetails.css
+CONTENT:
+.item-name-input {
+  flex-grow: 1; /* Allows the name to fill the available space */
+  flex-basis: 100px; /* Give it a minimum width */
+  /* Your other styles */
+  gap: 0.2em;
+  margin: 0.2em;
+}
+
+--- CLASS: .stat-block-divider ---
+SOURCE: ./styles\itemDetails.css
+CONTENT:
+.stat-block-divider {
+  height: 1px;
+  background-color: var(--tag-background-color);
+  margin: 4px 0;
+}
+
+--- CLASS: .base-item-edit-icon ---
+SOURCE: ./styles\itemDetails.css
+CONTENT:
+.base-item-edit-icon {
+    cursor: pointer;
+    margin-left: 0.5em;
+    font-size: 1.1em;
+}
+
+--- CLASS: .item-name ---
+SOURCE: ./styles\itemPreview.css
+CONTENT:
+.item-name {
+    flex-grow: 2;
+}
+
+--- CLASS: .item-type ---
+SOURCE: ./styles\itemPreview.css
+CONTENT:
+.item-type {
+    display: block;
+    width: 6em;
+    flex-grow: 0;
+    margin-top: 2em;
+}
+
+--- CLASS: .basket-grid ---
+SOURCE: ./styles\marketplace.css
+CONTENT:
+.basket-grid { display: grid; gap: 10px; align-items: center; padding-bottom: 10px; }
+
+--- CLASS: .fa-circle-xmark ---
+SOURCE: ./styles\marketplace.css
+CONTENT:
+.fa-circle-xmark {
+    font-size: 20px;
+    color: var(--color-red-dark); 
+    background-color: var(--color-white);
+    border-radius: 50%;
+    display: block;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+--- CLASS: .fa-circle-xmark ---
+SOURCE: ./styles\marketplace.css
+CONTENT:
+.fa-circle-xmark {
+    color: var(--color-red-base);
+}
+
+--- CLASS: .header ---
+SOURCE: ./styles\marketplace.css
+CONTENT:
+.header { font-weight: bold; text-align: center; }
+
+--- CLASS: .item-card ---
+SOURCE: ./styles\marketplace.css
+CONTENT:
+.item-card {
+    background-color: var(--bg-item-card);
+    padding: 0.7em;
+    border: 0.2em solid rgba(89, 15, 15, 0.15);
+    border-radius: 0.7em;
+    display: flex;
+    flex-direction: column;
+    max-height: fit-content;
+    min-width: 16em;
+}
+
+--- CLASS: .send-request-button ---
+SOURCE: ./styles\marketplace.css
+CONTENT:
+.send-request-button {
+    background-image: url(/modules/sr5-marketplace/assets/icons/button_red_60_34.svg);
+    background-size: 103% 110%; background-repeat: no-repeat; background-color: transparent;
+    line-height: 38px; border: none; 
+    color: var(--color-yellow-bright); 
+    text-shadow: var(--shadow-text-button);
+}
+
+--- CLASS: .review-request-button ---
+SOURCE: ./styles\marketplace.css
+CONTENT:
+.review-request-button { 
+    background-color: var(--color-grey-dark); 
+    color: var(--color-red-dark); 
+    border-color: var(--color-red-dark); 
+}
+
+--- CLASS: .remove-from-basket-btn ---
+SOURCE: ./styles\marketplace.css
+CONTENT:
+.remove-from-basket-btn {
+    border: none;
+    background: none;
+}
+
+--- CLASS: .sr5-marketplace-yen ---
+SOURCE: ./styles\marketplace.css
+CONTENT:
+.sr5-marketplace-yen { color: var(--color-red-bright); }
+
+--- CLASS: .item-rating ---
+SOURCE: ./styles\marketplace.css
+CONTENT:
+.item-rating { font-size: medium; font-family: "Modesto Condensed", serif; }
+
+--- CLASS: .fa-trash ---
+SOURCE: ./styles\marketplace.css
+CONTENT:
+.fa-trash { color: var(--color-red-dark); }
+
+--- CLASS: .marketplace-tab ---
+SOURCE: ./styles\marketplace.css
+CONTENT:
+.marketplace-tab {
+    position: relative;
+    padding: 1em 2em;
+    border: 1px solid var(--color-grey-tab-active);
+    border-bottom: none;
+    background-color: var(--color-grey-dark);
+    color: var(--color-grey-lightest);
+    cursor: pointer;
+    font-weight: bold;
+    border-top-left-radius: 2em;
+    margin-right: -1.5em;
+}
+
+--- CLASS: .basket-item ---
+SOURCE: ./styles\marketplace.css
+CONTENT:
+.basket-item { text-align: center; }
+
+--- CLASS: .mini-img ---
+SOURCE: ./styles\marketplace.css
+CONTENT:
+.mini-img { width: 20px; border: none; }
+
+--- CLASS: .item-row ---
+SOURCE: ./styles\marketplace.css
+CONTENT:
+.item-row { grid-template-columns: 3fr 1fr 1fr 1fr 1fr 1fr 0.5fr; }
+
+--- CLASS: .sr5-marketplace ---
+SOURCE: ./styles\marketplace.css
+CONTENT:
+.sr5-marketplace {
+    background-image: var(--bg-main);
+    box-shadow: 0 0 10px var(--color-yellow-bright);
+}
+
+--- CLASS: .item-name ---
+SOURCE: ./styles\marketplace.css
+CONTENT:
+.item-name { display: flex; align-items: center; gap: 5px; text-align: left; }
+
+--- CLASS: .marketplace-settings-hr ---
+SOURCE: ./styles\marketplace.css
+CONTENT:
+.marketplace-settings-hr {
+    height: 6px;
+    border: 2px solid var(--color-grey-hr);
+    margin: 1em 0;
+    border-top-width: 1px;
+    border-bottom-width: 3px;
+    border-radius: 4px;
+    background-color: var(--color-grey-light);
+    background-image: repeating-linear-gradient(180deg, var(--color-red-base), transparent 100px);
+}
+
+--- CLASS: .multi-select__tag-close ---
+SOURCE: ./styles\multi-select.css
+CONTENT:
+.multi-select__tag-close {
+  cursor: pointer;
+  font-size: 14px;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+--- CLASS: .dropdown-content ---
+SOURCE: ./styles\multi-select.css
+CONTENT:
+.dropdown-content {
+  /* Hidden by default. The JS will add the '.show' class. */
+  display: none; 
+  
+  /* --- THIS PART HANDLES THE LAYERING --- */
+  position: absolute; /* Takes the element out of the normal document flow. */
+  z-index: 1000;      /* Lifts it onto a high layer, in front of other content. */
+  
+  /* --- THIS PART HANDLES THE POSITIONING & APPEARANCE --- */
+  top: 100%; /* Positioned directly below the input */
+  left: 0;
+  right: 0;
+  
+  /* UPDATED: Using a solid background variable for better readability */
+  background: var(--tag-background-dropdown);
+  
+  border: 1px solid var(--border-color-highlight);
+  border-top: none;
+  border-radius: 0 0 3px 3px;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 3px 5px rgba(0,0,0,0.2); /* Add a subtle shadow for depth */
+}
+
+--- CLASS: .dropdown-item ---
+SOURCE: ./styles\multi-select.css
+CONTENT:
+.dropdown-item {
+  padding: 8px 10px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color-dark);
+  color: var(--text-color-primary);
+}
+
+--- CLASS: .multi-select-container ---
+SOURCE: ./styles\multi-select.css
+CONTENT:
+.multi-select-container {
+  position: relative;
+  width: 100%;
+}
+
+--- CLASS: .multi-select__input ---
+SOURCE: ./styles\multi-select.css
+CONTENT:
+.multi-select__input {
+  flex-grow: 1; /* Takes up remaining space */
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 2px;
+  color: var(--text-color-primary);
+  min-width: 120px; /* Ensures there's always space to click */
+}
+
+--- CLASS: .multi-select__tag ---
+SOURCE: ./styles\multi-select.css
+CONTENT:
+.multi-select__tag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  background-color: var(--tag-background-color);
+  color: var(--tag-text-color);
+  border-radius: 3px;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap; /* Prevents long tags from wrapping */
+}
+
+--- CLASS: .tags-input ---
+SOURCE: ./styles\multi-select.css
+CONTENT:
+.tags-input {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  padding: 5px;
+  border: 1px solid var(--tag-input-border);
+  border-radius: 3px;
+  background: var(--collapsible-content-bg); /* A slightly transparent background for the input area */
+  min-height: 32px;
+  cursor: text;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+--- CLASS: .form-group ---
+SOURCE: ./styles\TestDialogApp.css
+CONTENT:
+.form-group {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--Form-background-group);
+    border-radius: 5px;
+}
+
+--- CLASS: .toggle-checkbox ---
+SOURCE: ./styles\TestDialogApp.css
+CONTENT:
+.toggle-checkbox {
+    display: none;
+}
+

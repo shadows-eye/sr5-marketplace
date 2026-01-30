@@ -1,23 +1,40 @@
-<div class="marketplace-container">
-    <header class="marketplace-header">
-        <nav class="marketplace-tabs" data-group="main">
+<div class="sr5-marketplace tw-flex tw-flex-col tw-h-full tw-overflow-hidden">
+    <header class="tw-relative tw-flex tw-justify-between tw-items-stretch tw-p-0 tw-bg-black tw-border-b-2 tw-border-sr5-gold tw-min-h-[4em] tw-max-h-[4.5em] tw-shrink-0">
+        
+        <div class="tw-absolute tw-inset-0 tw-w-[70%] tw-bg-gradient-to-r tw-from-[#5d142b] tw-via-[#5d142b]/30 tw-to-transparent tw-z-[2] tw-pointer-events-none"></div>
+
+        <nav class="tw-flex tw-gap-[4px] tw-pt-[2.3em] tw-z-[3]" data-group="main">
             {{#each tabs}}
-            <button class="marketplace-tab {{this.cssClass}}" data-tab="{{this.id}}" data-action="changeTab" type="button" title="{{this.tooltip}}">
+            <button class="marketplace-tab {{this.cssClass}} tw-relative tw-px-[2em] tw-py-[1em] tw-border tw-border-[#555] tw-border-b-0 tw-bg-[#333] tw-text-[#F5F5F5] tw-cursor-pointer tw-font-bold tw-rounded-tl-[2em] tw--mr-[1.5em] hover:tw-bg-[#555] active:tw-bg-[#555]" 
+                    data-tab="{{this.id}}" 
+                    data-action="changeTab" 
+                    type="button" 
+                    title="{{this.tooltip}}">
+                
                 <i class="fas {{this.icon}}"></i>
-                {{#if this.label}}<span>{{this.label}}</span>{{/if}}
-                {{#if (and this.count (gt this.count 0))}}<span class="notification-badge">{{this.count}}</span>{{/if}}
+                {{#if this.label}}<span class="tw-ml-2">{{this.label}}</span>{{/if}}
+                
+                {{#if (and this.count (gt this.count 0))}}
+                <span class="tw-absolute tw-top-1/2 tw-right-[5px] tw--translate-y-1/2 tw-bg-[#770808] tw-text-[#e7c93e] tw-text-[12px] tw-font-bold tw-w-[18px] tw-h-[18px] tw-rounded-full tw-flex tw-items-center tw-justify-center tw-border tw-border-[#333]">
+                    {{this.count}}
+                </span>
+                {{/if}}
             </button>
             {{/each}}
         </nav>
-        <div class="header-center">
-            <div class="marketplace-title">{{localize "SR5Marketplace.PurchaseScreen"}}</div>
+
+        <div class="tw-relative tw-z-[3] tw-flex tw-items-center tw-pt-[0.4em]">
+            <div class="tw-text-[#d3af0cd6] tw-text-[40px] tw-ml-[-100px] tw-font-bold">
+                {{localize "SR5Marketplace.PurchaseScreen"}}
+            </div>
         </div>
-        <div class="header-right">
+
+        <div class="tw-relative tw-z-[3] tw-pt-[0.4em] tw-pr-[0.4em]">
             {{> 'modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/marketplaceUserActor.html' actor=actor ownedActors=ownedActors}}
         </div>
     </header>
       
-    <section class="marketplace-body">
+    <section class="tw-grow tw-overflow-y-auto tw-p-[20px] tw-bg-main tw-rounded-b-[10px] tw-relative tw-flex tw-flex-col">
         {{{tabContent}}}
     </section>
 </div>

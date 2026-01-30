@@ -1,47 +1,79 @@
-<form autocomplete="off">
-    <div class="sr5-marketplace-settings settings-wrapper">
-            <h2>{{localize "SR5Marketplace.Marketplace.Settings.title"}}</h2>
-            <p class="description">{{localize "SR5Marketplace.Marketplace.Settings.description"}}</p>
-        <div class="settings-header-grid">
-            <div class="column-header unique">
-                {{localize "SR5Marketplace.Marketplace.Settings.CategoryUnique"}}
-                <span class="item-count">{{categorizedTypes.unique.length}}</span>
+<form autocomplete="off" class="sr5-marketplace tw-bg-main tw-h-full tw-p-4">
+    <div class="tw-flex tw-flex-col tw-gap-4">
+        <header class="tw-border-b-2 tw-border-sr5-gold tw-pb-2">
+            <h2 class="tw-text-sr5-yellow tw-text-xl tw-font-bold tw-m-0">
+                {{localize "SR5Marketplace.Marketplace.Settings.title"}}
+            </h2>
+            <p class="tw-text-zinc-400 tw-text-sm tw-italic tw-mt-1">
+                {{localize "SR5Marketplace.Marketplace.Settings.description"}}
+            </p>
+        </header>
+
+        <div class="tw-grid tw-grid-cols-3 tw-gap-4">
+            <div class="tw-bg-sr5-red-darkest tw-text-white tw-p-2 tw-rounded-t tw-flex tw-justify-between tw-items-center tw-border-b-2 tw-border-sr5-red-deep">
+                <span class="tw-font-bold tw-text-xs tw-uppercase tw-tracking-wider">
+                    {{localize "SR5Marketplace.Marketplace.Settings.CategoryUnique"}}
+                </span>
+                <span class="tw-bg-black/50 tw-px-2 tw-rounded-full tw-text-[10px]">{{categorizedTypes.unique.length}}</span>
             </div>
-            <div class="column-header stack">
-                {{localize "SR5Marketplace.Marketplace.Settings.StackingItems"}}
-                <span class="item-count">{{categorizedTypes.stack.length}}</span>
+
+            <div class="tw-bg-zinc-800 tw-text-sr5-yellow tw-p-2 tw-rounded-t tw-flex tw-justify-between tw-items-center tw-border-b-2 tw-border-zinc-700">
+                <span class="tw-font-bold tw-text-xs tw-uppercase tw-tracking-wider">
+                    {{localize "SR5Marketplace.Marketplace.Settings.StackingItems"}}
+                </span>
+                <span class="tw-bg-black/50 tw-px-2 tw-rounded-full tw-text-[10px]">{{categorizedTypes.stack.length}}</span>
             </div>
-            <div class="column-header single">
-                {{localize "SR5Marketplace.Marketplace.Settings.SingleItems"}}
-                <span class="item-count">{{categorizedTypes.single.length}}</span>
+
+            <div class="tw-bg-zinc-700 tw-text-zinc-300 tw-p-2 tw-rounded-t tw-flex tw-justify-between tw-items-center tw-border-b-2 tw-border-zinc-600">
+                <span class="tw-font-bold tw-text-xs tw-uppercase tw-tracking-wider">
+                    {{localize "SR5Marketplace.Marketplace.Settings.SingleItems"}}
+                </span>
+                <span class="tw-bg-black/50 tw-px-2 tw-rounded-full tw-text-[10px]">{{categorizedTypes.single.length}}</span>
             </div>
         </div>
-        <hr class="marketplace-settings-hr">
 
-        <div class="settings-content-grid">
-            <div class="item-type-list">
+        <hr class="tw-border-sr5-gold/30 tw-m-0">
+
+        <div class="tw-grid tw-grid-cols-3 tw-gap-4 tw-overflow-y-auto">
+            
+            <div class="tw-flex tw-flex-col tw-gap-1">
                 {{#each typeSettings}}
-                <div class="item-type-card {{#if (eq this.behavior 'unique')}}active{{else}}inactive{{/if}}" 
+                <div class="tw-p-2 tw-rounded tw-cursor-pointer tw-transition-all tw-text-xs 
+                    {{#if (eq this.behavior 'unique')}}
+                        tw-bg-sr5-red-deep tw-text-white tw-border tw-border-sr5-red-base tw-shadow-[inset_0_0_5px_rgba(255,0,0,0.2)]
+                    {{else}}
+                        tw-bg-black/20 tw-text-zinc-500 tw-border tw-border-zinc-800 hover:tw-bg-black/40 hover:tw-text-zinc-300
+                    {{/if}}" 
                     data-type="{{this.key}}" data-target-behavior="unique" title="Set '{{this.label}}' to Unique">
-                    <span class="type-label">{{this.label}}</span>
+                    <span class="tw-font-bold">{{this.label}}</span>
                 </div>
                 {{/each}}
             </div>
 
-            <div class="item-type-list">
+            <div class="tw-flex tw-flex-col tw-gap-1">
                 {{#each typeSettings}}
-                <div class="item-type-card {{#if (eq this.behavior 'stack')}}active{{else}}inactive{{/if}}"
+                <div class="tw-p-2 tw-rounded tw-cursor-pointer tw-transition-all tw-text-xs 
+                    {{#if (eq this.behavior 'stack')}}
+                        tw-bg-zinc-800 tw-text-sr5-yellow tw-border tw-border-sr5-gold/50 tw-shadow-[inset_0_0_5px_rgba(231,201,62,0.1)]
+                    {{else}}
+                        tw-bg-black/20 tw-text-zinc-500 tw-border tw-border-zinc-800 hover:tw-bg-black/40 hover:tw-text-zinc-300
+                    {{/if}}"
                     data-type="{{this.key}}" data-target-behavior="stack" title="Set '{{this.label}}' to Stacking">
-                    <span class="type-label">{{this.label}}</span>
+                    <span class="tw-font-bold">{{this.label}}</span>
                 </div>
                 {{/each}}
             </div>
 
-            <div class="item-type-list">
+            <div class="tw-flex tw-flex-col tw-gap-1">
                 {{#each typeSettings}}
-                <div class="item-type-card {{#if (eq this.behavior 'single')}}active{{else}}inactive{{/if}}"
+                <div class="tw-p-2 tw-rounded tw-cursor-pointer tw-transition-all tw-text-xs 
+                    {{#if (eq this.behavior 'single')}}
+                        tw-bg-zinc-700 tw-text-white tw-border tw-border-zinc-500
+                    {{else}}
+                        tw-bg-black/20 tw-text-zinc-500 tw-border tw-border-zinc-800 hover:tw-bg-black/40 hover:tw-text-zinc-300
+                    {{/if}}"
                     data-type="{{this.key}}" data-target-behavior="single" title="Set '{{this.label}}' to Single">
-                    <span class="type-label">{{this.label}}</span>
+                    <span class="tw-font-bold">{{this.label}}</span>
                 </div>
                 {{/each}}
             </div>

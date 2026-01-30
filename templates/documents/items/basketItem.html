@@ -1,48 +1,77 @@
-<form class="sr5-marketplace sheet item-sheet" autocomplete="off">
-    <header>
-        <h1><input type="text" name="name" value="{{name}}" /></h1>
-        <div class="flexrow">
-            <label>{{localize "SR5Marketplace.Marketplace.Basket.Description"}}</label>
-            <textarea name="system.description.long">{{system.description.long}}</textarea>
+<form class="sr5-marketplace tw-flex tw-flex-col tw-h-full tw-p-4 tw-bg-main" autocomplete="off">
+    <header class="tw-mb-6 tw-border-b-2 tw-border-sr5-gold tw-pb-4">
+        <h1 class="tw-border-none tw-mb-4">
+            <input type="text" name="name" value="{{name}}" 
+                   class="tw-w-full tw-text-2xl tw-font-bold tw-text-sr5-yellow tw-bg-black/40 tw-border-none focus:tw-ring-0" 
+                   placeholder="Item Name" />
+        </h1>
+        
+        <div class="tw-flex tw-flex-col tw-gap-2">
+            <label class="tw-text-xs tw-uppercase tw-tracking-widest tw-text-zinc-400">
+                {{localize "SR5Marketplace.Marketplace.Basket.Description"}}
+            </label>
+            <textarea name="system.description.long" 
+                      class="tw-w-full tw-min-h-[80px] tw-bg-black/20 tw-text-zinc-200 tw-border tw-border-zinc-700 tw-rounded tw-p-2 focus:tw-border-sr5-gold">{{system.description.long}}</textarea>
         </div>
     </header>
 
-    <section class="contents">
-        <h2>{{localize "SR5Marketplace.Marketplace.Basket.Contents"}}</h2>
+    <section class="contents tw-flex tw-flex-col tw-gap-6">
+        <h2 class="tw-text-lg tw-font-bold tw-text-sr5-red-deep tw-uppercase tw-tracking-wider">
+            {{localize "SR5Marketplace.Marketplace.Basket.Contents"}}
+        </h2>
 
-        <!-- Item Add Section -->
-        <div class="add-item-section">
-            <div class="flexrow">
-                <label for="item-select">{{localize "SR5Marketplace.Marketplace.Basket.SelectItem"}}</label>
-                <select name="item-select">
+        <div class="add-item-section tw-grid tw-grid-cols-1 tw-gap-4 tw-p-4 tw-bg-black/30 tw-rounded-lg tw-border tw-border-zinc-800">
+            <div class="tw-grid tw-grid-cols-[120px_1fr] tw-items-center tw-gap-4">
+                <label class="tw-text-sm tw-font-bold tw-text-zinc-300">
+                    {{localize "SR5Marketplace.Marketplace.Basket.SelectItem"}}
+                </label>
+                <select name="item-select" class="tw-bg-zinc-800 tw-text-white tw-border-zinc-600 tw-rounded tw-p-1">
                     {{#each game.items.contents}}
                     <option value="{{this.id}}">{{this.name}}</option>
                     {{/each}}
                 </select>
             </div>
-            <div class="flexrow">
-                <label for="item-quantity">{{localize "SR5Marketplace.Marketplace.Basket.Quantity"}}</label>
-                <input type="number" name="system.marketbasket.basketQuantity" value="{{system.marketbasket.basketQuantity}}" min="1" />
+
+            <div class="tw-grid tw-grid-cols-[120px_1fr] tw-items-center tw-gap-4">
+                <label class="tw-text-sm tw-font-bold tw-text-zinc-300">
+                    {{localize "SR5Marketplace.Marketplace.Basket.Quantity"}}
+                </label>
+                <input type="number" name="system.marketbasket.basketQuantity" value="{{system.marketbasket.basketQuantity}}" min="1" 
+                       class="tw-bg-zinc-800 tw-text-white tw-border-zinc-600 tw-rounded tw-p-1 tw-w-24" />
             </div>
-            <div class="flexrow">
-                <label for="item-rating">{{localize "SR5Marketplace.Marketplace.Basket.Rating"}}</label>
-                <input type="number" name="system.marketbasket.basketPrice" value="{{system.marketbasket.basketPrice}}" min="0" />
+
+            <div class="tw-grid tw-grid-cols-[120px_1fr] tw-items-center tw-gap-4">
+                <label class="tw-text-sm tw-font-bold tw-text-zinc-300">
+                    {{localize "SR5Marketplace.Marketplace.Basket.Rating"}}
+                </label>
+                <input type="number" name="system.marketbasket.basketPrice" value="{{system.marketbasket.basketPrice}}" min="0" 
+                       class="tw-bg-zinc-800 tw-text-white tw-border-zinc-600 tw-rounded tw-p-1 tw-w-24" />
             </div>
-            <button type="button" class="add-item" data-action="addToCart">{{localize "SR5Marketplace.Marketplace.Basket.AddItem"}}</button>
+
+            <button type="button" class="tw-mt-2 tw-w-full tw-bg-sr5-red-deep hover:tw-bg-sr5-red-dark tw-text-white tw-font-bold tw-py-2 tw-rounded tw-border-none tw-cursor-pointer tw-transition-colors" 
+                    data-action="addToCart">
+                <i class="fas fa-plus tw-mr-2"></i>{{localize "SR5Marketplace.Marketplace.Basket.AddItem"}}
+            </button>
         </div>
 
-        <!-- Basket Contents -->
-        <div class="basket-contents">
-            <h3>{{localize "SR5Marketplace.Marketplace.Basket.CurrentContents"}}</h3>
-            <ul>
+        <div class="basket-contents tw-flex tw-flex-col tw-gap-3">
+            <h3 class="tw-text-md tw-font-bold tw-text-sr5-yellow tw-border-b tw-border-sr5-gold/30 tw-pb-1">
+                {{localize "SR5Marketplace.Marketplace.Basket.CurrentContents"}}
+            </h3>
+            <ul class="tw-list-none tw-m-0 tw-p-0 tw-flex tw-flex-col tw-gap-2">
                 {{#each system.marketbasket.basketItems}}
-                <li>
-                    <span>{{name}} (x{{basketItemQuantity}})</span>
-                    {{#if basketItemRating}}
-                    <span> - {{localize "SR5Marketplace.Marketplace.Basket.Rating"}}: {{basketItemRating}}</span>
-                    {{/if}}
-                    <button type="button" class="remove-item" data-index="{{@index}}" data-action="removeFromCart">
-                        {{localize "SR5Marketplace.Marketplace.Basket.Remove"}}
+                <li class="tw-flex tw-items-center tw-justify-between tw-p-2 tw-bg-white/5 tw-rounded tw-border tw-border-transparent hover:tw-border-zinc-700">
+                    <div class="tw-flex tw-flex-col">
+                        <span class="tw-font-bold tw-text-sm">{{name}} <span class="tw-text-sr5-yellow">x{{basketItemQuantity}}</span></span>
+                        {{#if basketItemRating}}
+                        <span class="tw-text-[10px] tw-uppercase tw-text-zinc-500">
+                            {{localize "SR5Marketplace.Marketplace.Basket.Rating"}}: {{basketItemRating}}
+                        </span>
+                        {{/if}}
+                    </div>
+                    <button type="button" class="tw-text-xs tw-bg-red-900/40 hover:tw-bg-red-800 tw-text-red-200 tw-px-3 tw-py-1 tw-rounded tw-border-none tw-cursor-pointer tw-transition-colors" 
+                            data-index="{{@index}}" data-action="removeFromCart">
+                        <i class="fas fa-trash-alt tw-mr-1"></i>{{localize "SR5Marketplace.Marketplace.Basket.Remove"}}
                     </button>
                 </li>
                 {{/each}}

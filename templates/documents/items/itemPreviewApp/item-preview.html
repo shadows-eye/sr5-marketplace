@@ -1,68 +1,97 @@
-<form class="sr5 sheet item wholesheet">
-    <div class="sr5marketplaceGrid item-header">
-        <div class="sr5marketplace item-image">
-            <img src="{{item.img}}" alt="{{item.name}}"/>
+<form class="sr5-marketplace tw-flex tw-flex-col tw-h-full tw-p-0 tw-bg-main" autocomplete="off">
+    <header class="tw-grid tw-grid-cols-[120px_1fr] tw-gap-4 tw-p-4 tw-bg-black/40 tw-border-b-2 tw-border-sr5-gold">
+        <div class="tw-w-[120px] tw-h-[120px] tw-bg-zinc-800 tw-rounded tw-border-2 tw-border-sr5-gold tw-overflow-hidden">
+            <img src="{{item.img}}" alt="{{item.name}}" class="tw-w-full tw-h-full tw-object-contain"/>
         </div>
-        <div class="item-info">
-            <div class="flexrow">
-                <div class="item-name">
-                    <h1 class="sr5-marketplace-sr5Type-header">{{item.name}}</h1>
+
+        <div class="tw-flex tw-flex-col tw-justify-between">
+            <div class="tw-flex tw-justify-between tw-items-start">
+                <div class="tw-flex tw-flex-col">
+                    <h1 class="tw-text-2xl tw-font-bold tw-text-sr5-yellow tw-m-0 tw-border-none">{{item.name}}</h1>
+                    <span class="tw-text-xs tw-uppercase tw-tracking-widest tw-text-zinc-400 tw-mt-1">{{item.type}}</span>
                 </div>
-                <div class="item-type">
-                    {{item.type}}
-                </div>
-            </div>
-             <div class="item-action-buttons">
-                <button type="button" class="copy-uuid" title="Copy Document UUID" data-action="copyUuid" data-uuid="{{item.uuid}}">
+                
+                <button type="button" class="tw-bg-zinc-700 hover:tw-bg-zinc-600 tw-text-white tw-p-2 tw-rounded tw-border-none tw-cursor-pointer tw-transition-colors" 
+                        title="Copy Document UUID" data-action="copyUuid" data-uuid="{{item.uuid}}">
                     <i class="fa-solid fa-clipboard"></i>
                 </button>
             </div>
         </div>
-    </div>
+    </header>
 
-    <section class="sheetbody">
-        <div class="tab active" data-tab="description">
-            <div class="flexrow align-start nowrap full-height">
-
-                <div class="flexcol flex0">
-                    <div class="technology">
-                        {{#if item.system.technology.rating}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.Marketplace.system.technology.rating"}}</label><div class="display">{{item.system.technology.rating}}</div></div>
-                        {{/if}}
-                        {{#if item.system.technology.cost}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.Marketplace.system.technology.Cost"}}</label><div class="display">{{item.system.technology.cost}}<span class="unit"><i class="fas fa-yen-sign sr5-marketplace-yen preview"></i></span></div></div>
-                        {{/if}}
-                        {{#if item.system.karma}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.Marketplace.system.karma"}}</label><div class="display">{{item.system.karma}}</div></div>
-                        {{/if}}
-                        {{#if item.flags.sr5-marketplace.Karma}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.Marketplace.system.karma"}}</label><div class="display">{{item.flags.sr5-marketplace.Karma}}</div></div>
-                        {{/if}}
-                        {{#if item.system.technology.availability}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.Marketplace.system.technology.availability"}}</label><div class="display">{{item.system.technology.availability}}</div></div>
-                        {{/if}}
-                        {{#if item.system.slots}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.Marketplace.system.slots"}}</label><div class="display">{{item.system.slots}}</div></div>
-                        {{/if}}
-                        {{#if item.system.mount_point}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.Marketplace.system.mount-point"}}</label><div class="display">{{item.system.mount_point}}</div></div>
-                        {{/if}}
-                    </div>
+    <section class="tw-flex-grow tw-overflow-y-auto tw-p-4">
+        <div class="tw-grid tw-grid-cols-[200px_1fr] tw-gap-6 tw-h-full">
+            
+            <aside class="tw-flex tw-flex-col tw-gap-2 tw-bg-black/20 tw-p-3 tw-rounded tw-border tw-border-zinc-800">
+                <h3 class="tw-text-[10px] tw-uppercase tw-font-bold tw-text-sr5-yellow tw-border-b tw-border-sr5-gold/30 tw-mb-1 tw-pb-1">
+                    {{localize "SR5Marketplace.Marketplace.system.technology.label"}}
+                </h3>
+                
+                {{#if item.system.technology.rating}}
+                <div class="tw-flex tw-justify-between tw-text-xs tw-py-1 tw-border-b tw-border-zinc-800/50">
+                    <label class="tw-text-zinc-400">{{localize "SR5Marketplace.Marketplace.system.technology.rating"}}</label>
+                    <span class="tw-font-bold">{{item.system.technology.rating}}</span>
                 </div>
-    
-                <div class="description">
-                    <div class="editor"><div class="editor-content">{{{item.system.description.value}}}</div></div>
-                </div>
+                {{/if}}
 
+                {{#if item.system.technology.cost}}
+                <div class="tw-flex tw-justify-between tw-text-xs tw-py-1 tw-border-b tw-border-zinc-800/50">
+                    <label class="tw-text-zinc-400">{{localize "SR5Marketplace.Marketplace.system.technology.Cost"}}</label>
+                    <span class="tw-font-bold tw-text-white">
+                        {{item.system.technology.cost}} <i class="fas fa-yen-sign tw-text-red-700"></i>
+                    </span>
+                </div>
+                {{/if}}
+
+                {{#if (or item.system.karma item.flags.sr5-marketplace.Karma)}}
+                <div class="tw-flex tw-justify-between tw-text-xs tw-py-1 tw-border-b tw-border-zinc-800/50">
+                    <label class="tw-text-zinc-400">{{localize "SR5Marketplace.Marketplace.system.karma"}}</label>
+                    <span class="tw-font-bold tw-text-sr5-yellow">
+                        {{#if item.system.karma}}{{item.system.karma}}{{else}}{{item.flags.sr5-marketplace.Karma}}{{/if}} <i class="fas fa-star"></i>
+                    </span>
+                </div>
+                {{/if}}
+
+                {{#if item.system.technology.availability}}
+                <div class="tw-flex tw-justify-between tw-text-xs tw-py-1 tw-border-b tw-border-zinc-800/50">
+                    <label class="tw-text-zinc-400">{{localize "SR5Marketplace.Marketplace.system.technology.availability"}}</label>
+                    <span class="tw-font-bold">{{item.system.technology.availability}}</span>
+                </div>
+                {{/if}}
+
+                {{#if item.system.slots}}
+                <div class="tw-flex tw-justify-between tw-text-xs tw-py-1 tw-border-b tw-border-zinc-800/50">
+                    <label class="tw-text-zinc-400">{{localize "SR5Marketplace.Marketplace.system.slots"}}</label>
+                    <span class="tw-font-bold">{{item.system.slots}}</span>
+                </div>
+                {{/if}}
+
+                {{#if item.system.mount_point}}
+                <div class="tw-flex tw-justify-between tw-text-xs tw-py-1">
+                    <label class="tw-text-zinc-400">{{localize "SR5Marketplace.Marketplace.system.mount-point"}}</label>
+                    <span class="tw-font-bold">{{item.system.mount_point}}</span>
+                </div>
+                {{/if}}
+            </aside>
+
+            <div class="tw-prose tw-prose-invert tw-max-w-none tw-text-sm tw-leading-relaxed tw-text-zinc-300">
+                <div class="tw-bg-black/10 tw-p-4 tw-rounded tw-min-h-full tw-border tw-border-zinc-800/30">
+                    {{{item.system.description.value}}}
+                </div>
             </div>
         </div>
     </section>
 
-    <footer class="preview-footer">
-        <button type="button" class="add-to-cart" data-action="addToCart" data-item-id="{{item.uuid}}" {{#unless purchasingActor}}disabled title="{{localize 'SR5Marketplace.Marketplace.selectActorTooltip'}}"{{/unless}}>
+    <footer class="tw-flex tw-gap-4 tw-p-4 tw-bg-black/40 tw-border-t tw-border-zinc-800">
+        <button type="button" class="tw-flex-1 tw-bg-sr5-red-deep hover:tw-bg-sr5-red-dark tw-text-white tw-font-bold tw-py-3 tw-rounded tw-border-none tw-cursor-pointer tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2 disabled:tw-opacity-50 disabled:tw-grayscale disabled:tw-cursor-not-allowed" 
+                data-action="addToCart" data-item-id="{{item.uuid}}" 
+                {{#unless purchasingActor}}disabled title="{{localize 'SR5Marketplace.Marketplace.selectActorTooltip'}}"{{/unless}}>
             <i class="fa-solid fa-cart-plus"></i> {{localize "SR5Marketplace.Marketplace.AddToCart"}}
         </button>
-        <button type="button" class="add-to-builder" data-action="onAddToItemBuilder" data-item-uuid="{{this.uuid}}" title="{{localize 'SR5Marketplace.ItemBuilder.SelectAsBase'}}">
+        
+        <button type="button" class="tw-flex-1 tw-bg-zinc-800 hover:tw-bg-zinc-700 tw-text-sr5-yellow tw-font-bold tw-py-3 tw-rounded tw-border tw-border-sr5-gold/30 tw-cursor-pointer tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2" 
+                data-action="onAddToItemBuilder" data-item-uuid="{{this.uuid}}" 
+                title="{{localize 'SR5Marketplace.ItemBuilder.SelectAsBase'}}">
             <i class="fa-solid fa-wrench"></i> {{localize "SR5Marketplace.Marketplace.AddToBuilder"}}
         </button>
     </footer>

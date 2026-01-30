@@ -1,27 +1,46 @@
-<div class="marketplace-user-actor" title="{{#if actor.name}}{{actor.name}}{{else}}{{localize 'SR5Marketplace.Marketplace.selectActorTooltip'}}{{/if}}">
-    <div class="user-avatar-container" data-action="toggleActorList">
-        <img src="{{#if actor.img}}{{actor.img}}{{else}}icons/svg/mystery-man.svg{{/if}}" alt="{{actor.name}}" class="user-avatar">
+<div class="sr5-marketplace tw-flex tw-items-center tw-gap-3 tw-p-1 tw-rounded-md tw-transition-colors" 
+     title="{{#if actor.name}}{{actor.name}}{{else}}{{localize 'SR5Marketplace.Marketplace.selectActorTooltip'}}{{/if}}">
+    
+    <div class="tw-relative tw-w-12 tw-h-12 tw-cursor-pointer group" data-action="toggleActorList">
+        <img src="{{#if actor.img}}{{actor.img}}{{else}}icons/svg/mystery-man.svg{{/if}}" 
+             alt="{{actor.name}}" 
+             class="tw-w-full tw-h-full tw-rounded-full tw-object-cover tw-border-2 tw-border-sr5-gold tw-shadow-md">
+        
         {{#if actor}}
             {{#ifgt ownedActors.length 1}}
-                <span class="remove-selected-actor" title="{{localize 'SR5Marketplace.Marketplace.RemoveItem'}}" data-action="clearActor">
-                    <i class="fa-solid fa-circle-xmark"></i>
+                <span class="tw-absolute tw-top-[-4px] tw-right-[-4px] tw-text-red-600 tw-bg-white tw-rounded-full tw-leading-none tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity" 
+                      title="{{localize 'SR5Marketplace.Marketplace.RemoveItem'}}" 
+                      data-action="clearActor">
+                    <i class="fa-solid fa-circle-xmark tw-text-lg"></i>
                 </span>
             {{/ifgt}}
         {{/if}}
     </div>
-    <div class="user-actor-details">
+
+    <div class="tw-flex tw-flex-col tw-justify-center">
         {{#if actor}}
-            <div class="actor-name"><strong>{{actor.name}}</strong></div>
-            <div class="actor-funds">
-                <span><i class="fa-duotone fa-solid fa-circle-yen"></i> {{actor.nuyen}}</span>
-                <span><i class="fa-duotone fa-solid fa-circle-star"></i> {{actor.karma}}</span>
+            <div class="tw-text-sm tw-font-bold tw-text-white tw-leading-tight">
+                {{actor.name}}
+            </div>
+            <div class="tw-flex tw-gap-3 tw-text-xs tw-mt-0.5">
+                <span class="tw-flex tw-items-center tw-gap-1 tw-text-zinc-300">
+                    <i class="fa-duotone fa-solid fa-circle-yen tw-text-red-800"></i> {{actor.nuyen}}
+                </span>
+                <span class="tw-flex tw-items-center tw-gap-1 tw-text-zinc-300">
+                    <i class="fa-duotone fa-solid fa-circle-star tw-text-sr5-yellow"></i> {{actor.karma}}
+                </span>
             </div>
         {{else}}
-            <h4 class="actor-selection-title">{{localize "SR5Marketplace.Marketplace.selectAnActor"}}</h4>
-            <div class="actor-selection-grid">
+            <h4 class="tw-text-[10px] tw-uppercase tw-tracking-wider tw-text-sr5-yellow tw-mb-1">
+                {{localize "SR5Marketplace.Marketplace.selectAnActor"}}
+            </h4>
+            <div class="tw-flex tw-gap-1 tw-flex-wrap tw-max-w-[120px]">
                 {{#each ownedActors as |ownedActor|}}
-                    <div class="selectable-actor" data-action="selectActor" data-actor-uuid="{{ownedActor.uuid}}" title="{{ownedActor.name}}">
-                        <img src="{{ownedActor.img}}" alt="{{ownedActor.name}}" class="selectable-actor-img">
+                    <div class="tw-w-7 tw-h-7 tw-rounded-sm tw-overflow-hidden tw-border tw-border-zinc-600 hover:tw-border-sr5-gold tw-cursor-pointer tw-transition-transform hover:tw-scale-110" 
+                         data-action="selectActor" 
+                         data-actor-uuid="{{ownedActor.uuid}}" 
+                         title="{{ownedActor.name}}">
+                        <img src="{{ownedActor.img}}" alt="{{ownedActor.name}}" class="tw-w-full tw-h-full tw-object-cover tw-object-top">
                     </div>
                 {{/each}}
             </div>

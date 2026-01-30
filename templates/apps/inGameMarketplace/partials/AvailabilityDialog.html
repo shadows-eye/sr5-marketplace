@@ -1,34 +1,31 @@
-<div class="roll-dialog-container">
+<div class="sr5-marketplace tw-mt-4 tw-p-2 tw-bg-black/20 tw-rounded-md tw-border tw-border-zinc-700">
     <div class="roll-dialog-content">
 
-    {{!-- Check if an active test state exists in the context --}}
     {{#if activeTestState}}
 
         {{#if (eq activeTestState.status "initial")}}
-            <form class="availability-dialog-form">
+            <form class="tw-flex tw-flex-col tw-gap-4">
                 <input type="hidden" name="dialogId" value="{{dialogId}}" />
-                <h2>{{localize "SR5Marketplace.Marketplace.Tests.AvailabilityTest"}}</h2>
+                <h2 class="tw-text-lg tw-font-bold tw-text-sr5-yellow tw-border-b tw-border-sr5-gold/50 tw-pb-1">
+                    {{localize "SR5Marketplace.Marketplace.Tests.AvailabilityTest"}}
+                </h2>
                 
-                {{!-- NEW UNIFIED HEADER GRID --}}
-                <div class="dialog-header-grid">
-                    {{!-- Column 1: Actor Info --}}
-                    <div class="actor-info">
-                        <div class="selectable-actor" actorUuid="{{activeTestState.actor.uuid}}">
-                            <img src="{{activeTestState.actor.img}}" title="{{activeTestState.actor.name}}"/>
-                            <span>{{actor.name}}</span>
+                <div class="tw-grid tw-grid-cols-4 tw-gap-4 tw-items-end">
+                    <div class="tw-flex tw-items-center tw-gap-2">
+                        <div class="tw-w-10 tw-h-10 tw-rounded tw-border tw-border-sr5-gold tw-overflow-hidden">
+                            <img src="{{activeTestState.actor.img}}" title="{{activeTestState.actor.name}}" class="tw-w-full tw-h-full tw-object-cover"/>
                         </div>
+                        <span class="tw-text-xs tw-font-bold">{{actor.name}}</span>
                     </div>
 
-                    {{!-- Column 2: Availability --}}
-                    <div class="form-group">
-                        <label>{{localize "SR5Marketplace.Marketplace.Availability"}}</label>
-                        <div class="availability-display">{{activeTestState.availabilityStr}}</div>
+                    <div class="tw-flex tw-flex-col">
+                        <label class="tw-text-[10px] tw-uppercase tw-text-zinc-400">{{localize "SR5Marketplace.Marketplace.Availability"}}</label>
+                        <div class="tw-text-sr5-yellow tw-font-bold tw-text-lg">{{activeTestState.availabilityStr}}</div>
                     </div>
 
-                    {{!-- Column 3: Skill --}}
-                    <div class="form-group">
-                        <label>{{localize "FIELDS.Skill.Skill"}}</label>
-                        <select name="skill" data-action="changeTestParameter">
+                    <div class="tw-flex tw-flex-col">
+                        <label class="tw-text-[10px] tw-uppercase tw-text-zinc-400">{{localize "FIELDS.Skill.Skill"}}</label>
+                        <select name="skill" data-action="changeTestParameter" class="tw-bg-zinc-800 tw-text-white tw-border-zinc-600 tw-text-xs tw-p-1">
                             <option value="negotiation" {{#if (eq activeTestState.skill "negotiation")}}selected{{/if}}>{{localize "SR5.Skill.Negotiation"}}</option>
                             <option value="etiquette" {{#if (eq activeTestState.skill "etiquette")}}selected{{/if}}>{{localize "SR5.Skill.Etiquette"}}</option>
                             <option value="con" {{#if (eq activeTestState.skill "con")}}selected{{/if}}>{{localize "SR5.Skill.Con"}}</option>
@@ -36,182 +33,113 @@
                         </select>
                     </div>
 
-                    {{!-- Column 4: Attribute --}}
-                    <div class="form-group">
-                        <label>{{localize "FIELDS.attributes.label"}}</label>
-                        <select name="attribute" data-action="changeTestParameter">
+                    <div class="tw-flex tw-flex-col">
+                        <label class="tw-text-[10px] tw-uppercase tw-text-zinc-400">{{localize "FIELDS.attributes.label"}}</label>
+                        <select name="attribute" data-action="changeTestParameter" class="tw-bg-zinc-800 tw-text-white tw-border-zinc-600 tw-text-xs tw-p-1">
                             <option value="charisma" {{#if (eq activeTestState.attribute "charisma")}}selected{{/if}}>{{localize "FIELDS.attributes.charisma.label"}}</option>
                             <option value="willpower" {{#if (eq activeTestState.attribute "willpower")}}selected{{/if}}>{{localize "FIELDS.attributes.willpower.label"}}</option>
                             <option value="intuition" {{#if (eq activeTestState.attribute "intuition")}}selected{{/if}}>{{localize "FIELDS.attributes.intuition.label"}}</option>
                         </select>
                     </div>
                 </div>
-                <div class="dice-pool-summary">
-                    <div class="pool-parts">
+
+                <div class="tw-p-2 tw-bg-black/40 tw-rounded tw-border tw-border-zinc-800 tw-flex tw-justify-between tw-items-center">
+                    <div class="tw-text-xs tw-text-zinc-400">
                         {{#each activeTestState.dicePoolBreakdown as |part|}}
-                            <span>{{part.label}} {{part.value}}</span>{{#unless @last}} + {{/unless}}
+                            <span>{{part.label}} <span class="tw-text-white">{{part.value}}</span></span>{{#unless @last}} + {{/unless}}
                         {{/each}}
                     </div>
-                    <div class="pool-total">
-                        = <strong>{{activeTestState.totalDicePool}}</strong> {{localize "SR5.Dice"}}
+                    <div class="tw-text-sr5-yellow tw-font-bold">
+                        = <span>{{activeTestState.totalDicePool}}</span> {{localize "SR5.Dice"}}
                     </div>
                 </div>
-                <hr>
 
-                {{!-- Situational Modifiers --}}
-                <div class="marketplace-modifiers-container">
+                <hr class="tw-border-zinc-700">
+
+                <div class="tw-flex tw-flex-col tw-gap-2">
                     {{#each activeTestState.modifierGroups as |group index|}}
-                        <div class="modifier-group collapsible">
-                            {{!-- The hidden checkbox that powers the toggle --}}
-                            <input type="checkbox" id="toggle-mod-group-{{index}}" class="toggle-checkbox" checked>
+                        <div class="tw-border tw-border-zinc-800 tw-rounded">
+                            <input type="checkbox" id="toggle-mod-group-{{index}}" class="tw-hidden peer" checked>
+                            <label for="toggle-mod-group-{{index}}" class="tw-block tw-p-2 tw-bg-zinc-800/50 tw-text-xs tw-font-bold tw-cursor-pointer hover:tw-bg-zinc-800">
+                                {{localize group.title}}
+                            </label>
 
-                            {{!-- The clickable header. The 'for' attribute links it to the checkbox. --}}
-                            <label for="toggle-mod-group-{{index}}" class="collapsible-header">{{localize group.title}}</label>
-
-                            {{!-- The content that will be shown or hidden --}}
-                            <div class="collapsible-content">
-                                <div class="modifier-items-grid">
-                                    {{#each group.items as |mod|}}
-                                        <label>{{localize mod.description}}</label>
-                                        <button type="button" class="modifier-button {{#if (isModifierActive mod.label @root.activeTestState.modifiers)}}active{{/if}}" 
-                                                data-action="applyModifier" 
-                                                data-label="{{mod.label}}" 
-                                                data-value="{{mod.value}}">
+                            <div class="tw-hidden peer-checked:tw-grid tw-grid-cols-2 tw-gap-2 tw-p-2 tw-bg-black/20">
+                                {{#each group.items as |mod|}}
+                                    <div class="tw-flex tw-items-center tw-justify-between tw-text-[11px]">
+                                        <label class="tw-text-zinc-300">{{localize mod.description}}</label>
+                                        <button type="button" 
+                                                class="tw-min-w-[40px] tw-p-1 tw-rounded tw-text-center tw-cursor-pointer tw-border-none {{#if (isModifierActive mod.label @root.activeTestState.modifiers)}}tw-bg-sr5-gold tw-text-black tw-font-bold{{else}}tw-bg-zinc-700 tw-text-zinc-400{{/if}}" 
+                                                data-action="applyModifier" data-label="{{mod.label}}" data-value="{{mod.value}}">
                                             {{#if (gt mod.value 0)}}+{{/if}}{{mod.value}}
                                         </button>
-                                    {{/each}}
-                                </div>
+                                    </div>
+                                {{/each}}
                             </div>
                         </div>
                     {{/each}}
                 </div>
-                <hr>
 
-                {{!-- Final Roll Button --}}
-                <button type="button" class="roll-button" data-action="runAvailabilityTest">
+                <button type="button" class="tw-w-full tw-bg-sr5-red-deep hover:tw-bg-sr5-red-dark tw-text-white tw-font-bold tw-py-2 tw-rounded tw-border-none tw-cursor-pointer tw-shadow-md" data-action="runAvailabilityTest">
                     <i class="fas fa-dice-d6"></i> {{localize "SR5Marketplace.Roll"}}
                 </button>
             </form>
 
         {{else if (eq activeTestState.status "result")}}
-        <div class="MarketAppDialog-test-result-container">
-            <div class="result-title">{{localize "SR5Marketplace.AppDialogItem.result.Test"}}</div>
+        <div class="tw-flex tw-flex-col tw-gap-4 tw-text-center">
+            <div class="tw-text-sr5-yellow tw-font-bold">{{localize "SR5Marketplace.AppDialogItem.result.Test"}}</div>
             
-            <div class="MarketAppDialog-dice-tray">
+            <div class="tw-flex tw-flex-wrap tw-justify-center tw-gap-1">
                 {{#each activeTestState.renderedDice as |die|}}
-                    <div class="MarketAppDialog-die-result {{die.cssClass}}">
-                        <span class="MarketAppDialog-die-text">{{die.text}}</span>
+                    <div class="tw-w-8 tw-h-8 tw-flex tw-items-center tw-justify-center tw-text-sm tw-font-bold tw-rounded tw-bg-zinc-800 tw-border tw-border-zinc-600 {{#if (eq die.text '1')}}tw-text-red-600 tw-border-red-900{{else if (gt die.text '4')}}tw-text-sr5-yellow tw-border-sr5-gold{{/if}}">
+                        {{die.text}}
                     </div>
                 {{/each}}
             </div>
 
-            <div class="MarketAppDialog-result-summary {{#if activeTestState.isGlitch}}glitched{{/if}}">
-                <div>{{localize "SR5Marketplace.AppDialogItem.result.text"}}<strong>{{activeTestState.hits}}</strong> {{localize "SR5Marketplace.AppDialogItem.result.Hits"}}</div>
+            <div class="tw-p-2 tw-bg-black/40 tw-rounded {{#if activeTestState.isGlitch}}tw-border tw-border-red-600 tw-bg-red-900/10{{/if}}">
+                <div class="tw-text-lg">{{localize "SR5Marketplace.AppDialogItem.result.text"}} <strong>{{activeTestState.hits}}</strong> {{localize "SR5Marketplace.AppDialogItem.result.Hits"}}</div>
                 {{#if isGlitch}}
-                    <div class="glitch-text">{{localize "SR5Marketplace.AppDialogItem.GlitchText.with"}} <strong>{{activeTestState.glitches}}</strong> {{localize "SR5Marketplace.AppDialogItem.GlitchText.glitch"}}</div>
+                    <div class="tw-text-red-500 tw-font-bold tw-uppercase tw-text-xs">{{localize "SR5Marketplace.AppDialogItem.GlitchText.with"}} {{activeTestState.glitches}} {{localize "SR5Marketplace.AppDialogItem.GlitchText.glitch"}}</div>
                 {{/if}}
             </div>
 
-            <div class="threshold-info">{{localize "SR5Marketplace.AppDialogItem.ThresholdInfo"}}</div>
-            <button type="button" class="roll-button" data-action="runResistTest" data-dialog-id="{{activeTestState.id}}">
+            <button type="button" class="tw-w-full tw-bg-zinc-700 hover:tw-bg-zinc-600 tw-text-white tw-py-2 tw-rounded tw-border-none tw-cursor-pointer" data-action="runResistTest" data-dialog-id="{{activeTestState.id}}">
                 {{localize "SR5Marketplace.AppDialogItem.RollItemResistance"}}
             </button>
         </div>
 
-        {{else if (eq activeTestState.status "extended-inprogress")}}
-        <div class="MarketAppDialog-test-result-container">
-            <div class="result-title">Extended Test In Progress</div>
-            
-            <div class="extended-test-summary">
-                <span>Progress: <strong>{{activeTestState.cumulativeHits}} / {{activeTestState.threshold}}</strong> Hits</span>
-                <span>Next Roll: <strong>{{activeTestState.currentPool}}</strong> Dice</span>
-            </div>
-
-            <div class="result-subtitle">Last Roll's Results:</div>
-            <div class="MarketAppDialog-dice-tray">
-                {{#each activeTestState.renderedDice as |die|}}
-                    <div class="MarketAppDialog-die-result {{die.cssClass}}">
-                        <span class="MarketAppDialog-die-text">{{die.text}}</span>
-                    </div>
-                {{/each}}
-            </div>
-
-            <button type="button" class="roll-button" data-action="continueExtendedTest" data-dialog-id="{{activeTestState.id}}">
-                Continue Test
-            </button>
-        </div>
-
         {{else if (eq activeTestState.status "resolved")}}
-            <div class="MarketAppDialog-final-result-container">
-                <details class="MarketAppDialog-final-summary" open>
-                    <summary>
-                        {{!-- This summary works for all test types --}}
-                        {{#if activeTestState.isAvailable}}
-                            <h3 class="success"><i class="fas fa-check-circle"></i> {{localize "SR5Marketplace.Marketplace.Acquisition.Success"}}</h3>
-                        {{else}}
-                            <h3 class="failure"><i class="fas fa-times-circle"></i> {{localize "SR5Marketplace.Marketplace.Acquisition.Failed"}}</h3>
-                        {{/if}}
-                    </summary>
-
-                    {{!-- This block ONLY appears for a SUCCESSFUL EXTENDED test --}}
-                    {{#if (and activeTestState.isAvailable (eq activeTestState.testType "extended"))}}
-                        <div class="acquisition-details">
-                            <div class="detail-item">
-                                {{loc "SR5Marketplace.AppDialogItem.ExtendedSuccessDetails" 
-                                    rolls=activeTestState.totalRolls 
-                                    connection=activeTestState.connectionUsed 
-                                    timeValue=activeTestState.deliveryTime.value 
-                                }} {{activeTestState.deliveryTime.unit}}
-                            </div>
-                        </div>
-                    {{/if}}
-
-                    {{!-- Check the test type to render the correct dice display grid --}}
-                    {{#if (eq activeTestState.testType "opposed")}}
-                        
-                        <div class="final-result-grid">
-                            <div class="result-column">
-                                <div class="result-title">{{localize "SR5Marketplace.AppDialogItem.YourRoll"}} ({{activeTestState.initialRoll.netHits}} {{localize "SR5Marketplace.AppDialogItem.netHits"}})</div>
-                                <div class="MarketAppDialog-dice-tray">
-                                    {{#each activeTestState.initialRoll.renderedDice as |die|}}
-                                        <div class="MarketAppDialog-die-result {{die.cssClass}}"><span class="MarketAppDialog-die-text">{{die.text}}</span></div>
-                                    {{/each}}
-                                </div>
-                            </div>
-                            <div class="result-column">
-                                <div class="result-title">{{localize "SR5Marketplace.AppDialogItem.Resistance"}} ({{activeTestState.resistRoll.hits}} {{localize "SR5Marketplace.AppDialogItem.Hits"}})</div>
-                                <div class="MarketAppDialog-dice-tray">
-                                    {{#each activeTestState.resistRoll.renderedDice as |die|}}
-                                        <div class="MarketAppDialog-die-result {{die.cssClass}}"><span class="MarketAppDialog-die-text">{{die.text}}</span></div>
-                                    {{/each}}
-                                </div>
-                            </div>
-                        </div>
+            <div class="tw-flex tw-flex-col tw-gap-4">
+                <div class="tw-text-center tw-p-3 tw-rounded-md {{#if activeTestState.isAvailable}}tw-bg-green-900/20 tw-border tw-border-green-600 tw-text-green-500{{else}}tw-bg-red-900/20 tw-border tw-border-red-600 tw-text-red-500{{/if}}">
+                    {{#if activeTestState.isAvailable}}
+                        <h3 class="tw-text-xl tw-font-bold"><i class="fas fa-check-circle"></i> {{localize "SR5Marketplace.Marketplace.Acquisition.Success"}}</h3>
                     {{else}}
-                        {{!-- SIMPLE / EXTENDED TEST GRID --}}
-                        <div class="final-result-grid">
-                            <div class="result-column">
-                                <div class="result-title">{{localize "SR5Marketplace.AppDialogItem.FinalRoll"}} ({{activeTestState.netHits}} {{localize "SR5Marketplace.AppDialogItem.netHits"}})</div>
-                                <div class="MarketAppDialog-dice-tray">
-                                    {{#each activeTestState.renderedDice as |die|}}
-                                        <div class="MarketAppDialog-die-result {{die.cssClass}}"><span class="MarketAppDialog-die-text">{{die.text}}</span></div>
-                                    {{/each}}
-                                </div>
-                            </div>
-                            <div class="result-column">
-                                <div class="result-title">{{localize "SR5.Threshold"}}</div>
-                                <div class="threshold-display">
-                                    {{activeTestState.cumulativeHits}} / {{activeTestState.threshold}}
-                                </div>
-                            </div>
-                        </div>
+                        <h3 class="tw-text-xl tw-font-bold"><i class="fas fa-times-circle"></i> {{localize "SR5Marketplace.Marketplace.Acquisition.Failed"}}</h3>
                     {{/if}}
-                </details>
+                </div>
+
+                {{!-- Success Details --}}
+                {{#if (and activeTestState.isAvailable (eq activeTestState.testType "extended"))}}
+                    <div class="tw-text-sm tw-italic tw-text-zinc-400 tw-text-center">
+                        {{loc "SR5Marketplace.AppDialogItem.ExtendedSuccessDetails" rolls=activeTestState.totalRolls connection=activeTestState.connectionUsed timeValue=activeTestState.deliveryTime.value}} {{activeTestState.deliveryTime.unit}}
+                    </div>
+                {{/if}}
+
+                <div class="tw-grid tw-grid-cols-2 tw-gap-4">
+                    <div class="tw-text-center">
+                        <div class="tw-text-[10px] tw-uppercase tw-text-zinc-500">{{localize "SR5Marketplace.AppDialogItem.FinalRoll"}}</div>
+                        <div class="tw-text-lg tw-font-bold">{{activeTestState.netHits}} Net Hits</div>
+                    </div>
+                    <div class="tw-text-center">
+                        <div class="tw-text-[10px] tw-uppercase tw-text-zinc-500">{{localize "SR5.Threshold"}}</div>
+                        <div class="tw-text-lg tw-font-bold">{{activeTestState.cumulativeHits}} / {{activeTestState.threshold}}</div>
+                    </div>
+                </div>
             </div>
         {{/if}}
     {{else}}
-
-        <button type="button" data-action="showAvailabilityDialog" data-basket-uuid="{{basket.basketUUID}}">
+        <button type="button" class="tw-w-full tw-bg-zinc-800 hover:tw-bg-sr5-red-deep tw-text-sr5-yellow tw-font-bold tw-py-3 tw-rounded tw-border tw-border-sr5-gold/30 tw-cursor-pointer tw-transition-colors" data-action="showAvailabilityDialog" data-basket-uuid="{{basket.basketUUID}}">
             <i class="fas fa-dice-d6"></i> {{localize "SR5Marketplace.AppDialogItem.OrderTest"}}
         </button>
     {{/if}}

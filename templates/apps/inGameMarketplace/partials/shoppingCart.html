@@ -1,34 +1,39 @@
-<div class="shopping-cart-container">
-    <div class="basket-items-container">
-        <div class="basket-grid headers seven-columns">
-            <div class="grid-item header" style="justify-self: start;">{{localize "SR5Marketplace.Marketplace.Name"}}</div>
-            <div class="grid-item header" title="{{localize 'SR5Marketplace.Marketplace.system.technology.quantity'}} (per Pack)">{{localize "SR5Marketplace.Marketplace.quantityPerPack"}}</div>
-            <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.buyQuantity"}}</div>
-            <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.system.technology.rating"}}</div>
-            <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.system.technology.Cost"}}</div>
-            <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.system.karma"}}</div>
-            <div class="grid-item header"><i class="fas fa-trash"></i></div>
+<div class="sr5-marketplace tw-flex tw-flex-col tw-h-full tw-pr-1">
+    <div class="tw-flex tw-flex-col">
+        <div class="tw-grid tw-grid-cols-[3fr_1fr_1fr_1fr_1fr_1fr_0.5fr] tw-gap-[10px] tw-items-center tw-pb-[10px] tw-font-bold tw-text-center">
+            <div class="tw-justify-self-start">{{localize "SR5Marketplace.Marketplace.Name"}}</div>
+            <div title="{{localize 'SR5Marketplace.Marketplace.system.technology.quantity'}} (per Pack)">
+                {{localize "SR5Marketplace.Marketplace.quantityPerPack"}}
+            </div>
+            <div>{{localize "SR5Marketplace.Marketplace.buyQuantity"}}</div>
+            <div>{{localize "SR5Marketplace.Marketplace.system.technology.rating"}}</div>
+            <div>{{localize "SR5Marketplace.Marketplace.system.technology.Cost"}}</div>
+            <div>{{localize "SR5Marketplace.Marketplace.system.karma"}}</div>
+            <div><i class="fas fa-trash tw-text-sr5-red-dark"></i></div>
         </div>
 
         {{#each basket.shoppingCartItems}}
-        <div class="basket-grid item-row seven-columns" data-basket-item-uuid="{{this.basketItemUuid}}">
-            <a class="basket-item item-name" data-action="openDocumentLink" data-uuid="{{this.itemUuid}}">
-                <img class="mini-img" src="{{this.img}}" alt="{{this.name}}">
-                <span class="item-tag">{{this.name}}</span>
+        <div class="tw-grid tw-grid-cols-[3fr_1fr_1fr_1fr_1fr_1fr_0.5fr] tw-gap-[10px] tw-items-center tw-py-1 tw-border-b tw-border-[#444] last:tw-border-none" data-basket-item-uuid="{{this.basketItemUuid}}">
+            <a class="tw-flex tw-items-center tw-gap-[5px] tw-text-left" data-action="openDocumentLink" data-uuid="{{this.itemUuid}}">
+                <img class="tw-w-5 tw-border-none" src="{{this.img}}" alt="{{this.name}}">
+                <span class="tw-text-xs tw-bg-sr5-red-deep tw-text-white tw-px-2 tw-py-0.5 tw-rounded-sm">{{this.name}}</span>
             </a>
-            <div class="basket-item item-pack-quantity">
+
+            <div class="tw-text-center">
                 {{#if (gt this.itemQuantity 1)}}{{this.itemQuantity}}{{else}}&mdash;{{/if}}
             </div>
-            <div class="basket-item item-quantity">
-                <i class="fa-solid fa-circle-plus  market-plus" title="Increase Quantity" data-action="increaseQuantity"></i>
+
+            <div class="tw-flex tw-items-center tw-justify-center tw-gap-2">
+                <i class="fa-solid fa-circle-plus tw-text-green-600 tw-cursor-pointer" title="Increase Quantity" data-action="increaseQuantity"></i>
                 <span>{{this.buyQuantity}}</span>
                 {{#if (gt this.buyQuantity 1)}}
-                    <i class="fa-solid fa-circle-minus market-minus" title="Decrease Quantity" data-action="decreaseQuantity"></i>
+                    <i class="fa-solid fa-circle-minus tw-text-red-500 tw-cursor-pointer" title="Decrease Quantity" data-action="decreaseQuantity"></i>
                 {{/if}}
             </div>
-            <div class="basket-item item-rating">
+
+            <div class="tw-text-center">
                 {{#if this.rating}}
-                <select class="item-rating-select" data-action="updateRating" data-basket-item-uuid="{{this.basketItemUuid}}">
+                <select class="tw-bg-black/30 tw-text-sr5-red-bright tw-border tw-border-zinc-600 tw-rounded-sm tw-p-0.5" data-action="updateRating" data-basket-item-uuid="{{this.basketItemUuid}}">
                     {{#range 1 12}}
                     <option value="{{this}}" {{#ifeq this ../selectedRating}}selected{{/ifeq}}>{{this}}</option>
                     {{/range}}
@@ -37,65 +42,96 @@
                 &mdash;
                 {{/if}}
             </div>
-            <div class="basket-item item-cost">{{this.cost}} ¥</div>
-            <div class="basket-item item-karma">{{this.karma}}</div>
-            <div class="basket-item remove-item">
-                <button class="remove-from-basket-btn" title="Remove Item" data-action="removeFromCart"><i class="fas fa-trash"></i></button>
+
+            <div class="tw-text-center">{{this.cost}} ¥</div>
+            <div class="tw-text-center">{{this.karma}}</div>
+
+            <div class="tw-text-center">
+                <button class="tw-border-none tw-bg-none tw-cursor-pointer" title="Remove Item" data-action="removeFromCart">
+                    <i class="fas fa-trash tw-text-sr5-red-dark"></i>
+                </button>
             </div>
         </div>
         {{/each}}
     </div>
 
-    <div class="basket-summary">
-        <div id="total-cost"><strong>{{localize "SR5Marketplace.Marketplace.TotalCost"}}:</strong> {{basket.totalCost}} <i class="fa-duotone fa-solid fa-circle-yen darkRed"></i></div>
-        <div id="total-availability"><strong>{{localize "SR5Marketplace.Marketplace.TotalAvailability"}}:</strong> {{basket.totalAvailability}}</div>
-        {{#if basket.totalKarma}}<div id="total-karma"><strong>{{localize "SR5Marketplace.Marketplace.TotalKarma"}}:</strong> {{basket.totalKarma}} <i class="fa-duotone fa-solid fa-circle-star yellow"></i></div>{{/if}}
-        {{#if basket.totalEssenceCost}}<div id="total-essence"><strong>{{localize "SR5Marketplace.Marketplace.TotalEssence"}}:</strong> {{basket.totalEssenceCost}}</div>{{/if}}
+    <div class="tw-mt-4 tw-p-[10px] tw-bg-[#aaaaaa83] tw-rounded-md tw-font-bold tw-border-t tw-border-zinc-400">
+        <div id="total-cost">
+            <strong>{{localize "SR5Marketplace.Marketplace.TotalCost"}}:</strong> 
+            {{basket.totalCost}} <i class="fa-duotone fa-solid fa-circle-yen tw-text-red-800"></i>
+        </div>
+        <div id="total-availability">
+            <strong>{{localize "SR5Marketplace.Marketplace.TotalAvailability"}}:</strong> {{basket.totalAvailability}}
+        </div>
+        {{#if basket.totalKarma}}
+        <div id="total-karma">
+            <strong>{{localize "SR5Marketplace.Marketplace.TotalKarma"}}:</strong> 
+            {{basket.totalKarma}} <i class="fa-duotone fa-solid fa-circle-star tw-text-sr5-yellow"></i>
+        </div>
+        {{/if}}
+        {{#if basket.totalEssenceCost}}
+        <div id="total-essence">
+            <strong>{{localize "SR5Marketplace.Marketplace.TotalEssence"}}:</strong> {{basket.totalEssenceCost}}
+        </div>
+        {{/if}}
     </div>
 
-    <hr class="marketplace-settings-hr">
+    <hr class="tw-h-1.5 tw-border-2 tw-border-[#bfb4b4] tw-my-4 tw-rounded tw-bg-zinc-300">
 
-    <div class="actor-contact-grid">
+    <div class="tw-grid tw-grid-cols-1 tw-gap-4">
+        <div class="tw-font-bold tw-text-sr5-yellow">{{localize "SR5Marketplace.Marketplace.selectContact"}}</div>
+        
+        <div class="tw-grid tw-grid-cols-[repeat(5,5em)_auto] tw-gap-2">
+            {{#each contacts}}
+            <div class="tw-relative tw-p-2 tw-rounded-md tw-transition-all {{#if this.isSelected}}tw-border-2 tw-border-sr5-gold tw-shadow-[0_0_8px_rgba(231,201,62,0.5)]{{else}}tw-border tw-border-transparent{{/if}}">
+                <input type="checkbox" id="contact-toggle-{{this._id}}" class="tw-hidden peer">
 
-        <div class="grid-header">{{localize "SR5Marketplace.Marketplace.selectContact"}}</div>
-        {{#each contacts}}
-            <div class="contact-card {{#if this.isSelected}}selected{{/if}}">
-
-                <input type="checkbox" id="contact-toggle-{{this._id}}" class="contact-toggle-checkbox">
-
-                <div class="contact-card-visible">
-                    <img 
-                        src="{{this.img}}" 
-                        alt="{{this.name}}" 
-                        class="contact-image" 
-                        data-action="selectContact" 
-                        data-contact-uuid="{{this.uuid}}"
-                        title="Click to Select/Deselect Contact"
-                    />
-                    <span class="contact-name">{{this.name}}</span>
+                <div class="tw-flex tw-flex-col tw-items-center tw-gap-1">
+                    <img src="{{this.img}}" 
+                         class="tw-w-10 tw-h-10 tw-object-cover tw-object-top tw-rounded-sm tw-cursor-pointer hover:tw-scale-110 tw-transition-transform" 
+                         data-action="selectContact" 
+                         data-contact-uuid="{{this.uuid}}"
+                         title="Click to Select/Deselect Contact"/>
                     
-                    <label for="contact-toggle-{{this._id}}" class="contact-expand-toggle" title="Toggle Details">
-                        <i class="fas fa-chevron-down"></i>
+                    <span class="tw-text-[10px] tw-whitespace-nowrap tw-overflow-hidden tw-text-ellipsis tw-max-w-full">
+                        {{this.name}}
+                    </span>
+                    
+                    <label for="contact-toggle-{{this._id}}" class="tw-cursor-pointer tw-text-zinc-500 hover:tw-text-sr5-gold">
+                        <i class="fas fa-chevron-down tw-text-[10px]"></i>
                     </label>
                 </div>
 
-                <div class="contact-details">
-                    <p><strong>Loyalty:</strong> {{this.system.loyalty}}</p>
-                    <p><strong>Connection:</strong> {{this.system.connection}}</p>
-                    <div>{{{this.system.description.value}}}</div>
+                <div class="tw-hidden peer-checked:tw-block tw-absolute tw-top-full tw-left-0 tw-z-50 tw-min-w-[150px] tw-bg-zinc-900 tw-border tw-border-[#444] tw-p-2 tw-mt-1 tw-rounded tw-shadow-xl">
+                    <p class="tw-text-xs"><strong>Loyalty:</strong> {{this.system.loyalty}}</p>
+                    <p class="tw-text-xs"><strong>Connection:</strong> {{this.system.connection}}</p>
+                    <div class="tw-text-[10px] tw-mt-1 tw-border-t tw-border-zinc-700 tw-pt-1">
+                        {{{this.system.description.value}}}
+                    </div>
                 </div>
+            </div>
+            {{else}}
+            <div class="tw-italic tw-text-zinc-500 tw-col-span-full">
+                {{purchasingActor.name}} has no contacts.
+            </div>
+            {{/each}}
+        </div>
+    </div>
 
-        {{else}}
-            <div class="hint-text grid-span-all">{{purchasingActor.name}} has no contacts.</div>
-        {{/each}}
-    </div>
-    </div>
-    <hr class="marketplace-settings-hr">
-    {{!-- Availability Test Area --}}
+    <hr class="tw-h-1.5 tw-border-2 tw-border-[#bfb4b4] tw-my-4 tw-rounded tw-bg-zinc-300">
+
     {{> "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html" . }}
 
-    <div class="basket-actions">
-        <button id="send-request-button" class="send-request-button" data-action="sendRequest">{{localize 'SR5Marketplace.Marketplace.SendRequest'}}</button>
-        <button id="cancel-request-button" class="send-request-button cancel" data-action="cancelRequest">{{localize 'SR5Marketplace.Marketplace.CancelRequest'}}</button>
+    <div class="tw-flex tw-items-center tw-mt-4 tw-gap-4">
+        <button id="send-request-button" 
+                class="tw-flex-1 tw-bg-[url('/modules/sr5-marketplace/assets/icons/button_red_60_34.svg')] tw-bg-[length:103%_110%] tw-bg-no-repeat tw-bg-transparent tw-border-none tw-text-sr5-yellow tw-leading-[38px] tw-font-bold tw-drop-shadow-[-1px_2px_2px_#800422] hover:tw-brightness-110" 
+                data-action="sendRequest">
+            {{localize 'SR5Marketplace.Marketplace.SendRequest'}}
+        </button>
+        <button id="cancel-request-button" 
+                class="tw-flex-1 tw-bg-[url('/modules/sr5-marketplace/assets/icons/button_red_60_34.svg')] tw-bg-[length:103%_110%] tw-bg-no-repeat tw-bg-transparent tw-border-none tw-text-zinc-400 tw-grayscale tw-leading-[38px] tw-font-bold hover:tw-grayscale-0 hover:tw-text-white" 
+                data-action="cancelRequest">
+            {{localize 'SR5Marketplace.Marketplace.CancelRequest'}}
+        </button>
     </div>
 </div>

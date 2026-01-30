@@ -1,0 +1,18 @@
+{
+  "name": "sr5-marketplace",
+  "version": "1.0.0",
+  "description": "<!--- Downloads @ Latest Badge -->\r <!--- replace <user>/<repo> with your shadows-eye/sr5-marketplace -->\r <!--- ![Latest Release Download Count](https://img.shields.io/github/downloads/shadows-eye/sr5-marketplace/latest/module.zip) -->",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tailwindcss": "^4.1.18"
+  }
+}

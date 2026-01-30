@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Kept from variables.css */
+    --color-gold-base: #b9a913;
+    --bg-main-dark: url(/modules/sr5-marketplace/assets/dark-pageV1.webp);
+  /* Keep the builder and actor styles as they were in bundle.txt */
+  @import "../../styles/itemBuilder.css"; 
+  @import "../../styles/actor.css"; 
+  @import "../../styles/itemDetails.css";
+  }
+
+  .sr5-marketplace {
+    /* Fallback for the custom background variable */
+    --bg-main: var(--bg-main-dark);
+  }
+}
+
+@layer utilities {
+  .tw-bg-main {
+    background-image: var(--bg-main);
+    background-repeat: repeat;
+  }
+  .tw-border-sr5-gold {
+    border-color: var(--color-gold-base);
+  }
+}
+
+/* ---------------------------------------------------------
+   NEW TAILWIND COMPONENTS
+   Only for the marketplace templates we refactored.
+--------------------------------------------------------- */
+@layer components {
+  /* Add only the complex reusable bits for the Marketplace here */
+  .marketplace-settings-hr {
+    height: 6px;
+    border: 2px solid var(--color-grey-hr);
+    margin: 1em 0;
+    border-radius: 4px; 
+    background-image: repeating-linear-gradient(180deg, var(--color-red-base), transparent 100px);
+  }
+}

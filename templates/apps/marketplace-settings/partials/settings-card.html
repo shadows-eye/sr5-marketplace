@@ -1,17 +1,36 @@
-<div class="item-type-card">
-    <span class="type-label">{{this.label}}</span>
-    <div class="radio-button-group">
-        <label title="Unique (Allow Only One)">
-            <input type="radio" name="{{this.key}}" value="unique" {{#if (eq this.behavior 'unique')}}checked{{/if}}>
-            <span>U</span>
+<div class="sr5-marketplace tw-flex tw-items-center tw-justify-between tw-p-2 tw-bg-black/30 tw-border tw-border-zinc-800 tw-rounded hover:tw-border-sr5-gold/50 tw-transition-colors">
+    <span class="tw-text-xs tw-font-bold tw-text-zinc-300 tw-truncate tw-pr-2">
+        {{this.label}}
+    </span>
+
+    <div class="tw-flex tw-bg-zinc-900 tw-rounded tw-p-0.5 tw-border tw-border-zinc-700">
+        
+        <label class="tw-cursor-pointer tw-group/radio" title="Unique (Allow Only One)">
+            <input type="radio" name="{{this.key}}" value="unique" class="tw-hidden peer" {{#if (eq this.behavior 'unique')}}checked{{/if}}>
+            <div class="tw-px-2 tw-py-0.5 tw-text-[9px] tw-font-bold tw-rounded-sm tw-transition-all
+                        tw-text-zinc-500 peer-checked:tw-bg-sr5-red-deep peer-checked:tw-text-white 
+                        hover:tw-text-zinc-300 peer-checked:hover:tw-bg-sr5-red-base">
+                U
+            </div>
         </label>
-        <label title="Stack Quantity">
-            <input type="radio" name="{{this.key}}" value="stack" {{#if (eq this.behavior 'stack')}}checked{{/if}}>
-            <span>St</span>
+
+        <label class="tw-cursor-pointer tw-group/radio" title="Stack Quantity">
+            <input type="radio" name="{{this.key}}" value="stack" class="tw-hidden peer" {{#if (eq this.behavior 'stack')}}checked{{/if}}>
+            <div class="tw-px-2 tw-py-0.5 tw-text-[9px] tw-font-bold tw-rounded-sm tw-transition-all
+                        tw-text-zinc-500 peer-checked:tw-bg-zinc-700 peer-checked:tw-text-sr5-yellow 
+                        hover:tw-text-zinc-300 peer-checked:hover:tw-text-white">
+                St
+            </div>
         </label>
-        <label title="Add as Single Item">
-            <input type="radio" name="{{this.key}}" value="single" {{#if (eq this.behavior 'single')}}checked{{/if}}>
-            <span>S</span>
+
+        <label class="tw-cursor-pointer tw-group/radio" title="Add as Single Item">
+            <input type="radio" name="{{this.key}}" value="single" class="tw-hidden peer" {{#if (eq this.behavior 'single')}}checked{{/if}}>
+            <div class="tw-px-2 tw-py-0.5 tw-text-[9px] tw-font-bold tw-rounded-sm tw-transition-all
+                        tw-text-zinc-500 peer-checked:tw-bg-zinc-600 peer-checked:tw-text-white 
+                        hover:tw-text-zinc-300 peer-checked:hover:tw-bg-zinc-500">
+                S
+            </div>
         </label>
+
     </div>
 </div>

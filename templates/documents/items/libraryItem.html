@@ -1,61 +1,65 @@
 {{#each items}}
-<div class="marketplace-item grid-item" data-item-id="{{this.uuid}}">
-    <div class="grid-show">
-        <div class="market-item-image">
-            <a data-action="openDocumentLink" data-uuid="{{this.uuid}}">
-                <img src="{{this.img}}" alt="{{this.name}}">
+<div class="sr5-marketplace tw-group tw-bg-[#d3af0cd6] tw-p-[0.7em] tw-border-[0.2em] tw-border-red-900/15 tw-rounded-[0.7em] tw-flex tw-flex-col tw-min-w-[16em] tw-transition-all hover:tw-bg-sr5-red-deep hover:tw-text-white" data-item-id="{{this.uuid}}">
+    
+    <div class="tw-grid tw-grid-cols-[62px_auto_1fr] tw-gap-[10px] tw-items-center tw-mb-[10px]">
+        
+        <div class="tw-w-[62px] tw-h-[62px] tw-bg-zinc-500/30 tw-rounded-[10px] tw-border-[3px] tw-border-outset tw-overflow-hidden">
+            <a data-action="openDocumentLink" data-uuid="{{this.uuid}}" class="tw-block tw-h-full">
+                <img src="{{this.img}}" alt="{{this.name}}" class="tw-w-full tw-h-full tw-object-contain tw-border-none">
             </a>
         </div>
-        <div class="item-action">
-            <button class="add-to-cart" data-item-id="{{this.uuid}}" data-action="addToCart">
+
+        <div class="tw-flex tw-items-center">
+            <button class="tw-bg-[#4CAF50] hover:tw-bg-green-500 tw-text-white tw-border-none tw-w-8 tw-h-8 tw-rounded-md tw-cursor-pointer tw-flex tw-items-center tw-justify-center tw-shadow-sm" 
+                    data-item-id="{{this.uuid}}" 
+                    data-action="addToCart">
                 <i class="fa-solid fa-cart-plus"></i>
             </button>
         </div>
 
-        {{#if (or (eq this.type "quality") (eq this.type "adept_power") (eq this.type "spell") (eq this.type "complex_form"))}}
-            <div class="item-cost">
-                {{#if this.system.karma}}{{this.system.karma}}{{else}}{{this.flags.sr5-marketplace.Karma}}{{/if}}
-                <i class="fa-duotone fa-solid fa-circle-star sr5-marketplace-karma"></i>
-            </div>
-        {{else}}
-            <div class="item-cost">
-                {{this.system.technology.cost}}
-                <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen"></i>
-            </div>
-        {{/if}}
+        <div class="tw-text-right tw-font-bold tw-text-sm">
+            {{#if (or (eq this.type "quality") (eq this.type "adept_power") (eq this.type "spell") (eq this.type "complex_form"))}}
+                <span>{{#if this.system.karma}}{{this.system.karma}}{{else}}{{this.flags.sr5-marketplace.Karma}}{{/if}}</span>
+                <i class="fa-duotone fa-solid fa-circle-star tw-text-sr5-yellow tw-ml-1"></i>
+            {{else}}
+                <span>{{this.system.technology.cost}}</span>
+                <i class="fa-duotone fa-solid fa-circle-yen tw-text-red-700 tw-ml-1 group-hover:tw-text-sr5-yellow"></i>
+            {{/if}}
+        </div>
     </div>
 
-    <div class="item-details">
-        <h4 class="marketplace_h4">{{this.name}}</h4>
+    <div class="tw-flex tw-flex-col tw-text-left tw-gap-0.5">
+        <h4 class="tw-text-sm tw-font-bold tw-text-red-900 tw-mb-1 tw-leading-tight group-hover:tw-text-sr5-yellow">
+            {{this.name}}
+        </h4>
         
-        {{#if (eq this.type "modification")}}
-            <div class="item-all">{{localize "SR5Marketplace.Marketplace.system.avail.avail"}}: {{this.system.technology.availability}}</div>
-            <div class="item-rating">{{localize "SR5Marketplace.Marketplace.system.technology.rating"}}: {{this.system.technology.rating}}</div>
-            {{#if (eq this.system.type "weapon")}}
-                <div class="item-mod-detail">{{localize "SR5Marketplace.Marketplace.system.mount-point"}}: {{this.system.mount_point}}</div>
-            {{/if}}
-            {{#if (or (eq this.system.type "vehicle") (eq this.system.type "drone"))}}
-                <div class="item-mod-detail">{{localize "SR5Marketplace.Marketplace.system.slots"}}: {{this.system.slots}}</div>
-            {{/if}}
+        <div class="tw-text-[11px] tw-opacity-90">
+            {{#if (eq this.type "modification")}}
+                <div><strong>{{localize "SR5Marketplace.Marketplace.system.avail.avail"}}:</strong> {{this.system.technology.availability}}</div>
+                <div><strong>{{localize "SR5Marketplace.Marketplace.system.technology.rating"}}:</strong> {{this.system.technology.rating}}</div>
+                {{#if (eq this.system.type "weapon")}}
+                    <div><strong>{{localize "SR5Marketplace.Marketplace.system.mount-point"}}:</strong> {{this.system.mount_point}}</div>
+                {{/if}}
+                {{#if (or (eq this.system.type "vehicle") (eq this.system.type "drone"))}}
+                    <div><strong>{{localize "SR5Marketplace.Marketplace.system.slots"}}:</strong> {{this.system.slots}}</div>
+                {{/if}}
 
-        {{else}}
-            {{!-- This block is now restored to your preferred structure --}}
-            {{#if (eq this.type "spell")}}
-                <div class="item-drain">{{localize "SR5Marketplace.Marketplace.system.spell.drain"}}: {{this.system.drain}}</div>
-            {{else if (eq this.type "quality")}}
-            {{else if (eq this.type "adept_power")}}
-            {{else if (eq this.type "complex_form")}}
-            {{else if (eq this.type "metamagic")}}
-            {{else if (eq this.type "echo")}}
             {{else}}
-                <div class="item-all">{{localize "SR5Marketplace.Marketplace.system.avail.avail"}}: {{this.system.technology.availability}}</div>
-                <div class="item-rating">{{localize "SR5Marketplace.Marketplace.system.technology.rating"}}: {{this.system.technology.rating}}</div>
+                {{#if (eq this.type "spell")}}
+                    <div><strong>{{localize "SR5Marketplace.Marketplace.system.spell.drain"}}:</strong> {{this.system.drain}}</div>
+                {{else if (or (eq this.type "quality") (eq this.type "adept_power") (eq this.type "complex_form") (eq this.type "metamagic") (eq this.type "echo"))}}
+                    {{else}}
+                    <div><strong>{{localize "SR5Marketplace.Marketplace.system.avail.avail"}}:</strong> {{this.system.technology.availability}}</div>
+                    <div><strong>{{localize "SR5Marketplace.Marketplace.system.technology.rating"}}:</strong> {{this.system.technology.rating}}</div>
+                {{/if}}
             {{/if}}
-        {{/if}}
 
-        {{#if (or (eq this.type "bioware") (eq this.type "cyberware"))}}
-            <div class="item-essence">{{localize "SR5Marketplace.Marketplace.system.essence"}}: {{this.system.essence}}</div>
-        {{/if}}
+            {{#if (or (eq this.type "bioware") (eq this.type "cyberware"))}}
+                <div class="tw-mt-1 tw-text-blue-900 group-hover:tw-text-blue-200">
+                    <strong>{{localize "SR5Marketplace.Marketplace.system.essence"}}:</strong> {{this.system.essence}}
+                </div>
+            {{/if}}
+        </div>
     </div>
 </div>
 {{/each}}

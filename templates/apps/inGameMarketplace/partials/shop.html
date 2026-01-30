@@ -1,20 +1,26 @@
-<div class="shop-container">
-    <div class="marketplace-filter" id="marketplaceActorDropzone">
+<div class="sr5-marketplace tw-flex tw-flex-col tw-h-full tw-overflow-hidden">
+    <div class="tw-shrink-0 tw-p-[10px] tw-flex tw-items-center tw-gap-x-[10px] tw-flex-wrap tw-bg-black/10" id="marketplaceActorDropzone">
+        
         {{#if shopActorUuid}}
-            <div class="marketplace-source-toggle form-group toggle-switch">
-                <label for="marketplace-source-toggle">{{localize "SR5Marketplace.Marketplace.Source.Global"}}</label>
+            <div class="tw-flex tw-items-center tw-gap-2">
+                <label class="tw-font-bold tw-shrink-0" for="marketplace-source-toggle">{{localize "SR5Marketplace.Marketplace.Source.Global"}}</label>
                 
-                <input type="checkbox" id="marketplace-source-toggle" class="sr5-marketplace input-box" {{checked isShopView}}>
+                <input type="checkbox" id="marketplace-source-toggle" 
+                       class="tw-w-4 tw-h-4 tw-accent-sr5-red-dark" {{checked isShopView}}>
                 
-                <hint class="source-filter-hint">{{shopName}}</hint>
+                <hint class="tw-invisible tw-opacity-0 tw-absolute tw-z-[200] tw-bg-[#2b2b2b85] tw-color-[#e7c93e] tw-p-2 tw-rounded-md tw-text-[0.9em] tw-shadow-[0_0_7px_#fbde6e] group-hover:tw-visible group-hover:tw-opacity-100 tw-transition-all">
+                    {{shopName}}
+                </hint>
             </div>
         {{/if}}
+
         {{#if selectedKey}}
-            <div>{{localize "SR5Marketplace.Marketplace.SelectItemType"}}:</div>
-            <select id="item-type-selector" name="category" class="item-type-selector">
+            <div class="tw-font-bold tw-shrink-0">{{localize "SR5Marketplace.SelectItemType"}}:</div>
+            <select id="item-type-selector" name="category" 
+                    class="tw-w-auto tw-max-h-[1.8rem] tw-px-1 tw-border tw-border-[#d1920b] tw-bg-[#d3af0cd6] tw-text-[#770808] tw-rounded-sm">
                 {{#each itemsByType as |category key|}}
                   {{#if category.items.length}}
-                    <option value="{{key}}" {{#if (eq key ../selectedKey)}}selected{{/if}}>
+                    <option value="{{key}}" {{#if (eq key ../selectedKey)}}selected{{/if}} class="tw-bg-[#aaaaaa83] tw-text-red-950">
                       {{localize category.label}}
                     </option>
                   {{/if}}
@@ -22,37 +28,45 @@
             </select>
         {{/if}}
 
-        <div>{{localize "SR5Marketplace.Marketplace.Search"}}:</div>
-        <input type="text" id="search-box" placeholder='{{localize "SR5Marketplace.Marketplace.Search items..."}}' class="marketplace-search">
-        <div id="filter-tags-container"></div>
+        <div class="tw-font-bold tw-shrink-0">{{localize "SR5Marketplace.Marketplace.Search"}}:</div>
+        <input type="text" id="search-box" 
+               placeholder='{{localize "SR5Marketplace.Marketplace.Search items..."}}' 
+               class="tw-w-[200px] tw-grow tw-max-w-[300px] tw-max-h-[1.9rem] tw-bg-[#2b0000] tw-border tw-border-[#d1920b] tw-text-white tw-px-2 tw-rounded-sm">
         
-        <div class="sr5-marketplace SR5ShopActor-box" id="shopActorDropzone">
-            {{#if shopActorBox.shopId}}
-                <a data-action="openDocumentLink" data-uuid="{{shopActorBox.shopUuid}}">
-                    <img src="{{shopActorBox.shopImg}}" alt="{{shopActorBox.shopName}}" class="actor-icon">
-                </a>
-                {{#if isGM}}<span class="remove-link" title="Remove Shop Actor" data-action="removeShopActor" data-shop-id="{{shopActorBox.shopId}}">&times;</span>{{/if}}
-            {{/if}}
-        </div>
-        <div class="sr5-marketplace SR5ConnectionLink-box" id="connectionItemDropzone">
-            {{#if connectionBox}}
-                <a data-action="openDocumentLink" data-uuid="{{connectionBox.connectionUuid}}">
-                    <img src="{{connectionBox.connectionImg}}" alt="{{connectionBox.connectionName}}" class="item-icon">
-                </a>
-                <span class="remove-link" title="Remove Connection Item" data-action="removeConnection" data-item-id="{{connectionBox.connectionId}}">&times;</span>
-            {{/if}}
-        </div>
-        {{#if selectedActorBox.actorId}}
-            <div class="sr5-marketplace SR5ActorSelected-box" id="{{selectedActorBox.actorId}}">
-                <a data-action="openDocumentLink" data-uuid="{{selectedActorBox.actorUuid}}">
-                    <img src="{{selectedActorBox.actorImg}}" alt="{{selectedActorBox.actorName}}" class="actor-icon">
-                </a>
-                {{#if isGM}}<span class="remove-link" title="Remove Selected Actor" data-action="removeSelectedActor" data-actor-id="{{selectedActorBox.actorId}}">&times;</span>{{/if}}
+        <div id="filter-tags-container" class="tw-flex tw-gap-[0.2em] tw-flex-wrap tw-w-full"></div>
+        
+        <div class="tw-flex tw-gap-2 tw-ml-auto">
+            <div class="tw-relative tw-w-10 tw-h-10 tw-bg-black/20 tw-border tw-border-dashed tw-border-[#b9a913] tw-rounded-md tw-flex tw-items-center tw-justify-center" id="shopActorDropzone">
+                {{#if shopActorBox.shopId}}
+                    <a data-action="openDocumentLink" data-uuid="{{shopActorBox.shopUuid}}">
+                        <img src="{{shopActorBox.shopImg}}" alt="{{shopActorBox.shopName}}" class="tw-max-w-full tw-max-h-full tw-object-contain">
+                    </a>
+                    {{#if isGM}}<span class="tw-absolute tw-top-[-5px] tw-right-[-5px] tw-text-red-600 tw-cursor-pointer tw-font-bold tw-bg-white tw-rounded-full tw-leading-none tw-p-0.5" data-action="removeShopActor" data-shop-id="{{shopActorBox.shopId}}">&times;</span>{{/if}}
+                {{/if}}
             </div>
-        {{/if}}
+
+            <div class="tw-relative tw-w-10 tw-h-10 tw-bg-black/20 tw-border tw-border-dashed tw-border-[#b9a913] tw-rounded-md tw-flex tw-items-center tw-justify-center" id="connectionItemDropzone">
+                {{#if connectionBox}}
+                    <a data-action="openDocumentLink" data-uuid="{{connectionBox.connectionUuid}}">
+                        <img src="{{connectionBox.connectionImg}}" alt="{{connectionBox.connectionName}}" class="tw-max-w-full tw-max-h-full tw-object-contain">
+                    </a>
+                    <span class="tw-absolute tw-top-[-5px] tw-right-[-5px] tw-text-red-600 tw-cursor-pointer tw-font-bold tw-bg-white tw-rounded-full tw-leading-none tw-p-0.5" data-action="removeConnection" data-item-id="{{connectionBox.connectionId}}">&times;</span>
+                {{/if}}
+            </div>
+
+            {{#if selectedActorBox.actorId}}
+                <div class="tw-relative tw-w-10 tw-h-10 tw-bg-black/20 tw-border tw-border-dashed tw-border-[#b9a913] tw-rounded-md tw-flex tw-items-center tw-justify-center" id="{{selectedActorBox.actorId}}">
+                    <a data-action="openDocumentLink" data-uuid="{{selectedActorBox.actorUuid}}">
+                        <img src="{{selectedActorBox.actorImg}}" alt="{{selectedActorBox.actorName}}" class="tw-max-w-full tw-max-h-full tw-object-contain">
+                    </a>
+                    {{#if isGM}}<span class="tw-absolute tw-top-[-5px] tw-right-[-5px] tw-text-red-600 tw-cursor-pointer tw-font-bold tw-bg-white tw-rounded-full tw-leading-none tw-p-0.5" data-action="removeSelectedActor" data-actor-id="{{selectedActorBox.actorId}}">&times;</span>{{/if}}
+                </div>
+            {{/if}}
+        </div>
     </div>
     
-    <div id="marketplace-items" class="marketplace-items-grid">
+    <div id="marketplace-items" 
+         class="tw-grow tw-grid tw-grid-cols-4 tw-gap-[20px] tw-overflow-y-auto tw-p-4 [container-type:inline-size]">
         {{> 'modules/sr5-marketplace/templates/documents/items/libraryItem.html' items=selectedItems purchasingActor=purchasingActor }}
     </div>
 </div>
