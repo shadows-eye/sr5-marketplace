@@ -1,0 +1,18 @@
+{
+  "name": "sr5-marketplace",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.2.2",
+    "autoprefixer": "^10.4.27",
+    "ignore": "^7.0.5",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.2",
+    "vite": "^8.0.3",
+    "vite-plugin-static-copy": "^4.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "gen-ctx": "node helpers/generate-context.cjs"
+  }
+}

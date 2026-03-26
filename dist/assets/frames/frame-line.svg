@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="b" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2.89 22.72">
+  <defs>
+    <style>
+      .f {
+        fill: #434345;
+      }
+    </style>
+  </defs>
+  <g id="c" data-name="MainBuilder">
+    <g id="d" data-name="BuilderGroup">
+      <g id="e" data-name="Builder Frame">
+        <rect class="f" width="2.89" height="22.72"/>
+      </g>
+    </g>
+  </g>
+</svg>

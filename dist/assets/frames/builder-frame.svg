@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="b" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1086.7 701.15">
+  <defs>
+    <style>
+      .s {
+        fill: #cecece;
+      }
+
+      .t {
+        fill: #434345;
+      }
+
+      .u {
+        fill: #5d142b;
+      }
+    </style>
+  </defs>
+  <g id="c" data-name="MainBuilder">
+    <g id="d" data-name="BuilderGroup">
+      <g id="e" data-name="Builder Frame">
+        <path id="f" data-name="Frame_grey" class="t" d="M1084.39,0H0v701.15h1086.7V0h-2.31ZM2.89,698.26V2.89h1080.93v695.37H2.89Z"/>
+        <g id="g" data-name="Redframe_lb">
+          <polygon id="h" data-name="Color" class="u" points="7.97 692.38 7.97 434.24 6.49 434.24 6.49 693.87 6.8 693.87 7.97 693.87 266.42 693.87 266.42 692.38 7.97 692.38"/>
+          <polygon id="i" data-name="White" class="s" points="9.42 690.8 9.42 615.08 8.94 615.08 8.94 690.8 8.94 691.27 9.42 691.27 85.14 691.27 85.14 690.8 9.42 690.8"/>
+        </g>
+        <g id="j" data-name="Redframe_lt">
+          <polygon id="k" data-name="Color" class="u" points="7.97 7.71 266.12 7.71 266.12 6.23 6.49 6.23 6.49 6.54 6.49 7.71 6.49 266.16 7.97 266.16 7.97 7.71"/>
+          <polygon id="l" data-name="White" class="s" points="9.56 9.16 85.28 9.16 85.28 8.68 9.56 8.68 9.08 8.68 9.08 9.16 9.08 84.88 9.56 84.88 9.56 9.16"/>
+        </g>
+        <g id="m" data-name="Redframe_rt">
+          <polygon id="n" data-name="Color" class="u" points="1077.94 7.68 1077.94 260.34 1079.38 260.34 1079.38 6.23 1079.08 6.23 1077.94 6.23 825.97 6.23 825.97 7.68 1077.94 7.68"/>
+          <polygon id="o" data-name="White" class="s" points="1076.53 9.23 1076.53 83.34 1076.99 83.34 1076.99 9.23 1076.99 8.77 1076.53 8.77 1002.71 8.77 1002.71 9.23 1076.53 9.23"/>
+        </g>
+        <g id="p" data-name="RedFrame_rb">
+          <polygon id="q" data-name="Color" class="u" points="1077.9 692.38 819.75 692.38 819.75 693.87 1079.38 693.87 1079.38 693.56 1079.38 692.38 1079.38 433.93 1077.9 433.93 1077.9 692.38"/>
+          <polygon id="r" data-name="White" class="s" points="1076.32 690.94 1000.59 690.94 1000.59 691.41 1076.32 691.41 1076.79 691.41 1076.79 690.94 1076.79 615.22 1076.32 615.22 1076.32 690.94"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

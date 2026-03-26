@@ -1,0 +1,90 @@
+<section class="tab actorShop {{tab.cssClass}}" data-group="primary" data-tab="actorShop">
+    <div class="sr5-grid-c2"> 
+        <!-- Column 1: Shop Details & Inventory -->
+        <div class="shop-column-1">
+            <fieldset class="sr5-marketplace-shop-fields">
+                <legend class="legend">{{localize "Shop"}}</legend>
+
+                <div class="form-group owner {{#if isEditMode}}drop-target{{/if}}" 
+                    {{#if isEditMode}}data-drop-zone="owner" data-drop-type="Actor" data-target-field="system.shop.owner"{{/if}}>
+                    <label class="subHeading">{{localize "SR5Marketplace.Marketplace.Shop.OwnerUuid"}}</label>
+                    <owner class="form-fields">
+                        {{#if owner}}
+                            <div class="item-container">
+                                <a class="document-link" data-uuid="{{owner.uuid}}" data-action="openDocumentLink">
+                                    <img src="{{owner.img}}" width="36" height="36"/>
+                                    <span>{{owner.name}}</span>
+                                </a>
+                                {{#if @root.isEditMode}}
+                                    <a class="remove-link" data-action="removeOwner" title="Remove Owner"><i class="fa-solid fa-circle-xmark"></i></a>
+                                {{/if}}
+                            </div>
+                        {{else if isEditMode}}
+                            <span class="drop-hint">Drag an Actor here</span>
+                        {{else}}
+                            <span class="read-only">None</span>
+                        {{/if}}
+                    </owner>
+                </div>
+                
+                <div class="form-group connection {{#if isEditMode}}drop-target{{/if}}"
+                    {{#if isEditMode}}data-drop-zone="connection" data-drop-type="Item" data-target-field="system.shop.connection"{{/if}}>
+                    <label class="subHeading">{{localize "SR5Marketplace.Marketplace.Shop.ConnectionUuid"}}</label>
+                    <connection class="form-fields">
+                        {{#if connection}}
+                            <div class="item-container">
+                                <a class="document-link" data-uuid="{{connection.uuid}}" data-action="openDocumentLink">
+                                    <img src="{{connection.img}}" width="36" height="36"/>
+                                    <span>{{connection.name}}</span>
+                                </a>
+                                {{#if @root.isEditMode}}
+                                    <a class="remove-link" data-action="removeConnection" title="Remove Connection"><i class="fa-solid fa-circle-xmark"></i></a>
+                                {{/if}}
+                            </div>
+                        {{else if isEditMode}}
+                            <span class="drop-hint">Drag an Item here</span>
+                        {{else}}
+                            <span class="read-only">None</span>
+                        {{/if}}
+                    </connection>
+                </div>
+                
+                <div class="form-group employees {{#if isEditMode}}drop-target{{/if}}"
+                    {{#if isEditMode}}data-drop-zone="employees" data-drop-type="Actor" data-target-field="system.shop.employees"{{/if}}>
+                    <label class="subHeading">{{localize "SR5Marketplace.Marketplace.Shop.Employees"}}</label>
+                    <employees class="form-fields">
+                        {{#each employees as |employee|}}
+                            <div class="item-container" data-uuid="{{employee.uuid}}">
+                                <a class="document-link" data-uuid="{{employee.uuid}}" data-action="openDocumentLink">
+                                    <img src="{{employee.img}}" width="24" height="24"/>
+                                    <span>{{employee.name}}</span>
+                                </a>
+                                {{#if @root.isEditMode}}
+                                    <a class="remove-link" data-action="removeEmployee" data-uuid="{{employee.uuid}}" title="Remove Employee"><i class="fa-solid fa-circle-xmark"></i></a>
+                                {{/if}}
+                            </div>
+                        {{/each}}
+                        {{#if isEditMode}}
+                            {{#unless employees.length}}
+                                <div class="drop-hint">Drag Actors here</div>
+                            {{/unless}}
+                        {{/if}}
+                    </employees>
+                </div>
+
+            </fieldset>
+            
+            <fieldset class="sr5-marketplace-inventory-fields form-group inventory">
+                <legend class="subHeading">{{localize "SR5Marketplace.Marketplace.Shop.Inventory"}}</legend>
+                {{> 'modules/sr5-marketplace/templates/documents/actor/partials/shop-inventory.html' }}
+            </fieldset>
+        </div>
+
+        <!-- Column 2: Skills -->
+        <div class="shop-column-2">
+            <fieldset class="sr5-marketplace-skills-fields">
+                {{> 'modules/sr5-marketplace/templates/documents/actor/partials/shop-skills.html' }}
+            </fieldset>
+        </div>
+    </div>
+</section>

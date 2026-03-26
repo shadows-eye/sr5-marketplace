@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1000 1000">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#linear-gradient-2);
+      }
+
+      .cls-2 {
+        fill: url(#linear-gradient-4);
+      }
+
+      .cls-3 {
+        display: none;
+        fill: url(#radial-gradient-2);
+        opacity: .3;
+      }
+
+      .cls-4 {
+        fill: url(#radial-gradient);
+      }
+
+      .cls-5 {
+        fill: url(#radial-gradient-3);
+      }
+
+      .cls-6 {
+        fill: url(#linear-gradient-3);
+      }
+
+      .cls-7 {
+        fill: url(#New_Gradient_Swatch_2-2);
+      }
+
+      .cls-8 {
+        fill: url(#New_Gradient_Swatch_2);
+      }
+
+      .cls-9 {
+        fill: url(#linear-gradient);
+      }
+
+      .cls-10 {
+        fill: url(#New_Gradient_Swatch_1);
+      }
+
+      .cls-11 {
+        fill: url(#New_Gradient_Swatch_2-3);
+      }
+    </style>
+    <radialGradient id="radial-gradient" cx="496.9" cy="73.5" fx="496.9" fy="73.5" r="342" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fdee4c"/>
+      <stop offset=".2" stop-color="#fcee1f"/>
+      <stop offset=".6" stop-color="#e9b520"/>
+      <stop offset=".7" stop-color="#e8b121"/>
+      <stop offset="1" stop-color="#f2e454"/>
+    </radialGradient>
+    <radialGradient id="New_Gradient_Swatch_1" data-name="New Gradient Swatch 1" cx="496.7" cy="508.3" fx="496.7" fy="508.3" r="480.4" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fcee1f"/>
+      <stop offset=".9" stop-color="#e9b520"/>
+      <stop offset="1" stop-color="#e8b121"/>
+    </radialGradient>
+    <radialGradient id="radial-gradient-2" cx="501.5" cy="351.5" fx="501.5" fy="351.5" r="495.3" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8350a0"/>
+      <stop offset=".8" stop-color="#4a2f7b"/>
+      <stop offset="1" stop-color="#3a2670"/>
+    </radialGradient>
+    <radialGradient id="New_Gradient_Swatch_2" data-name="New Gradient Swatch 2" cx="351.1" cy="919.6" fx="351.1" fy="919.6" r="238.3" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fcee2e"/>
+      <stop offset=".1" stop-color="#ecc92b"/>
+      <stop offset=".3" stop-color="#d59528"/>
+      <stop offset=".5" stop-color="#c26a25"/>
+      <stop offset=".6" stop-color="#b34822"/>
+      <stop offset=".7" stop-color="#a83021"/>
+      <stop offset=".9" stop-color="#a22220"/>
+      <stop offset="1" stop-color="#a01d20"/>
+    </radialGradient>
+    <radialGradient id="radial-gradient-3" cx="845.5" cy="961.7" fx="845.5" fy="961.7" r="82.6" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fcee2e"/>
+      <stop offset="0" stop-color="#f6e12d"/>
+      <stop offset=".2" stop-color="#e2b42a"/>
+      <stop offset=".2" stop-color="#d08b27"/>
+      <stop offset=".3" stop-color="#c16925"/>
+      <stop offset=".4" stop-color="#b54d23"/>
+      <stop offset=".5" stop-color="#ab3721"/>
+      <stop offset=".7" stop-color="#a52820"/>
+      <stop offset=".8" stop-color="#a11f20"/>
+      <stop offset="1" stop-color="#a01d20"/>
+    </radialGradient>
+    <linearGradient id="linear-gradient" x1="437.6" y1="8.8" x2="437.6" y2="34.2" gradientUnits="userSpaceOnUse">
+      <stop offset=".3" stop-color="#fcee2e"/>
+      <stop offset=".6" stop-color="#cc8226"/>
+      <stop offset=".9" stop-color="#ac3921"/>
+      <stop offset="1" stop-color="#a01d20"/>
+    </linearGradient>
+    <radialGradient id="New_Gradient_Swatch_2-2" data-name="New Gradient Swatch 2" cx="905.2" cy="507.1" fx="905.2" fy="507.1" r="325.4" xlink:href="#New_Gradient_Swatch_2"/>
+    <linearGradient id="linear-gradient-2" x1="14.6" y1="916.4" x2="126.3" y2="916.4" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fcee2e"/>
+      <stop offset="0" stop-color="#f7e22d"/>
+      <stop offset="0" stop-color="#e5b92a"/>
+      <stop offset=".1" stop-color="#d49427"/>
+      <stop offset=".2" stop-color="#c67325"/>
+      <stop offset=".2" stop-color="#ba5823"/>
+      <stop offset=".3" stop-color="#b04222"/>
+      <stop offset=".4" stop-color="#a93121"/>
+      <stop offset=".5" stop-color="#a32520"/>
+      <stop offset=".6" stop-color="#a01e20"/>
+      <stop offset="1" stop-color="#a01d20"/>
+    </linearGradient>
+    <radialGradient id="New_Gradient_Swatch_2-3" data-name="New Gradient Swatch 2" cx="444.3" cy="61.6" fx="444.3" fy="61.6" r="521.2" xlink:href="#New_Gradient_Swatch_2"/>
+    <linearGradient id="linear-gradient-3" x1="13.6" y1="941.8" x2="74.2" y2="941.8" xlink:href="#linear-gradient-2"/>
+    <linearGradient id="linear-gradient-4" x1="12.6" y1="959.8" x2="37.3" y2="959.8" xlink:href="#linear-gradient-2"/>
+  </defs>
+  <!-- Generator: Adobe Illustrator 28.7.1, SVG Export Plug-In . SVG Version: 1.2.0 Build 142)  -->
+  <g>
+    <g id="Layer_1">
+      <g>
+        <polygon class="cls-4" points="973.3 131.6 862.4 20.6 705.7 20.6 686.2 57.9 188.5 57.9 169.1 20.7 16.9 25.8 16.7 20.6 172.1 15.4 191.6 52.8 683.1 52.8 702.6 15.5 864.5 15.5 977 127.9 973.3 131.6"/>
+        <path class="cls-10" d="M979.2,986.6h-243.8l-34.1-37.3H126.5l-112.3-112.3V35.3l149-5.3,19.5,37.4h509.2l19.5-37.3h144.1l123.7,123.7v832.9ZM737.7,981.5h236.4V155.9l-120.6-120.6h-138.9l-19.5,37.3H179.6l-19.4-37.3-140.8,5v794.6l109.3,109.3h575l34.1,37.3Z"/>
+        <polygon class="cls-3" points="762.9 318.4 668.2 318.4 653.6 346.3 256.7 346.3 242.1 318.4 151.1 318.4 151.1 587.8 227.7 664.3 658.5 664.3 684 692.3 848 692.3 848 403.4 762.9 318.4"/>
+        <polygon class="cls-8" points="684.2 971.2 117.6 971.2 18 871.7 21.7 868 119.7 966.1 684.2 966.1 684.2 971.2"/>
+        <polygon class="cls-5" points="728.9 954 743 969.4 962 969.4 962 954 728.9 954"/>
+        <polygon class="cls-9" points="186.2 15.9 199.1 40.9 676 40.9 689 15.9 186.2 15.9"/>
+        <polygon class="cls-7" points="962.2 963.8 957 963.8 957 162.5 848.3 54 851.9 50.4 962.2 160.4 962.2 963.8"/>
+        <polygon class="cls-1" points="126.3 971.2 95.5 971.2 14.6 890.3 14.6 861.5 126.3 971.2"/>
+        <path class="cls-11" d="M848.4,47.3h-126.6l-7.6,14.6h148.8l-14.6-14.6ZM31.4,47.3v14.6h129.1l-7.6-14.6H31.4Z"/>
+        <polygon class="cls-6" points="74.2 971.6 57.5 971.6 13.6 927.7 13.6 912.1 74.2 971.6"/>
+        <polygon class="cls-2" points="37.3 972 30.5 972 12.6 954.1 12.6 947.7 37.3 972"/>
+      </g>
+    </g>
+  </g>
+</svg>

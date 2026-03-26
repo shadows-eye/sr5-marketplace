@@ -1,0 +1,429 @@
+{
+    "SR5Marketplace": {
+        "BaseItem": "Basisgegenstand",
+        "Properties": "Merkmale",
+        "Slot": "Slot",
+        "PurchaseScreen": "Marktplatz Fenster",
+        "Marketplace": {
+            "Settings": {
+                "AvailabilityRule": {
+                    "name": "Verfügbarkeits Regeln",
+                    "hint": "Auswahl welche regeln ihr benutzen wollt, standard ist resistence",
+                    "choices": {
+                        "opposed": "Resistence",
+                        "simple": "Einfache",
+                        "extended": "Erweiterte"
+                    }
+                },
+                "ApprovalWorkflow": {
+                    "name": "GM Genehmigungsprocess",
+                    "hint": "Schalte diese Einstellung um den Genehmigungsprocess für Spielerkäufe zu deaktivieren!"
+                },
+                "ResetItemLoad":{
+                    "name": "Item Verbesserung landen zurücksetzen",
+                    "hint": "Dies ermöglicht es die Karma Werte und den Kosten und Verfügbarkeiten von Welt- und Kompendiumsartikeln, ihre Flags für Karma neu zu initialisieren. Wenn Sie diese Einstellung auf true setzen, werden alle Änderungen, die Sie an Karma, Kosten oder Verfügbarkeit der Items vorgenommen haben, rückgängig gemacht."
+                },
+                "title": "Marktplatz Einstellungen",
+                "description": "Klicke auf einen Artikeltyp in einer Spalte, um ihn der Verhaltenskategorie zuzuordnen. Änderungen werden sofort gespeichert. Einzigartige Artikel können nur einmal pro Charakter gekauft werden, stapelbare Artikel werden im selben Artikel gestapelt und einzelne Artikel können mehrmals pro Bestellung als eine Artikelinstanz bestellt werden.",
+                "CategoryUnique": "Einzigartige Artikel",
+                "StackingItems": "Stapelfähige Artikel",
+                "SingleItems": "Einzelne Artikel",
+                "Menu":{
+                    "name": "Artikeltyp Menü",
+                    "hint": "Dieses Menü ermöglicht es Ihnen, Artikeltypen verschiedenen Verhaltensweisen zuzuordnen.",
+                    "buttonLabel": "Artikeltyp Einstellungen öffnen"
+                },
+                "KarmaSpell": {
+                    "name": "Karma Zauberkosten",
+                    "hint": "Diese Einstellung ermöglicht es Ihnen, die Karma Kosten für Zauber festzulegen. Der Wert wird verwendet, um Zauber zu bezahlen."
+                },
+                "KarmaComplexForm": {
+                    "name": "Karma Komplexe Form Kosten",
+                    "hint": "Diese Einstellung ermöglicht es Ihnen, die Karma Kosten für komplexe Formen festzulegen. Wenn auf true gesetzt, werden die Karma Kosten anstelle der Essenzkosten verwendet."
+                },
+                "mountRestrictions": {
+                    "name": "Überschreibe mount Slots Beschränkungen",
+                    "hint": "Wenn ausgewählt können alle modificationen in jedem mount slot gesetzt werden, unabhängig von mount point der modification."
+                }
+            },
+            "Tests":{
+                "title": "Marktplatz Tests",
+                "AvailabilityTest": "Verfügbarkeit Test"
+            },
+            "Source": {
+                "Global": "Laden"
+            },
+            "Shop": {
+                "SheetName": "Geschäft",
+                "ItemName": "Name",
+                "ItemRating": "Stufe",
+                "SellPrice": "Verkaufspreis",
+                "BuyPrice": "Kaufpreis",
+                "BuyTime": "Kaufzeit",
+                "Comment": "Kommentar",
+                "Employees": "Mitarbeiter",
+                "OneUuidPerLine": "Eine UUID pro Zeile",
+                "Discount": "Rabatt",
+                "Fee": "Gebühr",
+                "Modifier": "Preisänderung",
+                "ConnectionUuid": "Verbindung",
+                "Owner": "Geschäftsinhaber"
+            },
+            "funds": "Budget",
+            "YourOrderHasArrived": "Deine Bestellung ist angekommen!",
+            "OrderReviewItems": "Artikel Liste für die Überprüfung",
+            "YourItems": "Deine Artikel",
+            "ConfirmTime": "Datum",
+            "aprroved": "genehmigt",
+            "rejected": "abgelehnt",
+            "allApproved": "alle genehmigt",
+            "allRejected": "alle abgelehnt",
+            "of": "von",
+            "each": "pro Stück",
+            "Image": "Bild",
+            "Name" : "Name",
+            "RemoveItem": "Entfernen",
+            "ReviewAndConfirm": "Überprüfen (nur GM)",
+            "SelectItemType": "Artikeltyp auswählen",
+            "ShoppingBasket": "Einkaufskorb",
+            "Marketplace": "Marktplatz",
+            "Availability": "Verfügbarkeit",
+            "OrderReview": "Order Überprüfung",
+            "SendRequest": "Kaufen",
+            "CancelRequest": "Abbruch",
+            "RequestFor": "Anfrage von",
+            "OrderHistory": "Bestell Historie",
+            "history": "Historie",
+            "Total": "Gesamt",
+            "TotalCost": "Gesamtkosten",
+            "TotalAvailability": "Gesamtverfügbarkeit",
+            "TotalKarma": "Gesamtkarma Kosten",
+            "TotalEssence": "Gesamtessenz Kosten",
+            "Search": "Suche",
+            "Search items...": "Gegenstand Suche",
+            "shoppingListRequest": "Einkaufslisten Anfrage",
+            "OrderRejected": "Entschuldigung, aber die folgenden Artikel können nicht bestätigt werden",
+            "noPurchaseRequests": "Es gibt keine Kaufanfragen",
+            "purchaseReview": "Kaufüberprüfung",
+            "requestActor": "Anfrage von",
+            "selectContact": "Wählen Sie einen Kontakt der die Bestellung besorgt",
+            "Items": "Gegenstände",
+            "buyQuantity": "Kaufmenge",
+            "quantityPerPack": "Menge / Packung",
+            "actions": "Aktionen",
+            "system": {
+                "avail":{
+                    "avail": "Verfg.",
+                    "R": "E",
+                    "F": "V",
+                    "E": "E",
+                    "V": "V",
+                    "" : ""
+                },
+                "karma": "Karma",
+                "essence": "Essenz",
+                "technology": {
+                    "rating": "Stufe",
+                    "availability": "Verfügbarkeit",
+                    "Cost": "Kosten",
+                    "quantity": "Menge"
+                },
+                "spell":{
+                    "type": "Typ",
+                    "range": "Reichweite",
+                    "duration": "Dauer",
+                    "damage": "Schaden",
+                    "drain": "Entzug"
+                },
+                "mount-point": "Rüstplatz",
+                "slots": "Mod Punkte"
+            },
+            "Tab": {
+                "Shop": "Laden",
+                "OrderReview": "Überprf."
+            },
+            "ItemTypes": {
+                "AllItems": "Alle Artikel",
+                "RangedWeapons": "Fernkampfwaffen",
+                "MeleeWeapons": "Nahkampfwaffen",
+                "Modifications": "Modifikationen",
+                "WeaponMods": "Waffenmodifikationen",
+                "ArmorMods": "Rüstungmodifikationen",
+                "VehicleMods": "Fahrzeugmodifikationen",
+                "Armor": "Rüstung",
+                "Bioware": "Bioware",
+                "Cyberware": "Cyberware",
+                "Devices": "Geräte",
+                "Ammo": "Munition",
+                "Equipment": "Ausrüstung",
+                "Lifestyles": "Lebensstile",
+                "Programs": "Programme",
+                "Rituals": "Rituale",
+                "SINs": "SINs",
+                "Spells": "Zauber",
+                "Actions": "Aktionen",
+                "Qualitys": "Vor/Nachteile",
+                "complex_form": "Komplexe Formen"
+            },
+            "Modifiers": {
+                "General": {
+                    "title": "Allgemeine Soziale Modifikatoren",
+                    "npcAttitudeFriendly": "NSC hat eine freundliche Haltung",
+                    "npcAttitudeNeutral": "NSC hat eine neutrale Haltung",
+                    "npcAttitudeMistrustful": "NSC ist misstrauisch",
+                    "npcAttitudeBiased": "NSC ist dem Charakter gegenüber voreingenommen",
+                    "npcAttitudeAverse": "NSC hat eine Abneigung gegen den Charakter",
+                    "npcAttitudeHostile": "NSC ist feindselig",
+                    "resultAdvantageous": "Fehlschlag hat vorteilhafte Konsequenzen",
+                    "resultInsignificant": "Fehlschlag hat unbedeutende Konsequenzen",
+                    "resultAnnoying": "Fehlschlag hat ärgerliche Konsequenzen",
+                    "resultDangerous": "Fehlschlag hat gefährliche Konsequenzen",
+                    "resultCatastrophic": "Fehlschlag hat katastrophale Konsequenzen"
+                },
+                "Negotiation": {
+                    "title": "Verhandlungsmodifikatoren",
+                    "notEnoughInfo": "Charakter hat unzureichende Informationen",
+                    "hasLeverage": "Charakter hat ein Druckmittel gegen das Ziel"
+                },
+                "Etiquette": {
+                    "title": "Etikette-Modifikatoren",
+                    "improperlyDressed": "Charakter ist unpassend gekleidet",
+                    "obviouslyNervous": "Charakter ist offensichtlich nervös"
+                },
+                "Intimidation": {
+                    "title": "Einschüchterungsmodifikatoren",
+                    "physicallyImposing": "Charakter ist körperlich imposant",
+                    "outnumbered": "Ziel ist in der Unterzahl",
+                    "hasWeapon": "Charakter ist sichtbar bewaffnet oder nutzt Magie"
+                },
+                "Con": {
+                    "title": "Überreden-Modifikatoren",
+                    "plausibleEvidence": "Charakter präsentiert glaubwürdige Beweise",
+                    "targetDistracted": "Das Ziel ist abgelenkt oder leichtgläubig"
+                }
+            },
+            "Acquisition":{
+                "Success": "Kauf Erfolg",
+                "Failure": "Konnte nicht beschafft werden."
+            },
+            "selectActorTooltip": "Akteur auswählen",
+            "AddToCart": "Hinzufügen zum Warenkorb",
+            "AddToBuilder": "Hinzufügen zum Builder"
+        },
+        "ItemBuilder": {
+            "Save": "Speichern",
+            "Cancel": "Abbrechen",
+            "BuildItem": "Artikel bauen",
+            "SelectAsBase": "Als Basisartikel auswählen",
+            "SearchAllMods": "Alle Modifikationen durchsuchen...",
+            "SearchPlaceholder": "Gegenstände suchen...",
+            "nav": {
+                "builder": "Builder",
+                "effects": "Effekte",
+                "dialog": "Dialog"
+            },
+            "Items": {
+                "Header": "Basisartikel",
+                "baseItemPlaceholder":{
+                    "title": "Wähle ein Basisartikel",
+                    "description": "Wähle ein Artikel aus der linken Liste, um es zu bauen."
+                }
+            },
+            "Modifications": {
+                "Header": "Verfügbare Modifikationen"
+            },
+            "Effects": {
+                "ManageEffects": "Effekte verwalten",
+                "ManageEffectsHint": "Aktive Effekte des Basisartikels und seiner Modifikationen ansehen, erstellen und bearbeiten.",
+                "AddEffect": "Effekt hinzufügen",
+                "InnateLockedHint": "Dies ist ein angeborener Effekt des Artikels und kann nicht gelöscht, aber überschrieben werden.",
+                "EditEffectHeader": "Effekt bearbeiten",
+                "CreateEffectHeader": "Neuen Effekt erstellen",
+                "EffectNameLabel": "Effektname",
+                "EffectNamePlaceholder": "z.B., Smartlink-Bonus",
+                "EffectIconLabel": "Symbol",
+                "SelectIconTooltip": "Wähle ein Symbol für diesen Effekt",
+                "ApplyToLabel": "Anwenden auf",
+                "TestFilterLabel": "Nach Probe filtern",
+                "SelectTestsPlaceholder": "Jede Probe",
+                "CategoryFilterLabel": "Nach Kategorie filtern",
+                "SelectCategoriesPlaceholder": "Jede Kategorie",
+                "SkillFilterLabel": "Nach Fertigkeit filtern",
+                "SelectSkillsPlaceholder": "Jede Fertigkeit",
+                "AttributeFilterLabel": "Nach Attribut filtern",
+                "SelectAttributesPlaceholder": "Jedes Attribut",
+                "LimitFilterLabel": "Nach Limit filtern",
+                "SelectLimitsPlaceholder": "Jedes Limit",
+                "AttributeKeyLabel": "Attribut / Eigenschaft",
+                "AttributeKeyPlaceholder": "Wähle eine Eigenschaft aus den Gruppen unten aus.",
+                "ChangeModeLabel": "Änderungsmodus",
+                "EffectValueLabel": "Wert",
+                "SelectDerivedValueTooltip": "Wähle eine Eigenschaft vom Basisartikel, um diesen Wert abzuleiten.",
+                "SelectDerivedValueLabel": "Wähle eine Eigenschaft vom Basisartikel"
+            }
+        },
+        "AppDialogItem": {
+            "result": {
+                "Test": "Testergebnis",
+                "text": "Du hast ",
+                "Hits": " Erfolge erzielt!"
+            },
+            "GlitchText": {
+                "with": "Mit ",
+                "glitch": " Einsen... ein PATZER!"
+            },
+            "ThresholdInfo": "Dies ist der Schwellenwert für den Widerstandswurf des Gegenstands.",
+            "RollItemResistance": "Gegenstandswiderstand würfeln",
+            "AcquisitionSuccess": "Gegenstände können erworben werden",
+            "AcquisitionFailed": "Erwerb fehlgeschlagen",
+            "YourRoll": "Dein Wurf",
+            "netHits": "Nettoerfolge",
+            "Resistance": "Gegenstandswiderstand",
+            "Hits": "Erfolge",
+            "ExtendedSuccessDetails": "Der Erwerb benötigte {rolls} Würfe, unter Verwendung einer Connection von {connection}. Endgültige Lieferzeit: {timeValue}"
+        },
+        "Time": {
+            "Hours": "Stunden",
+            "Day": "Tag",
+            "Days": "Tage",
+            "Week": "Woche",
+            "Month": "Monat"
+        }
+    },
+    "TYPES": {
+        "Actor": {
+            "sr5-marketplace.shop": "Marktplatz Laden"
+        }
+    },
+    "FIELDS": {
+        "description": {
+            "label": "Beschreibung"
+        },
+        "attributes": {
+            "label": "Attribute",
+            "body": { "label": "Konstitution" },
+            "agility": { "label": "Geschicklichkeit" },
+            "reaction": { "label": "Reaktion" },
+            "strength": { "label": "Stärke" },
+            "willpower": { "label": "Willenskraft" },
+            "logic": { "label": "Logik" },
+            "intuition": { "label": "Intuition" },
+            "charisma": { "label": "Charisma" },
+            "magic": { "label": "Magie" },
+            "resonance": { "label": "Resonanz" },
+            "essence": { "label": "Essenz" },
+            "edge": { "label": "Edge" },
+            "initiation": { "label": "Initiation" },
+            "submersion": { "label": "Wandlung" }
+        },
+        "Skill": {
+            "AeronauticsMechanic": "Luftfahrtmechanik",
+            "Alchemy": "Alchemie",
+            "AnimalHandling": "Tierführung",
+            "Arcana": "Arkana",
+            "Archery": "Projektilwaffen",
+            "Armorer": "Waffenbau",
+            "Artificing": "Fokusherstellung",
+            "Artisan": "Handwerk",
+            "Assensing": "Askennen",
+            "AstralCombat": "Astralkampf",
+            "Automatics": "Schnellfeuerwaffen",
+            "AutomotiveMechanic": "Fahrzeugmechanik",
+            "Banishing": "Verbannen",
+            "Binding": "Binden",
+            "Biotechnology": "Biotechnologie",
+            "Blades": "Klingenwaffen",
+            "Chemistry": "Chemie",
+            "Clubs": "Knüppel",
+            "Compiling": "Kompilieren",
+            "Computer": "Computer",
+            "Con": "Überreden",
+            "Counterspelling": "Antimagie",
+            "Cybercombat": "Matrixkampf",
+            "Cybertechnology": "Kybernetik",
+            "Decompiling": "Dekompilieren",
+            "Demolitions": "Sprengstoffe",
+            "Disenchanting": "Entzaubern",
+            "Disguise": "Verkleiden",
+            "Diving": "Tauchen",
+            "ElectronicWarfare": "Elektronische Kriegsführung",
+            "EscapeArtist": "Entfesseln",
+            "Etiquette": "Gebräuche",
+            "ExoticMelee": "Exotische Nahkampfwaffe",
+            "ExoticRange": "Exotische Fernkampfwaffe",
+            "FirstAid": "Erste Hilfe",
+            "Flight": "Fliegen",
+            "Forgery": "Fälschen",
+            "FreeFall": "Freifall",
+            "Gunnery": "Geschütze",
+            "Gymnastics": "Akrobatik",
+            "Hacking": "Hacking",
+            "Hardware": "Hardware",
+            "HeavyWeapons": "Schwere Waffen",
+            "Impersonation": "Verkörperung",
+            "IndustrialMechanic": "Industriemechanik",
+            "Instruction": "Unterricht",
+            "Intimidation": "Einschüchtern",
+            "Leadership": "Führung",
+            "Locksmith": "Schlosser",
+            "Longarms": "Gewehre",
+            "Medicine": "Medizin",
+            "NauticalMechanic": "Seefahrtmechanik",
+            "Navigation": "Navigation",
+            "Negotiation": "Verhandlung",
+            "Palming": "Fingerfertigkeit",
+            "Perception": "Wahrnehmung",
+            "Performance": "Vorführung",
+            "PilotAerospace": "Raumfahrzeuge",
+            "PilotAircraft": "Flugzeuge",
+            "PilotExoticVehicle": "Exotisches Fahrzeug",
+            "PilotGroundCraft": "Bodenfahrzeuge",
+            "PilotWalker": "Läufer",
+            "PilotWaterCraft": "Schiffe",
+            "Pistols": "Pistolen",
+            "Registering": "Registrieren",
+            "RitualSpellcasting": "Ritualzauberei",
+            "Running": "Laufen",
+            "Skill": "Fertigkeit",
+            "Skills": "Fertigkeiten",
+            "Sneaking": "Schleichen",
+            "Software": "Software",
+            "Spellcasting": "Spruchzauberei",
+            "Summoning": "Herbeirufen",
+            "Survival": "Survival",
+            "Swimming": "Schwimmen",
+            "Teamwork": {
+                "Glitched": "Gepatz",
+                "ParticipantActor": "Akteur wählen",
+                "RollIt": "Würfeln",
+                "TakePart": "Teilnehmen"
+            },
+            "ThrowingWeapons": "Wurfwaffen",
+            "Tracking": "Spurenlesen",
+            "UnarmedCombat": "Waffenloser Kampf"
+        },
+        "skills": {
+            "label": "Fertigkeiten"
+        },
+        "limits": {
+            "label": "Limits",
+            "social": { "label": "Soziales Limit" },
+            "mental": { "label": "Geistiges Limit" },
+            "physical": { "label": "Körperliches Limit" },
+            "astral": { "label": "Astrales Limit" }
+        },
+        "track": {
+            "label": "Zustandsmonitore",
+            "physical": { "label": "Körperlich" },
+            "stun": { "label": "Geistig" }
+        },
+        "movement": {
+            "label": "Bewegung",
+            "walk": { "label": "Gehen" },
+            "run": { "label": "Laufen" }
+        },
+        "nuyen": { "label": "Nuyen" },
+        "karma": { "label": "Karma" 
+        }
+    }
+}

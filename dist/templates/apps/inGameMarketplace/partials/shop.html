@@ -1,0 +1,58 @@
+<div class="shop-container">
+    <div class="marketplace-filter" id="marketplaceActorDropzone">
+        {{#if shopActorUuid}}
+            <div class="marketplace-source-toggle form-group toggle-switch">
+                <label for="marketplace-source-toggle">{{localize "SR5Marketplace.Marketplace.Source.Global"}}</label>
+                
+                <input type="checkbox" id="marketplace-source-toggle" class="sr5-marketplace input-box" {{checked isShopView}}>
+                
+                <hint class="source-filter-hint">{{shopName}}</hint>
+            </div>
+        {{/if}}
+        {{#if selectedKey}}
+            <div>{{localize "SR5Marketplace.Marketplace.SelectItemType"}}:</div>
+            <select id="item-type-selector" name="category" class="item-type-selector">
+                {{#each itemsByType as |category key|}}
+                  {{#if category.items.length}}
+                    <option value="{{key}}" {{#if (eq key ../selectedKey)}}selected{{/if}}>
+                      {{localize category.label}}
+                    </option>
+                  {{/if}}
+                {{/each}}
+            </select>
+        {{/if}}
+
+        <div>{{localize "SR5Marketplace.Marketplace.Search"}}:</div>
+        <input type="text" id="search-box" placeholder='{{localize "SR5Marketplace.Marketplace.Search items..."}}' class="marketplace-search">
+        <div id="filter-tags-container"></div>
+        
+        <div class="sr5-marketplace SR5ShopActor-box" id="shopActorDropzone">
+            {{#if shopActorBox.shopId}}
+                <a data-action="openDocumentLink" data-uuid="{{shopActorBox.shopUuid}}">
+                    <img src="{{shopActorBox.shopImg}}" alt="{{shopActorBox.shopName}}" class="actor-icon">
+                </a>
+                {{#if isGM}}<span class="remove-link" title="Remove Shop Actor" data-action="removeShopActor" data-shop-id="{{shopActorBox.shopId}}">&times;</span>{{/if}}
+            {{/if}}
+        </div>
+        <div class="sr5-marketplace SR5ConnectionLink-box" id="connectionItemDropzone">
+            {{#if connectionBox}}
+                <a data-action="openDocumentLink" data-uuid="{{connectionBox.connectionUuid}}">
+                    <img src="{{connectionBox.connectionImg}}" alt="{{connectionBox.connectionName}}" class="item-icon">
+                </a>
+                <span class="remove-link" title="Remove Connection Item" data-action="removeConnection" data-item-id="{{connectionBox.connectionId}}">&times;</span>
+            {{/if}}
+        </div>
+        {{#if selectedActorBox.actorId}}
+            <div class="sr5-marketplace SR5ActorSelected-box" id="{{selectedActorBox.actorId}}">
+                <a data-action="openDocumentLink" data-uuid="{{selectedActorBox.actorUuid}}">
+                    <img src="{{selectedActorBox.actorImg}}" alt="{{selectedActorBox.actorName}}" class="actor-icon">
+                </a>
+                {{#if isGM}}<span class="remove-link" title="Remove Selected Actor" data-action="removeSelectedActor" data-actor-id="{{selectedActorBox.actorId}}">&times;</span>{{/if}}
+            </div>
+        {{/if}}
+    </div>
+    
+    <div id="marketplace-items" class="marketplace-items-grid">
+        {{> 'modules/sr5-marketplace/templates/documents/items/libraryItem.html' items=selectedItems purchasingActor=purchasingActor }}
+    </div>
+</div>
