@@ -1,12 +1,31 @@
-// Import necessary classes and helpers
-import { inGameMarketplace } from "./apps/inGameMarketplace.mjs";
-import { registerBasicHelpers } from "./lib/helpers.js";
-import ItemDataServices from './services/ItemDataServices.mjs';
-import { MarketplaceSettingsApp } from "./apps/MarketplaceSettingsApp.mjs";
-import { PurchaseService } from "./services/purchaseService.mjs";
-import { defineShopActorClass } from '../models/actor/shopActor.mjs';
-import { ShopActorSheet } from '../sheets/ShopActorSheet.mjs';
-import { MODULE_ID, SHOP_ACTOR_TYPE} from "./lib/constants.mjs";
+// --- IMPORT PRE-INSTANTIATED SERVICES FROM BARREL FILE ---
+import { 
+    actorItemServices, 
+    basketService, 
+    purchaseService, 
+    indexService, 
+    builderStateService, 
+    deliveryTimeService,
+    diceHelperService,
+    themeService,
+    systemDataMapperService,
+    ItemDataServices // <-- We import the class here because you need 'new ItemDataServices()' for your API
+} from './services/_module.mjs';
+
+// Re-export instances/classes as well ONLY IF you need them available globally 
+// to other modules/scripts that import marketHooks directly.
+export { 
+    actorItemServices,
+    basketService,
+    purchaseService,
+    indexService,
+    builderStateService,
+    deliveryTimeService,
+    diceHelperService,
+    themeService,
+    systemDataMapperService,
+    ItemDataServices 
+};
 
 /**
  * Draws the notification badge on the scene control button.
