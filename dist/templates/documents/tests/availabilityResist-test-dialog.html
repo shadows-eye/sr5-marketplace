@@ -1,0 +1,70 @@
+<form autocomplete="off">
+    <div class="dialog-content">
+
+        {{!-- Actor Information --}}
+        <div class="document">
+            <img src="{{actor.img}}" data-edit="img" title="{{actor.name}}"/>
+            <a class="content-link" data-uuid="{{actor.uuid}}">{{actor.name}}</a>
+        </div>
+        <hr>
+
+        {{!-- Test Code Display --}}
+        {{!-- This section displays how the dice pool is calculated --}}
+        <div class="common-test">
+            {{{test.code}}}
+        </div>
+        <hr>
+
+        {{!-- Main Editable Fields --}}
+        <div>
+            {{!-- Availability String Input --}}
+            <div class="form-group">
+                <label>{{localize "SR5.Labels.Availability"}}</label>
+                {{!-- The name attribute must match the path in the test data --}}
+                <input type="text" name="test.data.availabilityStr" value="{{test.data.availabilityStr}}"/>
+            </div>
+
+            {{!-- Dice Pool Input --}}
+            <div class="form-group">
+                <label data-tooltip="SR5.Tooltips.Test.Pool">{{localize "SR5.DicePool"}}</label>
+                {{!-- The name must be 'test.data.pool' for the override to work --}}
+                <input type="number" name="test.data.pool" value="{{test.data.pool.value}}" size="3" data-dtype="Number"/>
+            </div>
+
+            {{!-- Limit Input --}}
+            <div class="form-group">
+                <label data-tooltip="SR5.Tooltips.Test.Limit">{{localize "SR5.Limit"}}</label>
+                {{!-- The name must be 'test.data.limit' for the override to work --}}
+                <input type="number" name="test.data.limit" value="{{test.data.limit.value}}" size="3" data-dtype="Number"/>
+            </div>
+
+            {{!-- Threshold Input --}}
+            <div class="form-group">
+                <label data-tooltip="SR5.Tooltips.Test.Threshold">{{localize "SR5.Threshold"}}</label>
+                {{!-- The name must be 'test.data.threshold' for the override to work --}}
+                <input type="number" name="test.data.threshold" value="{{test.data.threshold.value}}" size="3" data-dtype="Number"/>
+            </div>
+        </div>
+        <hr>
+
+        {{!-- Standard Test Options (Edge, Manual Hits, etc.) --}}
+        {{!-- These are included in the default TestDialog and are good to keep --}}
+        <div>
+            <div class="form-group">
+                <label data-tooltip="SR5.Tooltips.Test.PushTheLimit">{{localize "SR5.PushTheLimit"}} ({{actor.system.attributes.edge.uses}}/{{actor.system.attributes.edge.value}})</label>
+                <input type="checkbox" name="test.data.pushTheLimit" {{checked test.data.pushTheLimit}}>
+            </div>
+        </div>
+        <hr>
+        <div>
+            <div class="form-group">
+                <label data-tooltip="SR5.Tooltips.Test.ManualHits">{{localize "SR5.ManualHits"}}</label>
+                <input type="number" name="test.data.manualHits" value="{{test.data.manualHits.override.value}}" placeholder="{{test.data.manualHits.value}}" size="3" data-dtype="Number">
+            </div>
+            <div class="form-group">
+                <label data-tooltip="SR5.Tooltips.Test.ManualGlitches">{{localize "SR5.ManualGlitches"}}</label>
+                <input type="number" name="test.data.manualGlitches" value="{{test.data.manualGlitches.override.value}}" placeholder="{{test.data.manualGlitches.value}}" size="3" data-dtype="Number">
+            </div>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,50 @@
+<form autocomplete="off">
+    <div class="sr5-marketplace-settings settings-wrapper">
+            <h2>{{localize "SR5Marketplace.Marketplace.Settings.title"}}</h2>
+            <p class="description">{{localize "SR5Marketplace.Marketplace.Settings.description"}}</p>
+        <div class="settings-header-grid">
+            <div class="column-header unique">
+                {{localize "SR5Marketplace.Marketplace.Settings.CategoryUnique"}}
+                <span class="item-count">{{categorizedTypes.unique.length}}</span>
+            </div>
+            <div class="column-header stack">
+                {{localize "SR5Marketplace.Marketplace.Settings.StackingItems"}}
+                <span class="item-count">{{categorizedTypes.stack.length}}</span>
+            </div>
+            <div class="column-header single">
+                {{localize "SR5Marketplace.Marketplace.Settings.SingleItems"}}
+                <span class="item-count">{{categorizedTypes.single.length}}</span>
+            </div>
+        </div>
+        <hr class="marketplace-settings-hr">
+
+        <div class="settings-content-grid">
+            <div class="item-type-list">
+                {{#each typeSettings}}
+                <div class="item-type-card {{#if (eq this.behavior 'unique')}}active{{else}}inactive{{/if}}" 
+                    data-type="{{this.key}}" data-target-behavior="unique" title="Set '{{this.label}}' to Unique">
+                    <span class="type-label">{{this.label}}</span>
+                </div>
+                {{/each}}
+            </div>
+
+            <div class="item-type-list">
+                {{#each typeSettings}}
+                <div class="item-type-card {{#if (eq this.behavior 'stack')}}active{{else}}inactive{{/if}}"
+                    data-type="{{this.key}}" data-target-behavior="stack" title="Set '{{this.label}}' to Stacking">
+                    <span class="type-label">{{this.label}}</span>
+                </div>
+                {{/each}}
+            </div>
+
+            <div class="item-type-list">
+                {{#each typeSettings}}
+                <div class="item-type-card {{#if (eq this.behavior 'single')}}active{{else}}inactive{{/if}}"
+                    data-type="{{this.key}}" data-target-behavior="single" title="Set '{{this.label}}' to Single">
+                    <span class="type-label">{{this.label}}</span>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+</form>
