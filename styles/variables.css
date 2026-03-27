@@ -160,7 +160,7 @@
 --bg-item-card-hover: var(--color-primary-red-dark);
 --bg-filter-bar: #00000017;
 --bg-basket-content: #aaaaaa83;
---bg-basket-summary: #a3a3a3;
+--bg-basket-summary: ;
 --border-highlight-dark-yellow: rgb(209, 146, 11);
 --border-inset-top: rgba(67, 32, 1, 0.93);
 --border-inset-bottom: rgb(33 16 1);
@@ -176,6 +176,7 @@
 /* ================================================================== */
 
 .themed.theme-light {
+--bg-basket-summary: var(--color-grey-medium-light);
 --Form-background-group: var(--color-dark-grey);
 --Form-background-group-hover: var(--color-dark-grey);
 --bg-main: var(--bg-main-light);
@@ -231,6 +232,7 @@
 }
 
 .themed.theme-dark {
+--bg-basket-summary: var(--color-grey-medium-light);
 --Form-background-group: var(--color-dark-grey);
 --Form-background-group-hover: var(--color-dark-grey);
 --bg-main: var(--bg-main-dark);

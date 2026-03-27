@@ -14,5 +14,8 @@
     "dev": "vite",
     "build": "vite build",
     "gen-ctx": "node helpers/generate-context.cjs"
+  },
+  "dependencies": {
+    "@tailwindcss/container-queries": "^0.1.1"
   }
 }

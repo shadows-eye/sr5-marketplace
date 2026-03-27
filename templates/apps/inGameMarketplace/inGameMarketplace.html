@@ -1,23 +1,39 @@
-<div class="marketplace-container">
-    <header class="marketplace-header">
-        <nav class="marketplace-tabs" data-group="main">
+<div class="marketplace-container flex flex-col h-full w-full min-w-[600px] min-h-[500px] text-gray-900 dark:text-gray-100 overflow-hidden" data-application-part="main">
+    
+    {{!-- HEADER: Normal flex row. No absolute positioning! --}}
+    <header class="marketplace-header flex flex-row items-center justify-between p-2 bg-black/10 dark:bg-black/40 border-b border-black/20 dark:border-white/10 shrink-0 shadow-sm gap-4">
+        
+        {{!-- LEFT: Tabs --}}
+        <nav class="marketplace-tabs flex items-center gap-1 shrink-0" data-group="main">
             {{#each tabs}}
-            <button class="marketplace-tab {{this.cssClass}}" data-tab="{{this.id}}" data-action="changeTab" type="button" title="{{this.tooltip}}">
-                <i class="fas {{this.icon}}"></i>
-                {{#if this.label}}<span>{{this.label}}</span>{{/if}}
-                {{#if (and this.count (gt this.count 0))}}<span class="notification-badge">{{this.count}}</span>{{/if}}
+            <button class="marketplace-tab relative flex items-center justify-center gap-2 px-3 py-1.5 rounded font-bold text-sm transition-all hover:bg-black/10 dark:hover:bg-white/10 {{this.cssClass}}" data-tab="{{this.id}}" data-action="changeTab" type="button" title="{{this.label}}">
+                <i class="fas {{this.icon}} text-lg opacity-80"></i>
+                
+                {{#if (and this.count (gt this.count 0))}}
+                    <span class="notification-badge absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-600 text-white text-[10px] font-extrabold rounded-full border border-black/20 shadow-sm">
+                        {{this.count}}
+                    </span>
+                {{/if}}
             </button>
             {{/each}}
         </nav>
-        <div class="header-center">
-            <div class="marketplace-title">{{localize "SR5Marketplace.PurchaseScreen"}}</div>
+
+        {{!-- CENTER: Title (Forces truncation if it gets squished) --}}
+        <div class="header-center flex flex-grow justify-center overflow-hidden min-w-0 px-4">
+            <h1 class="marketplace-title text-lg font-extrabold tracking-widest uppercase drop-shadow-md text-[#d4af37] opacity-90 truncate m-0" style="font-size: 1.25rem !important; line-height: 1.2 !important;">
+                {{localize "SR5Marketplace.PurchaseScreen"}}
+            </h1>
         </div>
-        <div class="header-right">
+
+        {{!-- RIGHT: User Actor --}}
+        <div class="header-right shrink-0">
             {{> 'modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/marketplaceUserActor.html' actor=actor ownedActors=ownedActors}}
         </div>
     </header>
       
-    <section class="marketplace-body">
+    {{!-- BODY --}}
+    <section class="marketplace-body flex-grow relative overflow-hidden bg-transparent">
         {{{tabContent}}}
     </section>
+
 </div>

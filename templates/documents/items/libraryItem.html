@@ -1,62 +1,83 @@
 {{#each items}}
-<div class="marketplace-item grid-item" data-item-id="{{this.uuid}}">
-    <div class="grid-show">
-        <div class="market-item-image">
-            <a data-action="openDocumentLink" data-uuid="{{this.uuid}}">
-                <img src="{{this.img}}" alt="{{this.name}}">
-            </a>
-        </div>
-        <div class="item-action">
-            <button class="add-to-cart" data-item-id="{{this.uuid}}" data-action="addToCart">
-                <i class="fa-solid fa-cart-plus"></i>
-            </button>
-        </div>
+<div class="marketplace-item grid-item flex flex-col justify-between p-2.5 rounded-md shadow-sm border border-black/20 hover:shadow-md transition-shadow" data-item-id="{{this.uuid}}">
 
-        {{#if (or (eq this.type "quality") (eq this.type "adept_power") (eq this.type "spell") (eq this.type "complex_form"))}}
-            <div class="item-cost">
-                {{#if this.system.karma}}{{this.system.karma}}{{else}}{{this.flags.sr5-marketplace.Karma}}{{/if}}
-                <i class="fa-duotone fa-solid fa-circle-star sr5-marketplace-karma"></i>
-            </div>
-        {{else}}
-            <div class="item-cost">
-                {{this.system.technology.cost}}
-                <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen"></i>
-            </div>
-        {{/if}}
-    </div>
+    {{!-- TOP SECTION: Image, Title, and Price --}}
+    <div class="flex flex-row items-start gap-2 w-full mb-2">
+        {{!-- Top Left: 40x40 Icon --}}
+        <a data-action="openDocumentLink" data-uuid="{{this.uuid}}" class="flex-shrink-0 cursor-pointer hover:opacity-80" title="{{this.name}}">
+            <img src="{{this.img}}" alt="{{this.name}}" class="w-10 h-10 object-cover rounded border border-black/20 bg-black/10">
+        </a>
 
-    <div class="item-details">
-        <h4 class="marketplace_h4">{{this.name}}</h4>
-        
-        {{#if (eq this.type "modification")}}
-            <div class="item-all">{{localize "SR5Marketplace.Marketplace.system.avail.avail"}}: {{this.system.technology.availability}}</div>
-            <div class="item-rating">{{localize "SR5Marketplace.Marketplace.system.technology.rating"}}: {{this.system.technology.rating}}</div>
-            {{#if (eq this.system.type "weapon")}}
-                <div class="item-mod-detail">{{localize "SR5Marketplace.Marketplace.system.mount-point"}}: {{this.system.mount_point}}</div>
-            {{/if}}
-            {{#if (or (eq this.system.type "vehicle") (eq this.system.type "drone"))}}
-                <div class="item-mod-detail">{{localize "SR5Marketplace.Marketplace.system.slots"}}: {{this.system.slots}}</div>
-            {{/if}}
+        {{!-- Top Middle: Title --}}
+        <h4 class="text-sm font-bold leading-tight flex-grow line-clamp-2" title="{{this.name}}">{{this.name}}</h4>
 
-        {{else}}
-            {{!-- This block is now restored to your preferred structure --}}
-            {{#if (eq this.type "spell")}}
-                <div class="item-drain">{{localize "SR5Marketplace.Marketplace.system.spell.drain"}}: {{this.system.drain}}</div>
-            {{else if (eq this.type "quality")}}
-            {{else if (eq this.type "adept_power")}}
-            {{else if (eq this.type "complex_form")}}
-            {{else if (eq this.type "metamagic")}}
-            {{else if (eq this.type "echo")}}
+        {{!-- Top Right: Price --}}
+        <div class="text-[14px] font-extrabold flex-shrink-0 flex items-center gap-1 text-right" title="Cost / Karma">
+            {{#if (or (eq this.type "quality") (eq this.type "adept_power") (eq this.type "spell") (eq this.type "complex_form"))}}
+                <span title="Karma">{{#if this.system.karma}}{{this.system.karma}}{{else}}{{this.flags.sr5-marketplace.Karma}}{{/if}}</span>
+                <i class="fa-duotone fa-solid fa-circle-star" title="Karma"></i>
             {{else}}
-                <div class="item-all">{{localize "SR5Marketplace.Marketplace.system.avail.avail"}}: {{this.system.technology.availability}}</div>
-                <div class="item-rating">{{localize "SR5Marketplace.Marketplace.system.technology.rating"}}: {{this.system.technology.rating}}</div>
+                <span title="Nuyen">{{this.system.technology.cost}}</span>
+                <i class="fa-duotone fa-solid fa-circle-yen" title="Nuyen"></i>
             {{/if}}
-        {{/if}}
-
-        {{#if (or (eq this.type "bioware") (eq this.type "cyberware"))}}
-            <div class="item-essence">{{localize "SR5Marketplace.Marketplace.system.essence"}}: {{this.system.essence}}</div>
-        {{/if}}
+        </div>
     </div>
+
+    {{!-- BOTTOM SECTION: Stats and Cart Button --}}
+    <div class="flex flex-row items-end justify-between w-full mt-auto pt-1">
+        
+        {{!-- Bottom Left: Stats --}}
+        <div class="flex flex-wrap gap-1 text-[10px] font-semibold opacity-85 uppercase tracking-wide">
+            {{#if (eq this.type "modification")}}
+                <span class="bg-black/10 dark:bg-black/30 px-1.5 py-0.5 rounded" title="{{localize 'SR5Marketplace.Marketplace.system.avail.avail'}}">
+                    {{localize "SR5Marketplace.Marketplace.system.avail.avail"}}: {{this.system.technology.availability}}
+                </span>
+                <span class="bg-black/10 dark:bg-black/30 px-1.5 py-0.5 rounded" title="{{localize 'SR5Marketplace.Marketplace.system.technology.rating'}}">
+                    {{localize "SR5Marketplace.Marketplace.system.technology.rating"}}: {{this.system.technology.rating}}
+                </span>
+                {{#if (eq this.system.type "weapon")}}
+                    <span class="bg-black/10 dark:bg-black/30 px-1.5 py-0.5 rounded" title="{{localize 'SR5Marketplace.Marketplace.system.mount-point'}}">
+                        {{localize "SR5Marketplace.Marketplace.system.mount-point"}}: {{this.system.mount_point}}
+                    </span>
+                {{/if}}
+                {{#if (or (eq this.system.type "vehicle") (eq this.system.type "drone"))}}
+                    <span class="bg-black/10 dark:bg-black/30 px-1.5 py-0.5 rounded" title="{{localize 'SR5Marketplace.Marketplace.system.slots'}}">
+                        {{localize "SR5Marketplace.Marketplace.system.slots"}}: {{this.system.slots}}
+                    </span>
+                {{/if}}
+            {{else}}
+                {{#if (eq this.type "spell")}}
+                    <span class="bg-black/10 dark:bg-black/30 px-1.5 py-0.5 rounded" title="{{localize 'SR5Marketplace.Marketplace.system.spell.drain'}}">
+                        {{localize "SR5Marketplace.Marketplace.system.spell.drain"}}: {{this.system.drain}}
+                    </span>
+                {{else if (eq this.type "quality")}}
+                {{else if (eq this.type "adept_power")}}
+                {{else if (eq this.type "complex_form")}}
+                {{else if (eq this.type "metamagic")}}
+                {{else if (eq this.type "echo")}}
+                {{else}}
+                    <span class="bg-black/10 dark:bg-black/30 px-1.5 py-0.5 rounded" title="{{localize 'SR5Marketplace.Marketplace.system.avail.avail'}}">
+                        {{localize "SR5Marketplace.Marketplace.system.avail.avail"}}: {{this.system.technology.availability}}
+                    </span>
+                    <span class="bg-black/10 dark:bg-black/30 px-1.5 py-0.5 rounded" title="{{localize 'SR5Marketplace.Marketplace.system.technology.rating'}}">
+                        {{localize "SR5Marketplace.Marketplace.system.technology.rating"}}: {{this.system.technology.rating}}
+                    </span>
+                {{/if}}
+            {{/if}}
+            
+            {{#if (or (eq this.type "bioware") (eq this.type "cyberware"))}}
+                <span class="bg-black/10 dark:bg-black/30 px-1.5 py-0.5 rounded" title="{{localize 'SR5Marketplace.Marketplace.system.essence'}}">
+                    {{localize "SR5Marketplace.Marketplace.system.essence"}}: {{this.system.essence}}
+                </span>
+            {{/if}}
+        </div>
+
+        {{!-- Bottom Right: Cart Button --}}
+        <button class="add-to-cart flex-shrink-0 px-3 py-1.5 text-white bg-green-600 hover:bg-green-500 rounded shadow-sm transition-colors flex justify-center items-center ml-2 border border-black/20" data-item-id="{{this.uuid}}" data-action="addToCart" title="Add to Cart">
+            <i class="fa-solid fa-cart-plus"></i>
+        </button>
+    </div>
+
 </div>
 {{/each}}
 

@@ -1,101 +1,143 @@
-<div class="shopping-cart-container">
-    <div class="basket-items-container">
-        <div class="basket-grid headers seven-columns">
-            <div class="grid-item header" style="justify-self: start;">{{localize "SR5Marketplace.Marketplace.Name"}}</div>
-            <div class="grid-item header" title="{{localize 'SR5Marketplace.Marketplace.system.technology.quantity'}} (per Pack)">{{localize "SR5Marketplace.Marketplace.quantityPerPack"}}</div>
-            <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.buyQuantity"}}</div>
-            <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.system.technology.rating"}}</div>
-            <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.system.technology.Cost"}}</div>
-            <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.system.karma"}}</div>
-            <div class="grid-item header"><i class="fas fa-trash"></i></div>
-        </div>
+<div class="shopping-cart-container flex flex-col h-full overflow-y-auto overflow-x-hidden p-2 gap-4 text-[var(--text-color-primary)]">
 
-        {{#each basket.shoppingCartItems}}
-        <div class="basket-grid item-row seven-columns" data-basket-item-uuid="{{this.basketItemUuid}}">
-            <a class="basket-item item-name" data-action="openDocumentLink" data-uuid="{{this.itemUuid}}">
-                <img class="mini-img" src="{{this.img}}" alt="{{this.name}}">
-                <span class="item-tag">{{this.name}}</span>
-            </a>
-            <div class="basket-item item-pack-quantity">
-                {{#if (gt this.itemQuantity 1)}}{{this.itemQuantity}}{{else}}&mdash;{{/if}}
-            </div>
-            <div class="basket-item item-quantity">
-                <i class="fa-solid fa-circle-plus  market-plus" title="Increase Quantity" data-action="increaseQuantity"></i>
-                <span>{{this.buyQuantity}}</span>
-                {{#if (gt this.buyQuantity 1)}}
-                    <i class="fa-solid fa-circle-minus market-minus" title="Decrease Quantity" data-action="decreaseQuantity"></i>
-                {{/if}}
-            </div>
-            <div class="basket-item item-rating">
-                {{#if this.rating}}
-                <select class="item-rating-select" data-action="updateRating" data-basket-item-uuid="{{this.basketItemUuid}}">
-                    {{#range 1 12}}
-                    <option value="{{this}}" {{#ifeq this ../selectedRating}}selected{{/ifeq}}>{{this}}</option>
-                    {{/range}}
-                </select>
-                {{else}}
-                &mdash;
-                {{/if}}
-            </div>
-            <div class="basket-item item-cost">{{this.cost}} ¥</div>
-            <div class="basket-item item-karma">{{this.karma}}</div>
-            <div class="basket-item remove-item">
-                <button class="remove-from-basket-btn" title="Remove Item" data-action="removeFromCart"><i class="fas fa-trash"></i></button>
+    {{!-- BASKET ITEMS LIST (No outer box, no background) --}}
+    <div class="basket-items-container flex flex-col">
+        
+        {{!-- Table Header (No borders) --}}
+        <div class="basket-grid grid grid-cols-[3fr_1fr_1.5fr_1fr_1fr_1fr_40px] gap-2 px-2 py-1 text-[var(--text-color-subheader)] text-[11px] font-bold uppercase tracking-wider items-center mb-1">
+            <div class="text-left pl-1">{{localize "SR5Marketplace.Marketplace.Name"}}</div>
+            <div class="text-center" title="{{localize 'SR5Marketplace.Marketplace.system.technology.quantity'}} (per Pack)">{{localize "SR5Marketplace.Marketplace.quantityPerPack"}}</div>
+            <div class="text-center">{{localize "SR5Marketplace.Marketplace.buyQuantity"}}</div>
+            <div class="text-center">{{localize "SR5Marketplace.Marketplace.system.technology.rating"}}</div>
+            <div class="text-right">{{localize "SR5Marketplace.Marketplace.system.technology.Cost"}}</div>
+            <div class="text-right">{{localize "SR5Marketplace.Marketplace.system.karma"}}</div>
+            <div class="text-center">
+                <button class="text-[var(--color-red-bright)] hover:brightness-150 transition-all cursor-pointer bg-transparent border-none p-0 shadow-none outline-none flex items-center justify-center w-full" title="{{localize 'SR5Marketplace.Marketplace.CancelRequest'}}" data-action="cancelRequest">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
         </div>
-        {{/each}}
+
+        {{!-- Table Rows (No dividers, added a slight gap and hover rounding) --}}
+        <div class="flex flex-col gap-1">
+            {{#each basket.shoppingCartItems}}
+            <div class="basket-grid item-row grid grid-cols-[3fr_1fr_1.5fr_1fr_1fr_1fr_40px] gap-2 px-2 py-1.5 items-center hover:bg-[var(--color-black-transparent-20)] rounded transition-colors" data-basket-item-uuid="{{this.basketItemUuid}}">
+                
+                {{!-- 1. Name & Icon (No icon border) --}}
+                <a class="flex items-center gap-2 overflow-hidden cursor-pointer text-[var(--text-color-primary)] hover:text-[var(--text-color-link-hover)]" data-action="openDocumentLink" data-uuid="{{this.itemUuid}}">
+                    <img class="w-8 h-8 object-cover rounded flex-shrink-0" src="{{this.img}}" alt="{{this.name}}">
+                    <span class="text-xs font-bold truncate" title="{{this.name}}">{{this.name}}</span>
+                </a>
+                
+                {{!-- 2. Pack Quantity --}}
+                <div class="text-xs text-center opacity-80">
+                    {{#if (gt this.itemQuantity 1)}}{{this.itemQuantity}}{{else}}&mdash;{{/if}}
+                </div>
+                
+                {{!-- 3. Buy Quantity Controls --}}
+                <div class="flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-circle-minus text-[var(--color-red-bright)] hover:brightness-150 cursor-pointer transition-all {{#if (eq this.buyQuantity 1)}}opacity-30 pointer-events-none{{/if}}" title="Decrease Quantity" data-action="decreaseQuantity"></i>
+                    <span class="font-bold text-sm min-w-[20px] text-center">{{this.buyQuantity}}</span>
+                    <i class="fa-solid fa-circle-plus text-[var(--color-green-button)] hover:brightness-150 cursor-pointer transition-all" title="Increase Quantity" data-action="increaseQuantity"></i>
+                </div>
+                
+                {{!-- 4. Rating Select (No border, transparent dark background) --}}
+                <div class="flex justify-center">
+                    {{#if this.rating}}
+                    <select class="bg-[var(--color-black-transparent-20)] text-[var(--text-color-primary)] rounded px-1.5 py-0.5 text-xs focus:ring-1 focus:ring-[var(--color-yellow-base)] cursor-pointer w-14 text-center border-none outline-none" data-action="updateRating" data-basket-item-uuid="{{this.basketItemUuid}}">
+                        {{#range 1 12}}
+                        <option value="{{this}}" {{#ifeq this ../selectedRating}}selected{{/ifeq}}>{{this}}</option>
+                        {{/range}}
+                    </select>
+                    {{else}}
+                    <span class="opacity-50">&mdash;</span>
+                    {{/if}}
+                </div>
+                
+                {{!-- 5. Cost --}}
+                <div class="text-right text-xs font-bold">{{this.cost}} ¥</div>
+                
+                {{!-- 6. Karma --}}
+                <div class="text-right text-xs font-bold">{{this.karma}}</div>
+                
+                {{!-- 7. Delete Button --}}
+                <button class="remove-from-basket-btn border-none bg-transparent shadow-none outline-none text-[var(--color-red-bright)] hover:brightness-150 hover:bg-[var(--color-red-darkest)] p-1.5 rounded transition-colors flex items-center justify-center" title="Remove Item" data-action="removeFromCart">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            {{/each}}
+        </div>
     </div>
 
-    <div class="basket-summary">
-        <div id="total-cost"><strong>{{localize "SR5Marketplace.Marketplace.TotalCost"}}:</strong> {{basket.totalCost}} <i class="fa-duotone fa-solid fa-circle-yen darkRed"></i></div>
-        <div id="total-availability"><strong>{{localize "SR5Marketplace.Marketplace.TotalAvailability"}}:</strong> {{basket.totalAvailability}}</div>
-        {{#if basket.totalKarma}}<div id="total-karma"><strong>{{localize "SR5Marketplace.Marketplace.TotalKarma"}}:</strong> {{basket.totalKarma}} <i class="fa-duotone fa-solid fa-circle-star yellow"></i></div>{{/if}}
-        {{#if basket.totalEssenceCost}}<div id="total-essence"><strong>{{localize "SR5Marketplace.Marketplace.TotalEssence"}}:</strong> {{basket.totalEssenceCost}}</div>{{/if}}
+    {{!-- SUMMARY BLOCK (Removed light background and border, aligned right) --}}
+    <div class="basket-summary flex flex-wrap items-center justify-end gap-6 pt-2 pb-4 text-[var(--text-color-primary)]">
+        <div class="flex items-center gap-2 font-bold">
+            <span class="uppercase opacity-80 text-xs tracking-wider text-[var(--text-color-subheader)]">{{localize "SR5Marketplace.Marketplace.TotalCost"}}:</span>
+            <span class="text-lg">{{basket.totalCost}} <i class="fa-duotone fa-solid fa-circle-yen text-[var(--color-green-button)]"></i></span>
+        </div>
+        <div class="flex items-center gap-2 font-bold">
+            <span class="uppercase opacity-80 text-xs tracking-wider text-[var(--text-color-subheader)]">{{localize "SR5Marketplace.Marketplace.TotalAvailability"}}:</span>
+            <span class="text-lg">{{basket.totalAvailability}}</span>
+        </div>
+        {{#if basket.totalKarma}}
+        <div class="flex items-center gap-2 font-bold">
+            <span class="uppercase opacity-80 text-xs tracking-wider text-[var(--text-color-subheader)]">{{localize "SR5Marketplace.Marketplace.TotalKarma"}}:</span>
+            <span class="text-lg">{{basket.totalKarma}} <i class="fa-duotone fa-solid fa-circle-star text-[var(--color-yellow-base)]"></i></span>
+        </div>
+        {{/if}}
+        {{#if basket.totalEssenceCost}}
+        <div class="flex items-center gap-2 font-bold">
+            <span class="uppercase opacity-80 text-xs tracking-wider text-[var(--text-color-subheader)]">{{localize "SR5Marketplace.Marketplace.TotalEssence"}}:</span>
+            <span class="text-lg text-[#4da6ff]">{{basket.totalEssenceCost}}</span>
+        </div>
+        {{/if}}
     </div>
 
-    <hr class="marketplace-settings-hr">
-
-    <div class="actor-contact-grid">
-
-        <div class="grid-header">{{localize "SR5Marketplace.Marketplace.selectContact"}}</div>
+    {{!-- CONTACTS SELECTION --}}
+    <div class="actor-contact-grid flex flex-col gap-2 mt-2">
+        <h3 class="text-sm font-bold uppercase tracking-wider text-[var(--text-color-header)] pb-1">{{localize "SR5Marketplace.Marketplace.selectContact"}}</h3>
+        
+        <div class="grid grid-cols-1 @md:grid-cols-2 gap-2">
         {{#each contacts}}
-            <div class="contact-card {{#if this.isSelected}}selected{{/if}}">
+            <div class="contact-card relative flex flex-col border rounded overflow-hidden transition-all bg-[var(--color-black-transparent-20)] {{#if this.isSelected}}border-[var(--border-color-highlight)] shadow-[0_0_5px_var(--color-yellow-light)]{{else}}border-[var(--color-black-transparent-20)]{{/if}}">
 
-                <input type="checkbox" id="contact-toggle-{{this._id}}" class="contact-toggle-checkbox">
+                <input type="checkbox" id="contact-toggle-{{this._id}}" class="contact-toggle-checkbox hidden peer">
 
-                <div class="contact-card-visible">
-                    <img 
-                        src="{{this.img}}" 
-                        alt="{{this.name}}" 
-                        class="contact-image" 
-                        data-action="selectContact" 
-                        data-contact-uuid="{{this.uuid}}"
-                        title="Click to Select/Deselect Contact"
-                    />
-                    <span class="contact-name">{{this.name}}</span>
+                <div class="contact-card-visible flex items-center p-2 gap-3 z-10 relative">
+                    <img src="{{this.img}}" alt="{{this.name}}" class="w-10 h-10 object-cover rounded cursor-pointer hover:brightness-110 flex-shrink-0" data-action="selectContact" data-contact-uuid="{{this.uuid}}" title="Click to Select/Deselect Contact">
+                    <span class="contact-name font-bold text-sm truncate flex-grow cursor-pointer text-[var(--text-color-primary)]" data-action="selectContact" data-contact-uuid="{{this.uuid}}">{{this.name}}</span>
                     
-                    <label for="contact-toggle-{{this._id}}" class="contact-expand-toggle" title="Toggle Details">
-                        <i class="fas fa-chevron-down"></i>
+                    <label for="contact-toggle-{{this._id}}" class="contact-expand-toggle w-6 h-6 flex items-center justify-center rounded hover:bg-[var(--collapsible-header-hover-bg)] cursor-pointer transition-transform peer-checked:rotate-180" title="Toggle Details">
+                        <i class="fas fa-chevron-down text-xs opacity-70"></i>
                     </label>
                 </div>
 
-                <div class="contact-details">
-                    <p><strong>Loyalty:</strong> {{this.system.loyalty}}</p>
-                    <p><strong>Connection:</strong> {{this.system.connection}}</p>
-                    <div>{{{this.system.description.value}}}</div>
+                <div class="contact-details hidden peer-checked:flex flex-col p-2 pt-0 text-xs bg-transparent text-[var(--text-color-primary)]">
+                    <div class="flex gap-4 mb-1 mt-2 opacity-90">
+                        <p><strong class="text-[var(--text-color-subheader)]">Loyalty:</strong> {{this.system.loyalty}}</p>
+                        <p><strong class="text-[var(--text-color-subheader)]">Connection:</strong> {{this.system.connection}}</p>
+                    </div>
+                    <div class="line-clamp-3 italic opacity-80">{{{this.system.description.value}}}</div>
                 </div>
-
+            </div>
         {{else}}
-            <div class="hint-text grid-span-all">{{purchasingActor.name}} has no contacts.</div>
+            <div class="italic opacity-60 text-sm py-2 text-[var(--text-color-primary)]">{{purchasingActor.name}} has no contacts.</div>
         {{/each}}
+        </div>
     </div>
-    </div>
-    <hr class="marketplace-settings-hr">
-    {{!-- Availability Test Area --}}
-    {{> "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html" . }}
 
-    <div class="basket-actions">
-        <button id="send-request-button" class="send-request-button" data-action="sendRequest">{{localize 'SR5Marketplace.Marketplace.SendRequest'}}</button>
-        <button id="cancel-request-button" class="send-request-button cancel" data-action="cancelRequest">{{localize 'SR5Marketplace.Marketplace.CancelRequest'}}</button>
+    {{!-- AVAILABILITY TEST --}}
+    <div class="mt-4">
+        {{> "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html" . }}
+    </div>
+
+    {{!-- BOTTOM ACTIONS (Removed top border line) --}}
+    <div class="basket-actions flex justify-end gap-3 mt-auto pt-6 pb-2">
+        <button id="cancel-request-button" class="px-4 py-1.5 rounded font-bold text-sm border border-[var(--color-red-bright)] text-[var(--color-red-bright)] hover:bg-[var(--color-red-bright)] hover:text-[var(--color-white)] transition-colors shadow-sm" data-action="cancelRequest">
+            {{localize 'SR5Marketplace.Marketplace.CancelRequest'}}
+        </button>
+        <button id="send-request-button" class="px-6 py-1.5 rounded font-bold text-sm bg-[var(--color-green-button)] text-[var(--color-white)] hover:brightness-110 shadow-sm transition-colors border border-[var(--color-green-base)]" data-action="sendRequest">
+            {{localize 'SR5Marketplace.Marketplace.SendRequest'}}
+        </button>
     </div>
 </div>

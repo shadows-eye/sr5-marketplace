@@ -23,7 +23,9 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             "sr5-marketplace",
             "sr5-market",
             "themed",
-            currentTheme // Add the detected theme here
+            currentTheme, // Add the detected theme here
+            "min-w-[636px]",
+            "min-h-[510px]"
         ];
         super(options);
         this.testType = null;

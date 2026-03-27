@@ -56,7 +56,10 @@ export default class ItemDataServices {
                         "system.category", "system.type", "system.technology.cost", 
                         "system.technology.rating", "system.technology.availability", 
                         "system.karma", "system.essence", "system.quantity", 
-                        "system.range.ranges.category"
+                        "system.range.ranges.category",
+                        "system.drain",
+                        "system.mount_point",
+                        "system.slots"
                     ]
                 });
 

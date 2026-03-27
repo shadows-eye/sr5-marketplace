@@ -231,4 +231,13 @@ export class BasketService {
         basket.shopActorUuid = actorUuid;
         await this.saveBasket(basket);
     }
+
+    /**
+     * Clears the current user's basket by resetting it to the default state.
+     * @param {string|null} [userId=null] The ID of the user to clear the basket for.
+     */
+    async clearBasket(userId = null) {
+        const defaultBasket = this._getDefaultBasketState();
+        await this.saveBasket(defaultBasket, userId);
+    }
 }
