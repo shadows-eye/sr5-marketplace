@@ -90,7 +90,10 @@ const initializeTemplates = () => {
         "modules/sr5-marketplace/templates/documents/actor/partials/shop-skills.html",
         "modules/sr5-marketplace/templates/documents/actor/partials/shop-inventory.html",
         "modules/sr5-marketplace/templates/documents/items/itemPreviewApp/item-preview.html",
-        "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html"
+        "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html",
+        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/Builder.html",
+        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/ItemDetails.html",
+        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/multi-select.html"
     ]);
 };
 // Initialize module settings
