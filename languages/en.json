@@ -222,6 +222,58 @@
                 "Failed": "Could not be acquired."
             }
         },
+        "ItemBuilder": {
+            "Save": "Save",
+            "Cancel": "Cancel",
+            "BuildItem": "Build Item",
+            "SelectAsBase": "Select as Base Item",
+            "SearchAllMods": "Search all modifications...",
+            "SearchPlaceholder": "Search items...",
+            "nav": {
+                "builder": "Builder",
+                "effects": "Effects",
+                "dialog": "Dialog"
+            },
+            "Items": {
+                "Header": "Base Items",
+                "baseItemPlaceholder":{
+                    "title": "Select a Base Item",
+                    "description": "Choose an item from the list on the left to begin building."
+                }
+            },
+            "Modifications": {
+                "Header": "Available Modifications"
+            },
+            "Effects": {
+                "ManageEffects": "Manage Effects",
+                "ManageEffectsHint": "View, create, and edit the active effects applied by the base item and its modifications.",
+                "AddEffect": "Add Effect",
+                "InnateLockedHint": "This is an innate effect of the item and cannot be deleted, but it can be overridden.",
+                "EditEffectHeader": "Edit Effect",
+                "CreateEffectHeader": "Create New Effect",
+                "EffectNameLabel": "Effect Name",
+                "EffectNamePlaceholder": "e.g., Smartlink Bonus",
+                "EffectIconLabel": "Icon",
+                "SelectIconTooltip": "Select an icon for this effect",
+                "ApplyToLabel": "Apply To",
+                "TestFilterLabel": "Filter by Test",
+                "SelectTestsPlaceholder": "Any Test",
+                "CategoryFilterLabel": "Filter by Category",
+                "SelectCategoriesPlaceholder": "Any Category",
+                "SkillFilterLabel": "Filter by Skill",
+                "SelectSkillsPlaceholder": "Any Skill",
+                "AttributeFilterLabel": "Filter by Attribute",
+                "SelectAttributesPlaceholder": "Any Attribute",
+                "LimitFilterLabel": "Filter by Limit",
+                "SelectLimitsPlaceholder": "Any Limit",
+                "AttributeKeyLabel": "Attribute / Property Key",
+                "AttributeKeyPlaceholder": "Select a property to modify from the groups below.",
+                "ChangeModeLabel": "Change Mode",
+                "EffectValueLabel": "Value",
+                "SelectDerivedValueTooltip": "Select a property from the base item to derive this value from.",
+                "SelectDerivedValueLabel": "Select a property from the Base Item"
+            }
+        },
         "AppDialogItem": {
                 "result": {
                     "Test": "Test Result",

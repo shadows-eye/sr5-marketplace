@@ -200,6 +200,109 @@
                 "Failure": "Konnte nicht beschafft werden."
             }
         },
+        "ItemBuilder": {
+
+            "Save": "Speichern",
+
+            "Cancel": "Abbrechen",
+
+            "BuildItem": "Artikel bauen",
+
+            "SelectAsBase": "Als Basisartikel auswählen",
+
+            "SearchAllMods": "Alle Modifikationen durchsuchen...",
+
+            "SearchPlaceholder": "Gegenstände suchen...",
+
+            "nav": {
+
+                "builder": "Builder",
+
+                "effects": "Effekte",
+
+                "dialog": "Dialog"
+
+            },
+
+            "Items": {
+
+                "Header": "Basisartikel",
+
+                "baseItemPlaceholder":{
+
+                    "title": "Wähle ein Basisartikel",
+
+                    "description": "Wähle ein Artikel aus der linken Liste, um es zu bauen."
+
+                }
+
+            },
+
+            "Modifications": {
+
+                "Header": "Verfügbare Modifikationen"
+
+            },
+
+            "Effects": {
+
+                "ManageEffects": "Effekte verwalten",
+
+                "ManageEffectsHint": "Aktive Effekte des Basisartikels und seiner Modifikationen ansehen, erstellen und bearbeiten.",
+
+                "AddEffect": "Effekt hinzufügen",
+
+                "InnateLockedHint": "Dies ist ein angeborener Effekt des Artikels und kann nicht gelöscht, aber überschrieben werden.",
+
+                "EditEffectHeader": "Effekt bearbeiten",
+
+                "CreateEffectHeader": "Neuen Effekt erstellen",
+
+                "EffectNameLabel": "Effektname",
+
+                "EffectNamePlaceholder": "z.B., Smartlink-Bonus",
+
+                "EffectIconLabel": "Symbol",
+
+                "SelectIconTooltip": "Wähle ein Symbol für diesen Effekt",
+
+                "ApplyToLabel": "Anwenden auf",
+
+                "TestFilterLabel": "Nach Probe filtern",
+
+                "SelectTestsPlaceholder": "Jede Probe",
+
+                "CategoryFilterLabel": "Nach Kategorie filtern",
+
+                "SelectCategoriesPlaceholder": "Jede Kategorie",
+
+                "SkillFilterLabel": "Nach Fertigkeit filtern",
+
+                "SelectSkillsPlaceholder": "Jede Fertigkeit",
+
+                "AttributeFilterLabel": "Nach Attribut filtern",
+
+                "SelectAttributesPlaceholder": "Jedes Attribut",
+
+                "LimitFilterLabel": "Nach Limit filtern",
+
+                "SelectLimitsPlaceholder": "Jedes Limit",
+
+                "AttributeKeyLabel": "Attribut / Eigenschaft",
+
+                "AttributeKeyPlaceholder": "Wähle eine Eigenschaft aus den Gruppen unten aus.",
+
+                "ChangeModeLabel": "Änderungsmodus",
+
+                "EffectValueLabel": "Wert",
+
+                "SelectDerivedValueTooltip": "Wähle eine Eigenschaft vom Basisartikel, um diesen Wert abzuleiten.",
+
+                "SelectDerivedValueLabel": "Wähle eine Eigenschaft vom Basisartikel"
+
+            }
+
+        },
         "AppDialogItem": {
                 "result": {
                     "Test": "Testergebnis",
