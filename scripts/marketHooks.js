@@ -304,11 +304,14 @@ Hooks.once("init", () => {
 
 /**
  * A hook that runs when the game is fully ready and all data is loaded.
- * This is the perfect place to run our one-time item indexing.
  */
 Hooks.on("ready", async () => {
     console.log("SR5 Marketplace | Module is ready!");
-    await game.sr5marketplace.api.itemData.initialize();
+    
+    // --- REMOVED: await game.sr5marketplace.api.itemData.initialize(); ---
+    game.sr5marketplace.api.itemData.buildIndex().then(() => {
+        console.log("SR5 Marketplace | Item index successfully cached in memory.");
+    });
     if (game.user.isGM) {
         game.socket.on("module.sr5-marketplace", () => {
             // A real-time event was received. Trigger a re-draw after a short delay.
@@ -319,7 +322,8 @@ Hooks.on("ready", async () => {
         // On first load, render the controls to set the initial badge state.
         setTimeout(() => { if (ui.controls) ui.controls.render(true); }, 1000);
     }
-  const tests = await import('../utils/tests.mjs');
+    
+    const tests = await import('../utils/tests.mjs');
     tests.registerTests();
 });
 
@@ -352,7 +356,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
             visible: true,
             toggle: true,
             active: false, // Default state
-            onClick: () => { 
+            onChange: () => { 
                 const app = Object.values(ui.windows).find(app => app.id === "inGameMarketplace");
                 if (app) {
                     app.close();
@@ -375,7 +379,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
                 visible: true,
                 toggle: true,
                 active: Object.values(ui.windows).some(app => app.id === "ItemBuilderApp"),
-                onClick: (toggled) => {
+                onChange: (toggled) => {
                     const app = Object.values(ui.windows).find(app => app.id === "ItemBuilderApp");
                     if (toggled) {
                         if (!app) new ItemBuilderApp().render(true);

@@ -34,34 +34,25 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         this.attribute = null;
         this.modifier = null;
         this.availabilityStr = null;
+        // --- Services & App State ---
         this.itemData = game.sr5marketplace.api.itemData;
         this.basketService = new BasketService();
         this.tabGroups = { main: "shop" };
         this.purchasingActor = null;
         this.searchService = null;
-        // Handle passed-in shop context ---
+
+        // --- Handle passed-in shop context ---
         this.shopActorUuid = options.shopActorUuid ?? null;
-        this.selectedSource = this.shopActorUuid ?? "global"; // Default to the specific shop if provided
+        this.selectedSource = this.shopActorUuid ?? "global"; // Default to global or specific shop
 
+        // --- FIX: Leave this null! The _prepareContext method will handle picking the first category ---
         this.selectedKey = null;
-
-        const itemsByType = this.itemData.itemsByType ?? {}; //Might need to go because of ItemDataService.mjs
-        let defaultKey = null;
-
-        // 1. Prioritize "rangedWeapons" if it has items.
-        if (itemsByType.rangedWeapons && itemsByType.rangedWeapons.items.length > 0) {
-            defaultKey = "rangedWeapons";
-        } 
-        // 2. Otherwise, find the first category that has items.
-        else {
-            const firstAvailableCategory = Object.entries(itemsByType).find(([, data]) => data.items.length > 0);
-            if (firstAvailableCategory) {
-                defaultKey = firstAvailableCategory[0];
-            }
-        }
-        
-        // 3. Set the selected key based on the logic above.
-        this.selectedKey = defaultKey;
+        this.scrollState = {
+            throttle: false,
+            itemHeight: 60, // Estimate of how tall your item card is in pixels
+            entries: []     // The full list of items we want to render
+        };
+        this.currentCategoryItems = [];
     }
 
     /** @override */
@@ -107,10 +98,9 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
      */
     async #getItemsForSource() {
         if (this.selectedSource === "global") {
-            return this.itemData.itemsByType;
+            return await this.itemData.fetchGlobalItems();
         }
-        // --- UPDATED: Call the new method on the service ---
-        return this.itemData.getShopItems(this.selectedSource);
+        return await this.itemData.getShopItems(this.selectedSource);
     }
 
     /** @override */
@@ -118,18 +108,22 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         super._onRender(context, options);
 
         if (this.tabGroups.main === "shop") {
-            this.searchService = new SearchService(this.element);
+            this.searchService = new SearchService(this.element, this._applySearchFilter.bind(this));
             this.searchService.initialize();
             
             const categorySelector = this.element.querySelector("#item-type-selector");
-            if (categorySelector) {
-                categorySelector.addEventListener("change", this.onChangeCategory.bind(this));
-            }
+            if (categorySelector) categorySelector.addEventListener("change", this.onChangeCategory.bind(this));
 
-            // --- NEW: Add a dedicated listener for the source toggle checkbox ---
             const sourceToggle = this.element.querySelector("#marketplace-source-toggle");
-            if (sourceToggle) {
-                sourceToggle.addEventListener("change", this.onSourceChange.bind(this));
+            if (sourceToggle) sourceToggle.addEventListener("change", this.onSourceChange.bind(this));
+
+            // --- NEW: Initialize Virtual Scroller ---
+            const itemsContainer = this.element.querySelector("#marketplace-items");
+            if (itemsContainer) {
+                // Attach the scroll listener
+                itemsContainer.addEventListener("scroll", this._onScrollItems.bind(this), { passive: true });
+                // Trigger the first draw (items 0 to 50)
+                this._renderItemSlice(0, 50);
             }
         } else {
             this.searchService = null;
@@ -296,7 +290,13 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 
                 partialContext.itemsByType = itemsByType;
                 partialContext.selectedKey = this.selectedKey;
-                partialContext.selectedItems = this.selectedKey ? (itemsByType[this.selectedKey]?.items || []) : [];
+                
+                // --- NEW: Save the items to the Virtual Scroller instead of Handlebars ---
+                const itemsToRender = this.selectedKey ? (itemsByType[this.selectedKey]?.items || []) : [];
+                this.currentCategoryItems = itemsToRender; 
+                this.scrollState.entries = itemsToRender; // Scroller reads from this one!
+                
+                partialContext.selectedItems = []; // Let the scroller draw the HTML
                 tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.html", partialContext);
             break;
         }
@@ -916,5 +916,97 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         } catch(e) {
             console.error("Marketplace | Failed to continue extended test:", e);
         }
+    }
+
+    /**
+     * Renders a specific slice of the item array, padding the top and bottom 
+     * to maintain the illusion of a massive scrollable list.
+     */
+    async _renderItemSlice(indexStart, indexEnd) {
+        if (this.scrollState.throttle) return;
+        this.scrollState.throttle = true;
+
+        const container = this.element.querySelector("#marketplace-items");
+        if (!container) {
+            this.scrollState.throttle = false;
+            return;
+        }
+
+        const toRender = [];
+
+        // 1. Calculate Top Padding
+        const topPad = document.createElement("div");
+        topPad.style.height = `${indexStart * this.scrollState.itemHeight}px`;
+        topPad.style.gridColumn = "1 / -1"; // Ensures it spans full width if using CSS grid
+        toRender.push(topPad);
+
+        // 2. Render the Visible Items in one Handlebars pass
+        indexStart = Math.max(0, indexStart);
+        indexEnd = Math.min(this.scrollState.entries.length, indexEnd);
+        const itemSlice = this.scrollState.entries.slice(indexStart, indexEnd);
+
+        const html = await foundry.applications.handlebars.renderTemplate(
+            "modules/sr5-marketplace/templates/documents/items/libraryItem.html",
+            { items: itemSlice, purchasingActor: this.purchasingActor }
+        );
+
+        const template = document.createElement("template");
+        template.innerHTML = html;
+        toRender.push(...template.content.children);
+
+        // 3. Calculate Bottom Padding
+        const bottomPad = document.createElement("div");
+        bottomPad.style.height = `${(this.scrollState.entries.length - indexEnd) * this.scrollState.itemHeight}px`;
+        bottomPad.style.gridColumn = "1 / -1";
+        toRender.push(bottomPad);
+
+        // Instantly swap the DOM elements
+        container.replaceChildren(...toRender);
+        this.scrollState.throttle = false;
+    }
+
+    /**
+     * Calculates which items should be visible based on scroll position.
+     */
+    async _onScrollItems(event) {
+        if (this.scrollState.throttle) return;
+        const target = event.currentTarget;
+        const { scrollTop, clientHeight } = target;
+
+        const itemsPerScreen = Math.ceil(clientHeight / this.scrollState.itemHeight);
+        // Load a buffer of 2 screens above, and 5 screens below for smooth scrolling
+        const startIndex = Math.max(0, Math.floor(scrollTop / this.scrollState.itemHeight) - (2 * itemsPerScreen));
+        const endIndex = Math.min(this.scrollState.entries.length, startIndex + (5 * itemsPerScreen));
+
+        await this._renderItemSlice(startIndex, endIndex);
+    }
+
+    /**
+     * Triggered by the SearchService. Filters the master data list based on tags
+     * and search text, then instantly redraws the Virtual Scroller.
+     */
+    _applySearchFilter(tags, searchTerm) {
+        // 1. Start with the full, unfiltered list of items for this category
+        let filtered = this.currentCategoryItems;
+
+        // 2. Filter the data array
+        if (tags.length > 0 || searchTerm) {
+            filtered = filtered.filter(item => {
+                const itemName = item.name.toLowerCase();
+                const matchesTags = tags.every(tag => itemName.includes(tag));
+                const matchesLive = searchTerm ? itemName.includes(searchTerm) : true;
+                return matchesTags && matchesLive;
+            });
+        }
+
+        // 3. Update the scroller's active entries
+        this.scrollState.entries = filtered;
+
+        // 4. Reset the scrollbar to the top and redraw!
+        const itemsContainer = this.element.querySelector("#marketplace-items");
+        if (itemsContainer) {
+            itemsContainer.scrollTop = 0;
+        }
+        this._renderItemSlice(0, 50);
     }
 }

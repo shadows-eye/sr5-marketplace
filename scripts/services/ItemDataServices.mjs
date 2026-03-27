@@ -1,5 +1,3 @@
-import { IndexService } from './IndexService.mjs';
-
 /**
  * A helper function to safely retrieve a nested property from an object using a dot-notation string.
  * @param {object} obj The object to query.
@@ -11,6 +9,86 @@ const getNested = (obj, path) => {
 };
 
 export default class ItemDataServices {
+
+    constructor() {
+        this._globalItemsCache = null;
+        this._indexPromise = null; 
+        
+        // --- NEW: Cache the heavy categorized objects ---
+        this._categorizedAll = null;
+        this._categorizedBase = null;
+        this._categorizedMods = null;
+    }
+
+    invalidateCache() {
+        if (this._globalItemsCache) {
+            console.log("SR5 Marketplace | Item changes detected. Invalidating index cache.");
+        }
+        this._globalItemsCache = null;
+        this._categorizedAll = null;
+        this._categorizedBase = null;
+        this._categorizedMods = null;
+        this._indexPromise = null;
+    }
+
+    async buildIndex() {
+        if (this._globalItemsCache) return this._globalItemsCache;
+        if (this._indexPromise) return this._indexPromise;
+
+        this._indexPromise = (async () => {
+            const excludedTypes = ["call_in_action", "critter_power", "host", "sprite_power", "contact"];
+            let allItems = [];
+
+            // 1. Fetch custom items created in the local World
+            for (const item of game.items.contents) {
+                if (!excludedTypes.includes(item.type) && !item.name.includes('#[CF_tempEntity]')) {
+                    const itemData = item.toObject(false);
+                    itemData.uuid = item.uuid;
+                    allItems.push(itemData);
+                }
+            }
+
+            // 2. Fetch from all visible Item Compendiums
+            const packs = game.packs.filter(p => p.metadata.type === "Item" && p.visible);
+            for (const pack of packs) {
+                const index = await pack.getIndex({
+                    fields: [
+                        "system.category", "system.type", "system.technology.cost", 
+                        "system.technology.rating", "system.technology.availability", 
+                        "system.karma", "system.essence", "system.quantity", 
+                        "system.range.ranges.category"
+                    ]
+                });
+
+                for (const entry of index) {
+                    if (!excludedTypes.includes(entry.type) && !entry.name.includes('#[CF_tempEntity]')) {
+                        entry.uuid = entry.uuid || `Compendium.${pack.collection}.${entry._id}`;
+                        allItems.push(entry);
+                    }
+                }
+            }
+
+            // --- THE FIX: Pre-calculate and cache the heavy category objects ---
+            this._globalItemsCache = allItems;
+            
+            const categorizedAll = this._categorizeItems(allItems);
+            this._categorizedAll = this._transformToAllItems(categorizedAll, allItems);
+
+            const baseItems = allItems.filter(item => item.type !== "modification");
+            const categorizedBase = this._categorizeItems(baseItems);
+            this._categorizedBase = this._transformToBaseItems(categorizedBase, baseItems);
+
+            const modItems = allItems.filter(item => item.type === "modification");
+            const categorizedMods = this._categorizeItems(modItems);
+            this._categorizedMods = this._transformToModifications(categorizedMods, modItems);
+
+            this._indexPromise = null;
+            return allItems;
+        })();
+
+        return this._indexPromise;
+    }
+
     /**
      * A static mapping of all item categories, subcategories, and sub-subcategories.
      * This object defines the structure for how items will be organized in the UI.
@@ -41,7 +119,7 @@ export default class ItemDataServices {
                         grenadeLauncher: { label: "SR5.Weapon.Range.Category.GrenadeLauncher", items: [] },
                         missileLauncher: { label: "SR5.Weapon.Range.Category.MissileLauncher", items: [] },
                         bow: { label: "SR5.Weapon.Range.Category.Bow", items: [] },
-                        crossbow: { label: "SR5.Weapon.Range.Category.LightCrossbow", items: [] }, // Grouping all crossbows
+                        crossbow: { label: "SR5.Weapon.Range.Category.LightCrossbow", items: [] },
                         harpoonGun: { label: "SR5.Weapon.Range.Category.HarpoonGun", items: [] },
                         flamethrower: { label: "SR5.Weapon.Range.Category.Flamethrower", items: [] },
                     }
@@ -122,7 +200,6 @@ export default class ItemDataServices {
      * A static mapping of item types and subtypes to their representative icons.
      */
     static ITEM_TYPE_ICONS = {
-        // Main Types
         armor: "modules/sr5-marketplace/assets/icons/types/armor.webp",
         device: "modules/sr5-marketplace/assets/icons/types/commlink.webp",
         cyberware: "modules/sr5-marketplace/assets/icons/types/cyberware.webp",
@@ -130,8 +207,6 @@ export default class ItemDataServices {
         equipment: "modules/sr5-marketplace/assets/icons/types/equipment.webp",
         spell: "modules/sr5-marketplace/assets/icons/types/spell.webp",
         modification: "modules/sr5-marketplace/assets/icons/types/modification.webp",
-
-        // Weapon Sub-Subtypes
         weapon: {
             lightPistol: "modules/sr5-marketplace/assets/icons/weapons/light_pistol.webp",
             taser: "modules/sr5-marketplace/assets/icons/weapons/taser.webp",
@@ -147,47 +222,46 @@ export default class ItemDataServices {
             thrown: "modules/sr5-marketplace/assets/icons/weapons/thrown.webp",
             default: "modules/sr5-marketplace/assets/icons/weapons/default.webp"
         },
-        
         default: "modules/sr5-marketplace/assets/icons/types/equipment.webp"
     };
 
-    constructor() {
-        this.items = [];
-        this.isIndexed = false;
+    /**
+     * Retrieves items for the UI, pulling instantly from the pre-calculated category cache.
+     */
+    async fetchGlobalItems(filterType = 'all') {
+        // Ensure index is built
+        await this.buildIndex();
+
+        // Immediately return the cached categorized object (0ms UI render!)
+        if (filterType === 'base') return this._categorizedBase;
+        if (filterType === 'modifications') return this._categorizedMods;
+        return this._categorizedAll;
     }
 
     /**
-     * Initializes the service by using the IndexService to build the item cache.
-     * This is the method that should be called from the 'ready' hook.
+     * Gets a categorized list of items filtered by a specific shop's inventory.
+     * @param {string} shopActorUuid The UUID of the shop actor.
+     * @returns {Promise<object>} A categorized object of items.
      */
-    async initialize() {
-        if (this.isIndexed) {
-            console.log("SR5 Marketplace | Items already indexed for this session.");
-            return;
+    async getShopItems(shopActorUuid) {
+        const shopActor = await fromUuid(shopActorUuid);
+        if (!shopActor?.system?.shop?.inventory) return this._transformToAllItems({}, []);
+
+        const shopItems = [];
+        // Resolve the UUIDs from the shop's inventory into lightweight objects
+        for (const invItem of Object.values(shopActor.system.shop.inventory)) {
+            const item = await fromUuid(invItem.itemUuid);
+            if (item) {
+                const itemData = item.toObject(false);
+                itemData.uuid = item.uuid;
+                shopItems.push(itemData);
+            }
         }
-
-        const indexService = new IndexService();
-        this.items = await indexService.buildIndex();
-        this.isIndexed = true;
+        
+        const categorized = this._categorizeItems(shopItems);
+        return this._transformToAllItems(categorized, shopItems);
     }
 
-    /**
-     * Gets the cached list of all indexed items.
-     * @returns {Array<object>} An array of plain item data objects.
-     */
-    getItems() {
-        if (!this.isIndexed) {
-            console.warn("SR5 Marketplace | Item index has not been built yet. Returning empty array.");
-            return [];
-        }
-        return this.items;
-    }
-    
-    /**
-     * Gets a representative image for an item based on its type or subtype.
-     * @param {object|null} itemData The plain data object of an item.
-     * @returns {string} The path to the representative icon.
-     */
     getRepresentativeImage(itemData) {
         const icons = this.constructor.ITEM_TYPE_ICONS;
         if (!itemData) return icons.default;
@@ -206,14 +280,11 @@ export default class ItemDataServices {
                 if (category === 'range') {
                     subKey = getNested(itemData, 'system.range.ranges.category');
                 } else if (category === 'melee') {
-                    // Assuming melee weapons might have a 'type' like 'blades' or 'clubs'
                     subKey = itemData.system?.type;
                 } else {
                     subKey = category; // for 'thrown'
                 }
             }
-            // Add other complex type logic here if needed
-    
             return iconMapping[subKey] || iconMapping.default || icons.default;
         }
     
@@ -236,39 +307,31 @@ export default class ItemDataServices {
 
             if (!categoryDef) continue;
 
-            // Add item to the top-level category
             categoryDef.items.push(item);
 
-            // Handle Subcategories
             if (categoryDef.subcategories) {
-                // Determine the subcategory key. Default to system.category or system.type.
                 let subcatKey = getNested(item, 'system.category') || getNested(item, 'system.type');
                 
-                // Specific logic for certain item types
                 if (type === 'modification') {
                     subcatKey = getNested(item, 'system.type');
                 } else if (type === 'armor') {
-                    subcatKey = getNested(item, 'system.type'); // Armor subcategories are in system.type
+                    subcatKey = getNested(item, 'system.type'); 
                 }
-
 
                 if (subcatKey && categoryDef.subcategories[subcatKey]) {
                     const subcatDef = categoryDef.subcategories[subcatKey];
                     subcatDef.items.push(item);
 
-                    // Handle Sub-subcategories (currently specific to weapons)
                     if (subcatDef.subsubcategories) {
                         let subsubcatKey = null;
                         if (type === 'weapon' && subcatKey === 'range') {
                            subsubcatKey = getNested(item, 'system.range.ranges.category');
-                           // Simple fallback for crossbows since they have multiple categories
                            if (subsubcatKey?.toLowerCase().includes('crossbow')) subsubcatKey = 'crossbow';
                         }
                         if (type === 'weapon' && subcatKey === 'melee') {
-                           subsubcatKey = getNested(item, 'system.type'); // e.g., 'blades', 'clubs'
+                           subsubcatKey = getNested(item, 'system.type'); 
                         }
                          if (type === 'weapon' && subcatKey === 'thrown') {
-                           // differentiate grenades from knives
                            subsubcatKey = item.name.toLowerCase().includes('grenade') ? 'grenade' : 'throwing_weapons';
                         }
 
@@ -313,8 +376,6 @@ export default class ItemDataServices {
     _transformToAllItems(categorized, allIncludedItems) {
         return {
             filteredItems: { label: "SR5Marketplace.Marketplace.ItemTypes.AllItems", items: allIncludedItems },
-
-            // Enriched Base Items
             rangedWeapons: this._createEnrichedCategory(getNested(categorized, 'weapon.subcategories.range'), "SR5Marketplace.Marketplace.ItemTypes.RangedWeapons"),
             meleeWeapons: this._createEnrichedCategory(getNested(categorized, 'weapon.subcategories.melee'), "SR5Marketplace.Marketplace.ItemTypes.MeleeWeapons"),
             armor: this._createEnrichedCategory(categorized.armor, "SR5Marketplace.Marketplace.ItemTypes.Armor"),
@@ -328,8 +389,6 @@ export default class ItemDataServices {
             echo: this._createEnrichedCategory(categorized.echo, "SR5Marketplace.Marketplace.ItemTypes.Echo"),
             qualitys: this._createEnrichedCategory(categorized.quality, "SR5Marketplace.Marketplace.ItemTypes.Qualitys"),
             complex_form: this._createEnrichedCategory(categorized.complex_form, "SR5Marketplace.Marketplace.ItemTypes.complex_form"),
-
-            // Enriched Modifications
             weaponMods: this._createEnrichedCategory(getNested(categorized, 'modification.subcategories.weapon'), "SR5Marketplace.Marketplace.ItemTypes.WeaponMods"),
             armorMods: this._createEnrichedCategory(getNested(categorized, 'modification.subcategories.armor'), "SR5Marketplace.Marketplace.ItemTypes.ArmorMods"),
             vehicleMods: this._createEnrichedCategory(getNested(categorized, 'modification.subcategories.vehicle'), "SR5Marketplace.Marketplace.ItemTypes.VehicleMods"),
@@ -345,11 +404,9 @@ export default class ItemDataServices {
      */
     _transformToBaseItems(categorized, allIncludedItems) {
         const allItemsTransformed = this._transformToAllItems(categorized, allIncludedItems);
-        // Simply remove the modification keys from the full structure
         delete allItemsTransformed.weaponMods;
         delete allItemsTransformed.armorMods;
         delete allItemsTransformed.vehicleMods;
-        // The top-level key should be for all *base* items
         allItemsTransformed.filteredItems.items = allIncludedItems;
         return allItemsTransformed;
     }
@@ -368,59 +425,5 @@ export default class ItemDataServices {
             armorMods: this._createEnrichedCategory(getNested(categorized, 'modification.subcategories.armor'), "SR5Marketplace.Marketplace.ItemTypes.ArmorMods"),
             vehicleMods: this._createEnrichedCategory(getNested(categorized, 'modification.subcategories.vehicle'), "SR5Marketplace.Marketplace.ItemTypes.VehicleMods"),
         };
-    }
-
-    /**
-     * Gets a categorized list of items filtered by a specific shop's inventory.
-     * @param {string} shopActorUuid The UUID of the shop actor.
-     * @returns {Promise<object>} A categorized object of items (`itemsByType` format).
-     */
-    async getShopItems(shopActorUuid) {
-        const shopActor = await fromUuid(shopActorUuid);
-        if (!shopActor?.system?.shop?.inventory) return this._transformToAllItems({}, []);
-
-        const allIndexedItems = this.getItems();
-        const shopItemUuids = new Set(
-            Object.values(shopActor.system.shop.inventory).map(item => item.itemUuid)
-        );
-        const shopItems = allIndexedItems.filter(item => shopItemUuids.has(item.uuid));
-        
-        const categorized = this._categorizeItems(shopItems);
-        return this._transformToAllItems(categorized, shopItems);
-    }
-
-    /**
-     * Getter that organizes items by type for UI rendering, including modifications.
-     */
-    get itemsByType() {
-        const allItems = this.getItems();
-        const excludedTypes = ["call_in_action", "critter_power", "host", "sprite_power", "contact"];
-        const filteredItems = allItems.filter(item => !excludedTypes.includes(item.type));
-
-        const categorized = this._categorizeItems(filteredItems);
-        return this._transformToAllItems(categorized, filteredItems);
-    }
-
-    /**
-     * Getter that returns a categorized list of ONLY non-modification items.
-     */
-    get baseItemsByType() {
-        const allItems = this.getItems();
-        const excludedTypes = ["modification", "call_in_action", "critter_power", "host", "sprite_power", "contact"];
-        const baseItems = allItems.filter(item => !excludedTypes.includes(item.type));
-
-        const categorized = this._categorizeItems(baseItems);
-        return this._transformToBaseItems(categorized, baseItems);
-    }
-
-    /**
-     * Getter that returns a categorized list of ONLY modification items.
-     */
-    get modificationsByType() {
-        const allItems = this.getItems();
-        const allModifications = allItems.filter(item => item.type === "modification");
-
-        const categorized = this._categorizeItems(allModifications);
-        return this._transformToModifications(categorized, allModifications);
     }
 }

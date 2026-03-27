@@ -5,26 +5,22 @@
 export class SearchService {
     /**
      * @param {HTMLElement} appElement The root element of the application window.
+     * @param {Function} onFilterChange Callback triggered when search parameters change.
      */
-    constructor(appElement) {
+    constructor(appElement, onFilterChange) {
         this.appElement = appElement;
+        this.onFilterChange = onFilterChange; // The callback to filter data
         this.activeFilters = [];
         
-        // Bind the context of 'this' for the event handlers
         this._onSearch = this._onSearch.bind(this);
         this._onTagRemoveClick = this._onTagRemoveClick.bind(this);
     }
 
-    /**
-     * Initializes the service by finding the necessary DOM elements and attaching listeners.
-     */
     initialize() {
         this.searchBox = this.appElement.querySelector("#search-box");
         this.tagsContainer = this.appElement.querySelector("#filter-tags-container");
-        this.itemsGrid = this.appElement.querySelector("#marketplace-items");
 
         if (this.searchBox) {
-            // Use 'keyup' to react after the input value has changed
             this.searchBox.removeEventListener("keyup", this._onSearch);
             this.searchBox.addEventListener("keyup", this._onSearch);
         }
@@ -34,15 +30,10 @@ export class SearchService {
             this.tagsContainer.addEventListener("click", this._onTagRemoveClick);
         }
         
-        // Initial render of tags and application of filters
+        // Initial render of tags
         this.applyFilters();
     }
 
-    /**
-     * Handles the keyup event on the search input. It adds a filter on "Enter"
-     * and live-searches on every key press.
-     * @param {KeyboardEvent} event
-     */
     _onSearch(event) {
         const searchTerm = this.searchBox.value.trim().toLowerCase();
 
@@ -56,14 +47,9 @@ export class SearchService {
             this.searchBox.value = "";
         }
         
-        // In all cases, apply the filters to update the view
         this.applyFilters();
     }
 
-    /**
-     * Handles clicks within the tags container to remove a filter.
-     * @param {PointerEvent} event
-     */
     _onTagRemoveClick(event) {
         const removeButton = event.target.closest(".remove-tag");
         if (removeButton) {
@@ -72,35 +58,23 @@ export class SearchService {
         }
     }
 
-    /**
-     * Removes a filter from the active list and updates the view.
-     * @param {string} filterTerm The filter term to remove.
-     */
     removeFilter(filterTerm) {
         this.activeFilters = this.activeFilters.filter(f => f !== filterTerm);
         this.applyFilters();
     }
     
-    /**
-     * Clears all active filters.
-     */
     clearAllFilters() {
         this.activeFilters = [];
-        // Also clear the text in the search box
-        if (this.searchBox) {
-            this.searchBox.value = "";
-        }
+        if (this.searchBox) this.searchBox.value = "";
         this.applyFilters();
     }
 
     /**
-     * Renders the HTML for the active filter tags and applies the filtering
-     * logic to the item cards in the DOM.
+     * Renders the HTML for the active filter tags and triggers the data filter callback.
      */
     applyFilters() {
-        if (!this.tagsContainer || !this.itemsGrid || !this.searchBox) return;
+        if (!this.tagsContainer || !this.searchBox) return;
 
-        // Get the current live search term (what the user is currently typing)
         const liveSearchTerm = this.searchBox.value.trim().toLowerCase();
 
         // 1. Render the permanent filter tags
@@ -111,23 +85,9 @@ export class SearchService {
             </div>
         `).join('');
 
-        // 2. Apply the filters to the item list
-        const items = this.itemsGrid.querySelectorAll(".marketplace-item.grid-item, .item-card");
-        for (const item of items) {
-            const nameElement = item.querySelector("h4.item-name, h4.marketplace_h4");
-            if (nameElement) {
-                const itemName = nameElement.textContent.toLowerCase();
-                
-                // An item is visible if it matches ALL tag filters AND the live search term
-                const matchesTags = this.activeFilters.every(filter => itemName.includes(filter));
-                const matchesLiveSearch = liveSearchTerm ? itemName.includes(liveSearchTerm) : true;
-
-                if (matchesTags && matchesLiveSearch) {
-                    item.classList.remove("hidden");
-                } else {
-                    item.classList.add("hidden");
-                }
-            }
+        // 2. Instead of filtering the DOM, we pass the parameters to the App!
+        if (typeof this.onFilterChange === "function") {
+            this.onFilterChange(this.activeFilters, liveSearchTerm);
         }
     }
 }

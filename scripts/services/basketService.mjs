@@ -84,6 +84,16 @@ export class BasketService {
         if (behavior === 'stack' && existingItemInCart) {
             existingItemInCart.buyQuantity += 1;
         } else {
+            // --- NEW KARMA LOGIC ---
+            // 1. Start with the item's defined karma (if any)
+            let calculatedKarma = item.system.karma || 0;
+            
+            // 2. If it's a spell/complex form and has 0 karma, pull from Settings
+            if (item.type === "spell" && calculatedKarma === 0) {
+                calculatedKarma = game.settings.get("sr5-marketplace", "karmaCostForSpell");
+            } else if (item.type === "complex_form" && calculatedKarma === 0) {
+                calculatedKarma = game.settings.get("sr5-marketplace", "karmaCostForComplexForm");
+            }
             const basketItem = {
                 basketItemUuid: "basket." + foundry.utils.randomID(),
                 itemUuid: item.uuid,
@@ -91,7 +101,7 @@ export class BasketService {
                 name: item.name, 
                 img: item.img, 
                 cost: item.system.technology?.cost || 0,
-                karma: item.system.karma || 0, 
+                karma: calculatedKarma, 
                 availability: item.system.technology?.availability || "0",
                 essence: item.system.essence || 0, 
                 itemQuantity: behavior === 'stack' ? 10 : (item.system.quantity || 1),
