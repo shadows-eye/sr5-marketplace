@@ -12,31 +12,21 @@ export class TestRegistrationError extends Error {}
 
 /**
  * Register the given test implementation into the system test registry.
- *
- * Should a test implementation with this name already exist, fail with an exception.
- * @param {*} testClass
- * @param {string[]} types What type of test is registered? Active? Opposed? Resist? Followup?
- * @throws {TestRegistrationError} if a test implementation with the same name already exists
+ * --- FIX: Added 'testName' parameter to prevent minification bugs ---
  */
-export function registerTest(testClass, types = ["activeTests"]) {
-    console.debug("SR5 Marketplace | Registering test", testClass);
+export function registerTest(testClass, testName, types = ["activeTests"]) {
+    console.debug(`SR5 Marketplace | Registering test: ${testName}`);
 
-    // Register test in general registry so it can be called when executing the action.
-    if (game.shadowrun5e.tests[testClass.name])
-        throw new TestRegistrationError(
-            `Test ${testClass.name} already exists`
-        );
+    if (game.shadowrun5e.tests[testName])
+        throw new TestRegistrationError(`Test ${testName} already exists`);
 
-    game.shadowrun5e.tests[testClass.name] = testClass;
+    game.shadowrun5e.tests[testName] = testClass;
 
-    // Register test in specific test type registry so it can be shown in the action item sheet selection.
     for (const testType of types) {
-        if (game.shadowrun5e[testType][testClass.name])
-            throw new TestRegistrationError(
-                `Test ${testClass.name} already exists as ${testType}`
-            );
+        if (game.shadowrun5e[testType][testName])
+            throw new TestRegistrationError(`Test ${testName} already exists as ${testType}`);
 
-        game.shadowrun5e[testType][testClass.name] = testClass;
+        game.shadowrun5e[testType][testName] = testClass;
     }
 }
 
@@ -46,14 +36,14 @@ export function registerTest(testClass, types = ["activeTests"]) {
 export function registerTests() {
     console.debug("SR5 Marketplace | Registering tests");
 
-    // Register module tests into system test registry
     try {
-        registerTest(AvailabilityTest);
-        registerTest(AvailabilityResist); // 2. Add the registration call for the new test
+        // --- FIX: Pass the exact string names so Vite can't break them ---
+        registerTest(AvailabilityTest, "AvailabilityTest");
+        registerTest(AvailabilityResist, "AvailabilityResist"); 
         
     } catch (error) {
         ui.notifications.error(
-            "SR5 Marketplace | Module failed to register test implementation with Shadowrun5e system. This makes the module incompatible until it is updated."
+            "SR5 Marketplace | Module failed to register test implementation with Shadowrun5e system."
         );
         console.error(
             "SR5 Marketplace | Module failed to register test implementation with Shadowrun5e system.",
