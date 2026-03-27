@@ -2,7 +2,7 @@ import { DialogTestModifierService } from './DialogModifierService.mjs';
 import { DiceHelperService } from '../../../services/DiceHelperService.mjs';
 import { DeliveryTimeService } from '../../../services/DeliveryTimeService.mjs';
 import { AppTestFlagService } from '../../../services/AppTestFlagService.mjs';
-import parseAvailability from '../../../lib/availabilityParser.mjs';
+import {parseAvailability} from '../../../lib/_module.mjs';
 
 /**
 * @param {object|null} activeTestState - The active test state from the flag.

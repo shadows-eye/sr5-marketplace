@@ -198,7 +198,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                         return allowedGroups.includes(data.group) || allowedSkills.includes(key);
                     })
                     .map(([key, data]) => {
-                        const locKey = CONFIG.SR5Marketplace.activeSkills[key];
+                        const locKey = CONFIG.SR5.activeSkills[key];
                         return {
                             id: key,
                             name: game.i18n.localize(locKey) || key,

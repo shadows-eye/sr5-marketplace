@@ -1,0 +1,31 @@
+{{!-- 
+  Reusable Multi-Select "Tagify" Component
+  @param {string} name - The name attribute for the form data (e.g., 'system.selection_skills').
+  @param {Array<object>} options - The list of all available options. Each object should have 'value' and 'label'.
+  @param {Array<string>} selected - An array of the currently selected values.
+  @param {string} placeholder - The placeholder text to show when no items are selected.
+--}}
+<div class="multi-select-container" data-name="{{name}}">
+    <div class="tags-input" data-action="toggleMultiSelectDropdown">
+        {{!-- The 'selected' variable is now an array of objects {id, value} --}}
+        {{#each selected}}
+            <span class="multi-select__tag" data-value="{{this.id}}">
+                {{!-- Display the 'value' (label) from the object --}}
+                {{this.value}}
+                {{!-- The remove button uses the 'id' for its data-value --}}
+                <i class="fas fa-times multi-select__tag-close" data-action="updateMultiSelect" data-value="{{this.id}}" data-mode="remove"></i>
+            </span>
+        {{/each}}
+        <input type="text" class="multi-select__input" placeholder="{{#if selected}}{{else}}{{placeholder}}{{/if}}">
+    </div>
+    <div class="dropdown-content">
+        {{#each options}}
+            {{!-- Use our new 'isIdIn' helper to check against the array of objects --}}
+            {{#unless (isIdIn ../selected this.value)}}
+                <div class="dropdown-item" data-action="updateMultiSelect" data-value="{{this.value}}" data-mode="add">
+                    {{this.label}}
+                </div>
+            {{/unless}}
+        {{/each}}
+    </div>
+</div>

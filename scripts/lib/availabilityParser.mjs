@@ -5,7 +5,7 @@
  * @param {string} str - The availability string to parse.
  * @returns {{rating: number, tag: string}} An object with the numeric rating and the tag.
  */
-export default function parseAvailability(str) {
+export function parseAvailability(str) {
     const m = String(str ?? "").trim().match(/^(\d+)\s*([A-Za-z]*)$/);
     return {
         rating: m ? Number(m[1]) : 0,

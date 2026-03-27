@@ -1,4 +1,13 @@
 // --- IMPORT PRE-INSTANTIATED SERVICES FROM BARREL FILE ---
+import '../styles/marketplace.css';
+import { 
+    MODULE_ID, 
+    SHOP_ACTOR_TYPE, 
+    parseAvailability, 
+    LocalizationService,
+    registerBasicHelpers 
+} from './lib/_module.mjs';
+import {defineShopActorClass} from '../models/actor/shopActor.mjs';
 import { 
     actorItemServices, 
     basketService, 
@@ -26,6 +35,12 @@ export {
     systemDataMapperService,
     ItemDataServices 
 };
+
+import { inGameMarketplace } from "./apps/inGameMarketplace.mjs";
+import { MarketplaceSettingsApp } from "./apps/MarketplaceSettingsApp.mjs";
+import { ShopActorSheet } from "../sheets/ShopActorSheet.mjs";
+// --- 4. API IMPORTS ---
+import { MarketplaceAPI, SR5SystemAPI } from './API/_module.mjs';
 
 /**
  * Draws the notification badge on the scene control button.
@@ -212,7 +227,7 @@ Hooks.on("renderSettingsConfig", (app, html, data) => {
     if (existingSummary) existingSummary.remove();
 
     // 1. Get ALL types from the indexed item data, just like the settings app does.
-    const allItems = game.sr5marketplace.itemData.getItems();
+    const allItems = game.sr5marketplace.api.itemData.getItems();
     const allTypes = [...new Set(allItems.map(item => item.type))].sort();
 
     // 2. Get the saved behaviors.
@@ -267,7 +282,19 @@ Hooks.once("init", () => {
     });
 
 
-    game.sr5marketplace = { itemData: new ItemDataServices() };
+    // --- NEW API REGISTRATION ---
+    // 1. Instantiate the main API container and assign it to the root
+    game.sr5marketplace = new MarketplaceAPI();
+
+    // 2. Nest all other API services under the '.api' property
+    game.sr5marketplace.api = {
+        system: new SR5SystemAPI(),
+        itemData: new ItemDataServices(), // Pulled perfectly from your services barrel!
+        
+        // 3. Instantiate your sub-APIs using the static properties
+        marketplace: new MarketplaceAPI.Marketplace(),
+        itemBuilder: new MarketplaceAPI.ItemBuilder()
+    };
 
 });
 
@@ -277,7 +304,7 @@ Hooks.once("init", () => {
  */
 Hooks.on("ready", async () => {
     console.log("SR5 Marketplace | Module is ready!");
-    await game.sr5marketplace.itemData.initialize();
+    await game.sr5marketplace.api.itemData.initialize();
     if (game.user.isGM) {
         game.socket.on("module.sr5-marketplace", () => {
             // A real-time event was received. Trigger a re-draw after a short delay.
