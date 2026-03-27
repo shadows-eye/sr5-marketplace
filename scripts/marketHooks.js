@@ -351,17 +351,21 @@ Hooks.on("getSceneControlButtons", (controls) => {
             icon: "fas fa-shopping-cart",
             visible: true,
             toggle: true,
-            active: Object.values(ui.windows).some(app => app.id === "inGameMarketplace"),
-            onClick: (toggled) => { 
+            active: false, // Default state
+            onClick: () => { 
                 const app = Object.values(ui.windows).find(app => app.id === "inGameMarketplace");
-                if (toggled) {
-                    if (!app) new inGameMarketplace().render(true);
+                if (app) {
+                    app.close();
                 } else {
-                    if (app) app.close();
+                    new inGameMarketplace().render(true);
                 }
+                
+                // Set the toggle back to false and redraw the UI
+                tokenGroup.tools["sr5-marketplace"].active = false;
+                if (ui.controls) ui.controls.render(true);
             }
         };
-
+        /**
         // 2. Item Builder Button (Direct Object Assignment)
         if (game.user.isGM) {
             tokenGroup.tools["sr5-item-builder"] = {
@@ -380,7 +384,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
                     }
                 }
             };
-        }
+        }*/
         return; // Exit out, we are done with V13!
     }
 
@@ -406,7 +410,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
             }
         });
     }
-
+    /**
     if (game.user.isGM && !tokenControls.tools.find(t => t.name === "sr5-item-builder")) {
         tokenControls.tools.push({
             name: "sr5-item-builder",
@@ -424,7 +428,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
                 }
             }
         });
-    }
+    }*/
 });
 
 Hooks.on("renderSceneControls", (app, html) => {
