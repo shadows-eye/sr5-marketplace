@@ -41,6 +41,7 @@ import { MarketplaceSettingsApp } from "./apps/MarketplaceSettingsApp.mjs";
 import { ShopActorSheet } from "../sheets/ShopActorSheet.mjs";
 // --- 4. API IMPORTS ---
 import { MarketplaceAPI, SR5SystemAPI } from './API/_module.mjs';
+import { ItemBuilderApp } from "./apps/ItemBuilderApp.mjs";
 
 /**
  * Draws the notification badge on the scene control button.
@@ -332,29 +333,97 @@ Hooks.on("updateUser", (user, changes) => {
         }, 250);
     }
 });
-// Add a control button for opening the Marketplace
+// Add control buttons for the Marketplace and Item Builder
 Hooks.on("getSceneControlButtons", (controls) => {
-  const tokenControls = controls["tokens"];
-  if (!tokenControls) return;
-  if (tokenControls.tools[MODULE_ID]) return;
+    // --- FOUNDRY V13 METHOD (Objects) ---
+    if (!Array.isArray(controls)) {
+        // Foundry V13 keys the controls object by name (usually "token" or "tokens")
+        const tokenGroup = controls.token || controls.tokens;
+        if (!tokenGroup || !tokenGroup.tools) return;
 
-  tokenControls.tools["sr5-marketplace"] = {
-    name: "sr5-marketplace",
-    title: game.i18n.localize("SR5Marketplace.PurchaseScreen"),
-    icon: "fas fa-shopping-cart",
-    visible: true,
-    toggle: true,
-    active: Object.values(ui.windows).some(app => app.id === "inGameMarketplace"),
-    onChange: (toggled) => {
-      const app = Object.values(ui.windows).find(app => app.id === "inGameMarketplace");
-      if (toggled) {
-        if (!app) new inGameMarketplace().render(true);
-      } else {
-        if (app) app.close();
-      }
+        // 1. Marketplace Button (Direct Object Assignment)
+        tokenGroup.tools["sr5-marketplace"] = {
+            name: "sr5-marketplace",
+            title: game.i18n.localize("SR5Marketplace.PurchaseScreen") || "Marketplace",
+            icon: "fas fa-shopping-cart",
+            visible: true,
+            toggle: true,
+            active: Object.values(ui.windows).some(app => app.id === "inGameMarketplace"),
+            onClick: (toggled) => { 
+                const app = Object.values(ui.windows).find(app => app.id === "inGameMarketplace");
+                if (toggled) {
+                    if (!app) new inGameMarketplace().render(true);
+                } else {
+                    if (app) app.close();
+                }
+            }
+        };
+
+        // 2. Item Builder Button (Direct Object Assignment)
+        if (game.user.isGM) {
+            tokenGroup.tools["sr5-item-builder"] = {
+                name: "sr5-item-builder",
+                title: "Item Builder",
+                icon: "fas fa-hammer", 
+                visible: true,
+                toggle: true,
+                active: Object.values(ui.windows).some(app => app.id === "ItemBuilderApp"),
+                onClick: (toggled) => {
+                    const app = Object.values(ui.windows).find(app => app.id === "ItemBuilderApp");
+                    if (toggled) {
+                        if (!app) new ItemBuilderApp().render(true);
+                    } else {
+                        if (app) app.close();
+                    }
+                }
+            };
+        }
+        return; // Exit out, we are done with V13!
     }
-  };
+
+    // --- FOUNDRY V12 AND OLDER METHOD (Arrays) ---
+    const tokenControls = controls.find(c => c.name === "token");
+    if (!tokenControls || !Array.isArray(tokenControls.tools)) return;
+
+    if (!tokenControls.tools.find(t => t.name === "sr5-marketplace")) {
+        tokenControls.tools.push({
+            name: "sr5-marketplace",
+            title: game.i18n.localize("SR5Marketplace.PurchaseScreen") || "Marketplace",
+            icon: "fas fa-shopping-cart",
+            visible: true,
+            toggle: true,
+            active: Object.values(ui.windows).some(app => app.id === "inGameMarketplace"),
+            onClick: (toggled) => { 
+                const app = Object.values(ui.windows).find(app => app.id === "inGameMarketplace");
+                if (toggled) {
+                    if (!app) new inGameMarketplace().render(true);
+                } else {
+                    if (app) app.close();
+                }
+            }
+        });
+    }
+
+    if (game.user.isGM && !tokenControls.tools.find(t => t.name === "sr5-item-builder")) {
+        tokenControls.tools.push({
+            name: "sr5-item-builder",
+            title: "Item Builder",
+            icon: "fas fa-hammer", 
+            visible: true,
+            toggle: true,
+            active: Object.values(ui.windows).some(app => app.id === "ItemBuilderApp"),
+            onClick: (toggled) => {
+                const app = Object.values(ui.windows).find(app => app.id === "ItemBuilderApp");
+                if (toggled) {
+                    if (!app) new ItemBuilderApp().render(true);
+                } else {
+                    if (app) app.close();
+                }
+            }
+        });
+    }
 });
+
 Hooks.on("renderSceneControls", (app, html) => {
     drawBadge(html);
 });
