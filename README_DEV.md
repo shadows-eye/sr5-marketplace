@@ -1,7 +1,3 @@
-Based on the context files provided, here is a comprehensive Developer `README.md` for your repository. It outlines the tech stack, build process, and project structure while strictly omitting any reference to the `helpers/` folder and its associated scripts.
-
-***
-
 # 🛠️ Shadowrun 5e Marketplace - Developer Guide
 
 **Shadowrun 5e Marketplace** is a comprehensive Foundry VTT module designed to enhance the Shadowrun 5e system with a fully integrated, interactive marketplace feature.
