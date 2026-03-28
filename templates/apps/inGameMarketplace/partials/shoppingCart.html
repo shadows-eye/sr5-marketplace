@@ -104,24 +104,24 @@
                 <input type="checkbox" id="contact-toggle-{{this._id}}" class="contact-toggle-checkbox hidden peer">
 
                 <div class="contact-card-visible flex items-center p-2 gap-3 z-10 relative">
-                    <img src="{{this.img}}" alt="{{this.name}}" class="w-10 h-10 object-cover rounded cursor-pointer hover:brightness-110 flex-shrink-0" data-action="selectContact" data-contact-uuid="{{this.uuid}}" title="Click to Select/Deselect Contact">
+                    <img src="{{this.img}}" alt="{{this.name}}" class="w-10 h-10 object-cover rounded cursor-pointer hover:brightness-110 flex-shrink-0" data-action="selectContact" data-contact-uuid="{{this.uuid}}" title="{{localize 'SR5Marketplace.Marketplace.SelectContactTooltip'}}">
                     <span class="contact-name font-bold text-sm truncate flex-grow cursor-pointer text-[var(--text-color-primary)]" data-action="selectContact" data-contact-uuid="{{this.uuid}}">{{this.name}}</span>
                     
-                    <label for="contact-toggle-{{this._id}}" class="contact-expand-toggle w-6 h-6 flex items-center justify-center rounded hover:bg-[var(--collapsible-header-hover-bg)] cursor-pointer transition-transform peer-checked:rotate-180" title="Toggle Details">
+                    <label for="contact-toggle-{{this._id}}" class="contact-expand-toggle w-6 h-6 flex items-center justify-center rounded hover:bg-[var(--collapsible-header-hover-bg)] cursor-pointer transition-transform peer-checked:rotate-180" title="{{localize 'SR5Marketplace.Marketplace.ToggleDetailsTooltip'}}">
                         <i class="fas fa-chevron-down text-xs opacity-70"></i>
                     </label>
                 </div>
 
                 <div class="contact-details hidden peer-checked:flex flex-col p-2 pt-0 text-xs bg-transparent text-[var(--text-color-primary)]">
                     <div class="flex gap-4 mb-1 mt-2 opacity-90">
-                        <p><strong class="text-[var(--text-color-subheader)]">Loyalty:</strong> {{this.system.loyalty}}</p>
-                        <p><strong class="text-[var(--text-color-subheader)]">Connection:</strong> {{this.system.connection}}</p>
+                        <p><strong class="text-[var(--text-color-subheader)]">{{localize "SR5Marketplace.Marketplace.Loyalty"}}:</strong> {{this.system.loyalty}}</p>
+                        <p><strong class="text-[var(--text-color-subheader)]">{{localize "SR5Marketplace.Marketplace.Connection"}}:</strong> {{this.system.connection}}</p>
                     </div>
                     <div class="line-clamp-3 italic opacity-80">{{{this.system.description.value}}}</div>
                 </div>
             </div>
         {{else}}
-            <div class="italic opacity-60 text-sm py-2 text-[var(--text-color-primary)]">{{purchasingActor.name}} has no contacts.</div>
+            <div class="italic opacity-60 text-sm py-2 text-[var(--text-color-primary)]">{{purchasingActor.name}} {{localize "SR5Marketplace.Marketplace.NoContacts"}}</div>
         {{/each}}
         </div>
     </div>

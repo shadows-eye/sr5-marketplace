@@ -1,4 +1,182 @@
 {
+    "FIELDS": {
+        "description": {
+            "label": "Description"
+        },
+        "attributes": {
+            "label": "Attributes",
+            "body": {
+                "label": "Body"
+            },
+            "agility": {
+                "label": "Agility"
+            },
+            "reaction": {
+                "label": "Reaction"
+            },
+            "strength": {
+                "label": "Strength"
+            },
+            "willpower": {
+                "label": "Willpower"
+            },
+            "logic": {
+                "label": "Logic"
+            },
+            "intuition": {
+                "label": "Intuition"
+            },
+            "charisma": {
+                "label": "Charisma"
+            },
+            "magic": {
+                "label": "Magic"
+            },
+            "resonance": {
+                "label": "Resonance"
+            },
+            "essence": {
+                "label": "Essence"
+            },
+            "edge": {
+                "label": "Edge"
+            },
+            "initiation": {
+                "label": "Initiation"
+            },
+            "submersion": {
+                "label": "Submersion"
+            }
+        },
+        "Skill": {
+            "AeronauticsMechanic": "Luftfahrtmechanik",
+            "Alchemy": "Alchemie",
+            "AnimalHandling": "Tierführung",
+            "Arcana": "Arkana",
+            "Archery": "Projektilwaffen",
+            "Armorer": "Waffenbau",
+            "Artificing": "Fokusherstellung",
+            "Artisan": "Handwerk",
+            "Assensing": "Askennen",
+            "AstralCombat": "Astralkampf",
+            "Automatics": "Schnellfeuerwaffen",
+            "AutomotiveMechanic": "Fahrzeugmechanik",
+            "Banishing": "Verbannen",
+            "Binding": "Binden",
+            "Biotechnology": "Biotechnologie",
+            "Blades": "Klingenwaffen",
+            "Chemistry": "Chemie",
+            "Clubs": "Knüppel",
+            "Compiling": "Kompilieren",
+            "Computer": "Computer",
+            "Con": "Überreden",
+            "Counterspelling": "Antimagie",
+            "Cybercombat": "Matrixkampf",
+            "Cybertechnology": "Kybernetik",
+            "Decompiling": "Dekompilieren",
+            "Demolitions": "Sprengstoffe",
+            "Disenchanting": "Entzaubern",
+            "Disguise": "Verkleiden",
+            "Diving": "Tauchen",
+            "ElectronicWarfare": "Elektronische Kriegsführung",
+            "EscapeArtist": "Entfesseln",
+            "Etiquette": "Gebräuche",
+            "ExoticMelee": "Exotische Nahkampfwaffe",
+            "ExoticRange": "Exotische Fernkampfwaffe",
+            "FirstAid": "Erste Hilfe",
+            "Flight": "Fliegen",
+            "Forgery": "Fälschen",
+            "FreeFall": "Freifall",
+            "Gunnery": "Geschütze",
+            "Gymnastics": "Akrobatik",
+            "Hacking": "Hacking",
+            "Hardware": "Hardware",
+            "HeavyWeapons": "Schwere Waffen",
+            "Impersonation": "Verkörperung",
+            "IndustrialMechanic": "Industriemechanik",
+            "Instruction": "Unterricht",
+            "Intimidation": "Einschüchtern",
+            "Leadership": "Führung",
+            "Locksmith": "Schlosser",
+            "Longarms": "Gewehre",
+            "Medicine": "Medizin",
+            "NauticalMechanic": "Seefahrtmechanik",
+            "Navigation": "Navigation",
+            "Negotiation": "Verhandlung",
+            "Palming": "Fingerfertigkeit",
+            "Perception": "Wahrnehmung",
+            "Performance": "Vorführung",
+            "PilotAerospace": "Raumfahrzeuge",
+            "PilotAircraft": "Flugzeuge",
+            "PilotExoticVehicle": "Exotisches Fahrzeug",
+            "PilotGroundCraft": "Bodenfahrzeuge",
+            "PilotWalker": "Läufer",
+            "PilotWaterCraft": "Schiffe",
+            "Pistols": "Pistolen",
+            "Registering": "Registrieren",
+            "RitualSpellcasting": "Ritualzauberei",
+            "Running": "Laufen",
+            "Skill": "Fertigkeit",
+            "Skills": "Fertigkeiten",
+            "Sneaking": "Schleichen",
+            "Software": "Software",
+            "Spellcasting": "Spruchzauberei",
+            "Summoning": "Herbeirufen",
+            "Survival": "Survival",
+            "Swimming": "Schwimmen",
+            "Teamwork": {
+                "Glitched": "Glitched",
+                "ParticipantActor": "Choose actor",
+                "RollIt": "Roll it",
+                "TakePart": "Take part"
+            },
+            "ThrowingWeapons": "Wurfwaffen",
+            "Tracking": "Spurenlesen",
+            "UnarmedCombat": "Waffenloser Kampf"
+        },
+        "skills": {
+            "label": "Skills"
+        },
+        "limits": {
+            "label": "Limits",
+            "social": {
+                "label": "Social Limit"
+            },
+            "mental": {
+                "label": "Mental Limit"
+            },
+            "physical": {
+                "label": "Physical Limit"
+            },
+            "astral": {
+                "label": "Astral Limit"
+            }
+        },
+        "track": {
+            "label": "Condition Tracks",
+            "physical": {
+                "label": "Physical"
+            },
+            "stun": {
+                "label": "Stun"
+            }
+        },
+        "movement": {
+            "label": "Movement",
+            "walk": {
+                "label": "Walk"
+            },
+            "run": {
+                "label": "Run"
+            }
+        },
+        "nuyen": {
+            "label": "Nuyen"
+        },
+        "karma": {
+            "label": "Karma"
+        }
+    },
     "SR5Marketplace": {
         "PurchaseScreen": "Marketplace Purchase Screen",
         "Marketplace": {
@@ -10,13 +188,18 @@
                         "opposed": "Opposed",
                         "simple": "Simple",
                         "extended": "Extended"
+                    },
+                    "choices": {
+                        "opposed": "Opposed",
+                        "simple": "Simple",
+                        "extended": "Extended"
                     }
                 },
                 "ApprovalWorkflow": {
                     "name": "GM Approval Workflow",
                     "hint": "Toggle this setting to Disable the approval workflow for player purchases!"
                 },
-                "ResetItemLoad":{
+                "ResetItemLoad": {
                     "name": "Reset Item Enhancement Load",
                     "hint": "This will allow the karma values and cost/availability of world and compendium items to get their flags reinitialized. Setting this setting to true will undo any changes you made to Karma, cost, or Availability of the items."
                 },
@@ -25,7 +208,7 @@
                 "CategoryUnique": "Unique Items",
                 "StackingItems": "Stacking Items",
                 "SingleItems": "Single Items",
-                "Menu":{
+                "Menu": {
                     "name": "Item Type Menu",
                     "hint": "This menu allows you to assign item types to different behaviors.",
                     "buttonLabel": "Open Item Type Settings"
@@ -37,9 +220,12 @@
                 "KarmaComplexForm": {
                     "name": "Karma Complex Form Cost",
                     "hint": "This setting allows you to set the karma cost for complex forms. Value will be used to pay for Complex Forms."
+                },
+                "ItemTypeBehaviors": {
+                    "name": "Item Type Behaviors"
                 }
             },
-            "Tests":{
+            "Tests": {
                 "title": "Marketplace Tests",
                 "AvailabilityTest": "Availability Test"
             },
@@ -83,7 +269,9 @@
                         "label": "Modifier Type",
                         "hint": "Whether the modifier is a fee or a discount."
                     }
-                }
+                },
+                "AddItem": "Add Item",
+                "OwnerUuid": "Owner UUID"
             },
             "funds": "Funds",
             "YourOrderHasArrived": "Your order has arrived!",
@@ -97,7 +285,7 @@
             "of": "of",
             "each": "each",
             "Image": "Image",
-            "Name" : "Name",
+            "Name": "Name",
             "RemoveItem": "Remove",
             "ReviewAndConfirm": "Review (GM only)",
             "SelectItemType": "Select Item Type",
@@ -128,7 +316,7 @@
             "quantityPerPack": "Quantity / Pack",
             "actions": "Actions",
             "system": {
-                "avail":{
+                "avail": {
                     "avail": "Avail.",
                     "R": "R",
                     "F": "F",
@@ -143,7 +331,7 @@
                     "Cost": "Cost",
                     "quantity": "Quantity"
                 },
-                "spell":{
+                "spell": {
                     "type": "Type",
                     "range": "Range",
                     "duration": "Duration",
@@ -217,9 +405,36 @@
                     "targetDistracted": "Target is distracted or gullible"
                 }
             },
-            "Acquisition":{
+            "Acquisition": {
                 "Success": "Success",
                 "Failed": "Could not be acquired."
+            },
+            "selectAnActor": "Select an Actor",
+            "selectActorTooltip": "Please select an actor to begin shopping.",
+            "AddToCart": "Add to Cart",
+            "AddToBuilder": "Add to Builder",
+            "NoContacts": "has no contacts.",
+            "SelectContactTooltip": "Click to Select/Deselect Contact",
+            "ToggleDetailsTooltip": "Toggle Details",
+            "Loyalty": "Loyalty",
+            "Connection": "Connection",
+            "Slots": "Slots",
+            "MountPoint": "Mount Point",
+            "karma": "Karma",
+            "essence": "Essence",
+            "Basket": {
+                "Description": "Basket Description",
+                "Contents": "Contents",
+                "SelectItem": "Select Item",
+                "Quantity": "Quantity",
+                "Rating": "Rating",
+                "AddItem": "Add Item",
+                "CurrentContents": "Current Contents",
+                "Remove": "Remove"
+            },
+            "Notifications": {
+                "BehaviorsSaved": "Item behaviors saved successfully.",
+                "IndexComplete": "Marketplace index rebuild complete."
             }
         },
         "ItemBuilder": {
@@ -236,7 +451,7 @@
             },
             "Items": {
                 "Header": "Base Items",
-                "baseItemPlaceholder":{
+                "baseItemPlaceholder": {
                     "title": "Select a Base Item",
                     "description": "Choose an item from the list on the left to begin building."
                 }
@@ -271,173 +486,61 @@
                 "ChangeModeLabel": "Change Mode",
                 "EffectValueLabel": "Value",
                 "SelectDerivedValueTooltip": "Select a property from the base item to derive this value from.",
-                "SelectDerivedValueLabel": "Select a property from the Base Item"
-            }
+                "SelectDerivedValueLabel": "Select a property from the Base Item",
+                "CustomEffect": "Custom Effect"
+            },
+            "SelectImage": "Select Image",
+            "DoneEditing": "Done Editing",
+            "EditBaseItem": "Edit Base Item"
         },
         "AppDialogItem": {
-                "result": {
-                    "Test": "Test Result",
-                    "text": "You scored ",
-                    "Hits": " hits!"
-                },
-                "GlitchText": {
-                    "with": "With ",
-                    "glitch": " ones... a GLITCH!"
-                },
-                "ThresholdInfo": "This is the threshold for the item's resist roll.",
-                "RollItemResistance": "Roll Item Resistance",
-                "AcquisitionSuccess": "Items can be Acquired",
-                "AcquisitionFailed": "Acquisition Failed",
-                "YourRoll": "Your Roll",
-                "netHits": "Net Hits",
-                "Resistance": "Item Resistance",
-                "Hits": "Hits",
-                "ExtendedSuccessDetails": "Acquisition took {rolls} rolls, using a Connection of {connection}. Final delivery time: {timeValue}"
+            "result": {
+                "Test": "Test Result",
+                "text": "You scored ",
+                "Hits": " hits!"
             },
+            "GlitchText": {
+                "with": "With ",
+                "glitch": " ones... a GLITCH!"
+            },
+            "ThresholdInfo": "This is the threshold for the item's resist roll.",
+            "RollItemResistance": "Roll Item Resistance",
+            "AcquisitionSuccess": "Items can be Acquired",
+            "AcquisitionFailed": "Acquisition Failed",
+            "YourRoll": "Your Roll",
+            "netHits": "Net Hits",
+            "Resistance": "Item Resistance",
+            "Hits": "Hits",
+            "ExtendedSuccessDetails": "Acquisition took {rolls} rolls, using a Connection of {connection}. Final delivery time: {timeValue}",
+            "FinalRoll": "Final Roll",
+            "OrderTest": "Order Availability Test"
+        },
         "Time": {
             "Hours": "Hours",
             "Day": "Day",
             "Days": "Days",
             "Week": "Week",
             "Month": "Month"
-        }
+        },
+        "Roll": "Roll",
+        "BaseItem": "Base Item",
+        "Properties": "Properties",
+        "Slot": "Slot",
+        "Karma": "Karma",
+        "LimitPhysical": "Physical Limit",
+        "LimitMental": "Mental Limit",
+        "SpecialAttributes": "Special Attributes",
+        "ActiveSkills": "Active Skills",
+        "Languages": "Languages",
+        "Name": "Name",
+        "Rating": "Rating",
+        "Cost": "Cost",
+        "Availability": "Availability"
     },
-    "TYPES":{
+    "Shop": "Shop",
+    "TYPES": {
         "Actor": {
             "sr5-marketplace.shop": "Marketplace Shop"
         }
-    },
-    "FIELDS": {
-            "description": {
-                "label": "Description"
-            },
-            "attributes": {
-                "label": "Attributes",
-                "body": { "label": "Body" },
-                "agility": { "label": "Agility" },
-                "reaction": { "label": "Reaction" },
-                "strength": { "label": "Strength" },
-                "willpower": { "label": "Willpower" },
-                "logic": { "label": "Logic" },
-                "intuition": { "label": "Intuition" },
-                "charisma": { "label": "Charisma" },
-                "magic": { "label": "Magic" },
-                "resonance": { "label": "Resonance" },
-                "essence": { "label": "Essence" },
-                "edge": { "label": "Edge" },
-                "initiation": { "label": "Initiation" },
-                "submersion": { "label": "Submersion" }
-            },
-            "Skill": {
-                    "AeronauticsMechanic": "Luftfahrtmechanik",
-                    "Alchemy": "Alchemie",
-                    "AnimalHandling": "Tierführung",
-                    "Arcana": "Arkana",
-                    "Archery": "Projektilwaffen",
-                    "Armorer": "Waffenbau",
-                    "Artificing": "Fokusherstellung",
-                    "Artisan": "Handwerk",
-                    "Assensing": "Askennen",
-                    "AstralCombat": "Astralkampf",
-                    "Automatics": "Schnellfeuerwaffen",
-                    "AutomotiveMechanic": "Fahrzeugmechanik",
-                    "Banishing": "Verbannen",
-                    "Binding": "Binden",
-                    "Biotechnology": "Biotechnologie",
-                    "Blades": "Klingenwaffen",
-                    "Chemistry": "Chemie",
-                    "Clubs": "Knüppel",
-                    "Compiling": "Kompilieren",
-                    "Computer": "Computer",
-                    "Con": "Überreden",
-                    "Counterspelling": "Antimagie",
-                    "Cybercombat": "Matrixkampf",
-                    "Cybertechnology": "Kybernetik",
-                    "Decompiling": "Dekompilieren",
-                    "Demolitions": "Sprengstoffe",
-                    "Disenchanting": "Entzaubern",
-                    "Disguise": "Verkleiden",
-                    "Diving": "Tauchen",
-                    "ElectronicWarfare": "Elektronische Kriegsführung",
-                    "EscapeArtist": "Entfesseln",
-                    "Etiquette": "Gebräuche",
-                    "ExoticMelee": "Exotische Nahkampfwaffe",
-                    "ExoticRange": "Exotische Fernkampfwaffe",
-                    "FirstAid": "Erste Hilfe",
-                    "Flight": "Fliegen",
-                    "Forgery": "Fälschen",
-                    "FreeFall": "Freifall",
-                    "Gunnery": "Geschütze",
-                    "Gymnastics": "Akrobatik",
-                    "Hacking": "Hacking",
-                    "Hardware": "Hardware",
-                    "HeavyWeapons": "Schwere Waffen",
-                    "Impersonation": "Verkörperung",
-                    "IndustrialMechanic": "Industriemechanik",
-                    "Instruction": "Unterricht",
-                    "Intimidation": "Einschüchtern",
-                    "Leadership": "Führung",
-                    "Locksmith": "Schlosser",
-                    "Longarms": "Gewehre",
-                    "Medicine": "Medizin",
-                    "NauticalMechanic": "Seefahrtmechanik",
-                    "Navigation": "Navigation",
-                    "Negotiation": "Verhandlung",
-                    "Palming": "Fingerfertigkeit",
-                    "Perception": "Wahrnehmung",
-                    "Performance": "Vorführung",
-                    "PilotAerospace": "Raumfahrzeuge",
-                    "PilotAircraft": "Flugzeuge",
-                    "PilotExoticVehicle": "Exotisches Fahrzeug",
-                    "PilotGroundCraft": "Bodenfahrzeuge",
-                    "PilotWalker": "Läufer",
-                    "PilotWaterCraft": "Schiffe",
-                    "Pistols": "Pistolen",
-                    "Registering": "Registrieren",
-                    "RitualSpellcasting": "Ritualzauberei",
-                    "Running": "Laufen",
-                    "Skill": "Fertigkeit",
-                    "Skills": "Fertigkeiten",
-                    "Sneaking": "Schleichen",
-                    "Software": "Software",
-                    "Spellcasting": "Spruchzauberei",
-                    "Summoning": "Herbeirufen",
-                    "Survival": "Survival",
-                    "Swimming": "Schwimmen",
-                    "Teamwork": {
-                        "Glitched": "Glitched",
-                        "ParticipantActor": "Choose actor",
-                        "RollIt": "Roll it",
-                        "TakePart": "Take part"
-                    },
-                    "ThrowingWeapons": "Wurfwaffen",
-                    "Tracking": "Spurenlesen",
-                    "UnarmedCombat": "Waffenloser Kampf"
-                },
-            "skills": {
-                "label": "Skills"
-            },
-            "limits": {
-                "label": "Limits",
-                "social": { "label": "Social Limit" },
-                "mental": { "label": "Mental Limit" },
-                "physical": { "label": "Physical Limit" },
-                "astral": { "label": "Astral Limit" }
-            },
-            "track": {
-                "label": "Condition Tracks",
-                "physical": { "label": "Physical" },
-                "stun": { "label": "Stun" }
-            },
-            "movement": {
-                "label": "Movement",
-                "walk": { "label": "Walk" },
-                "run": { "label": "Run" }
-            },
-            "nuyen": { "label": "Nuyen" },
-            "karma": { "label": "Karma" 
-        }
-    }  
-    
+    }
 }
-
