@@ -34,6 +34,8 @@ We use NPM scripts to manage the build pipeline:
 
 ## 🏗️ Architecture & Build Process
 
+After the first build link the dist folder as sr5-marketplace into the modules folder of your foundry instance.
+
 The build pipeline is managed by `vite.config.js`:
 
 1.  **JavaScript Bundling**: The primary entry point for the module is `scripts/marketHooks.js`. Vite compiles this as an ES module and outputs it to `dist/scripts/marketHooks.js`.
