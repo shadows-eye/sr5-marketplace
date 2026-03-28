@@ -1,71 +1,76 @@
-![](https://img.shields.io/badge/Foundry-v13-informational)
-<!--- Downloads @ Latest Badge -->
-<!--- replace <user>/<repo> with your shadows-eye/sr5-marketplace -->
-<!--- ![Latest Release Download Count](https://img.shields.io/github/downloads/<user>/<repo>/latest/module.zip) -->
+Based on the context files provided, here is a comprehensive Developer `README.md` for your repository. It outlines the tech stack, build process, and project structure while strictly omitting any reference to the `helpers/` folder and its associated scripts.
 
-<!--- Forge Bazaar Install % Badge -->
-<!--- replace <your-module-name> with the `name` in your manifest -->
-<!--- ![Forge Installs](https://img.shields.io/badge/dynamic/json?label=Forge%20Installs&query=package.installs&suffix=%25&url=https%3A%2F%2Fforge-vtt.com%2Fapi%2Fbazaar%2Fpackage%2F<your-module-name>&colorB=4aa94a) -->
+***
 
+# 🛠️ Shadowrun 5e Marketplace - Developer Guide
 
-# How to use this Template to create a versioned Release
+**Shadowrun 5e Marketplace** is a comprehensive Foundry VTT module designed to enhance the Shadowrun 5e system with a fully integrated, interactive marketplace feature.
 
-1. Open your repository's releases page.
+This guide outlines the development environment, build pipeline, and project architecture for developers looking to contribute or modify the module.
 
-![Where to click to open repository releases.](https://user-images.githubusercontent.com/7644614/93409301-9fd25080-f864-11ea-9e0c-bdd09e4418e4.png)
+## 💻 Tech Stack
 
-2. Click "Draft a new release"
+This module uses a modern, lightweight frontend stack:
+* **Foundry VTT**: Minimum compatibility v13.
+* **Vite (v8)**: Used as the primary build tool and dev server.
+* **Tailwind CSS (v4)**: Modern utility-first CSS framework integrated directly via Vite.
+* **Handlebars**: Standard Foundry VTT templating engine.
 
-![Draft a new release button.](https://user-images.githubusercontent.com/7644614/93409364-c1333c80-f864-11ea-89f1-abfcb18a8d9f.png)
+## 🚀 Getting Started
 
-3. Fill out the release version as the tag name.
+### Prerequisites
+* Node.js installed on your development machine.
+* The repository cloned directly into your Foundry VTT user data path: `Data/modules/sr5-marketplace`.
 
-If you want to add details at this stage you can, or you can always come back later and edit them.
+### Installation
+Navigate to the module folder and install the necessary dependencies:
+```bash
+npm install
+```
 
-![Release Creation Form](https://user-images.githubusercontent.com/7644614/93409543-225b1000-f865-11ea-9a19-f1906a724421.png)
+### Available Scripts
+We use NPM scripts to manage the build pipeline:
 
-4. Hit submit.
+* **`npm run dev`**: Starts the Vite development server for rapid iteration.
+* **`npm run build`**: Compiles and bundles the code, outputting the final production-ready module into the `dist/` directory. 
 
-5. Wait a few minutes.
+*(Note: Never modify files directly inside the `dist/` folder, as they will be overwritten on the next build).*
 
-A Github Action will run to populate the `module.json` and `module.zip` with the correct urls that you can then use to distribute this release. You can check on its status in the "Actions" tab.
+## 🏗️ Architecture & Build Process
 
-![Actions Tab](https://user-images.githubusercontent.com/7644614/93409820-c1800780-f865-11ea-8c6b-c3792e35e0c8.png)
+The build pipeline is managed by `vite.config.js`:
 
-6. Grab the module.json url from the release's details page.
+1.  **JavaScript Bundling**: The primary entry point for the module is `scripts/marketHooks.js`. Vite compiles this as an ES module and outputs it to `dist/scripts/marketHooks.js`.
+2.  **Tailwind v4 Integration**: The project uses `@tailwindcss/vite`. Because this is Tailwind v4, there is no `tailwind.config.js`. Instead, Tailwind scans the templates and scripts automatically based on `@source` directives located in `styles/marketplace.css`, compiling the used classes into `dist/styles/marketplace.css`.
+3.  **Static Copying**: The `vite-plugin-static-copy` automatically moves raw source folders and files into the `dist/` directory during the build. This includes:
+    * `module.json`
+    * `languages/`
+    * `templates/`
+    * `assets/`
 
-![image](https://user-images.githubusercontent.com/7644614/93409960-10c63800-f866-11ea-83f6-270cc5d10b71.png)
+## 📂 Project Structure
 
-This `module.json` will only ever point at this release's `module.zip`, making it useful for sharing a specific version for compatibility purposes.
+When the project is built, the `dist/` folder will mirror this structured hierarchy:
 
-7. You can use the url `https://github.com/<user>/<repo>/releases/latest/download/module.json` to refer to the manifest.
+```text
+dist/
+├── assets/                  # Static media, UI frames, and item/weapon icons
+├── languages/               # i18n localization files (de.json, en.json)
+├── scripts/                 # Compiled JavaScript (marketHooks.js and chunks)
+├── styles/                  # Compiled Tailwind CSS (marketplace.css)
+└── templates/               # Handlebars HTML templates
+    ├── apps/                # Standalone UI Applications
+    │   ├── inGameMarketplace/   # Shopping, Basket, and Order Review UI
+    │   ├── itemBuilder/         # Custom Item creation interfaces
+    │   └── marketplace-settings/# Module settings UI
+    ├── chat/                # Chat message templates
+    └── documents/           # Overrides for core Foundry documents
+        ├── actor/           # Custom Shop Actor sheets and partials
+        ├── items/           # Item preview and library templates
+        ├── journal/         # Journal formatting overrides
+        └── tests/           # SR5 Test Dialog overlays (Availability, Resist, etc.)
+```
 
-This is the url you want to use to install the module typically, as it will get updated automatically.
-
-# How to List Your Releases on Package Admin
-
-To request a package listing for your first release, go to the [Package Submission Form](https://foundryvtt.com/packages/submit) (accessible via a link at the bottom of the "[Systems and Modules](https://foundryvtt.com/packages/)" page on the Foundry website).
-
-Fill in the form. "Package Name" must match the name in the module manifest.  Package Title will be the display name for the package.  Package URL should be your repo URL.
-![image](https://user-images.githubusercontent.com/36359784/120664263-b49e5500-c482-11eb-9126-af7006389903.png)
-
-
-One of the Foundry staff will typically get back to you with an approval or any further questions within a few days, and give you access to the package admin pages.
-
-Once you have access to the [module admin page](https://foundryvtt.com/admin/packages/package/), you can release a new version by going into the page for your module, scrolling to the bottom, and filling in a new Package Version.
-
-When listing a new version, Version should be the version number you set above, and the Manifest URL should be the manifest __for that specific version__ (do not use /latest/ here).
-![image](https://user-images.githubusercontent.com/36359784/120664346-c4b63480-c482-11eb-9d8b-731b50d70939.png)
-
-> ### :warning: Important :warning:
-> 
-> It is very important that you use the specific release manifest url, and not the `/latest` url here. For more details about why this is important and how Foundry Installs/Updates packages, read [this wiki article](https://foundryvtt.wiki/en/development/guides/releases-and-history).
-
-Clicking "Save" in the bottom right will save the new version, which means that anyone installing your module from within Foundry will get that version, and a post will be generated in the #release-announcements channel on the official Foundry VTT Discord.
-
-
-# FoundryVTT Module
-
-A Modul for Shadowrun 5e, it will provide a new actor type: Merchant and it will intorduce the Purchase Screen.
-
-## Changelog
+## 🌍 Localization (i18n)
+The module supports both English (`en.json`) and German (`de.json`). 
+Translations are deeply nested to keep the UI, Item Builder, and Actor Sheet strings organized. When adding new features, ensure keys are added to the source JSON files in the `languages/` folder before building.
