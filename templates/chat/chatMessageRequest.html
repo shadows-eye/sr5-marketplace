@@ -1,30 +1,30 @@
 <div class="shopping-basket-summary">
-  <h2>{{localize "SR5Marketplace.Marketplace.shoppingListRequest"}}</h2>
+  <h2>{{localize "SR5Marketplace.Marketplace.OrderReview.ShoppingListRequest"}}</h2>
   
   <!-- Link to the actor this request is for -->
   {{#if actorId}}
-    <p>{{localize "SR5Marketplace.Marketplace.RequestFor"}}: @Actor[{{actorId}}]</p>
+    <p>{{localize "SR5Marketplace.Marketplace.OrderReview.RequestFor"}}: @Actor[{{actorId}}]</p>
   {{/if}}
   
-  <h3>{{localize "SR5Marketplace.Marketplace.Items"}}</h3>
+  <h3>{{localize "SR5Marketplace.Marketplace.OrderReview.YourItems"}}</h3>
   <ul>
     {{#each items}}
       <li>
         {{#if (neq type "weapon")}}
-          {{localize "SR5Marketplace.Marketplace.system.technology.rating"}}: {{rating}} {{localize "SR5Marketplace.Marketplace.of"}}
+          {{localize "SR5Marketplace.Marketplace.system.technology.rating"}}: {{rating}} {{localize "SR5Marketplace.Marketplace.OrderReview.Of"}}
         {{/if}}
-        {{name}} - {{cost}} <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen"></i> {{localize "SR5Marketplace.Marketplace.each"}}
-        {{#if karma}} - {{karma}} <i class="fa-duotone fa-solid fa-circle-star"></i> {{localize "SR5Marketplace.Marketplace.karma"}}{{/if}}
-        {{#if essence}} - {{essence}} <i class="fa-duotone fa-solid fa-capsules"></i> {{localize "SR5Marketplace.Marketplace.essence"}}{{/if}}
+        {{name}} - {{cost}} <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen"></i> {{localize "SR5Marketplace.Marketplace.OrderReview.Each"}}
+        {{#if karma}} - {{karma}} <i class="fa-duotone fa-solid fa-circle-star"></i> {{localize "SR5Marketplace.UI.Karma"}}{{/if}}
+        {{#if essence}} - {{essence}} <i class="fa-duotone fa-solid fa-capsules"></i> {{localize "SR5Marketplace.UI.Essence"}}{{/if}}
       </li>
     {{/each}}
   </ul>
 
-  <p><strong>{{localize "SR5Marketplace.Marketplace.TotalCost"}}:</strong>  <strong class="SR5-marketplace darkred">{{totalCost}}¥</strong> <i class="fa-duotone fa-solid fa-circle-yen"></i></p>
-  <p><strong>{{localize "SR5Marketplace.Marketplace.TotalAvailability"}}:</strong> <strong class="SR5-marketplace darkred">{{totalAvailability}}¥</strong></p>
-  {{#if totalKarma}}<p><strong>{{localize "SR5Marketplace.Marketplace.TotalKarma"}}:</strong>  <strong class="SR5-marketplace darkred">{{totalKarma}}</strong> <i class="fa-duotone fa-solid fa-circle-star"></i></p>{{/if}}
-  {{#if totalEssenceCost}}<p><strong>{{localize "SR5Marketplace.Marketplace.TotalEssence"}}:</strong>  <strong class="SR5-marketplace darkred">{{totalEssenceCost}}</strong> <i class="fa-duotone fa-solid fa-capsules"></i></p>{{/if}}
+  <p><strong>{{localize "SR5Marketplace.Marketplace.Basket.TotalCost"}}:</strong>  <strong class="SR5-marketplace darkred">{{totalCost}}¥</strong> <i class="fa-duotone fa-solid fa-circle-yen"></i></p>
+  <p><strong>{{localize "SR5Marketplace.Marketplace.Basket.TotalAvailability"}}:</strong> <strong class="SR5-marketplace darkred">{{totalAvailability}}¥</strong></p>
+  {{#if totalKarma}}<p><strong>{{localize "SR5Marketplace.Marketplace.Basket.TotalKarma"}}:</strong>  <strong class="SR5-marketplace darkred">{{totalKarma}}</strong> <i class="fa-duotone fa-solid fa-circle-star"></i></p>{{/if}}
+  {{#if totalEssenceCost}}<p><strong>{{localize "SR5Marketplace.Marketplace.Basket.TotalEssence"}}:</strong>  <strong class="SR5-marketplace darkred">{{totalEssenceCost}}</strong> <i class="fa-duotone fa-solid fa-capsules"></i></p>{{/if}}
     <button id="{{id}}" class="review-request-button {{#unless (game.user.isGM)}}hide-for-non-gm{{/unless}}" data-request-id="{{id}}">
-      {{localize 'SR5Marketplace.Marketplace.ReviewAndConfirm'}}
+      {{localize 'SR5Marketplace.Marketplace.OrderReview.ReviewAndConfirm'}}
     </button>
 </div>  

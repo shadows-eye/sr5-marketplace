@@ -178,17 +178,51 @@
         }
     },
     "SR5Marketplace": {
-        "PurchaseScreen": "Marketplace Purchase Screen",
+        "UI": {
+            "Name": "Name",
+            "Rating": "Rating",
+            "Cost": "Cost",
+            "Availability": "Availability",
+            "Quantity": "Quantity",
+            "Karma": "Karma",
+            "Essence": "Essence",
+            "Image": "Image",
+            "Description": "Description",
+            "Actions": "Actions",
+            "Total": "Total",
+            "Search": "Search",
+            "SearchPlaceholder": "Search items...",
+            "Remove": "Remove",
+            "Cancel": "Cancel",
+            "Save": "Save",
+            "Edit": "Edit",
+            "Delete": "Delete",
+            "Properties": "Properties",
+            "Slot": "Slot",
+            "Slots": "Slots",
+            "MountPoint": "Mount Point",
+            "BaseItem": "Base Item",
+            "LimitPhysical": "Physical Limit",
+            "LimitMental": "Mental Limit",
+            "SpecialAttributes": "Special Attributes",
+            "ActiveSkills": "Active Skills",
+            "Languages": "Languages",
+            "KnowledgeSkillStreet": "Street",
+            "KnowledgeSkillAcademic": "Academic",
+            "KnowledgeSkillProfessional": "Professional",
+            "KnowledgeSkillInterests": "Interests",
+            "Roll": "Roll"
+        },
         "Marketplace": {
+            "Title": "Marketplace Purchase Screen",
+            "Tabs": {
+                "Shop": "Shop",
+                "OrderReview": "Order Review"
+            },
             "Settings": {
                 "AvailabilityRule": {
                     "name": "Availability Rules",
                     "hint": "Selection options for the Rules you want to use, standard is Opposed",
-                    "choises": {
-                        "opposed": "Opposed",
-                        "simple": "Simple",
-                        "extended": "Extended"
-                    },
                     "choices": {
                         "opposed": "Opposed",
                         "simple": "Simple",
@@ -235,8 +269,6 @@
             "Shop": {
                 "SheetName": "Shop",
                 "Inventory": "Inventory",
-                "ItemName": "Name",
-                "ItemRating": "Rating",
                 "SellPrice": "Sell Price",
                 "BuyPrice": "Buy Price",
                 "BuyTime": "Buy Time",
@@ -248,6 +280,9 @@
                 "Modifier": "Price Modifier",
                 "ConnectionUuid": "Connection",
                 "Owner": "Shop Owner",
+                "OwnerUuid": "Owner UUID",
+                "AddItem": "Add Item",
+                "DragDropHint": "Drag & Drop items here to add to Shop Inventory",
                 "FIELDS": {
                     "owner": {
                         "label": "Shop Owner",
@@ -269,52 +304,60 @@
                         "label": "Modifier Type",
                         "hint": "Whether the modifier is a fee or a discount."
                     }
-                },
-                "AddItem": "Add Item",
-                "OwnerUuid": "Owner UUID"
+                }
             },
-            "funds": "Funds",
-            "YourOrderHasArrived": "Your order has arrived!",
-            "OrderReviewItems": "Items List for the Review",
-            "YourItems": "Your Items",
-            "aprroved": "approved",
-            "rejected": "rejected",
-            "allApproved": "all approved",
-            "allRejected": "all rejected",
-            "ConfirmTime": "Date",
-            "of": "of",
-            "each": "each",
-            "Image": "Image",
-            "Name": "Name",
-            "RemoveItem": "Remove",
-            "ReviewAndConfirm": "Review (GM only)",
-            "SelectItemType": "Select Item Type",
-            "ShoppingBasket": "Shopping Basket",
-            "Marketplace": "Marketplace",
-            "Availability": "Availability",
-            "OrderReview": "Order Review",
-            "SendRequest": "Buy",
-            "CancelRequest": "Cancel",
-            "RequestFor": "Request from",
-            "OrderHistory": "Order History",
-            "history": "History",
-            "Total": "Total",
-            "TotalCost": "Total Cost",
-            "TotalAvailability": "Total Availability",
-            "TotalKarma": "Total Karma Cost",
-            "TotalEssence": "Total Essence Cost",
-            "Search": "Search",
-            "Search items...": "Search items...",
-            "shoppingListRequest": "Shopping List Request",
-            "OrderRejected": "Sorry but the following items can not be confirmed",
-            "noPurchaseRequests": "There are no purchase requests",
-            "purchaseReview": "purchase review",
-            "requestActor": "Request From",
-            "selectContact": "Select a contact to Order with",
-            "Items": "Items",
-            "buyQuantity": "Buy Quantity",
-            "quantityPerPack": "Quantity / Pack",
-            "actions": "Actions",
+            "Actor": {
+                "SelectAnActor": "Select an Actor",
+                "SelectActorTooltip": "Please select an actor to begin shopping.",
+                "RequestActor": "Request From",
+                "Funds": "Funds"
+            },
+            "Contacts": {
+                "SelectContact": "Select a contact to Order with",
+                "NoContacts": "has no contacts.",
+                "SelectContactTooltip": "Click to Select/Deselect Contact",
+                "ToggleDetailsTooltip": "Toggle Details",
+                "Loyalty": "Loyalty",
+                "Connection": "Connection"
+            },
+            "Basket": {
+                "Title": "Shopping Basket",
+                "Contents": "Contents",
+                "CurrentContents": "Current Contents",
+                "SelectItem": "Select Item",
+                "AddToCart": "Add to Cart",
+                "BuyQuantity": "Buy Quantity",
+                "QuantityPerPack": "Quantity / Pack",
+                "TotalCost": "Total Cost",
+                "TotalAvailability": "Total Availability",
+                "TotalKarma": "Total Karma Cost",
+                "TotalEssence": "Total Essence Cost",
+                "SendRequest": "Buy",
+                "CancelRequest": "Cancel",
+                "Description": "Basket Description",
+                "AddItem": "Add Item"
+            },
+            "OrderReview": {
+                "Title": "Order Review",
+                "YourItems": "Your Items",
+                "OrderReviewItems": "Items List for the Review",
+                "YourOrderHasArrived": "Your order has arrived!",
+                "Approved": "approved",
+                "Rejected": "rejected",
+                "AllApproved": "all approved",
+                "AllRejected": "all rejected",
+                "ConfirmTime": "Date",
+                "ReviewAndConfirm": "Review (GM only)",
+                "ShoppingListRequest": "Shopping List Request",
+                "OrderRejected": "Sorry but the following items can not be confirmed",
+                "NoPurchaseRequests": "There are no purchase requests",
+                "PurchaseReview": "purchase review",
+                "OrderHistory": "Order History",
+                "History": "History",
+                "RequestFor": "Request from",
+                "Of": "of",
+                "Each": "each"
+            },
             "system": {
                 "avail": {
                     "avail": "Avail.",
@@ -323,13 +366,9 @@
                     "E": "R",
                     "V": "F"
                 },
-                "karma": "Karma",
-                "essence": "Essence",
                 "technology": {
-                    "rating": "Rating",
-                    "availability": "Availability",
-                    "Cost": "Cost",
-                    "quantity": "Quantity"
+                    "quantity": "Quantity",
+                    "rating": "Rating"
                 },
                 "spell": {
                     "type": "Type",
@@ -337,13 +376,7 @@
                     "duration": "Duration",
                     "damage": "Damage",
                     "drain": "Drain"
-                },
-                "mount-point": "Mount Point",
-                "slots": "Slots"
-            },
-            "Tab": {
-                "Shop": "Shop",
-                "OrderReview": "Order Review"
+                }
             },
             "ItemTypes": {
                 "AllItems": "All Items",
@@ -366,7 +399,9 @@
                 "Spells": "Spells",
                 "Actions": "Actions",
                 "Qualitys": "Qualities",
-                "complex_form": "Complex Forms"
+                "AdeptPowers": "Adept Powers",
+                "Echo": "Echo",
+                "ComplexForms": "Complex Forms"
             },
             "Modifiers": {
                 "General": {
@@ -409,41 +444,20 @@
                 "Success": "Success",
                 "Failed": "Could not be acquired."
             },
-            "selectAnActor": "Select an Actor",
-            "selectActorTooltip": "Please select an actor to begin shopping.",
-            "AddToCart": "Add to Cart",
-            "AddToBuilder": "Add to Builder",
-            "NoContacts": "has no contacts.",
-            "SelectContactTooltip": "Click to Select/Deselect Contact",
-            "ToggleDetailsTooltip": "Toggle Details",
-            "Loyalty": "Loyalty",
-            "Connection": "Connection",
-            "Slots": "Slots",
-            "MountPoint": "Mount Point",
-            "karma": "Karma",
-            "essence": "Essence",
-            "Basket": {
-                "Description": "Basket Description",
-                "Contents": "Contents",
-                "SelectItem": "Select Item",
-                "Quantity": "Quantity",
-                "Rating": "Rating",
-                "AddItem": "Add Item",
-                "CurrentContents": "Current Contents",
-                "Remove": "Remove"
-            },
             "Notifications": {
                 "BehaviorsSaved": "Item behaviors saved successfully.",
                 "IndexComplete": "Marketplace index rebuild complete."
-            }
+            },
+            "NoContacts": "Has no Contacts"
         },
         "ItemBuilder": {
-            "Save": "Save",
-            "Cancel": "Cancel",
-            "BuildItem": "Build Item",
+            "Title": "Build Item",
             "SelectAsBase": "Select as Base Item",
+            "AddToBuilder": "Add to Builder",
             "SearchAllMods": "Search all modifications...",
-            "SearchPlaceholder": "Search items...",
+            "SelectImage": "Select Image",
+            "DoneEditing": "Done Editing",
+            "EditBaseItem": "Edit Base Item",
             "nav": {
                 "builder": "Builder",
                 "effects": "Effects",
@@ -489,9 +503,7 @@
                 "SelectDerivedValueLabel": "Select a property from the Base Item",
                 "CustomEffect": "Custom Effect"
             },
-            "SelectImage": "Select Image",
-            "DoneEditing": "Done Editing",
-            "EditBaseItem": "Edit Base Item"
+            "SearchPlaceholder": "Search items..."
         },
         "AppDialogItem": {
             "result": {
@@ -521,23 +533,8 @@
             "Days": "Days",
             "Week": "Week",
             "Month": "Month"
-        },
-        "Roll": "Roll",
-        "BaseItem": "Base Item",
-        "Properties": "Properties",
-        "Slot": "Slot",
-        "Karma": "Karma",
-        "LimitPhysical": "Physical Limit",
-        "LimitMental": "Mental Limit",
-        "SpecialAttributes": "Special Attributes",
-        "ActiveSkills": "Active Skills",
-        "Languages": "Languages",
-        "Name": "Name",
-        "Rating": "Rating",
-        "Cost": "Cost",
-        "Availability": "Availability"
+        }
     },
-    "Shop": "Shop",
     "TYPES": {
         "Actor": {
             "sr5-marketplace.shop": "Marketplace Shop"

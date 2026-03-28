@@ -36,13 +36,13 @@
                     {{localize "SR5Marketplace.Marketplace.system.technology.rating"}}: {{this.system.technology.rating}}
                 </span>
                 {{#if (eq this.system.type "weapon")}}
-                    <span class="bg-black/10 dark:bg-black/30 px-1.5 py-0.5 rounded" title="{{localize 'SR5Marketplace.Marketplace.system.mount-point'}}">
-                        {{localize "SR5Marketplace.Marketplace.system.mount-point"}}: {{this.system.mount_point}}
+                    <span class="bg-black/10 dark:bg-black/30 px-1.5 py-0.5 rounded" title="{{localize 'SR5Marketplace.UI.MountPoint'}}">
+                        {{localize "SR5Marketplace.UI.MountPoint"}}: {{this.system.mount_point}}
                     </span>
                 {{/if}}
                 {{#if (or (eq this.system.type "vehicle") (eq this.system.type "drone"))}}
-                    <span class="bg-black/10 dark:bg-black/30 px-1.5 py-0.5 rounded" title="{{localize 'SR5Marketplace.Marketplace.system.slots'}}">
-                        {{localize "SR5Marketplace.Marketplace.system.slots"}}: {{this.system.slots}}
+                    <span class="bg-black/10 dark:bg-black/30 px-1.5 py-0.5 rounded" title="{{localize 'SR5Marketplace.UI.Slots'}}">
+                        {{localize "SR5Marketplace.UI.Slots"}}: {{this.system.slots}}
                     </span>
                 {{/if}}
             {{else}}
@@ -66,8 +66,8 @@
             {{/if}}
             
             {{#if (or (eq this.type "bioware") (eq this.type "cyberware"))}}
-                <span class="bg-black/10 dark:bg-black/30 px-1.5 py-0.5 rounded" title="{{localize 'SR5Marketplace.Marketplace.system.essence'}}">
-                    {{localize "SR5Marketplace.Marketplace.system.essence"}}: {{this.system.essence}}
+                <span class="bg-black/10 dark:bg-black/30 px-1.5 py-0.5 rounded" title="{{localize 'SR5Marketplace.UI.Essence'}}">
+                    {{localize "SR5Marketplace.UI.Essence"}}: {{this.system.essence}}
                 </span>
             {{/if}}
         </div>

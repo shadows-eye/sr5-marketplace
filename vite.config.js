@@ -24,8 +24,11 @@ export default defineConfig({
         entryFileNames: 'scripts/[name].js',
         chunkFileNames: 'scripts/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
+          // Safely extract the filename whether it's a string (old Vite) or an array (Vite 8+)
+          const assetName = assetInfo.name || (assetInfo.names && assetInfo.names[0]);
+
           // Forces the Tailwind-processed CSS into the specific styles folder
-          if (assetInfo.name && assetInfo.name.endsWith('.css')) {
+          if (assetName && assetName.endsWith('.css')) {
             return 'styles/marketplace.css';
           }
           return 'assets/[name].[ext]';

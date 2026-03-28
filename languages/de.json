@@ -178,17 +178,51 @@
         }
     },
     "SR5Marketplace": {
-        "PurchaseScreen": "Marktplatz Fenster",
+        "UI": {
+            "Name": "Name",
+            "Rating": "Stufe",
+            "Cost": "Kosten",
+            "Availability": "Verfügbarkeit",
+            "Quantity": "Menge",
+            "Karma": "Karma",
+            "Essence": "Essenz",
+            "Image": "Bild",
+            "Description": "Beschreibung",
+            "Actions": "Aktionen",
+            "Total": "Gesamt",
+            "Search": "Suche",
+            "SearchPlaceholder": "Gegenstände suchen...",
+            "Remove": "Entfernen",
+            "Cancel": "Abbrechen",
+            "Save": "Speichern",
+            "Edit": "Bearbeiten",
+            "Delete": "Löschen",
+            "Properties": "Eigenschaften",
+            "Slot": "Slot",
+            "Slots": "Mod Punkte",
+            "MountPoint": "Rüstplatz",
+            "BaseItem": "Basisartikel",
+            "LimitPhysical": "Körperliches Limit",
+            "LimitMental": "Geistiges Limit",
+            "SpecialAttributes": "Spezialattribute",
+            "ActiveSkills": "Aktive Fertigkeiten",
+            "Languages": "Sprachen",
+            "KnowledgeSkillStreet": "Straße",
+            "KnowledgeSkillAcademic": "Akademisch",
+            "KnowledgeSkillProfessional": "Beruflich",
+            "KnowledgeSkillInterests": "Interessen",
+            "Roll": "Würfeln"
+        },
         "Marketplace": {
+            "Title": "Marktplatz Fenster",
+            "Tabs": {
+                "Shop": "Laden",
+                "OrderReview": "Überprf."
+            },
             "Settings": {
                 "AvailabilityRule": {
                     "name": "Verfügbarkeits Regeln",
                     "hint": "Auswahl welche regeln ihr benutzen wollt, standard ist resistence",
-                    "choises": {
-                        "opposed": "Resistence",
-                        "simple": "Einfache",
-                        "extended": "Erweiterte"
-                    },
                     "choices": {
                         "opposed": "Vergleichend",
                         "simple": "Einfach",
@@ -234,8 +268,7 @@
             },
             "Shop": {
                 "SheetName": "Geschäft",
-                "ItemName": "Name",
-                "ItemRating": "Stufe",
+                "Inventory": "Inventar",
                 "SellPrice": "Verkaufspreis",
                 "BuyPrice": "Kaufpreis",
                 "BuyTime": "Kaufzeit",
@@ -247,51 +280,84 @@
                 "Modifier": "Preisänderung",
                 "ConnectionUuid": "Verbindung",
                 "Owner": "Geschäftsinhaber",
+                "OwnerUuid": "Besitzer UUID",
                 "AddItem": "Artikel hinzufügen",
-                "OwnerUuid": "Besitzer UUID"
+                "DragDropHint": "Ziehe Gegenstände hierher, um sie dem Shop-Inventar hinzuzufügen",
+                "FIELDS": {
+                    "owner": {
+                        "label": "Shop Owner",
+                        "hint": "The UUID of the Actor who owns this shop."
+                    },
+                    "employees": {
+                        "label": "Employees",
+                        "hint": "A list of Actor UUIDs who are employees of this shop."
+                    },
+                    "connection": {
+                        "label": "Connection",
+                        "hint": "The UUID of an Item that represents the shop's primary Connection."
+                    },
+                    "modifierValue": {
+                        "label": "Modifier Value",
+                        "hint": "The numeric value of the fee or discount."
+                    },
+                    "modifierType": {
+                        "label": "Modifier Type",
+                        "hint": "Whether the modifier is a fee or a discount."
+                    }
+                }
             },
-            "funds": "Budget",
-            "YourOrderHasArrived": "Deine Bestellung ist angekommen!",
-            "OrderReviewItems": "Artikel Liste für die Überprüfung",
-            "YourItems": "Deine Artikel",
-            "ConfirmTime": "Datum",
-            "aprroved": "genehmigt",
-            "rejected": "abgelehnt",
-            "allApproved": "alle genehmigt",
-            "allRejected": "alle abgelehnt",
-            "of": "von",
-            "each": "pro Stück",
-            "Image": "Bild",
-            "Name": "Name",
-            "RemoveItem": "Entfernen",
-            "ReviewAndConfirm": "Überprüfen (nur GM)",
-            "SelectItemType": "Artikeltyp auswählen",
-            "ShoppingBasket": "Einkaufskorb",
-            "Marketplace": "Marktplatz",
-            "Availability": "Verfügbarkeit",
-            "OrderReview": "Order Überprüfung",
-            "SendRequest": "Kaufen",
-            "CancelRequest": "Abbruch",
-            "RequestFor": "Anfrage von",
-            "OrderHistory": "Bestell Historie",
-            "history": "Historie",
-            "Total": "Gesamt",
-            "TotalCost": "Gesamtkosten",
-            "TotalAvailability": "Gesamtverfügbarkeit",
-            "TotalKarma": "Gesamtkarma Kosten",
-            "TotalEssence": "Gesamtessenz Kosten",
-            "Search": "Suche",
-            "Search items...": "Gegenstand Suche",
-            "shoppingListRequest": "Einkaufslisten Anfrage",
-            "OrderRejected": "Entschuldigung, aber die folgenden Artikel können nicht bestätigt werden",
-            "noPurchaseRequests": "Es gibt keine Kaufanfragen",
-            "purchaseReview": "Kaufüberprüfung",
-            "requestActor": "Anfrage von",
-            "selectContact": "Wählen Sie einen Kontakt der die Bestellung besorgt",
-            "Items": "Gegenstände",
-            "buyQuantity": "Kaufmenge",
-            "quantityPerPack": "Menge / Packung",
-            "actions": "Aktionen",
+            "Actor": {
+                "SelectAnActor": "Wähle einen Akteur",
+                "SelectActorTooltip": "Bitte wähle einen Akteur aus, um einzukaufen.",
+                "RequestActor": "Anfrage von",
+                "Funds": "Budget"
+            },
+            "Contacts": {
+                "SelectContact": "Wählen Sie einen Kontakt der die Bestellung besorgt",
+                "NoContacts": "hat keine Kontakte.",
+                "SelectContactTooltip": "Kontakt auswählen/abwählen",
+                "ToggleDetailsTooltip": "Details umschalten",
+                "Loyalty": "Loyalität",
+                "Connection": "Connection"
+            },
+            "Basket": {
+                "Title": "Einkaufskorb",
+                "Contents": "Inhalt",
+                "CurrentContents": "Aktueller Inhalt",
+                "SelectItem": "Artikel auswählen",
+                "AddToCart": "In den Warenkorb",
+                "BuyQuantity": "Kaufmenge",
+                "QuantityPerPack": "Menge / Packung",
+                "TotalCost": "Gesamtkosten",
+                "TotalAvailability": "Gesamtverfügbarkeit",
+                "TotalKarma": "Gesamtkarma Kosten",
+                "TotalEssence": "Gesamtessenz Kosten",
+                "SendRequest": "Kaufen",
+                "CancelRequest": "Abbruch",
+                "Description": "Beschreibung",
+                "AddItem": "Hinzufügen"
+            },
+            "OrderReview": {
+                "Title": "Order Überprüfung",
+                "YourItems": "Deine Artikel",
+                "OrderReviewItems": "Artikel Liste für die Überprüfung",
+                "YourOrderHasArrived": "Deine Bestellung ist angekommen!",
+                "Approved": "genehmigt",
+                "Rejected": "abgelehnt",
+                "AllApproved": "alle genehmigt",
+                "AllRejected": "alle abgelehnt",
+                "ConfirmTime": "Datum",
+                "ReviewAndConfirm": "Überprüfen (nur GM)",
+                "ShoppingListRequest": "Einkaufslisten Anfrage",
+                "OrderRejected": "Entschuldigung, aber die folgenden Artikel können nicht bestätigt werden",
+                "NoPurchaseRequests": "Es gibt keine Kaufanfragen",
+                "PurchaseReview": "Kaufüberprüfung",
+                "OrderHistory": "Bestell Historie",
+                "History": "Historie",
+                "RequestFor": "Anfrage von",
+                "Of": "von",
+                "Each": "pro Stück"
+            },
             "system": {
                 "avail": {
                     "avail": "Verfg.",
@@ -301,13 +367,9 @@
                     "V": "V",
                     "": ""
                 },
-                "karma": "Karma",
-                "essence": "Essenz",
                 "technology": {
-                    "rating": "Stufe",
-                    "availability": "Verfügbarkeit",
-                    "Cost": "Kosten",
-                    "quantity": "Menge"
+                    "quantity": "Menge",
+                    "rating": "Stufe"
                 },
                 "spell": {
                     "type": "Typ",
@@ -315,13 +377,7 @@
                     "duration": "Dauer",
                     "damage": "Schaden",
                     "drain": "Entzug"
-                },
-                "mount-point": "Rüstplatz",
-                "slots": "Mod Punkte"
-            },
-            "Tab": {
-                "Shop": "Laden",
-                "OrderReview": "Überprf."
+                }
             },
             "ItemTypes": {
                 "AllItems": "Alle Artikel",
@@ -344,7 +400,9 @@
                 "Spells": "Zauber",
                 "Actions": "Aktionen",
                 "Qualitys": "Vor/Nachteile",
-                "complex_form": "Komplexe Formen"
+                "AdeptPowers": "Adepten Kräfte",
+                "Echo": "Echo",
+                "ComplexForms": "Komplexe Formen"
             },
             "Modifiers": {
                 "General": {
@@ -387,41 +445,20 @@
                 "Success": "Kauf Erfolg",
                 "Failure": "Konnte nicht beschafft werden."
             },
-            "selectAnActor": "Wähle einen Akteur",
-            "selectActorTooltip": "Bitte wähle einen Akteur aus, um einzukaufen.",
-            "AddToCart": "In den Warenkorb",
-            "AddToBuilder": "Zum Builder hinzufügen",
-            "NoContacts": "hat keine Kontakte.",
-            "SelectContactTooltip": "Klicken um Kontakt auszuwählen/abzuwählen",
-            "ToggleDetailsTooltip": "Details umschalten",
-            "Loyalty": "Loyalität",
-            "Connection": "Connection",
-            "Slots": "Slots",
-            "MountPoint": "Mount Point",
-            "karma": "Karma",
-            "essence": "Essenz",
-            "Basket": {
-                "Description": "Warenkorb Beschreibung",
-                "Contents": "Inhalt",
-                "SelectItem": "Artikel auswählen",
-                "Quantity": "Menge",
-                "Rating": "Stufe",
-                "AddItem": "Hinzufügen",
-                "CurrentContents": "Aktueller Inhalt",
-                "Remove": "Entfernen"
-            },
             "Notifications": {
-                "BehaviorsSaved": "Artikelverhalten erfolgreich gespeichert.",
-                "IndexComplete": "Marktplatz-Index-Neuerstellung abgeschlossen."
-            }
+                "BehaviorsSaved": "Verhalten gespeichert.",
+                "IndexComplete": "Index aktualisiert."
+            },
+            "NoContacts": "Hat keine Kontakte"
         },
         "ItemBuilder": {
-            "Save": "Speichern",
-            "Cancel": "Abbrechen",
-            "BuildItem": "Artikel bauen",
+            "Title": "Artikel bauen",
             "SelectAsBase": "Als Basisartikel auswählen",
+            "AddToBuilder": "Zum Builder hinzufügen",
             "SearchAllMods": "Alle Modifikationen durchsuchen...",
-            "SearchPlaceholder": "Gegenstände suchen...",
+            "SelectImage": "Bild auswählen",
+            "DoneEditing": "Bearbeitung beendet",
+            "EditBaseItem": "Basisartikel bearbeiten",
             "nav": {
                 "builder": "Builder",
                 "effects": "Effekte",
@@ -467,9 +504,7 @@
                 "SelectDerivedValueLabel": "Wähle eine Eigenschaft vom Basisartikel",
                 "CustomEffect": "Eigener Effekt"
             },
-            "SelectImage": "Bild auswählen",
-            "DoneEditing": "Bearbeitung beendet",
-            "EditBaseItem": "Basisartikel bearbeiten"
+            "SearchPlaceholder": "Suchen..."
         },
         "AppDialogItem": {
             "result": {
@@ -491,7 +526,7 @@
             "Hits": "Erfolge",
             "ExtendedSuccessDetails": "Der Erwerb benötigte {rolls} Würfe, unter Verwendung einer Connection von {connection}. Endgültige Lieferzeit: {timeValue}",
             "FinalRoll": "Letzter Wurf",
-            "OrderTest": "Verfügbarkeitsprobe bestellen"
+            "OrderTest": "Verfügbarkeitsprobe"
         },
         "Time": {
             "Hours": "Stunden",
@@ -499,23 +534,8 @@
             "Days": "Tage",
             "Week": "Woche",
             "Month": "Monat"
-        },
-        "Roll": "Würfeln",
-        "BaseItem": "Basisartikel",
-        "Properties": "Eigenschaften",
-        "Slot": "Slot",
-        "Karma": "Karma",
-        "LimitPhysical": "Körperliches Limit",
-        "LimitMental": "Geistiges Limit",
-        "SpecialAttributes": "Spezialattribute",
-        "ActiveSkills": "Aktive Fertigkeiten",
-        "Languages": "Sprachen",
-        "Name": "Name",
-        "Rating": "Stufe",
-        "Cost": "Kosten",
-        "Availability": "Verfügbarkeit"
+        }
     },
-    "Shop": "Geschäft",
     "TYPES": {
         "Actor": {
             "sr5-marketplace.shop": "Marktplatz Laden"

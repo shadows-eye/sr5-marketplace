@@ -18,9 +18,9 @@
 /* -------------------------------------------------------- */
 
 /* Tell Tailwind where your templates are */
-@source "../templates/**/*.html";
-@source "../scripts/**/*.js";
-@source "../scripts/**/*.mjs";
+@source "../templates";
+@source "../scripts";
+@source "../scripts";
 
 /* ======================================
    Custom Foundry Application Window Header Styling for Marketplace and settings App (V1/V2 mix)

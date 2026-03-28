@@ -63,8 +63,8 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
             const numericKeys = this.#_getDerivableItemKeys(builderState.baseItem);
 
             if (numericKeys.length > 0) {
-                const baseItemLabel = game.i18n.localize("SR5Marketplace.BaseItem") || "Base Item";
-                const propertiesLabel = game.i18n.localize("SR5Marketplace.Properties") || "Properties";
+                const baseItemLabel = game.i18n.localize("SR5Marketplace.UI.BaseItem") || "Base Item";
+                const propertiesLabel = game.i18n.localize("SR5Marketplace.UI.Properties") || "Properties";
                 
                 // Create the data structure the template expects.
                 context.derivedValueKeyGroups = [{
@@ -150,8 +150,8 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
         const allItems = [builderState.baseItem, ...Object.values(builderState.changes)];
         const customMods = builderState.modifications || [];
         
-        const baseItemLabel = game.i18n.localize("SR5Marketplace.BaseItem") || "Base Item";
-        const slotLabel = game.i18n.localize("SR5Marketplace.Slot") || "Slot";
+        const baseItemLabel = game.i18n.localize("SR5Marketplace.UI.BaseItem") || "Base Item";
+        const slotLabel = game.i18n.localize("SR5Marketplace.UI.Slot") || "Slot";
 
         for (const item of allItems) {
             if (!item?.uuid) continue;

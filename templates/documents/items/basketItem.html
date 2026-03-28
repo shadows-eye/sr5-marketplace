@@ -21,11 +21,11 @@
                 </select>
             </div>
             <div class="flexrow">
-                <label for="item-quantity">{{localize "SR5Marketplace.Marketplace.Basket.Quantity"}}</label>
+                <label for="item-quantity">{{localize "SR5Marketplace.UI.Quantity"}}</label>
                 <input type="number" name="system.marketbasket.basketQuantity" value="{{system.marketbasket.basketQuantity}}" min="1" />
             </div>
             <div class="flexrow">
-                <label for="item-rating">{{localize "SR5Marketplace.Marketplace.Basket.Rating"}}</label>
+                <label for="item-rating">{{localize "SR5Marketplace.UI.Rating"}}</label>
                 <input type="number" name="system.marketbasket.basketPrice" value="{{system.marketbasket.basketPrice}}" min="0" />
             </div>
             <button type="button" class="add-item" data-action="addToCart">{{localize "SR5Marketplace.Marketplace.Basket.AddItem"}}</button>
@@ -39,10 +39,10 @@
                 <li>
                     <span>{{name}} (x{{basketItemQuantity}})</span>
                     {{#if basketItemRating}}
-                    <span> - {{localize "SR5Marketplace.Marketplace.Basket.Rating"}}: {{basketItemRating}}</span>
+                    <span> - {{localize "SR5Marketplace.UI.Rating"}}: {{basketItemRating}}</span>
                     {{/if}}
                     <button type="button" class="remove-item" data-index="{{@index}}" data-action="removeFromCart">
-                        {{localize "SR5Marketplace.Marketplace.Basket.Remove"}}
+                        {{localize "SR5Marketplace.UI.Remove"}}
                     </button>
                 </li>
                 {{/each}}

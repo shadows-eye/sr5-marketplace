@@ -1,0 +1,43 @@
+{
+    "SR5Marketplace": {
+        "ItemBuilder": {
+            "SearchPlaceholder": "Search items...",
+            "SelectImage": "Select Image",
+            "DoneEditing": "Done Editing",
+            "EditBaseItem": "Edit Base Item",
+            "Effects": { "CustomEffect": "Custom Effect" }
+        },
+        "Marketplace": {
+            "Contacts": {
+                "SelectContactTooltip": "Click to Select/Deselect Contact",
+                "ToggleDetailsTooltip": "Toggle Details",
+                "Loyalty": "Loyalty",
+                "Connection": "Connection"
+            },
+            "Shop": {
+                "OwnerUuid": "Owner UUID",
+                "AddItem": "Add Item"
+            },
+            "Basket": {
+                "Description": "Basket Description",
+                "Contents": "Contents",
+                "SelectItem": "Select Item",
+                "AddItem": "Add Item"
+            },
+            "Settings": {
+                "ItemTypeBehaviors": { "name": "Item Type Behaviors" },
+                "AvailabilityRule": {
+                    "choices": { "opposed": "Opposed", "simple": "Simple", "extended": "Extended" }
+                }
+            },
+            "Notifications": {
+                "BehaviorsSaved": "Item behaviors saved successfully.",
+                "IndexComplete": "Marketplace index rebuild complete."
+            }
+        },
+        "AppDialogItem": {
+            "FinalRoll": "Final Roll",
+            "OrderTest": "Order Availability Test"
+        }
+    }
+}

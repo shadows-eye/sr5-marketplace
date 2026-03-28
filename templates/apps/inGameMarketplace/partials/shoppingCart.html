@@ -5,14 +5,14 @@
         
         {{!-- Table Header (No borders) --}}
         <div class="basket-grid grid grid-cols-[3fr_1fr_1.5fr_1fr_1fr_1fr_40px] gap-2 px-2 py-1 text-[var(--text-color-subheader)] text-[11px] font-bold uppercase tracking-wider items-center mb-1">
-            <div class="text-left pl-1">{{localize "SR5Marketplace.Marketplace.Name"}}</div>
-            <div class="text-center" title="{{localize 'SR5Marketplace.Marketplace.system.technology.quantity'}} (per Pack)">{{localize "SR5Marketplace.Marketplace.quantityPerPack"}}</div>
-            <div class="text-center">{{localize "SR5Marketplace.Marketplace.buyQuantity"}}</div>
+            <div class="text-left pl-1">{{localize "SR5Marketplace.UI.Name"}}</div>
+            <div class="text-center" title="{{localize 'SR5Marketplace.UI.Quantity'}} (per Pack)">{{localize "SR5Marketplace.Marketplace.Basket.QuantityPerPack"}}</div>
+            <div class="text-center">{{localize "SR5Marketplace.Marketplace.Basket.BuyQuantity"}}</div>
             <div class="text-center">{{localize "SR5Marketplace.Marketplace.system.technology.rating"}}</div>
-            <div class="text-right">{{localize "SR5Marketplace.Marketplace.system.technology.Cost"}}</div>
-            <div class="text-right">{{localize "SR5Marketplace.Marketplace.system.karma"}}</div>
+            <div class="text-right">{{localize "SR5Marketplace.UI.Cost"}}</div>
+            <div class="text-right">{{localize "SR5Marketplace.UI.Karma"}}</div>
             <div class="text-center">
-                <button class="text-[var(--color-red-bright)] hover:brightness-150 transition-all cursor-pointer bg-transparent border-none p-0 shadow-none outline-none flex items-center justify-center w-full" title="{{localize 'SR5Marketplace.Marketplace.CancelRequest'}}" data-action="cancelRequest">
+                <button class="text-[var(--color-red-bright)] hover:brightness-150 transition-all cursor-pointer bg-transparent border-none p-0 shadow-none outline-none flex items-center justify-center w-full" title="{{localize 'SR5Marketplace.Marketplace.Basket.CancelRequest'}}" data-action="cancelRequest">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -72,22 +72,22 @@
     {{!-- SUMMARY BLOCK (Removed light background and border, aligned right) --}}
     <div class="basket-summary flex flex-wrap items-center justify-end gap-6 pt-2 pb-4 text-[var(--text-color-primary)]">
         <div class="flex items-center gap-2 font-bold">
-            <span class="uppercase opacity-80 text-xs tracking-wider text-[var(--text-color-subheader)]">{{localize "SR5Marketplace.Marketplace.TotalCost"}}:</span>
+            <span class="uppercase opacity-80 text-xs tracking-wider text-[var(--text-color-subheader)]">{{localize "SR5Marketplace.Marketplace.Basket.TotalCost"}}:</span>
             <span class="text-lg">{{basket.totalCost}} <i class="fa-duotone fa-solid fa-circle-yen text-[var(--color-green-button)]"></i></span>
         </div>
         <div class="flex items-center gap-2 font-bold">
-            <span class="uppercase opacity-80 text-xs tracking-wider text-[var(--text-color-subheader)]">{{localize "SR5Marketplace.Marketplace.TotalAvailability"}}:</span>
+            <span class="uppercase opacity-80 text-xs tracking-wider text-[var(--text-color-subheader)]">{{localize "SR5Marketplace.Marketplace.Basket.TotalAvailability"}}:</span>
             <span class="text-lg">{{basket.totalAvailability}}</span>
         </div>
         {{#if basket.totalKarma}}
         <div class="flex items-center gap-2 font-bold">
-            <span class="uppercase opacity-80 text-xs tracking-wider text-[var(--text-color-subheader)]">{{localize "SR5Marketplace.Marketplace.TotalKarma"}}:</span>
+            <span class="uppercase opacity-80 text-xs tracking-wider text-[var(--text-color-subheader)]">{{localize "SR5Marketplace.Marketplace.Basket.TotalKarma"}}:</span>
             <span class="text-lg">{{basket.totalKarma}} <i class="fa-duotone fa-solid fa-circle-star text-[var(--color-yellow-base)]"></i></span>
         </div>
         {{/if}}
         {{#if basket.totalEssenceCost}}
         <div class="flex items-center gap-2 font-bold">
-            <span class="uppercase opacity-80 text-xs tracking-wider text-[var(--text-color-subheader)]">{{localize "SR5Marketplace.Marketplace.TotalEssence"}}:</span>
+            <span class="uppercase opacity-80 text-xs tracking-wider text-[var(--text-color-subheader)]">{{localize "SR5Marketplace.Marketplace.Basket.TotalEssence"}}:</span>
             <span class="text-lg text-[#4da6ff]">{{basket.totalEssenceCost}}</span>
         </div>
         {{/if}}
@@ -95,7 +95,7 @@
 
     {{!-- CONTACTS SELECTION --}}
     <div class="actor-contact-grid flex flex-col gap-2 mt-2">
-        <h3 class="text-sm font-bold uppercase tracking-wider text-[var(--text-color-header)] pb-1">{{localize "SR5Marketplace.Marketplace.selectContact"}}</h3>
+        <h3 class="text-sm font-bold uppercase tracking-wider text-[var(--text-color-header)] pb-1">{{localize "SR5Marketplace.Marketplace.Contacts.SelectContact"}}</h3>
         
         <div class="grid grid-cols-1 @md:grid-cols-2 gap-2">
         {{#each contacts}}
@@ -104,18 +104,18 @@
                 <input type="checkbox" id="contact-toggle-{{this._id}}" class="contact-toggle-checkbox hidden peer">
 
                 <div class="contact-card-visible flex items-center p-2 gap-3 z-10 relative">
-                    <img src="{{this.img}}" alt="{{this.name}}" class="w-10 h-10 object-cover rounded cursor-pointer hover:brightness-110 flex-shrink-0" data-action="selectContact" data-contact-uuid="{{this.uuid}}" title="{{localize 'SR5Marketplace.Marketplace.SelectContactTooltip'}}">
+                    <img src="{{this.img}}" alt="{{this.name}}" class="w-10 h-10 object-cover rounded cursor-pointer hover:brightness-110 flex-shrink-0" data-action="selectContact" data-contact-uuid="{{this.uuid}}" title="{{localize 'SR5Marketplace.Marketplace.Contacts.SelectContactTooltip'}}">
                     <span class="contact-name font-bold text-sm truncate flex-grow cursor-pointer text-[var(--text-color-primary)]" data-action="selectContact" data-contact-uuid="{{this.uuid}}">{{this.name}}</span>
                     
-                    <label for="contact-toggle-{{this._id}}" class="contact-expand-toggle w-6 h-6 flex items-center justify-center rounded hover:bg-[var(--collapsible-header-hover-bg)] cursor-pointer transition-transform peer-checked:rotate-180" title="{{localize 'SR5Marketplace.Marketplace.ToggleDetailsTooltip'}}">
+                    <label for="contact-toggle-{{this._id}}" class="contact-expand-toggle w-6 h-6 flex items-center justify-center rounded hover:bg-[var(--collapsible-header-hover-bg)] cursor-pointer transition-transform peer-checked:rotate-180" title="{{localize 'SR5Marketplace.Marketplace.Contacts.ToggleDetailsTooltip'}}">
                         <i class="fas fa-chevron-down text-xs opacity-70"></i>
                     </label>
                 </div>
 
                 <div class="contact-details hidden peer-checked:flex flex-col p-2 pt-0 text-xs bg-transparent text-[var(--text-color-primary)]">
                     <div class="flex gap-4 mb-1 mt-2 opacity-90">
-                        <p><strong class="text-[var(--text-color-subheader)]">{{localize "SR5Marketplace.Marketplace.Loyalty"}}:</strong> {{this.system.loyalty}}</p>
-                        <p><strong class="text-[var(--text-color-subheader)]">{{localize "SR5Marketplace.Marketplace.Connection"}}:</strong> {{this.system.connection}}</p>
+                        <p><strong class="text-[var(--text-color-subheader)]">{{localize "SR5Marketplace.Marketplace.Contacts.Loyalty"}}:</strong> {{this.system.loyalty}}</p>
+                        <p><strong class="text-[var(--text-color-subheader)]">{{localize "SR5Marketplace.Marketplace.Contacts.Connection"}}:</strong> {{this.system.connection}}</p>
                     </div>
                     <div class="line-clamp-3 italic opacity-80">{{{this.system.description.value}}}</div>
                 </div>
@@ -134,10 +134,10 @@
     {{!-- BOTTOM ACTIONS (Removed top border line) --}}
     <div class="basket-actions flex justify-end gap-3 mt-auto pt-6 pb-2">
         <button id="cancel-request-button" class="px-4 py-1.5 rounded font-bold text-sm border border-[var(--color-red-bright)] text-[var(--color-red-bright)] hover:bg-[var(--color-red-bright)] hover:text-[var(--color-white)] transition-colors shadow-sm" data-action="cancelRequest">
-            {{localize 'SR5Marketplace.Marketplace.CancelRequest'}}
+            {{localize 'SR5Marketplace.Marketplace.Basket.CancelRequest'}}
         </button>
         <button id="send-request-button" class="px-6 py-1.5 rounded font-bold text-sm bg-[var(--color-green-button)] text-[var(--color-white)] hover:brightness-110 shadow-sm transition-colors border border-[var(--color-green-base)]" data-action="sendRequest">
-            {{localize 'SR5Marketplace.Marketplace.SendRequest'}}
+            {{localize 'SR5Marketplace.Marketplace.Basket.SendRequest'}}
         </button>
     </div>
 </div>

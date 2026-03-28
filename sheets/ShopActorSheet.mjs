@@ -210,7 +210,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                 context.knowledgeSkillGroups = Object.entries(skills.knowledge).map(([groupKey, groupData]) => {
                     return {
                         key: groupKey, // Pass the key for the input name attribute
-                        label: game.i18n.localize(`SR5Marketplace.KnowledgeSkill${capitalize(groupKey)}`),
+                        label: game.i18n.localize(`SR5Marketplace.UI.KnowledgeSkill${capitalize(groupKey)}`),
                         skills: Object.entries(groupData.value).map(([skillId, skillData]) => ({
                             id: skillId,
                             name: skillData.name,

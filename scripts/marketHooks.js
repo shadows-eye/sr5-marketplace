@@ -351,7 +351,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
         // 1. Marketplace Button (Direct Object Assignment)
         tokenGroup.tools["sr5-marketplace"] = {
             name: "sr5-marketplace",
-            title: game.i18n.localize("SR5Marketplace.PurchaseScreen") || "Marketplace",
+            title: game.i18n.localize("SR5Marketplace.Marketplace.Title") || "Marketplace",
             icon: "fas fa-shopping-cart",
             visible: true,
             toggle: true,
@@ -399,7 +399,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
     if (!tokenControls.tools.find(t => t.name === "sr5-marketplace")) {
         tokenControls.tools.push({
             name: "sr5-marketplace",
-            title: game.i18n.localize("SR5Marketplace.PurchaseScreen") || "Marketplace",
+            title: game.i18n.localize("SR5Marketplace.Marketplace.Title") || "Marketplace",
             icon: "fas fa-shopping-cart",
             visible: true,
             toggle: true,

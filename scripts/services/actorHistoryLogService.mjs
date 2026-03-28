@@ -22,7 +22,7 @@ export class ActorHistoryLogService {
 
         if (!journal) {
             journal = await JournalEntry.create({
-                name: "{{localize 'SR5Marketplace.Marketplace.history'}}",
+                name: "{{localize 'SR5Marketplace.Marketplace.OrderReview.History'}}",
                 folder: folder.id,
                 pages: []
             });

@@ -1,24 +1,30 @@
-<header class="sheet-header">
-    {{#if isEditMode}}
-        <div class="profile-img-edit" data-action="editImage" title="Click to change image">
-            <img class="profile-img" src="{{actor.img}}" title="{{actor.name}}"/>
+<div class="flex items-center justify-between gap-4 w-full">
+    <div class="flex items-center gap-4">
+        {{#if isEditMode}}
+            <div class="relative cursor-pointer group rounded-lg overflow-hidden border-2 border-[var(--border-color-dark)] hover:border-[var(--color-yellow-base)] transition-colors w-16 h-16 flex-shrink-0" data-action="editImage" title="Click to change image">
+                <img class="w-full h-full object-cover" src="{{actor.img}}" title="{{actor.name}}"/>
+                <div class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center text-white">
+                    <i class="fa-solid fa-camera"></i>
+                </div>
+            </div>
+        {{else}}
+            <img class="w-16 h-16 object-cover rounded-lg border-2 border-[var(--border-color-dark)] flex-shrink-0 shadow-sm" src="{{actor.img}}"/>
+        {{/if}}
+
+        <div class="flex flex-col justify-center">
+            <h1 class="text-2xl font-extrabold uppercase tracking-wider text-[var(--text-color-primary)] m-0 leading-none">
+                {{#if isEditMode}}
+                    <input class="bg-[var(--input-bg-transparent)] text-[var(--color-yellow-base)] border border-[var(--border-color-dark)] rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none w-64 transition-colors" name="name" type="text" value="{{actor.name}}" placeholder="Shop Name"/>
+                {{else}}
+                    {{actor.name}}
+                {{/if}}
+            </h1>
         </div>
-    {{else}}
-        <img class="profile-img" src="{{actor.img}}"/>
-    {{/if}}
-    <div class="header-fields">
-        <h1 class="charname">
-            {{#if isEditMode}}
-                <input class= "marketplace name" name="name" type="text" value="{{actor.name}}" placeholder="Name"/>
-            {{else}}
-                {{actor.name}}
-            {{/if}}
-        </h1>
     </div>
 
     {{#if isGM}}
-    <a class="header-control icon" data-action="toggleMode" title="Toggle Edit Mode">
-        <i class="fa-solid fa-user-lock"></i>
-    </a>
+    <button class="w-10 h-10 rounded-full flex items-center justify-center border border-[var(--border-color-dark)] hover:border-[var(--color-yellow-base)] bg-[var(--attribute-group-bg)] text-[var(--text-color-primary)] hover:text-[var(--color-yellow-base)] transition-colors shadow-sm" data-action="toggleMode" title="Toggle Edit Mode">
+        <i class="fa-solid {{#if isEditMode}}fa-unlock text-[var(--color-yellow-base)]{{else}}fa-lock{{/if}}"></i>
+    </button>
     {{/if}}
-</header>
+</div>
