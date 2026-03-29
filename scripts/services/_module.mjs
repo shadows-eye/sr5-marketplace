@@ -21,6 +21,7 @@ export const deliveryTimeService = new DeliveryTimeService();
 export const diceHelperService = new DiceHelperService();
 export const themeService = new ThemeService();
 export const systemDataMapperService = new SystemDataMapperService();
+export { InventoryRules } from './inventory-rules.mjs';
 
 // 3. Re-export classes (Export the class under its original name)
 export { 

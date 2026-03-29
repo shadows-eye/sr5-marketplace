@@ -1,6 +1,7 @@
 import MarketplaceDocumentSheetMixin from "../scripts/apps/documents/actors/marketplace-document-sheet-mixin.mjs";
 import enrichHTML from '../scripts/services/enricher.mjs';
 import { simpleAll, opposedAll, teamworkAll } from "../tests/SR5_Tests.mjs";
+import { InventoryRules } from "../scripts/services/_module.mjs";
 // We get the base ActorSheet class from Foundry's API.
 const { ActorSheet } = foundry.applications.sheets;
 
@@ -241,7 +242,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                         img: sourceItem.img,
                         name: sourceItem.name,
                         rating: sourceItem.system.rating || 0,
-                        itemPrice: sourceItem.system.cost || 0,
+                        itemPrice: itemData.itemPrice ?? { value: fallbackCost, base: fallbackCost },
                         // Override availability.value with the system's if you want
                         // availability: { value: sourceItem.system.availability, base: itemData.availability.base }
                     };
@@ -525,12 +526,17 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                 const item = await Item.fromDropData(data);
                 if (!item) return;
 
-                // As requested, reject 'contact' items from the main inventory.
                 if (item.type === "contact") {
                     ui.notifications.warn("Contacts cannot be added to inventory. Drop on the 'Connection' field instead.");
                     return;
                 }
-                return this.document.addItemToInventory(item);
+                
+                // 1. Calculate dynamic properties using the Rules Engine
+                // (Make sure getCalculatedItemData is accessible on your imported InventoryRules instance/class)
+                const calculatedData = await InventoryRules.getCalculatedItemData(this.document, item);
+                
+                // 2. Pass the calculated data down into the Document's internal handler
+                return this.document.addItemToInventory(item, calculatedData);
             }
 
             case "connection": {

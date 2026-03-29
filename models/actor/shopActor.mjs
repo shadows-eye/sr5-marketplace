@@ -53,6 +53,10 @@ export function defineShopActorClass() {
             const inventoryItemSchema = new foundry.data.fields.SchemaField({
                 itemUuid: new foundry.data.fields.StringField({ required: true, blank: false, label: "Item UUID" }),
                 qty: new foundry.data.fields.NumberField({ required: true, integer: true, min: 0, initial: 1, label: "Quantity" }),
+                itemPrice: new foundry.data.fields.SchemaField({
+                    value: new foundry.data.fields.NumberField({ required: true, min: 0, initial: 0, label: "Item Price" }),
+                    base: new foundry.data.fields.NumberField({ required: true, min: 0, initial: 0, label: "Unmodified Sell Price" })
+                }),
                 sellPrice: new foundry.data.fields.SchemaField({
                     value: new foundry.data.fields.NumberField({ required: true, min: 0, initial: 0, label: "Sell Price" }),
                     base: new foundry.data.fields.NumberField({ required: true, min: 0, initial: 0, label: "Unmodified Sell Price" })
@@ -318,7 +322,7 @@ export function defineShopActorClass() {
         /**
          * Adds an item to the inventory.
          * @param {Item} itemData The full Item document to add.
-         * @param {object} [shopData={}] Shop-specific data.
+         * @param {object} [shopData={}] Shop-specific data (calculated by InventoryRules).
          * @returns {Promise<this>}
          */
         async addItemToInventory(itemData, shopData = {}) {
@@ -327,15 +331,23 @@ export function defineShopActorClass() {
                 return ui.notifications.warn("This item is already in the shop's inventory.");
             }
             const newItemId = foundry.utils.randomID();
+            
+            // Safely unwrap the nested objects returned by the Rules Engine
+            const sellPriceVal = shopData.sellPrice?.value ?? shopData.sellPrice ?? 0;
+            const buyPriceVal = shopData.buyPrice?.value ?? shopData.buyPrice ?? 0;
+            const availVal = shopData.availability?.value ?? shopData.availability ?? "1R";
+
             const newInventoryItem = {
                 itemUuid: itemData.uuid,
                 qty: shopData.qty ?? 1,
-                sellPrice: { value: shopData.sellPrice ?? 0, base: shopData.sellPrice ?? 0 },
-                buyPrice: { value: shopData.buyPrice ?? 0, base: shopData.buyPrice ?? 0 },
-                availability: { value: shopData.availability ?? "1R", base: shopData.availability ?? "1R" },
+                itemPrice: { value: itemPriceVal, base: itemPriceVal },
+                sellPrice: { value: sellPriceVal, base: sellPriceVal },
+                buyPrice: { value: buyPriceVal, base: buyPriceVal },
+                availability: { value: availVal, base: availVal },
                 buyTime: shopData.buyTime ?? { value: 24, unit: "hours" },
                 comments: ""
             };
+            
             return this.update({
                 [`system.shop.inventory.${newItemId}`]: newInventoryItem
             });

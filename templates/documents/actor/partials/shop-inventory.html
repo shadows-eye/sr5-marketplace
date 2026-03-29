@@ -64,7 +64,13 @@
                     {{/if}}
                 </div>
                 
-                <div class="item-itemPrice text-xs text-right opacity-60">{{item.itemPrice}} ¥</div>
+                <div class="item-itemPrice flex justify-end">
+                    {{#if @root.isEditMode}}
+                        <input type="number" name="system.shop.inventory.{{inventoryEntryId}}.itemPrice.value" value="{{item.itemPrice.value}}" class="w-16 bg-[var(--input-bg-transparent)] text-[var(--text-color-primary)] border-none rounded px-1 py-0.5 text-xs text-right font-bold opacity-80 focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none"/>
+                    {{else}}
+                        <span class="text-xs font-bold opacity-80">{{item.itemPrice.value}} ¥</span>
+                    {{/if}}
+                </div>
                 
                 <div class="item-buyPrice flex justify-end">
                     {{#if @root.isEditMode}}
