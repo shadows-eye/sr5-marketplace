@@ -1,4 +1,3 @@
-
 /* ==================================================================
 //
 // SR5 Marketplace - Actor Sheet Styles
@@ -8,191 +7,138 @@
 
 /* Apply marketplace theme to the entire sheet window */
 .sr5-marketplace-shop {
-box-shadow: var(--app-window-shadow);
+    box-shadow: var(--app-window-shadow);
 }
 
-.read-only.body-text{
-color: var(--text-color-read-only);
+.read-only.body-text {
+    color: var(--text-color-read-only);
 }
 
 /* Set the icon as the positioning context for the hint */
 add i {
-position: relative;
-display: inline-block;
+    position: relative;
+    display: inline-block;
 }
 
 /* Style the hint as a tooltip */
 hint {
-visibility: hidden;
-opacity: 0;
-transition: opacity 0.2s ease, visibility 0.2s ease;
-position: absolute;
-z-index: 200;
-top: 100%;
-right: 0%;
-transform: translateX(2%);
-margin-top: 5px;
-background-color: var(--hint-bg);
-color: var(--hint-color);
-padding: 0.5rem 0.3rem;
-border-radius: 0.3rem;
-white-space: nowrap;
-font-size: 0.9em;
-box-shadow: var(--hint-shadow);
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    position: absolute;
+    z-index: 200;
+    top: 100%;
+    right: 0%;
+    transform: translateX(2%);
+    margin-top: 5px;
+    background-color: var(--hint-bg);
+    color: var(--hint-color);
+    padding: 0.5rem 0.3rem;
+    border-radius: 0.3rem;
+    white-space: nowrap;
+    font-size: 0.9em;
+    box-shadow: var(--hint-shadow);
 }
 
 /* Show the hint on hover */
 add i:hover > hint {
-visibility: visible;
-opacity: 1;
+    visibility: visible;
+    opacity: 1;
 }
 
 /* Style the main window header to match the marketplace */
 .sr5-marketplace-shop .window-header {
-background: var(--app-window-header-bg);
-border-bottom: 2px solid var(--app-window-header-border);
-box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    background: var(--app-window-header-bg);
+    border-bottom: 2px solid var(--app-window-header-border);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 /* Style the title in the window header */
 .sr5-marketplace-shop .window-header .window-title {
-color: var(--app-window-header-title-color);
-text-shadow: none;
+    color: var(--app-window-header-title-color);
+    text-shadow: none;
 }
 
 /* Set the background for the main content area */
 .sr5-marketplace-shop .window-content {
-background: var(--app-window-content-bg) repeat;
-color: var(--app-window-content-color);
+    background: var(--app-window-content-bg) repeat;
+    color: var(--app-window-content-color);
 }
 
 /* --- Layout: Sticky Header & Scrolling Content --- */
-
 .sr5-marketplace-shop-actor {
-display: flex;
-flex-direction: column;
-height: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .sheet-top-content {
-flex-shrink: 0;
-position: sticky;
-top: 0;
-z-index: 10;
-background: var(--app-sticky-top-bg);
-border-bottom: 1px solid var(--app-sticky-top-border);
-padding: 5px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--app-sticky-top-bg);
+    border-bottom: 1px solid var(--app-sticky-top-border);
+    padding: 5px;
 }
 
-.sr5-marketplace-attribute{
-color: var(--attribute-text-color);
-}
+
 
 .sheet-body {
-flex-grow: 1;
-overflow-y: auto;
-padding: 10px;
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
 }
 
-/* --- Tab Navigation Styling --- */
-
-.sr5-marketplace-shop .sheet-tabs {
-border-bottom: none;
-margin: 5px 0;
-}
-
-.sr5-marketplace-shop .sheet-tabs .item {
-background: var(--tab-inactive-bg);
-border: 1px solid var(--tab-inactive-border);
-border-bottom: none;
-color: var(--tab-inactive-color);
-}
-
-.sr5-marketplace-shop .sheet-tabs .item.active {
-background: var(--tab-active-bg);
-text-shadow: var(--tab-active-text-shadow);
-}
-
-/* --- Attributes Section --- */
-.sr5-marketplace-attributes {
-display: grid;
-grid-template-columns: repeat(3, 1fr);
-gap: 10px;
-padding: 10px 0;
-border-top: 1px solid var(--border-color-medium);
-margin-top: 10px;
-}
-
-.attribute-group {
-background: var(--attribute-group-bg);
-border-radius: 5px;
-padding: 8px;
-}
-
-.attribute-group h4 {
-margin: 0 0 8px 0;
-text-align: center;
-color: var(--attribute-group-title-color);
-border-bottom: 1px solid var(--attribute-group-border);
-padding-bottom: 5px;
-}
-
-.sr5-marketplace-attribute {
-display: grid;
-grid-template-columns: 3fr 1fr;
-justify-content: space-between;
-align-items: center;
-padding: 2px 5px;
-}
 
 /* --- In-Place Editor Styling --- */
 .prosemirror-container.active .editor-content {
-border: 1px solid var(--border-color-highlight);
+    border: 1px solid var(--border-color-highlight);
 }
 
-section.tab.shop-details.active{
-overflow-y: auto;
+section.tab.shop-details.active {
+    overflow-y: auto;
 }
 
-.shop-column-1, .shop-column-2{
-background: var(--attribute-group-bg);
+.shop-column-1, .shop-column-2 {
+    background: var(--attribute-group-bg);
 }
 
 /* Main container for the entire skills list */
 .skills-list {
-display: flex;
-flex-direction: column;
-gap: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
 /* Grid Layouts */
 .sr5-grid-3c {
-display: grid;
-grid-template-columns: 40px 1fr auto;
-gap: 5px 10px;
-align-items: center;
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    gap: 5px 10px;
+    align-items: center;
 }
 
 .sr5-grid-c2 {
-display: grid;
-grid-template-columns: 2fr 1fr;
-gap: 15px;
-align-items: stretch;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 15px;
+    align-items: stretch;
 }
 
 .sr5-marketplace-shop-fields {
-display: grid;
-grid-template-columns: repeat(3, 1fr);
-gap: 10px 15px;
-align-items: start;
-grid-template-areas:
-"owner      connection employees"
-"modifier  modifier  radius"
-"inventory  inventory inventory";
-margin-right: -1px;
-border: none;
-min-height: 100px;
-color: var(--text-color-subheader);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px 15px;
+    align-items: start;
+    grid-template-areas:
+    "owner      connection employees"
+    "modifier  modifier  radius"
+    "inventory  inventory inventory";
+    margin-right: -1px;
+    border: none;
+    min-height: 100px;
+    color: var(--text-color-subheader);
 }
 
 /* Assign grid areas to the form groups */
@@ -203,254 +149,406 @@ color: var(--text-color-subheader);
 .form-group.employees { grid-area: employees; min-height: inherit; }
 .form-group.inventory { grid-area: inventory; border: none; height: 65%; width: 100%; display: block; overflow: hidden; }
 .form-group.subHeading, legend.subHeading, label.subHeading, .subHeading {
-color: var(--text-color-subheader);
+    color: var(--text-color-subheader);
 }
 
 .sr5-grid.c10 {
-display: grid;
-grid-template-columns: 30px 2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1em;
-gap: 5px 10px;
-align-items: center;
-text-align: center;
+    display: grid;
+    grid-template-columns: 30px 2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1em;
+    gap: 5px 10px;
+    align-items: center;
+    text-align: center;
 }
 
 .skill-group {
-border-radius: 5px;
-padding: 8px;
+    border-radius: 5px;
+    padding: 8px;
 }
 
 .skill-header {
-font-weight: bold;
-color: var(--skill-header-color);
-border-bottom: 1px solid var(--skill-header-border);
-padding-bottom: 5px;
-margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--skill-header-color);
+    border-bottom: 1px solid var(--skill-header-border);
+    padding-bottom: 5px;
+    margin-bottom: 5px;
 }
 
 .skill-header .skill-rating,
 .skill-entry .skill-rating {
-text-align: right;
+    text-align: right;
 }
 
 /* Inventory Item Styles */
 .inventory-header {
-font-weight: bold;
-color: var(--inventory-header-color);
-padding-bottom: 1px;
-margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--inventory-header-color);
+    padding-bottom: 1px;
+    margin-bottom: 5px;
 }
 
-.inventory-list{
-overflow: auto;
+.inventory-list {
+    overflow: auto;
 }
 
 .inventory-item {
-border-bottom: 1px solid var(--inventory-item-border);
-padding: 2px 0;
+    border-bottom: 1px solid var(--inventory-item-border);
+    padding: 2px 0;
 }
 
 .inventory-item .item-name {
-text-align: left;
+    text-align: left;
 }
 
 .inventory-item .item-img img {
-width: 28px;
-height: 28px;
-object-fit: contain;
-border: none;
-background: var(--inventory-item-image-bg);
-border-radius: 3px;
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    border: none;
+    background: var(--inventory-item-image-bg);
+    border-radius: 3px;
 }
 
 .inventory-item input[type="number"] {
-width: 100%;
-text-align: center;
-background: var(--input-bg-transparent);
-color: var(--input-color);
-border: 1px solid var(--input-border-dark);
-border-radius: 3px;
+    width: 100%;
+    text-align: center;
+    background: var(--input-bg-transparent);
+    color: var(--input-color);
+    border: 1px solid var(--input-border-dark);
+    border-radius: 3px;
 }
 
-.sr5 .form-group input[type="number"].radius-input{
-width: 2.2em;
+.sr5 .form-group input[type="number"].radius-input {
+    width: 2.2em;
 }
 
 /* --- Skills Column & Collapsible Sections --- */
 .shop-column-2 {
-display: flex;
-flex-direction: column;
-min-height: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 .sr5-marketplace-skills-fields {
-display: flex;
-flex-direction: column;
-flex-grow: 1;
-max-height:400px;
-border: none;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    max-height: 400px;
+    border: none;
 }
 
 .skills-list {
-display: block;
-overflow-y: auto;
-padding-right: 5px;
-flex-grow: 1;
+    display: block;
+    overflow-y: auto;
+    padding-right: 5px;
+    flex-grow: 1;
 }
 
 /* --- Collapsible Logic --- */
 .skills-list input.toggle {
-display: none;
+    display: none;
 }
 
 .skills-list .toggle-label {
-cursor: pointer;
-display: block;
-user-select: none;
-padding: 2px 5px;
-transition: background 0.2s ease;
-position: sticky;
-z-index: 1;
+    cursor: pointer;
+    display: block;
+    user-select: none;
+    padding: 2px 5px;
+    transition: background 0.2s ease;
+    position: sticky;
+    z-index: 1;
 }
 
 .skills-list .toggle-label:hover {
-background: var(--collapsible-label-hover-bg);
+    background: var(--collapsible-label-hover-bg);
 }
 
 .skills-list .toggle-content {
-max-height: 0;
-overflow: hidden;
-transition: max-height 0.3s ease-out;
-padding-left: 20px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    padding-left: 20px;
 }
 
 .skills-list input.toggle:checked ~ .toggle-content {
-min-height: fit-content;
-transition: max-height 0.5s ease-in;
+    min-height: fit-content;
+    transition: max-height 0.5s ease-in;
 }
 
 .sr5-marketplace-input.value-input, .sr5-marketplace-input.value {
-border: none;
-background: #00ffff00;
-text-align: center;
-max-width: 18px;
-max-height: 18px;
-padding: 0px;
+    border: none;
+    background: transparent;
+    text-align: center;
+    max-width: 18px;
+    max-height: 18px;
+    padding: 0px;
 }
 
 .marketplace-collapsible-header {
-color: var(--text-color-subheader);
-padding-left: 4px;
-cursor: pointer;
-transition: color 0.2s ease;
+    color: var(--text-color-subheader);
+    padding-left: 4px;
+    cursor: pointer;
+    transition: color 0.2s ease;
 }
+
 .marketplace-collapsible-header:hover {
-color: var(--text-color-link-hover);
-background-color: var(--collapsible-header-hover-bg);
-padding-left: 4px;
-padding-right: 4px;
-border-radius: 4px;
-width: fit-content;
+    color: var(--text-color-link-hover);
+    background-color: var(--collapsible-header-hover-bg);
+    padding-left: 4px;
+    padding-right: 4px;
+    border-radius: 4px;
+    width: fit-content;
 }
 
 /* Styling for the drop target boxes */
 .drop-target {
-border: 2px dashed var(--drop-target-border);
-border-radius: 5px;
-padding: 10px;
-min-height: 40px;
-display: flex;
-align-items: center;
-gap: 10px;
-transition: all 0.2s ease;
+    border: 2px dashed var(--drop-target-border);
+    border-radius: 5px;
+    padding: 10px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s ease;
 }
 
 .drop-target.drag-over {
-border-color: var(--drop-target-border-hover);
-background: var(--drop-target-bg-hover);
+    border-color: var(--drop-target-border-hover);
+    background: var(--drop-target-bg-hover);
 }
 
 /* --- Employee List --- */
 .employee-list {
-list-style: none;
-padding: 0;
-margin: 0;
-display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
 }
 
 .drop-target .employee-list li {
-display: flex;
-align-items: center;
-gap: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .employee-list li:not(.drop-hint) {
-padding: 2px 0;
-border-bottom: 1px solid var(--border-color-dark);
+    padding: 2px 0;
+    border-bottom: 1px solid var(--border-color-dark);
 }
 
 .employee-list li:last-of-type {
-border-bottom: none;
+    border-bottom: none;
 }
 
 .employee-list .drop-hint {
-color: var(--color-grey-light);
-text-align: center;
-margin-top: 5px;
+    color: var(--color-grey-light);
+    text-align: center;
+    margin-top: 5px;
 }
 
 .employee-list input.toggle {
-display: none;
+    display: none;
 }
 
 .employee-list .toggle-label {
-cursor: pointer;
-display: flex;
-align-items: center;
-gap: 8px;
-user-select: none;
-padding: 5px;
-transition: background 0.2s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+    padding: 5px;
+    transition: background 0.2s ease;
 }
 
 .employee-list .toggle-label:hover {
-background: var(--collapsible-label-hover-bg);
+    background: var(--collapsible-label-hover-bg);
 }
 
 .employee-list .toggle-content {
-max-height: 0;
-overflow: hidden;
-transition: max-height 0.3s ease-out;
-padding: 10px 10px 10px 42px;
-background: var(--collapsible-content-bg);
-border-top: 1px solid var(--border-color-dark);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    padding: 10px 10px 10px 42px;
+    background: var(--collapsible-content-bg);
+    border-top: 1px solid var(--border-color-dark);
 }
 
 .employee-list input.toggle:checked ~ .toggle-content {
-max-height: 100px;
-transition: max-height 0.5s ease-in;
+    max-height: 100px;
+    transition: max-height 0.5s ease-in;
 }
 
 .employee-details {
-display: flex;
-justify-content: space-around;
-gap: 15px;
+    display: flex;
+    justify-content: space-around;
+    gap: 15px;
 }
 
 .employee-detail-label {
-font-weight: bold;
-color: var(--text-color-subheader);
-font-size: 0.9em;
-text-transform: uppercase;
+    font-weight: bold;
+    color: var(--text-color-subheader);
+    font-size: 0.9em;
 }
 
 .marketplace-header {
-display: grid;
-grid-template-columns: 1fr 6fr 20px;
+    display: grid;
+    grid-template-columns: 1fr 6fr 20px;
 }
 input.marketplace.name {
-width: 5em;
-height: fit-content;
-border: none;
-background: var(--input-name-bg);
-padding-left: 2px;
+    width: 5em;
+    height: fit-content;
+    border: none;
+    background: var(--input-name-bg);
+    padding-left: 2px;
+}
+
+/* ==================================================================
+// Modern Marketplace Theme Elements (CSS Only Overrides)
+// No !important tags. Uses DOM Specificity to override Tailwind.
+// ================================================================== */
+
+/* 1. Header Gradient Bar */
+.application.sr5-marketplace-shop .window-content .marketplace-gradient-bar {
+    background: var(--header-gradient-bar);
+    border-radius: 4px;
+    border: none;
+    box-shadow: none;
+}
+
+/* Force text colors within the header bar based on Light/Dark theme */
+.application.sr5-marketplace-shop .window-content .marketplace-gradient-bar,
+.application.sr5-marketplace-shop .window-content .marketplace-gradient-bar h1,
+.application.sr5-marketplace-shop .window-content .marketplace-gradient-bar h3,
+.application.sr5-marketplace-shop .window-content .marketplace-gradient-bar span,
+.application.sr5-marketplace-shop .window-content .marketplace-gradient-bar i {
+    color: var(--header-gradient-text);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+}
+
+/* 2. Target Foundry's Generic Tabs (Smaller, Tighter & Glassy) */
+.application.sr5-marketplace-shop .window-content nav.sheet-tabs.marketplace-tabs {
+    display: flex;
+    justify-content: flex-start; /* Aligns tabs to the left */
+    align-items: flex-end;
+    gap: 0.5em; /* 0.5em separation between tabs */
+    border-top: none; 
+    border-bottom: 2px solid var(--tab-line);
+    padding: 0 10px 2px 10px; /* The 2px bottom padding creates the exact 2px gap above the line */
+    margin: 0 0 12px 0; 
+}
+
+/* Inactive Tab Styles (Flat/Subtle) */
+.application.sr5-marketplace-shop .window-content nav.sheet-tabs.marketplace-tabs > a {
+    background: var(--tab-inactive-bg-grad);
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    color: var(--tab-inactive-color);
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: bold;
+    margin: 0;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.1);
+    transition: filter 0.2s ease, transform 0.1s ease;
+}
+
+.application.sr5-marketplace-shop .window-content nav.sheet-tabs.marketplace-tabs > a span {
+    color: var(--tab-inactive-color);
+}
+
+.application.sr5-marketplace-shop .window-content nav.sheet-tabs.marketplace-tabs > a:hover {
+    filter: brightness(1.2);
+}
+
+/* Active Tab Styles (Glassy Apple Mac Bubble) */
+.application.sr5-marketplace-shop .window-content nav.sheet-tabs.marketplace-tabs > a.active {
+    background: var(--header-gradient-bar);
+    border-bottom: none;
+    color: var(--header-gradient-text);
+    
+    /* The Glassy Highlight Magic: Top white reflection + Dark inner bottom */
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -10px 10px rgba(0,0,0,0.2), 0 -2px 5px rgba(0,0,0,0.3);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    
+    /* Zeroed out bottom margin to keep it perfectly aligned with inactive tabs and the 2px padding */
+    margin-bottom: 0;
+    padding-bottom: 4px;
+    z-index: 2;
+}
+
+.application.sr5-marketplace-shop .window-content nav.sheet-tabs.marketplace-tabs > a.active span {
+    color: var(--header-gradient-text);
+}
+
+/* 3. Glossy Mac-Style Accordion Buttons (Matches Active Tab exactly) */
+.application.sr5-marketplace-shop .window-content .skills-list .glossy-red-btn {
+    background: var(--header-gradient-bar);
+    color: var(--header-gradient-text);
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin: 0.25em 0.5em 0.25em 0.5em;
+    
+    /* The Glassy Highlight Magic */
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -10px 10px rgba(0,0,0,0.25), 0 2px 4px rgba(0,0,0,0.4);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    transition: filter 0.2s ease;
+}
+
+.application.sr5-marketplace-shop .window-content .skills-list .glossy-red-btn span {
+    color: var(--header-gradient-text);
+    font-size: 11px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
+.application.sr5-marketplace-shop .window-content .skills-list .glossy-red-btn:hover {
+    filter: brightness(1.2) contrast(1.1);
+}
+
+/* 4. Remove Flat White Lines and Add Panel Depth */
+/* Make sure accordion content maintains its styling */
+.application.sr5-marketplace-shop .window-content .skills-list .collapsible-section {
+    background: transparent;
+    border: none;
+}
+
+/* Ensure inventory items only have a subtle bottom divider, no outer bounding boxes */
+.application.sr5-marketplace-shop .window-content .inventory-list > div {
+    border-bottom: 1px solid var(--color-black-transparent-30);
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+}
+
+/* 5. Custom Toggle Switch for Edit/Play Mode */
+.application.sr5-marketplace-shop .window-content .mode-toggle-switch {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    background-color: var(--color-grey-darkest);
+    border-radius: 9999px;
+    transition: background-color 0.3s;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.8);
+    border: 1px solid var(--color-black);
+}
+
+.application.sr5-marketplace-shop .window-content .mode-toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    width: 16px;
+    height: 16px;
+    background-color: var(--color-grey-lightest);
+    border-radius: 50%;
+    transition: transform 0.3s;
+    box-shadow: 0 1px 2px var(--color-black);
+}
+
+.application.sr5-marketplace-shop .window-content .mode-toggle-checkbox:checked + .mode-toggle-switch {
+    background: var(--header-gradient-bar);
+}
+
+.application.sr5-marketplace-shop .window-content .mode-toggle-checkbox:checked + .mode-toggle-switch::after {
+    transform: translateX(14px);
 }

@@ -61,23 +61,23 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
      * This defines the parts of the layout that can be reused in different contexts.
      */
     static PARTS = {
-        // ADDED: The header is now a defined part of the layout.
         header: {
             template: "modules/sr5-marketplace/templates/documents/actor/partials/shop-header.html",
             classes: ["marketplace-header"]
         },
-        // ADDED: The attributes section is also a part.
-        attributes: {
-            template: "modules/sr5-marketplace/templates/documents/actor/partials/shop-attributes.html"
-        },
-        // The tab navigation bar.
         tabs: {
             template: "templates/generic/tab-navigation.hbs",
             classes: ["marketplace-tabs"]
         },
-        // The content for the tabs.
+        attributes: {
+            template: "modules/sr5-marketplace/templates/documents/actor/partials/shop-attributes.html"
+        },
         actorShop: {
             template: "modules/sr5-marketplace/templates/documents/actor/actorShop.html",
+        },
+        // NEW: Management Tab Part
+        management: {
+            template: "modules/sr5-marketplace/templates/documents/actor/partials/shop-management.html",
         },
         biography: {
             template: "modules/sr5-marketplace/templates/documents/actor/partials/shop-biography.html"
@@ -91,6 +91,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         primary: {
             tabs: [
                 { id: "actorShop", label: "Shop Details" },
+                { id: "management", label: "Management" },
                 { id: "biography", label: "Biography" }
             ],
             initial: "actorShop"
@@ -246,6 +247,12 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                     };
                 }
                 context.inventory = preparedInventory;
+                break;
+            case "management": // Logic routed to the new tab
+                context.owner = await this.document.getOwner();
+                context.connection = await this.document.getConnection();
+                context.employees = await this.document.getEmployees();
+                context.shopEmployees = this.document.system.shop?.employees?.join('\n') || "";
                 break;
             case "biography":
                 context.biographyHTML = await enrichHTML(this.document.system.description.value, {

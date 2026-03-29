@@ -1,8 +1,10 @@
-<section class="tab biography {{tab.cssClass}}" data-group="primary" data-tab="biography">
-{{formGroup systemFields.description.fields.value 
+<section class="tab biography" data-group="primary" data-tab="biography" data-application-part="biography">
+    <div class="biography-content h-full">
+        {{formGroup systemFields.description.fields.value 
             enriched=biographyHTML 
             value=system.description.value 
             editable=isEditable
             toggled="true"
         }}
+    </div>
 </section>

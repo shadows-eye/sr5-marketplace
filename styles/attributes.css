@@ -1,0 +1,52 @@
+/* ==================================================================
+// SR5 Marketplace - Attributes Section Styles
+// ================================================================== */
+
+/* 1. Main Attributes Grid Layout (Removed top border line) */
+.application.sr5-marketplace-shop .window-content .sr5-marketplace-attributes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 0 0 10px 0;
+    border-top: none;
+    margin-top: 10px;
+}
+
+/* 2. Strip Background Boxes from the Outer Columns */
+.application.sr5-marketplace-shop .window-content .sr5-marketplace-attributes > div.bg-\[var\(--color-black-transparent-20\)\] {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+}
+
+/* 3. Apply Gradient to Headers (Matches Inventory/Management Headers) */
+.application.sr5-marketplace-shop .window-content .sr5-marketplace-attributes h4 {
+    background: var(--header-gradient-bar);
+    color: var(--header-gradient-text);
+    padding: 6px 10px;
+    margin: 0;
+    border-radius: 4px 4px 0 0;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+    letter-spacing: 0.05em;
+    font-size: 11px;
+    text-align: left; /* Align left to match the inventory header */
+}
+
+/* 4. Apply Transparent Background to the Attributes List (Matches Inventory) */
+.application.sr5-marketplace-shop .window-content .sr5-marketplace-attributes > div > div.grid {
+    background-color: var(--color-black-transparent-15);
+    padding: 6px;
+    border-radius: 0 0 4px 4px;
+    margin: 0;
+}
+
+/* 5. Base Fallback for legacy attribute markup */
+.application.sr5-marketplace-shop .window-content .sr5-marketplace-attribute {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 5px;
+    color: var(--attribute-text-color);
+}

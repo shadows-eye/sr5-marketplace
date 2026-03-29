@@ -1,0 +1,81 @@
+<section class="tab management" data-group="primary" data-tab="management" data-application-part="management">
+    <div class="management-content h-full overflow-hidden flex flex-col gap-4 text-[var(--text-color-primary)]">
+        <div class="bg-[var(--color-black-transparent-20)] flex flex-col shadow-sm max-w-4xl rounded p-2">
+            
+            <div class="marketplace-gradient-bar p-2 mb-2">
+                <h3 class="text-sm font-bold text-[var(--color-white)] m-0 drop-shadow">
+                    <i class="fa-solid fa-users mr-1 opacity-80"></i> {{localize "TYPES.Actor.sr5-marketplace.shop"}}
+                </h3>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-2">
+                
+                {{!-- OWNER DROP ZONE --}}
+                <div class="flex flex-col gap-1 {{#if isEditMode}}drop-target p-2 border-2 border-dashed border-[var(--color-grey-medium)] hover:border-[var(--color-yellow-base)] bg-[var(--color-black-transparent-20)] transition-colors rounded{{/if}}" {{#if isEditMode}}data-drop-zone="owner" data-drop-type="Actor" data-target-field="system.shop.owner"{{/if}}>
+                    <label class="text-xs font-bold opacity-80 pb-1 mb-1">{{localize "SR5Marketplace.Marketplace.Shop.OwnerUuid"}}</label>
+                    <div class="flex items-center min-h-[36px]">
+                        {{#if owner}}
+                            <div class="flex items-center gap-2 bg-[var(--color-black-transparent-30)] p-1 pr-2 w-full relative group rounded">
+                                <a class="flex items-center gap-2 cursor-pointer hover:text-[var(--color-yellow-base)] overflow-hidden" data-uuid="{{owner.uuid}}" data-action="openDocumentLink">
+                                    <img src="{{owner.img}}" class="w-8 h-8 object-cover flex-shrink-0 rounded-sm"/>
+                                    <span class="text-xs font-bold truncate">{{owner.name}}</span>
+                                </a>
+                                {{#if @root.isEditMode}}
+                                    <a class="absolute right-2 text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity" data-action="removeOwner" title="{{localize 'SR5Marketplace.UI.Remove'}}"><i class="fa-solid fa-xmark text-lg"></i></a>
+                                {{/if}}
+                            </div>
+                        {{else if isEditMode}}
+                            <span class="text-xs font-bold text-[var(--color-red-bright)] opacity-70 w-full text-center py-2">Drag Actor Here</span>
+                        {{else}}
+                            <span class="text-xs italic opacity-40">None</span>
+                        {{/if}}
+                    </div>
+                </div>
+                
+                {{!-- CONNECTION DROP ZONE --}}
+                <div class="flex flex-col gap-1 {{#if isEditMode}}drop-target p-2 border-2 border-dashed border-[var(--color-grey-medium)] hover:border-[var(--color-yellow-base)] bg-[var(--color-black-transparent-20)] transition-colors rounded{{/if}}" {{#if isEditMode}}data-drop-zone="connection" data-drop-type="Item" data-target-field="system.shop.connection"{{/if}}>
+                    <label class="text-xs font-bold opacity-80 pb-1 mb-1">{{localize "SR5Marketplace.Marketplace.Shop.ConnectionUuid"}}</label>
+                    <div class="flex items-center min-h-[36px]">
+                        {{#if connection}}
+                            <div class="flex items-center gap-2 bg-[var(--color-black-transparent-30)] p-1 pr-2 w-full relative group rounded">
+                                <a class="flex items-center gap-2 cursor-pointer hover:text-[var(--color-yellow-base)] overflow-hidden" data-uuid="{{connection.uuid}}" data-action="openDocumentLink">
+                                    <img src="{{connection.img}}" class="w-8 h-8 object-cover flex-shrink-0 rounded-sm"/>
+                                    <span class="text-xs font-bold truncate">{{connection.name}}</span>
+                                </a>
+                                {{#if @root.isEditMode}}
+                                    <a class="absolute right-2 text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity" data-action="removeConnection" title="{{localize 'SR5Marketplace.UI.Remove'}}"><i class="fa-solid fa-xmark text-lg"></i></a>
+                                {{/if}}
+                            </div>
+                        {{else if isEditMode}}
+                            <span class="text-xs font-bold text-[var(--color-red-bright)] opacity-70 w-full text-center py-2">Drag Item Here</span>
+                        {{else}}
+                            <span class="text-xs italic opacity-40">None</span>
+                        {{/if}}
+                    </div>
+                </div>
+                
+                {{!-- EMPLOYEES DROP ZONE --}}
+                <div class="flex flex-col gap-1 {{#if isEditMode}}drop-target p-2 border-2 border-dashed border-[var(--color-grey-medium)] hover:border-[var(--color-yellow-base)] bg-[var(--color-black-transparent-20)] transition-colors rounded{{/if}}" {{#if isEditMode}}data-drop-zone="employees" data-drop-type="Actor" data-target-field="system.shop.employees"{{/if}}>
+                    <label class="text-xs font-bold opacity-80 pb-1 mb-1">{{localize "SR5Marketplace.Marketplace.Shop.Employees"}}</label>
+                    <div class="flex flex-col gap-1 min-h-[36px]">
+                        {{#each employees as |employee|}}
+                            <div class="flex items-center gap-2 bg-[var(--color-black-transparent-30)] p-1 pr-2 w-full relative group rounded" data-uuid="{{employee.uuid}}">
+                                <a class="flex items-center gap-2 cursor-pointer hover:text-[var(--color-yellow-base)] overflow-hidden" data-uuid="{{employee.uuid}}" data-action="openDocumentLink">
+                                    <img src="{{employee.img}}" class="w-6 h-6 object-cover flex-shrink-0 rounded-sm"/>
+                                    <span class="text-xs font-bold truncate">{{employee.name}}</span>
+                                </a>
+                                {{#if @root.isEditMode}}
+                                    <a class="absolute right-2 text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity" data-action="removeEmployee" data-uuid="{{employee.uuid}}" title="{{localize 'SR5Marketplace.UI.Remove'}}"><i class="fa-solid fa-xmark text-lg"></i></a>
+                                {{/if}}
+                            </div>
+                        {{/each}}
+                        {{#if isEditMode}}
+                            <span class="text-xs font-bold text-[var(--color-red-bright)] opacity-70 w-full text-center py-1 mt-1">Drag Actors Here</span>
+                        {{/if}}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>

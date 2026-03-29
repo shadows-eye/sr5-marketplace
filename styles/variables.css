@@ -202,7 +202,7 @@
 --tab-inactive-bg: var(--attribute-group-bg);
 --tab-inactive-border: var(--border-color-medium);
 --tab-inactive-color: var(--color-black);
---tab-active-bg: #555; /* Note: This color was not in the original palette */
+--tab-active-bg: #555;
 --tab-active-text-shadow: 0 0 5px var(--color-yellow-light);
 
 --attribute-group-bg: var(--color-black-transparent-20);
@@ -229,6 +229,11 @@
 --inventory-item-image-bg: var(--color-white-transparent-10);
 --searbarColor: var(--color-red-darkest);
 --actor-background-hover: var(--tab-active-bg);
+
+/* Theme Header Semantic Variables */
+--header-gradient-bar: linear-gradient(to right, var(--color-yellow-light) 0%, transparent 100%);
+--header-gradient-text: var(--color-red-darkest);
+--tab-line: var(--color-red-deep);
 }
 
 .themed.theme-dark {
@@ -258,7 +263,7 @@
 --tab-inactive-bg: var(--color-grey-dark);
 --tab-inactive-border: var(--border-color-medium);
 --tab-inactive-color: var(--color-grey-lightest);
---tab-active-bg: #555; /* Note: This color was not in the original palette */
+--tab-active-bg: #555;
 --tab-active-text-shadow: 0 0 5px var(--color-yellow-light);
 
 --attribute-group-bg: var(--color-black-transparent-20);
@@ -285,4 +290,8 @@
 --inventory-item-image-bg: var(--color-white-transparent-10);
 --searbarColor: var(--color-red-darkest);
 
+/* Theme Header Semantic Variables */
+--header-gradient-bar: linear-gradient(to right, var(--color-red-darkest) 0%, transparent 100%);
+--header-gradient-text: var(--color-white);
+--tab-line: var(--color-yellow-base);
 }

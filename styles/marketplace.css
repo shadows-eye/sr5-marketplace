@@ -9,6 +9,7 @@
 @import "./itemDetails.css";
 @import "./Dialog.css";
 @import "./actor.css";
+@import "./attributes.css";
 @import "./itemPreview.css";
 @import "./TestDialogApp.css";
 @import "./itemBuilder.css";
@@ -146,7 +147,8 @@
 /* ======================================
    SVG Resize Handle Style
    ====================================== */
-.sr5-marketplace .window-resize-handle {
+.sr5-marketplace .window-resize-handle,
+.sr5-marketplace-shop .window-resize-handle {
     width: 18px !important;
     height: 18px !important;
     content: "";
@@ -159,7 +161,8 @@
     transition: transform 0.2s ease-in-out;
 }
 
-.sr5-marketplace .window-resize-handle:hover {
+.sr5-marketplace .window-resize-handle:hover,
+.sr5-marketplace-shop .window-resize-handle:hover {
     transform: scale(1.1);
     filter: brightness(1.2);
 }
@@ -387,7 +390,7 @@ select#item-type-selector option {
    5. Item Card Grid & Layout (Refined)
    -------------------------------------- */
 .marketplace-item { font-family: sans-serif; font-size: larger; }
-.item-all, .item-rating { font-size: medium; font-family: "Modesto Condensed", serif; }
+.item-all, .item-rating{ font-size: medium; font-family: "Modesto Condensed", serif; }
 .marketplace-items-grid, .marketplace-items {
     flex-grow: 1;
     display: grid;

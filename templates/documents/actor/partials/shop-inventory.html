@@ -1,112 +1,116 @@
 <div class="shop-inventory flex flex-col h-full">
     
     {{!-- HEADER ROW --}}
-    <div class="flex justify-between items-center border-b border-[var(--border-color-medium)] pb-1 mb-2">
-        <h3 class="text-sm font-bold uppercase tracking-wider text-[var(--text-color-header)]">
-            <i class="fa-solid fa-boxes-stacked mr-1"></i> {{localize "SR5Marketplace.Marketplace.Shop.Inventory"}}
+    <div class="marketplace-gradient-bar flex justify-between items-center p-2 mb-1">
+        <h3 class="text-sm font-bold text-[var(--color-white)] m-0 drop-shadow">
+            <i class="fa-solid fa-boxes-stacked mr-1 opacity-80"></i> {{localize "SR5Marketplace.Marketplace.Shop.Inventory"}}
         </h3>
         {{#if isEditMode}}
-        <button type="button" class="bg-[var(--color-green-button)] text-white border-none px-2 py-1 rounded text-xs font-bold shadow-sm hover:brightness-110 transition-all flex items-center gap-1" data-action="addItem" title="{{localize 'SR5Marketplace.Marketplace.Shop.AddItem'}}">
-            <i class="fa-solid fa-plus"></i> Add Item
+        <button type="button" class="bg-[var(--color-green-button)] text-[var(--color-white)] border-none px-2 py-1 rounded text-xs font-bold shadow-sm hover:brightness-110 transition-all flex items-center gap-1" data-action="addItem" title="{{localize 'SR5Marketplace.Marketplace.Shop.AddItem'}}">
+            <i class="fa-solid fa-plus"></i> {{localize "SR5Marketplace.Marketplace.Shop.AddItem"}}
         </button>
         {{/if}}
     </div>
 
     {{!-- TABLE HEADERS --}}
-    <div class="grid grid-cols-[36px_2.5fr_1fr_1fr_1fr_1fr_1fr_1fr_1.5fr_30px] gap-2 px-2 py-1 text-[var(--text-color-subheader)] text-[10px] font-bold uppercase tracking-wider items-center bg-[var(--color-black-transparent-30)] border-b border-[var(--border-color-medium)]">
-        <div></div> {{!-- Icon spacer --}}
+    <div class="grid grid-cols-[36px_2.5fr_1fr_1fr_1fr_1fr_1fr_1fr_1.5fr_30px] gap-2 px-2 py-1 text-[var(--text-color-primary)] text-xs font-bold items-center ">
+        <div></div>
         <div class="truncate">{{localize "SR5Marketplace.UI.Name"}}</div>
-        <div class="text-center truncate">{{localize "SR5Marketplace.UI.Rating"}}</div>
-        <div class="text-center text-[var(--color-yellow-base)]" title="Quantity in Stock"><i class="fa-solid fa-cubes"></i> QTY</div>
-        <div class="text-right truncate" title="Base Value">{{localize "SR5Marketplace.UI.Cost"}}</div>
-        <div class="text-right truncate text-[var(--color-green-button)]" title="Price shop buys it for">{{localize "SR5Marketplace.Marketplace.Shop.BuyPrice"}}</div>
-        <div class="text-right truncate text-[var(--color-red-bright)]" title="Price shop sells it for">{{localize "SR5Marketplace.Marketplace.Shop.SellPrice"}}</div>
-        <div class="text-center truncate">{{localize "SR5Marketplace.UI.Availability"}}</div>
-        <div class="text-center truncate">Stock / Order</div>
-        <div></div> {{!-- Controls spacer --}}
+        <div class="text-center truncate" title="{{localize 'SR5Marketplace.UI.Rating'}}">{{localize "SR5Marketplace.UI.Rating"}}</div>
+        <div class="text-center text-[var(--color-yellow-base)] cursor-help" title="{{localize 'SR5Marketplace.UI.Quantity'}}"><i class="fa-solid fa-cubes"></i> Qty</div>
+        <div class="text-right truncate" title="{{localize 'SR5Marketplace.UI.Cost'}}">{{localize "SR5Marketplace.UI.Cost"}}</div>
+        
+        <div class="flex justify-end items-center gap-0.5 text-[var(--color-green-button)] cursor-help" title="{{localize 'SR5Marketplace.Marketplace.Shop.BuyPrice'}}">
+            <i class="fa-solid fa-dollar-sign"></i><i class="fa-solid fa-arrow-up text-[10px]"></i>
+        </div>
+        
+        <div class="flex justify-end items-center gap-0.5 text-[var(--color-red-bright)] cursor-help" title="{{localize 'SR5Marketplace.Marketplace.Shop.SellPrice'}}">
+            <i class="fa-solid fa-dollar-sign"></i><i class="fa-solid fa-arrow-down text-[10px]"></i>
+        </div>
+        
+        <div class="flex justify-center items-center gap-1 cursor-help opacity-80" title="{{localize 'SR5Marketplace.UI.Availability'}}">
+            <i class="fa-solid fa-truck"></i><i class="fa-solid fa-globe text-[10px]"></i>
+        </div>
+        
+        <div class="flex justify-center items-center gap-1 cursor-help opacity-80" title="Stock / Order">
+            <i class="fa-solid fa-box"></i><i class="fa-solid fa-truck-fast text-[10px]"></i>
+        </div>
+        <div></div>
     </div>
 
-    {{!-- INVENTORY LIST (Drop Zone) --}}
+    {{!-- INVENTORY LIST --}}
     <div class="inventory-list flex flex-col gap-1 overflow-y-auto mt-1 pb-2 pr-1 {{#if isEditMode}}drop-target min-h-[100px] border border-dashed border-transparent hover:border-[var(--color-yellow-base)] rounded{{/if}}" data-drop-zone="inventory" data-drop-type="Item">
         
         {{#each inventory as |item inventoryEntryId|}}
-            <div class="grid grid-cols-[36px_2.5fr_1fr_1fr_1fr_1fr_1fr_1fr_1.5fr_30px] gap-2 px-2 py-1.5 items-center hover:bg-[var(--color-black-transparent-20)] rounded transition-colors border border-transparent hover:border-[var(--border-color-dark)] group">
+            <div class="grid grid-cols-[36px_2.5fr_1fr_1fr_1fr_1fr_1fr_1fr_1.5fr_30px] gap-2 px-2 py-1.5 items-center hover:bg-[var(--color-black-transparent-20)] rounded transition-colors group">
                 
-                {{!-- 1. Icon --}}
                 <div class="item-img">
                     <a class="cursor-pointer hover:opacity-80" data-action="openDocumentLink" data-uuid="{{item.itemUuid}}">
-                        <img src="{{item.img}}" alt="{{item.name}}" class="w-8 h-8 object-cover rounded border border-[var(--border-color-dark)] bg-[var(--inventory-item-image-bg)]"/>
+                        <img src="{{item.img}}" alt="{{item.name}}" class="w-8 h-8 object-cover rounded bg-[var(--inventory-item-image-bg)]"/>
                     </a>
                 </div>
                 
-                {{!-- 2. Name --}}
-                <div class="item-name text-xs font-bold truncate" title="{{item.name}}">{{item.name}}</div>
+                {{!-- Removed 'truncate' so the item name wraps cleanly, added leading-tight to improve multiline spacing --}}
+                <div class="item-name text-xs font-bold leading-tight" title="{{item.name}}">{{item.name}}</div>
                 
-                {{!-- 3. Rating --}}
-                <div class="item-rating text-xs text-center opacity-80">{{item.rating}}</div>
+                {{!-- Boosted rating visibility --}}
+                <div class="item-availability text-xs text-center font-bold">{{item.rating}}</div>
 
-                {{!-- 4. Quantity --}}
                 <div class="item-qty flex justify-center">
                     {{#if @root.isEditMode}}
-                        <input type="number" name="system.shop.inventory.{{inventoryEntryId}}.qty" value="{{item.qty}}" class="w-12 bg-[var(--input-bg-transparent)] text-[var(--input-color)] border border-[var(--input-border-dark)] rounded px-1 py-0.5 text-xs text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none"/>
+                        <input type="number" name="system.shop.inventory.{{inventoryEntryId}}.qty" value="{{item.qty}}" class="w-12 bg-[var(--input-bg-transparent)] text-[var(--input-color)] border-none rounded px-1 py-0.5 text-xs text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none"/>
                     {{else}}
                         <span class="text-xs font-bold text-[var(--color-yellow-base)]">{{item.qty}}</span>
                     {{/if}}
                 </div>
                 
-                {{!-- 5. Base Cost --}}
                 <div class="item-itemPrice text-xs text-right opacity-60">{{item.itemPrice}} ¥</div>
                 
-                {{!-- 6. Buy Price --}}
                 <div class="item-buyPrice flex justify-end">
                     {{#if @root.isEditMode}}
-                        <input type="number" name="system.shop.inventory.{{inventoryEntryId}}.buyPrice.value" value="{{item.buyPrice.value}}" class="w-16 bg-[var(--input-bg-transparent)] text-[var(--color-green-button)] border border-[var(--input-border-dark)] rounded px-1 py-0.5 text-xs text-right font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none"/>
+                        <input type="number" name="system.shop.inventory.{{inventoryEntryId}}.buyPrice.value" value="{{item.buyPrice.value}}" class="w-16 bg-[var(--input-bg-transparent)] text-[var(--color-green-button)] border-none rounded px-1 py-0.5 text-xs text-right font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none"/>
                     {{else}}
                         <span class="text-xs font-bold text-[var(--color-green-button)]">{{item.buyPrice.value}} ¥</span>
                     {{/if}}
                 </div>
 
-                {{!-- 7. Sell Price --}}
                 <div class="item-sellPrice flex justify-end">
                     {{#if @root.isEditMode}}
-                        <input type="number" name="system.shop.inventory.{{inventoryEntryId}}.sellPrice.value" value="{{item.sellPrice.value}}" class="w-16 bg-[var(--input-bg-transparent)] text-[var(--color-red-bright)] border border-[var(--input-border-dark)] rounded px-1 py-0.5 text-xs text-right font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none"/>
+                        <input type="number" name="system.shop.inventory.{{inventoryEntryId}}.sellPrice.value" value="{{item.sellPrice.value}}" class="w-16 bg-[var(--input-bg-transparent)] text-[var(--color-red-bright)] border-none rounded px-1 py-0.5 text-xs text-right font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none"/>
                     {{else}}
                         <span class="text-xs font-bold text-[var(--color-red-bright)]">{{item.sellPrice.value}} ¥</span>
                     {{/if}}
                 </div>
                 
-                {{!-- 8. Availability --}}
                 <div class="item-availability text-xs text-center font-bold">
                     {{#if @root.isGM}}
-                        <a class="cursor-pointer hover:text-[var(--color-yellow-base)] transition-colors px-1 py-0.5 bg-black/20 rounded" data-action="rollAvailability" data-availability="{{item.availability.value}}" title="Roll Availability Test">{{item.availability.value}}</a>
+                        <a class="cursor-pointer hover:text-[var(--color-yellow-base)] transition-colors px-1 py-0.5 bg-[var(--color-black-transparent-20)] rounded" data-action="rollAvailability" data-availability="{{item.availability.value}}" title="{{localize 'SR5Marketplace.Marketplace.Tests.AvailabilityTest'}}">{{item.availability.value}}</a>
                     {{else}}
-                        <span class="px-1 py-0.5 bg-black/20 rounded">{{item.availability.value}}</span>
+                        <span class="px-1 py-0.5 bg-[var(--color-black-transparent-20)] rounded">{{item.availability.value}}</span>
                     {{/if}}
                 </div>
 
-                {{!-- 9. Stock / Order Status --}}
                 <div class="item-buyTime flex justify-center items-center gap-1">
                     {{#if @root.isEditMode}}
-                        <input type="number" name="system.shop.inventory.{{inventoryEntryId}}.buyTime.value" value="{{item.buyTime.value}}" class="w-10 bg-[var(--input-bg-transparent)] text-[var(--input-color)] border border-[var(--input-border-dark)] rounded px-1 py-0.5 text-xs text-center outline-none"/>
-                        <select name="system.shop.inventory.{{inventoryEntryId}}.buyTime.unit" class="w-14 bg-[var(--input-bg-transparent)] text-[var(--input-color)] border border-[var(--input-border-dark)] rounded px-1 py-0.5 text-[10px] outline-none appearance-none cursor-pointer text-center">
-                            <option value="hours" {{#if (eq item.buyTime.unit "hours")}}selected{{/if}}>Hrs</option>
-                            <option value="days" {{#if (eq item.buyTime.unit "days")}}selected{{/if}}>Days</option>
-                            <option value="weeks" {{#if (eq item.buyTime.unit "weeks")}}selected{{/if}}>Wks</option>
-                            <option value="months" {{#if (eq item.buyTime.unit "months")}}selected{{/if}}>Mos</option>
+                        <input type="number" name="system.shop.inventory.{{inventoryEntryId}}.buyTime.value" value="{{item.buyTime.value}}" class="w-10 bg-[var(--input-bg-transparent)] text-[var(--input-color)] border-none rounded px-1 py-0.5 text-xs text-center outline-none"/>
+                        <select name="system.shop.inventory.{{inventoryEntryId}}.buyTime.unit" class="w-14 bg-[var(--input-bg-transparent)] text-[var(--input-color)] border-none rounded px-1 py-0.5 text-[10px] outline-none appearance-none cursor-pointer text-center">
+                            <option value="hours" {{#if (eq item.buyTime.unit "hours")}}selected{{/if}}>{{localize "Time.Hours"}}</option>
+                            <option value="days" {{#if (eq item.buyTime.unit "days")}}selected{{/if}}>{{localize "Time.Days"}}</option>
+                            <option value="weeks" {{#if (eq item.buyTime.unit "weeks")}}selected{{/if}}>{{localize "Time.Week"}}</option>
+                            <option value="months" {{#if (eq item.buyTime.unit "months")}}selected{{/if}}>{{localize "Time.Month"}}</option>
                         </select>
                     {{else}}
                         {{#if (eq item.buyTime.value 0)}}
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-green-500 bg-green-500/10 border border-green-500/20 px-1.5 py-0.5 rounded"><i class="fa-solid fa-check mr-1"></i> In Stock</span>
+                            <span class="text-xs font-bold text-[var(--color-green-button)] bg-[var(--color-black-transparent-20)] px-1.5 py-0.5 rounded"><i class="fa-solid fa-check mr-1"></i> In Stock</span>
                         {{else}}
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-yellow-500 bg-yellow-500/10 border border-yellow-500/20 px-1.5 py-0.5 rounded"><i class="fa-solid fa-truck-fast mr-1"></i> {{item.buyTime.value}} {{item.buyTime.unit}}</span>
+                            <span class="text-xs font-bold text-[var(--color-yellow-base)] bg-[var(--color-black-transparent-20)] px-1.5 py-0.5 rounded"><i class="fa-solid fa-truck-fast mr-1"></i> {{item.buyTime.value}} {{item.buyTime.unit}}</span>
                         {{/if}}
                     {{/if}}
                 </div>
 
-                {{!-- 10. Controls --}}
                 <div class="item-controls flex justify-center">
                     {{#if @root.isEditMode}}
-                    <button type="button" class="bg-transparent border-none p-1.5 text-[var(--color-red-bright)] hover:bg-[var(--color-red-darkest)] hover:text-white rounded transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center shadow-none outline-none" data-action="removeItem" data-inventory-entry-id="{{inventoryEntryId}}" title="Remove Item">
+                    <button type="button" class="bg-transparent border-none p-1.5 text-[var(--color-red-bright)] hover:bg-[var(--color-red-darkest)] hover:text-[var(--color-white)] rounded transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center shadow-none outline-none" data-action="removeItem" data-inventory-entry-id="{{inventoryEntryId}}" title="{{localize 'SR5Marketplace.UI.Remove'}}">
                         <i class="fa-solid fa-trash text-xs"></i>
                     </button>
                     {{/if}}
@@ -114,7 +118,7 @@
             </div>
         {{else}}
             {{#if isEditMode}}
-                <div class="text-center py-6 text-sm italic opacity-50 border-2 border-dashed border-[var(--border-color-dark)] rounded-lg m-2 pointer-events-none">
+                <div class="text-center py-6 text-sm italic opacity-50 border-2 border-dashed border-[var(--color-grey-medium)] rounded-lg m-2 pointer-events-none">
                     <i class="fa-solid fa-box-open text-2xl mb-2 block"></i>
                     {{localize "SR5Marketplace.Marketplace.Shop.DragDropHint"}}
                 </div>

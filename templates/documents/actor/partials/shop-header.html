@@ -1,30 +1,36 @@
-<div class="flex items-center justify-between gap-4 w-full">
-    <div class="flex items-center gap-4">
-        {{#if isEditMode}}
-            <div class="relative cursor-pointer group rounded-lg overflow-hidden border-2 border-[var(--border-color-dark)] hover:border-[var(--color-yellow-base)] transition-colors w-16 h-16 flex-shrink-0" data-action="editImage" title="Click to change image">
-                <img class="w-full h-full object-cover" src="{{actor.img}}" title="{{actor.name}}"/>
-                <div class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center text-white">
-                    <i class="fa-solid fa-camera"></i>
-                </div>
+<div class="flex items-center gap-4 w-full p-2 mb-2 marketplace-header" data-application-part="header">
+    
+    {{!-- Image stays separate on the left --}}
+    {{#if isEditMode}}
+        <div class="relative cursor-pointer group rounded-lg overflow-hidden transition-colors w-16 h-16 flex-shrink-0 shadow-sm" data-action="editImage" title="{{localize 'SR5Marketplace.UI.Image'}}">
+            <img class="w-full h-full object-cover" src="{{actor.img}}" title="{{actor.name}}"/>
+            <div class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center text-[var(--color-white)]">
+                <i class="fa-solid fa-camera"></i>
             </div>
-        {{else}}
-            <img class="w-16 h-16 object-cover rounded-lg border-2 border-[var(--border-color-dark)] flex-shrink-0 shadow-sm" src="{{actor.img}}"/>
-        {{/if}}
+        </div>
+    {{else}}
+        <img class="w-16 h-16 object-cover rounded-lg flex-shrink-0 shadow-sm" src="{{actor.img}}"/>
+    {{/if}}
 
+    {{!-- Gradient Bar starts after the image and houses the Title + Toggle --}}
+    <div class="marketplace-gradient-bar flex flex-grow items-center justify-between p-2 rounded">
         <div class="flex flex-col justify-center">
-            <h1 class="text-2xl font-extrabold uppercase tracking-wider text-[var(--text-color-primary)] m-0 leading-none">
+            <h1 class="text-3xl font-bold text-[var(--color-white)] m-0 leading-none drop-shadow">
                 {{#if isEditMode}}
-                    <input class="bg-[var(--input-bg-transparent)] text-[var(--color-yellow-base)] border border-[var(--border-color-dark)] rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none w-64 transition-colors" name="name" type="text" value="{{actor.name}}" placeholder="Shop Name"/>
+                    <input class="bg-[var(--color-black-transparent-30)] text-[var(--color-white)] border-none rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-white)] outline-none w-64 transition-colors" name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'SR5Marketplace.UI.Name'}}"/>
                 {{else}}
                     {{actor.name}}
                 {{/if}}
             </h1>
         </div>
-    </div>
 
-    {{#if isGM}}
-    <button class="w-10 h-10 rounded-full flex items-center justify-center border border-[var(--border-color-dark)] hover:border-[var(--color-yellow-base)] bg-[var(--attribute-group-bg)] text-[var(--text-color-primary)] hover:text-[var(--color-yellow-base)] transition-colors shadow-sm" data-action="toggleMode" title="Toggle Edit Mode">
-        <i class="fa-solid {{#if isEditMode}}fa-unlock text-[var(--color-yellow-base)]{{else}}fa-lock{{/if}}"></i>
-    </button>
-    {{/if}}
+        {{#if isGM}}
+        <div class="flex items-center ml-auto">
+            <label class="inline-flex items-center cursor-pointer" title="{{localize 'SR5Marketplace.UI.Edit'}}">
+                <input type="checkbox" class="sr-only mode-toggle-checkbox" {{#if isEditMode}}checked{{/if}} data-action="toggleMode">
+                <div class="mode-toggle-switch"></div>
+            </label>
+        </div>
+        {{/if}}
+    </div>
 </div>
