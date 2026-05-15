@@ -2,6 +2,7 @@ import MarketplaceDocumentSheetMixin from "../scripts/apps/documents/actors/mark
 import enrichHTML from '../scripts/services/enricher.mjs';
 import { simpleAll, opposedAll, teamworkAll } from "../tests/SR5_Tests.mjs";
 import { InventoryRules } from "../scripts/services/_module.mjs";
+import { inGameMarketplace } from "../scripts/apps/inGameMarketplace.mjs";
 // We get the base ActorSheet class from Foundry's API.
 const { ActorSheet } = foundry.applications.sheets;
 
@@ -29,6 +30,21 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     /** A helper getter to check if the sheet is in Edit mode. */
     get isEditMode() {
         return this._mode === this.constructor.MODES.EDIT;
+    }
+
+    /** * @override 
+     * Intercept the render call. If a player (non-GM) double clicks the token, 
+     * divert them directly to the marketplace interface for this specific shop.
+     */
+    render(options, _options) {
+        if (!game.user.isGM) {
+            // Spawn the marketplace specifically targeting this shop's UUID
+            new inGameMarketplace({ shopActorUuid: this.document.uuid }).render(true);
+            
+            // Abort rendering the configuration sheet
+            return this;
+        }
+        return super.render(options, _options);
     }
     /** @override */
     static DEFAULT_OPTIONS = {

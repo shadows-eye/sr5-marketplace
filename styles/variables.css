@@ -126,9 +126,9 @@
 /* --- Skills & Lists --- */
 --skill-header-color: ;
 --skill-header-border: ;
---collapsible-header-hover-bg: ;
---collapsible-label-hover-bg: ;
---collapsible-content-bg: ;
+--place-collapsible-header-hover-bg: ;
+--place-collapsible-label-hover-bg: ;
+--place-collapsible-content-bg: ;
 
 /* --- Inputs & Forms --- */
 --input-bg-transparent: ;
@@ -212,9 +212,9 @@
 
 --skill-header-color: var(--color-yellow-base);
 --skill-header-border: var(--border-color-medium);
---collapsible-header-hover-bg: rgb(0 0 0 / 23%);
---collapsible-label-hover-bg: var(--tab-active-bg);
---collapsible-content-bg: var(--color-black-transparent-15);
+--place-collapsible-header-hover-bg: rgb(0 0 0 / 23%);
+--place-collapsible-label-hover-bg: var(--tab-active-bg);
+--place-collapsible-content-bg: var(--color-black-transparent-15);
 
 --input-bg-transparent: rgba(0,0,0,0.3);
 --input-color: var(--text-color-primary);
@@ -273,9 +273,9 @@
 
 --skill-header-color: var(--color-yellow-base);
 --skill-header-border: var(--border-color-medium);
---collapsible-header-hover-bg: rgb(0 0 0 / 23%);
---collapsible-label-hover-bg: var(--color-white-transparent-05);
---collapsible-content-bg: var(--color-black-transparent-15);
+--place-collapsible-header-hover-bg: rgb(0 0 0 / 23%);
+--place-collapsible-label-hover-bg: var(--color-white-transparent-05);
+--place-collapsible-content-bg: var(--color-black-transparent-15);
 
 --input-bg-transparent: rgba(0,0,0,0.3);
 --input-color: var(--text-color-primary);

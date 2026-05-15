@@ -292,7 +292,7 @@ section.tab.shop-details.active {
 
 .marketplace-collapsible-header:hover {
     color: var(--text-color-link-hover);
-    background-color: var(--collapsible-header-hover-bg);
+    background-color: var(--place-collapsible-header-hover-bg);
     padding-left: 4px;
     padding-right: 4px;
     border-radius: 4px;
@@ -368,7 +368,7 @@ section.tab.shop-details.active {
     overflow: hidden;
     transition: max-height 0.3s ease-out;
     padding: 10px 10px 10px 42px;
-    background: var(--collapsible-content-bg);
+    background: var(--place-collapsible-content-bg);
     border-top: 1px solid var(--border-color-dark);
 }
 

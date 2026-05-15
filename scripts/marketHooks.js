@@ -38,6 +38,7 @@ export {
 
 import { inGameMarketplace } from "./apps/inGameMarketplace.mjs";
 import { MarketplaceSettingsApp } from "./apps/MarketplaceSettingsApp.mjs";
+import { registerShopRegionHooks } from "./apps/documents/sceneRegions/shopRegions.mjs";
 import { ShopActorSheet } from "../sheets/ShopActorSheet.mjs";
 // --- 4. API IMPORTS ---
 import { MarketplaceAPI, SR5SystemAPI } from './API/_module.mjs';
@@ -191,6 +192,8 @@ const initializeSettings = () => {
         },
         default: "opposed", // The default rule will be the core Opposed Test
     });
+
+    registerShopRegionHooks();
 };
 
 /**

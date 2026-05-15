@@ -75,6 +75,21 @@
                     </div>
                 </div>
 
+                {{!-- SHOP RADIUS SETTING --}}
+                <div class="flex flex-col gap-1 {{#if isEditMode}}p-2 border-2 border-dashed border-transparent bg-[var(--color-black-transparent-20)] transition-colors rounded{{/if}}">
+                    <label class="text-xs font-bold opacity-80 pb-1 mb-1" title="Determines the size of the Scene Region">Shop Radius (Grid Units)</label>
+                    <div class="flex items-center min-h-[36px]">
+                        {{#if @root.isEditMode}}
+                            <div class="flex items-center gap-2 w-full">
+                                <input type="number" name="system.shop.shopRadius.value" value="{{system.shop.shopRadius.value}}" class="w-full bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none rounded px-2 py-1 text-sm font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none" min="1"/>
+                                <span class="text-xs opacity-60">Units</span>
+                            </div>
+                        {{else}}
+                            <span class="text-sm font-bold text-[var(--color-yellow-base)]">{{system.shop.shopRadius.value}} <span class="text-xs opacity-60 font-normal">Units</span></span>
+                        {{/if}}
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>

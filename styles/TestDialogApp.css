@@ -276,7 +276,7 @@
 }
 
 /* Style the clickable header (our new <label>) */
-.collapsible-header {
+.place-collapsible-header {
     display: block;
     cursor: pointer;
     padding: 8px;
@@ -290,12 +290,12 @@
     padding-left: 30px; /* Make space for the icon */
 }
 
-.collapsible-header:hover {
-    background: var(--collapsible-label-hover-bg);
+.place-collapsible-header:hover {
+    background: var(--place-collapsible-label-hover-bg);
 }
 
 /* Add a dropdown arrow icon */
-.collapsible-header::before {
+.place-collapsible-header::before {
     content: '▼';
     position: absolute;
     left: 10px;
@@ -306,7 +306,7 @@
 }
 
 /* The content that will be toggled */
-.collapsible-content {
+.place-collapsible-content {
     padding: 15px 10px 5px 10px;
     border: 1px solid var(--border-color-medium);
     border-top: none;
@@ -326,6 +326,6 @@
     border-width: 0;
 }
 
-.toggle-checkbox:not(:checked) ~ .collapsible-header::before {
+.toggle-checkbox:not(:checked) ~ .place-collapsible-header::before {
     transform: translateY(-50%) rotate(-90deg);
 }
