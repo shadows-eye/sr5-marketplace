@@ -1,0 +1,25 @@
+<div class="roll-dialog-container availability-dialog-form">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; color: var(--color-red-base); font-weight: bold; font-size: 1.1em;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span>{{localize "SR5Marketplace.Marketplace.Acquisition.Failure"}}</span>
+    </div>
+    
+    <div style="background-color: var(--Form-background-group); padding: 12px; border-radius: 5px; margin-bottom: 15px; border-left: 3px solid var(--color-red-base);">
+        <div style="display: flex; justify-content: space-between; font-size: 0.9em; margin-bottom: 6px;">
+            <span style="opacity: 0.8; color: var(--text-color-subheader);">{{localize "SR5Marketplace.UI.Name"}}:</span>
+            <span style="font-weight: bold; color: var(--text-color-primary);">{{itemName}}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.9em; margin-bottom: 6px;">
+            <span style="opacity: 0.8; color: var(--text-color-subheader);">{{localize "SR5.Hits"}}:</span>
+            <span style="font-weight: bold; color: var(--color-red-base);">{{successes}}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.9em;">
+            <span style="opacity: 0.8; color: var(--text-color-subheader);">{{localize "SR5.Threshold"}}:</span>
+            <span style="font-weight: bold; color: var(--color-yellow-base);">{{availabilityRating}}</span>
+        </div>
+    </div>
+
+    <p style="font-size: 0.95em; line-height: 1.4; color: var(--text-color-primary); margin: 0 0 5px 0;">
+        {{localize "SR5Marketplace.Marketplace.Availability.RetryPrompt" penalty=newPenalty}}
+    </p>
+</div>

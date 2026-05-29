@@ -6,6 +6,7 @@
     "autoprefixer": "^10.4.27",
     "ignore": "^7.0.5",
     "postcss": "^8.5.8",
+    "puppeteer": "^25.1.0",
     "tailwindcss": "^4.2.2",
     "vite": "^8.0.3",
     "vite-plugin-static-copy": "^4.0.0"
@@ -13,7 +14,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "gen-ctx": "node helpers/generate-context.cjs"
+    "gen-ctx": "node helpers/generate-context.cjs",
+    "test:live": "node helpers/test_live_embedded_skill_update.mjs"
   },
   "dependencies": {
     "@tailwindcss/container-queries": "^0.1.1"

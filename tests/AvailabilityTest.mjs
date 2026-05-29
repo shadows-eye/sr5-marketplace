@@ -102,6 +102,24 @@ import {DialogList} from '../scripts/services/dialogList.mjs';
  */
 export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
 
+    static get name() {
+        return "AvailabilityTest";
+    }
+
+    /** @override */
+    get type() {
+        return "AvailabilityTest";
+    }
+
+    /** @override */
+    get code() {
+        if (!this.data?.pool || !Array.isArray(this.data.pool.mod) || this.data.pool.mod.length === 0) {
+            return "";
+        }
+        const parts = this.data.pool.mod.map(m => `${m.name} ${m.value}`);
+        return `(${parts.join(" + ")} = ${this.pool.value})`;
+    }
+
     constructor(data, documents, options) {
         super(data, documents, options);
         this.contactItem = null;
@@ -109,15 +127,23 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
 
     _prepareData(data, options) {
         data = super._prepareData(data, options);
-        data.action = data.action || game.shadowrun5e.data.createData('action_roll');
+        
+        // Merge with default action_roll data so we don't lose any default system properties
+        const defaultAction = game.shadowrun5e.data.createData('action_roll');
+        data.action = foundry.utils.mergeObject(defaultAction, data.action || {}, { inplace: false });
+        
         data.opposed = data.action.opposed;
         data.action.categories = ["social"];
         data.action.modifiers = data.action.modifiers || 0;
-        data.availabilityStr = data.action.availabilityStr || "";
+        data.action.availabilityStr = data.action.availabilityStr || options?.availability || data.availabilityStr || "";
+        data.availabilityStr = data.action.availabilityStr;
         data.selectedSkill = data.action.skill || 'negotiation';
         data.selectedAttribute = data.action.attribute || 'charisma';
         data.dialogId = data.action.dialogId;
         data.connectionUuid = data.action.connectionUuid;
+        data.maxNegotiation = data.action.maxNegotiation || data.maxNegotiation || 0;
+        data.entryId = data.action.entryId || data.entryId || options?.entryId || "";
+        data.failPenalty = data.action.failPenalty || data.failPenalty || 0;
         return data;
     }
 
@@ -136,8 +162,27 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
         const rule = game.settings.get("sr5-marketplace", "availabilityTestRule");
         const skillId = this.data.selectedSkill;
         const attributeId = this.data.selectedAttribute;
-        const skill = this.actor.system.skills.active[skillId];
+
+        console.log("AvailabilityTest prepareBaseValues | this.actor.type:", this.actor.type);
+        console.log("AvailabilityTest prepareBaseValues | skillId:", skillId, "attributeId:", attributeId);
+        console.log("AvailabilityTest prepareBaseValues | this.data.maxNegotiation:", this.data.maxNegotiation);
+
+        // Dynamic skill lookup: Embedded Item of type skill (new system format) or legacy active skills fallback
+        let skill;
+        if (this.actor.type === "sr5-marketplace.shop" && skillId === 'negotiation') {
+            skill = { value: this.data.maxNegotiation || 0 };
+            console.log("AvailabilityTest prepareBaseValues | Matched shop actor + negotiation. skill.value is:", skill.value);
+        } else {
+            const skillItem = this.actor.items.find(i => i.type === "skill" && (i.system.key === skillId || i.name.toLowerCase() === skillId.toLowerCase()));
+            skill = skillItem 
+                ? { value: skillItem.system.rating?.value ?? skillItem.system.value ?? 0 } 
+                : this.actor.system.skills?.active?.[skillId];
+            console.log("AvailabilityTest prepareBaseValues | Fallback skill.value is:", skill?.value);
+        }
+
         const attribute = this.actor.system.attributes[attributeId];
+        console.log("AvailabilityTest prepareBaseValues | attribute value is:", attribute?.value);
+
         const modifiers = this.data.action.modifiers || [];
         const parsed = this.constructor.parseAvailability(this.data.availabilityStr);
 
@@ -147,6 +192,8 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
         }
 
         // 2. Prepare dice pool helper
+        this.data.pool = this.data.pool || {};
+        this.data.pool.mod = Array.isArray(this.data.pool.mod) ? this.data.pool.mod : [];
         const pool = new DialogList(this.data.pool.mod);
         pool.clear();
         const skillLabel = game.i18n.localize(CONFIG.SR5.activeSkills[skillId]);
@@ -192,6 +239,27 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
         
         // 5. Finalize the dice pool
         this.data.pool.base = 0;
+
+        // Populate changes so ModifiableValue.calcTotal (used by the core system) works seamlessly
+        this.data.pool.changes = this.data.pool.mod.map(m => ({
+            name: m.name,
+            value: m.value,
+            enabled: true,
+            mode: typeof CONST !== 'undefined' ? (CONST.ACTIVE_EFFECT_MODES?.ADD ?? 2) : 2,
+            priority: 0
+        }));
+
+        this.data.pool.value = this.constructor.calcTotal(this.data.pool);
+        console.log("AvailabilityTest prepareBaseValues | Finalized pool.value:", this.data.pool.value);
+        console.log("AvailabilityTest prepareBaseValues | Finalized pool.mod:", JSON.stringify(this.data.pool.mod));
+    }
+
+    /** @override */
+    calculateBaseValues() {
+        super.calculateBaseValues();
+        if (this.data?.pool) {
+            this.data.pool.value = this.constructor.calcTotal(this.data.pool);
+        }
     }
     /**
      * @override
@@ -306,13 +374,111 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
             await this.processFailure();
         }
 
-        // You can choose to keep or remove the follow-up test logic based on your needs.
         if (this.autoExecuteFollowupTest) {
             await this.executeFollowUpTest();
         }
 
         // By INTENTIONALLY OMITTING the `if (this.extended)` block that is present
         // in the parent SuccessTest, we stop the automatic (and incorrect) roll.
+
+        // --- Custom Shop Actor Inventory Update Logic ---
+        const entryId = this.data.entryId;
+        if (entryId && this.actor && this.actor.type === "sr5-marketplace.shop") {
+            const successes = this.hits?.value ?? 0;
+            const parsed = this.constructor.parseAvailability(this.data.availabilityStr);
+            const availabilityRating = parsed.rating;
+
+            if (successes >= availabilityRating) {
+                // SUCCESS: Add 1 to the quantity of the item in the shop inventory!
+                const path = `system.shop.inventory.${entryId}.qty`;
+                const currentQty = Number(foundry.utils.getProperty(this.actor, path) ?? 0);
+                const itemName = foundry.utils.getProperty(this.actor, `system.shop.inventory.${entryId}.name`) || "Item";
+                
+                await this.actor.update({ [path]: currentQty + 1 });
+                
+                ui.notifications.info(
+                    game.i18n.format("SR5Marketplace.Marketplace.Availability.SuccessMessage", { 
+                        actor: this.actor.name, 
+                        item: itemName,
+                        qty: currentQty + 1
+                    }) || `${this.actor.name} successfully procured ${itemName}! Quantity is now ${currentQty + 1}.`
+                );
+            } else {
+                // FAILURE: Ask if they want to try again with a -1 penalty!
+                const newPenalty = (this.data.failPenalty || 0) - 1;
+                const itemName = foundry.utils.getProperty(this.actor, `system.shop.inventory.${entryId}.name`) || "Item";
+                
+                const htmlContent = await renderTemplate(
+                    "modules/sr5-marketplace/templates/documents/tests/availability-failure-retry-dialog.html", 
+                    {
+                        itemName,
+                        successes,
+                        availabilityRating,
+                        newPenalty
+                    }
+                );
+
+                new Dialog({
+                    title: game.i18n.localize("SR5Marketplace.UI.Availability") + " " + game.i18n.localize("SR5Marketplace.Marketplace.Acquisition.Failure"),
+                    content: htmlContent,
+                    buttons: {
+                        yes: {
+                            label: game.i18n.localize("Yes") || "Yes",
+                            callback: async () => {
+                                const newTestData = foundry.utils.duplicate(this.data);
+                                newTestData.failPenalty = newPenalty;
+                                newTestData.evaluated = false;
+                                newTestData.rolls = [];
+                                
+                                // Reset values
+                                if (newTestData.values) {
+                                    newTestData.values.hits = null;
+                                    newTestData.values.extendedHits = null;
+                                    newTestData.values.netHits = null;
+                                    newTestData.values.glitches = null;
+                                }
+
+                                // Recursively purge all null values to prevent system's ModifiableValue.isModifiableValue from crashing
+                                const cleanNulls = (obj) => {
+                                    if (obj === null || obj === undefined) return;
+                                    if (typeof obj !== "object") return;
+                                    for (const key of Object.keys(obj)) {
+                                        if (obj[key] === null) {
+                                            delete obj[key];
+                                        } else if (typeof obj[key] === "object") {
+                                            cleanNulls(obj[key]);
+                                        }
+                                    }
+                                };
+                                cleanNulls(newTestData);
+                                
+                                // Add a unique modifier for the retry penalty
+                                newTestData.action.modifiers = Array.isArray(newTestData.action.modifiers) ? newTestData.action.modifiers : [];
+                                newTestData.action.modifiers = newTestData.action.modifiers.filter(m => !m.isRetryPenalty);
+                                newTestData.action.modifiers.push({
+                                    label: game.i18n.format("SR5Marketplace.Marketplace.Availability.RetryPenalty", { penalty: newPenalty }) || `Retry Penalty (${newPenalty})`,
+                                    value: newPenalty,
+                                    isRetryPenalty: true
+                                });
+
+                                const test = new this.constructor(
+                                    newTestData,
+                                    { actor: this.actor },
+                                    { ...this.data.options, showDialog: true }
+                                );
+                                await test.execute();
+                            }
+                        },
+                        no: {
+                            label: game.i18n.localize("No") || "No"
+                        }
+                    },
+                    default: "yes"
+                }, {
+                    classes: ["sr5", "form-dialog", "sr5-marketplace-dialog"]
+                }).render(true);
+            }
+        }
     }
 
     get _dialogTemplate() {
@@ -434,3 +600,5 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
         return test.result.toJSON();
     }
 }
+
+Object.defineProperty(AvailabilityTest, 'name', { value: 'AvailabilityTest' });

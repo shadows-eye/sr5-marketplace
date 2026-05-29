@@ -5,6 +5,11 @@
         <h3 class="text-sm font-bold text-[var(--color-white)] m-0 drop-shadow">
             <i class="fa-solid fa-user-graduate mr-1 opacity-80"></i> {{localize "FIELDS.skills.label"}}
         </h3>
+        {{#if @root.isEditMode}}
+            <button type="button" class="glossy-red-btn py-0.5 px-2 text-xs font-bold rounded flex items-center gap-1 border-none cursor-pointer relative z-10" data-action="createSkill">
+                <i class="fas fa-plus"></i> {{localize "SR5Marketplace.Marketplace.Shop.AddItem"}}
+            </button>
+        {{/if}}
     </div>
 
     {{!-- Active Skills --}}
@@ -17,16 +22,24 @@
         
         <div class="toggle-content relative z-10">
             <div class="px-2 pb-2 pt-2">
-                <div class="grid grid-cols-[1fr_40px] gap-2 text-xs font-bold text-[var(--color-red-bright)] mb-1 pb-1 ml-2">
+                <div class="grid {{#if @root.isEditMode}}grid-cols-[1fr_50px_16px]{{else}}grid-cols-[1fr_40px]{{/if}} gap-2 text-xs font-bold text-[var(--color-red-bright)] mb-1 pb-1 ml-2">
                     <div>{{localize "SR5Marketplace.UI.Name"}}</div>
                     <div class="text-center">{{localize "SR5Marketplace.UI.Rating"}}</div>
+                    {{#if @root.isEditMode}}<div></div>{{/if}}
                 </div>
                 <div class="flex flex-col gap-0.5 ml-2">
                     {{#each activeSkills as |skill|}}
-                        <div class="grid grid-cols-[1fr_40px] gap-2 items-center text-sm py-1 hover:bg-[var(--color-white-transparent-05)] px-1 transition-colors rounded">
-                            <div class="truncate opacity-90 font-semibold text-xs" title="{{skill.name}}" data-id="{{skill.id}}">{{skill.name}}</div>
+                        <div class="grid {{#if @root.isEditMode}}grid-cols-[1fr_50px_16px]{{else}}grid-cols-[1fr_40px]{{/if}} gap-2 items-center text-sm py-1 hover:bg-[var(--color-white-transparent-05)] px-1 transition-colors rounded">
+                            <div class="truncate opacity-90 font-semibold text-xs cursor-pointer hover:text-[var(--color-yellow-base)]" title="{{skill.name}}" data-action="clickSkillName" data-skill-id="{{skill.id}}" data-item-id="{{skill.itemId}}">{{skill.name}}</div>
                             {{#if @root.isEditMode}}
-                                <input class="w-full bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded" type="number" name="system.skills.active.{{skill.id}}.value" value="{{skill.value}}"/>
+                                <input class="w-full bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded text-xs" type="number" name="system.skills.active.{{skill.id}}.value" value="{{skill.value}}"/>
+                                {{#if skill.itemId}}
+                                    <a class="text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer text-center flex items-center justify-center" data-action="deleteSkill" data-item-id="{{skill.itemId}}" title="Delete Skill">
+                                        <i class="fas fa-trash text-xs"></i>
+                                    </a>
+                                {{else}}
+                                    <div></div>
+                                {{/if}}
                             {{else}}
                                 <div class="text-center font-bold text-[var(--color-yellow-base)]">{{skill.value}}</div>
                             {{/if}}
@@ -48,16 +61,24 @@
             
             <div class="toggle-content relative z-10">
                 <div class="px-2 pb-2 pt-2">
-                    <div class="grid grid-cols-[1fr_40px] gap-2 text-xs font-bold text-[var(--color-red-bright)] mb-1 pb-1 ml-2">
+                    <div class="grid {{#if @root.isEditMode}}grid-cols-[1fr_50px_16px]{{else}}grid-cols-[1fr_40px]{{/if}} gap-2 text-xs font-bold text-[var(--color-red-bright)] mb-1 pb-1 ml-2">
                         <div>{{localize "SR5Marketplace.UI.Name"}}</div>
                         <div class="text-center">{{localize "SR5Marketplace.UI.Rating"}}</div>
+                        {{#if @root.isEditMode}}<div></div>{{/if}}
                     </div>
                     <div class="flex flex-col gap-0.5 ml-2">
                         {{#each group.skills as |skill|}}
-                            <div class="grid grid-cols-[1fr_40px] gap-2 items-center text-sm py-1 hover:bg-[var(--color-white-transparent-05)] px-1 transition-colors rounded">
-                                <div class="truncate opacity-90 font-semibold text-xs" title="{{skill.name}}" data-id="{{skill.id}}">{{skill.name}}</div>
+                            <div class="grid {{#if @root.isEditMode}}grid-cols-[1fr_50px_16px]{{else}}grid-cols-[1fr_40px]{{/if}} gap-2 items-center text-sm py-1 hover:bg-[var(--color-white-transparent-05)] px-1 transition-colors rounded">
+                                <div class="truncate opacity-90 font-semibold text-xs cursor-pointer hover:text-[var(--color-yellow-base)]" title="{{skill.name}}" data-action="clickSkillName" data-skill-id="{{skill.id}}" data-item-id="{{skill.itemId}}">{{skill.name}}</div>
                                 {{#if @root.isEditMode}}
-                                    <input class="w-full bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded" type="number" name="system.skills.knowledge.{{group.key}}.value.{{skill.id}}.value" value="{{skill.value}}"/>
+                                    <input class="w-full bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded text-xs" type="number" name="system.skills.knowledge.{{group.key}}.value.{{skill.id}}.value" value="{{skill.value}}"/>
+                                    {{#if skill.itemId}}
+                                        <a class="text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer text-center flex items-center justify-center" data-action="deleteSkill" data-item-id="{{skill.itemId}}" title="Delete Skill">
+                                            <i class="fas fa-trash text-xs"></i>
+                                        </a>
+                                    {{else}}
+                                        <div></div>
+                                    {{/if}}
                                 {{else}}
                                     <div class="text-center font-bold text-[var(--color-yellow-base)]">{{skill.value}}</div>
                                 {{/if}}
@@ -79,16 +100,24 @@
         
         <div class="toggle-content relative z-10">
             <div class="px-2 pb-2 pt-2">
-                <div class="grid grid-cols-[1fr_40px] gap-2 text-xs font-bold text-[var(--color-red-bright)] mb-1 pb-1 ml-2">
+                <div class="grid {{#if @root.isEditMode}}grid-cols-[1fr_50px_16px]{{else}}grid-cols-[1fr_40px]{{/if}} gap-2 text-xs font-bold text-[var(--color-red-bright)] mb-1 pb-1 ml-2">
                     <div>{{localize "SR5Marketplace.UI.Name"}}</div>
                     <div class="text-center">{{localize "SR5Marketplace.UI.Rating"}}</div>
+                    {{#if @root.isEditMode}}<div></div>{{/if}}
                 </div>
                 <div class="flex flex-col gap-0.5 ml-2">
                     {{#each languageSkills as |skill|}}
-                        <div class="grid grid-cols-[1fr_40px] gap-2 items-center text-sm py-1 hover:bg-[var(--color-white-transparent-05)] px-1 transition-colors rounded">
-                            <div class="truncate opacity-90 font-semibold text-xs" title="{{skill.name}}" data-id="{{skill.id}}">{{skill.name}}</div>
+                        <div class="grid {{#if @root.isEditMode}}grid-cols-[1fr_50px_16px]{{else}}grid-cols-[1fr_40px]{{/if}} gap-2 items-center text-sm py-1 hover:bg-[var(--color-white-transparent-05)] px-1 transition-colors rounded">
+                            <div class="truncate opacity-90 font-semibold text-xs cursor-pointer hover:text-[var(--color-yellow-base)]" title="{{skill.name}}" data-action="clickSkillName" data-skill-id="{{skill.id}}" data-item-id="{{skill.itemId}}">{{skill.name}}</div>
                             {{#if @root.isEditMode}}
-                                <input class="w-full bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded" type="number" name="system.skills.language.value.{{skill.id}}.value" value="{{skill.value}}"/>
+                                <input class="w-full bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded text-xs" type="number" name="system.skills.language.value.{{skill.id}}.value" value="{{skill.value}}"/>
+                                {{#if skill.itemId}}
+                                    <a class="text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer text-center flex items-center justify-center" data-action="deleteSkill" data-item-id="{{skill.itemId}}" title="Delete Skill">
+                                        <i class="fas fa-trash text-xs"></i>
+                                    </a>
+                                {{else}}
+                                    <div></div>
+                                {{/if}}
                             {{else}}
                                 <div class="text-center font-bold text-[var(--color-yellow-base)]">{{skill.value}}</div>
                             {{/if}}

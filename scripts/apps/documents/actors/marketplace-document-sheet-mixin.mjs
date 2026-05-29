@@ -11,8 +11,11 @@ export default base => {
     /** @inheritdoc */
     static DEFAULT_OPTIONS = {
       form: {
-        // This tells the application to call our _processFormData method on submit.
-        handler: this.prototype._processFormData,
+        // This dynamically calls the instance's _processFormData method on submit,
+        // allowing subclasses to override it correctly.
+        handler: function(event, form, formData) {
+          return this._processFormData(event, form, formData);
+        },
         submitOnChange: true,
         closeOnSubmit: false,
       },

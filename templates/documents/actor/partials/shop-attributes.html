@@ -3,17 +3,20 @@
 
     {{!-- Physical Attributes --}}
     <div class="bg-[var(--color-black-transparent-20)] rounded p-2 pt-1">
-        <h4 class="text-xs font-bold text-center opacity-90 mb-2 pb-1">{{localize "SR5Marketplace.UI.LimitPhysical"}}</h4>
+        <h4 class="text-xs font-bold text-center opacity-90 mb-2 pb-1">{{localize "SR5Marketplace.UI.LimitPhysical"}}
+        </h4>
         <div class="grid grid-cols-2 gap-x-4 gap-y-1">
             {{#each system.attributes.physicalAttributes as |attr name|}}
-                <div class="flex justify-between items-center text-xs px-1 hover:bg-[var(--color-white-transparent-05)] rounded transition-colors" data-attribute="{{name}}">
-                    <span class="opacity-90 font-semibold">{{localize (concat "FIELDS.attributes." name ".label")}}</span>
-                    {{#if @root.isEditMode}}
-                        <input type="number" name="system.attributes.{{name}}.value" value="{{attr.value}}" class="w-8 bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded" />
-                    {{else}}
-                        <span class="font-bold text-[var(--color-yellow-base)]">{{attr.value}}</span>
-                    {{/if}}
-                </div>
+            <div class="flex justify-between items-center text-xs px-1 hover:bg-[var(--color-white-transparent-05)] rounded transition-colors"
+                data-attribute="{{name}}">
+                <span class="opacity-90 font-semibold">{{localize (concat "FIELDS.attributes." name ".label")}}</span>
+                {{#if @root.isEditMode}}
+                <input type="number" name="system.attributes.{{name}}.base" value="{{#if attr.base}}{{attr.base}}{{else}}{{attr.value}}{{/if}}"
+                    class="w-8 bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded" />
+                {{else}}
+                <span class="font-bold text-[var(--color-yellow-base)]">{{attr.value}}</span>
+                {{/if}}
+            </div>
             {{/each}}
         </div>
     </div>
@@ -23,31 +26,36 @@
         <h4 class="text-xs font-bold text-center opacity-90 mb-2 pb-1">{{localize "SR5Marketplace.UI.LimitMental"}}</h4>
         <div class="grid grid-cols-2 gap-x-4 gap-y-1">
             {{#each system.attributes.mentalAttributes as |attr name|}}
-                <div class="flex justify-between items-center text-xs px-1 hover:bg-[var(--color-white-transparent-05)] rounded transition-colors" data-attribute="{{name}}">
-                    <span class="opacity-90 font-semibold">{{localize (concat "FIELDS.attributes." name ".label")}}</span>
-                    {{#if @root.isEditMode}}
-                        <input type="number" name="system.attributes.{{name}}.value" value="{{attr.value}}" class="w-8 bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded" />
-                    {{else}}
-                        <span class="font-bold text-[var(--color-yellow-base)]">{{attr.value}}</span>
-                    {{/if}}
-                </div>
+            <div class="flex justify-between items-center text-xs px-1 hover:bg-[var(--color-white-transparent-05)] rounded transition-colors"
+                data-attribute="{{name}}">
+                <span class="opacity-90 font-semibold">{{localize (concat "FIELDS.attributes." name ".label")}}</span>
+                {{#if @root.isEditMode}}
+                <input type="number" name="system.attributes.{{name}}.base" value="{{#if attr.base}}{{attr.base}}{{else}}{{attr.value}}{{/if}}"
+                    class="w-8 bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded" />
+                {{else}}
+                <span class="font-bold text-[var(--color-yellow-base)]">{{attr.value}}</span>
+                {{/if}}
+            </div>
             {{/each}}
         </div>
     </div>
 
     {{!-- Special Attributes --}}
     <div class="bg-[var(--color-black-transparent-20)] rounded p-2 pt-1">
-        <h4 class="text-xs font-bold text-center opacity-90 mb-2 pb-1">{{localize "SR5Marketplace.UI.SpecialAttributes"}}</h4>
+        <h4 class="text-xs font-bold text-center opacity-90 mb-2 pb-1">{{localize
+            "SR5Marketplace.UI.SpecialAttributes"}}</h4>
         <div class="grid grid-cols-2 gap-x-4 gap-y-1">
-             {{#each system.attributes.specialAttributes as |attr name|}}
-                <div class="flex justify-between items-center text-xs px-1 hover:bg-[var(--color-white-transparent-05)] rounded transition-colors" data-attribute="{{name}}">
-                    <span class="opacity-90 font-semibold">{{localize (concat "FIELDS.attributes." name ".label")}}</span>
-                    {{#if @root.isEditMode}}
-                        <input type="number" name="system.attributes.{{name}}.value" value="{{attr.value}}" class="w-8 bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded" />
-                    {{else}}
-                        <span class="font-bold text-[var(--color-yellow-base)]">{{attr.value}}</span>
-                    {{/if}}
-                </div>
+            {{#each system.attributes.specialAttributes as |attr name|}}
+            <div class="flex justify-between items-center text-xs px-1 hover:bg-[var(--color-white-transparent-05)] rounded transition-colors"
+                data-attribute="{{name}}">
+                <span class="opacity-90 font-semibold">{{localize (concat "FIELDS.attributes." name ".label")}}</span>
+                {{#if @root.isEditMode}}
+                <input type="number" name="system.attributes.{{name}}.base" value="{{#if attr.base}}{{attr.base}}{{else}}{{attr.value}}{{/if}}"
+                    class="w-8 bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded" />
+                {{else}}
+                <span class="font-bold text-[var(--color-yellow-base)]">{{attr.value}}</span>
+                {{/if}}
+            </div>
             {{/each}}
         </div>
     </div>

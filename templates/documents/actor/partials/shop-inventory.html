@@ -92,7 +92,7 @@
                 
                 <div class="item-availability text-xs text-center font-bold">
                     {{#if @root.isGM}}
-                        <a class="cursor-pointer hover:text-[var(--color-yellow-base)] transition-colors px-1 py-0.5 bg-[var(--color-black-transparent-20)] rounded" data-action="rollAvailability" data-availability="{{item.availability.value}}" title="{{localize 'SR5Marketplace.Marketplace.Tests.AvailabilityTest'}}">{{item.availability.value}}</a>
+                        <a class="cursor-pointer hover:text-[var(--color-yellow-base)] transition-colors px-1 py-0.5 bg-[var(--color-black-transparent-20)] rounded" data-action="rollAvailability" data-availability="{{item.availability.value}}" data-entry-id="{{inventoryEntryId}}" title="{{localize 'SR5Marketplace.Marketplace.Tests.AvailabilityTest'}}">{{item.availability.value}}</a>
                     {{else}}
                         <span class="px-1 py-0.5 bg-[var(--color-black-transparent-20)] rounded">{{item.availability.value}}</span>
                     {{/if}}

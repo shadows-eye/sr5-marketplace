@@ -210,6 +210,7 @@
             "KnowledgeSkillStreet": "Street",
             "KnowledgeSkillAcademic": "Academic",
             "KnowledgeSkillProfessional": "Professional",
+            "KnowledgeSkillInterest": "Interests",
             "KnowledgeSkillInterests": "Interests",
             "Roll": "Roll"
         },
@@ -442,7 +443,12 @@
             },
             "Acquisition": {
                 "Success": "Success",
-                "Failed": "Could not be acquired."
+                "Failure": "Could not be acquired."
+            },
+            "Availability": {
+                "SuccessMessage": "{actor} successfully procured {item}! Quantity is now {qty}.",
+                "RetryPrompt": "Would you like to try again with a {penalty} penalty on the dice pool?",
+                "RetryPenalty": "Retry Penalty ({penalty})"
             },
             "Notifications": {
                 "BehaviorsSaved": "Item behaviors saved successfully.",

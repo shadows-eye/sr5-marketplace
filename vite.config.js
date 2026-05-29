@@ -4,6 +4,9 @@ import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 
 export default defineConfig({
+  esbuild: {
+    keepNames: true
+  },
   // Resolve absolute Foundry paths to your local project root
   resolve: {
     alias: {
@@ -11,6 +14,7 @@ export default defineConfig({
     }
   },
   build: {
+    minify: false,
     outDir: 'dist',
     emptyOutDir: true,
     lib: {

@@ -7,6 +7,31 @@ import { inGameMarketplace } from "../scripts/apps/inGameMarketplace.mjs";
 const { ActorSheet } = foundry.applications.sheets;
 
 /**
+ * Helper to match an embedded skill item name (e.g. "First Aid" or "Negotiation")
+ * to its system-defined underscore key (e.g. "first_aid" or "negotiation").
+ * @param {string} itemName
+ * @returns {string} The matched system key or normalized key as fallback.
+ */
+function findSystemSkillKey(itemName) {
+    if (!itemName) return "";
+    const normName = itemName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    
+    // Check key or localized labels from CONFIG.SR5.activeSkills
+    for (const [key, locKey] of Object.entries(CONFIG.SR5.activeSkills || {})) {
+        if (key.toLowerCase().replace(/[^a-z0-9]/g, '') === normName) {
+            return key;
+        }
+        const localized = game.i18n.localize(locKey);
+        if (localized && localized.toLowerCase().replace(/[^a-z0-9]/g, '') === normName) {
+            return key;
+        }
+    }
+    
+    // Fallback to lowercased name with spaces/dashes converted to underscores
+    return itemName.toLowerCase().replace(/[\s-]+/g, '_');
+}
+
+/**
  * A custom V13 Actor Sheet for the ShopActor type, using ApplicationV2.
  * It is built by applying our custom mixin to the base ActorSheet.
  * @param {typeof ActorSheet} base The base ActorSheet class to extend.
@@ -47,7 +72,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         return super.render(options, _options);
     }
     /** @override */
-    static DEFAULT_OPTIONS = {
+    static DEFAULT_OPTIONS = foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
         classes: ["sr5", "shop", "sr5-marketplace-shop"],
         position: {
             left: 103.5,
@@ -56,7 +81,6 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             height: 900
         },
         actions: {
-            ...super.DEFAULT_OPTIONS.actions,
             toggleMode: this.#onToggleMode,
             editImage: this.#onEditImage,
             openDocumentLink: this.#onOpenDocumentLink,
@@ -69,9 +93,12 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             runSimpleSocial: this.#onRunSimpleSocial,
             runOpposedSocial: this.#onRunOpposedSocial,
             runTeamworkSocial: this.#onRunTeamworkSocial,
-            rollAvailability: this.#onRollAvailability
+            rollAvailability: this.#onRollAvailability,
+            createSkill: this.#onCreateSkill,
+            deleteSkill: this.#onDeleteSkill,
+            clickSkillName: this.#onClickSkillName
         }
-    };
+    }, { inplace: false });
 
     /**
      * @type {Object.<string, {template: string}>}
@@ -204,45 +231,137 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                     discount: game.i18n.localize("SR5Marketplace.Marketplace.Shop.Discount"),
                     fee: game.i18n.localize("SR5Marketplace.Marketplace.Shop.Fee")
                 };
-                const skills = this.document.system.skills;
-                
-                // --- UPDATED: Filter Active Skills to show only specific groups and individual skills ---
-                const allowedGroups = ["Acting", "Influence"];
-                const allowedSkills = ["intimidation", "instruction"];
+                const skills = this.document.system.skills || {};
 
-                context.activeSkills = Object.entries(skills.active)
-                    .filter(([key, data]) => {
-                        // Keep the skill if its group is in our allowed list OR if the skill key is in our allowed list.
-                        return allowedGroups.includes(data.group) || allowedSkills.includes(key);
-                    })
-                    .map(([key, data]) => {
-                        const locKey = CONFIG.SR5.activeSkills[key];
+                // 1. Gather all active skills from embedded items
+                const embeddedActiveSkills = this.document.items
+                    .filter(i => i.type === "skill" && i.system.skill?.category === "active")
+                    .map(i => {
+                        const systemKey = findSystemSkillKey(i.name);
+                        const locKey = CONFIG.SR5.activeSkills[systemKey];
                         return {
-                            id: key,
-                            name: game.i18n.localize(locKey) || key,
-                            value: data.value
+                            id: systemKey,
+                            itemId: i.id,
+                            name: game.i18n.localize(locKey) || i.name,
+                            value: i.system.skill?.rating ?? i.system.rating?.value ?? i.system.value ?? 0
                         };
                     });
 
-                // Prepare Knowledge Skills (Unchanged)
-                context.knowledgeSkillGroups = Object.entries(skills.knowledge).map(([groupKey, groupData]) => {
+                // Gather active skills from legacy fallback (if any exist)
+                const legacyActiveSkills = Object.entries(skills.active || {}).map(([key, data]) => {
+                    const locKey = CONFIG.SR5.activeSkills[key];
                     return {
-                        key: groupKey, // Pass the key for the input name attribute
-                        label: game.i18n.localize(`SR5Marketplace.UI.KnowledgeSkill${capitalize(groupKey)}`),
-                        skills: Object.entries(groupData.value).map(([skillId, skillData]) => ({
-                            id: skillId,
-                            name: skillData.name,
-                            value: skillData.value
-                        }))
+                        id: key,
+                        name: game.i18n.localize(locKey) || key,
+                        value: data?.value ?? 0
                     };
                 });
-                
-                // Prepare Language Skills (Unchanged)
-                context.languageSkills = Object.entries(skills.language.value).map(([skillId, skillData]) => ({
+
+                // Combine and de-duplicate active skills
+                const activeSkillsMap = new Map();
+                for (const s of [...legacyActiveSkills, ...embeddedActiveSkills]) {
+                    if (activeSkillsMap.has(s.id)) {
+                        const existing = activeSkillsMap.get(s.id);
+                        activeSkillsMap.set(s.id, {
+                            ...existing,
+                            ...s,
+                            itemId: s.itemId || existing.itemId,
+                            value: s.itemId ? s.value : (existing.itemId ? existing.value : Math.max(s.value, existing.value))
+                        });
+                    } else {
+                        activeSkillsMap.set(s.id, s);
+                    }
+                }
+                let activeSkillsList = Array.from(activeSkillsMap.values());
+                if (!context.isEditMode) {
+                    activeSkillsList = activeSkillsList.filter(s => s.value > 0);
+                }
+                context.activeSkills = activeSkillsList;
+
+                // 2. Gather Knowledge/Hobby skills from embedded items
+                const embeddedKnowledge = this.document.items
+                    .filter(i => i.type === "skill" && i.system.skill?.category === "knowledge");
+
+                // Legacy fallback for knowledge
+                const legacyKnowledge = Object.entries(skills.knowledge || {}).flatMap(([groupKey, groupData]) => {
+                    return Object.entries(groupData?.value || {}).map(([skillId, skillData]) => ({
+                        id: skillId,
+                        name: skillData?.name ?? "",
+                        value: skillData?.value ?? 0,
+                        knowledgeType: groupKey
+                    }));
+                });
+
+                // Group knowledge skills by knowledgeType (academic, interests/hobby, professional, street)
+                const knowledgeTypes = ["academic", "interests", "professional", "street"];
+                context.knowledgeSkillGroups = knowledgeTypes.map(type => {
+                    const typeItems = embeddedKnowledge
+                        .filter(i => {
+                            const kt = i.system.skill?.knowledgeType;
+                            if (type === "interests") return kt === "interests" || kt === "interest";
+                            return kt === type;
+                        })
+                        .map(i => ({
+                            id: i.system.key || i.name.toLowerCase(),
+                            itemId: i.id,
+                            name: i.name,
+                            value: i.system.skill?.rating ?? i.system.rating?.value ?? i.system.value ?? 0
+                        }));
+
+                    const legacyTypeItems = legacyKnowledge
+                        .filter(s => {
+                            if (type === "interests") return s.knowledgeType === "interests" || s.knowledgeType === "interest";
+                            return s.knowledgeType === type;
+                        })
+                        .map(s => ({
+                            id: s.id,
+                            name: s.name,
+                            value: s.value
+                        }));
+
+                    const combinedMap = new Map();
+                    for (const s of [...legacyTypeItems, ...typeItems]) {
+                        combinedMap.set(s.name.toLowerCase(), s);
+                    }
+
+                    let combinedSkills = Array.from(combinedMap.values());
+                    if (!context.isEditMode) {
+                        combinedSkills = combinedSkills.filter(s => s.value > 0);
+                    }
+
+                    return {
+                        key: type,
+                        label: game.i18n.localize(`SR5Marketplace.UI.KnowledgeSkill${capitalize(type)}`) || capitalize(type),
+                        skills: combinedSkills
+                    };
+                }).filter(g => g.skills.length > 0 || this._mode === "edit");
+
+                // 3. Gather Language skills from embedded items
+                const embeddedLanguage = this.document.items
+                    .filter(i => i.type === "skill" && i.system.skill?.category === "language")
+                    .map(i => ({
+                        id: i.system.key || i.name.toLowerCase(),
+                        itemId: i.id,
+                        name: i.name,
+                        value: i.system.skill?.rating ?? i.system.rating?.value ?? i.system.value ?? 0
+                    }));
+
+                const legacyLanguage = Object.entries(skills.language?.value || {}).map(([skillId, skillData]) => ({
                     id: skillId,
-                    name: skillData.name,
-                    value: skillData.value
+                    name: skillData?.name ?? "",
+                    value: skillData?.value ?? 0
                 }));
+
+                const languageMap = new Map();
+                for (const s of [...legacyLanguage, ...embeddedLanguage]) {
+                    languageMap.set(s.name.toLowerCase(), s);
+                }
+                
+                let languageSkillsList = Array.from(languageMap.values());
+                if (!context.isEditMode) {
+                    languageSkillsList = languageSkillsList.filter(s => s.value > 0);
+                }
+                context.languageSkills = languageSkillsList;
                 // --- ADDED: Prepare Inventory Data ---
                 const inventory = this.document.system.shop.inventory;
                 const preparedInventory = {};
@@ -282,13 +401,111 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     }
 
     /** @override */
-    _processFormData(event, form, formData) {
+    async _processFormData(event, form, formData) {
         const data = formData.object;
+        console.log("SR5 Marketplace | _processFormData triggered. Submitted data:", data);
+
         if (data.system?.shop?.employees) {
             data.system.shop.employees = data.system.shop.employees
                 .split('\n').map(e => e.trim()).filter(e => e);
         }
-        this.document.update(data);
+
+        // Intercept skills ratings updates and save back to embedded items
+        const itemUpdates = [];
+        const itemsToCreate = [];
+
+        for (const [key, value] of Object.entries(data)) {
+            let skillId = null;
+            let category = null;
+
+            if (key.startsWith("system.skills.active.")) {
+                const parts = key.split("."); // ["system", "skills", "active", "skillId", "value"]
+                skillId = parts[3];
+                category = "active";
+            } else if (key.startsWith("system.skills.knowledge.")) {
+                const parts = key.split("."); // ["system", "skills", "knowledge", "academic", "value", "skillId", "value"]
+                skillId = parts[5];
+                category = "knowledge";
+            } else if (key.startsWith("system.skills.language.")) {
+                const parts = key.split("."); // ["system", "skills", "language", "value", "skillId", "value"]
+                skillId = parts[4];
+                category = "language";
+            }
+
+            if (skillId && category) {
+                console.log(`SR5 Marketplace | Intercepted skill input. key: ${key}, skillId: ${skillId}, value: ${value}`);
+                
+                // Find matching embedded item by custom key, name, or system mapped key
+                const item = this.document.items.find(i => 
+                    i.type === "skill" && 
+                    i.system.skill?.category === category &&
+                    (i.system.key === skillId || 
+                     i.name.toLowerCase() === skillId.toLowerCase() ||
+                     (category === "active" && findSystemSkillKey(i.name) === skillId))
+                );
+                
+                const skillNumVal = Number(value);
+
+                if (item) {
+                    console.log(`SR5 Marketplace | Found matching embedded skill item. ID: ${item.id}, Name: ${item.name}`);
+                    itemUpdates.push({
+                        _id: item.id,
+                        "system.skill.rating": skillNumVal,
+                        "system.skill.value": skillNumVal,
+                        "system.rating.value": skillNumVal,
+                        "system.value": skillNumVal
+                    });
+                } else if (skillNumVal > 0) {
+                    console.log(`SR5 Marketplace | Skill item not found on actor. Creating new embedded item on the fly for: ${skillId}`);
+                    // Automatically create missing embedded skill items on-the-fly when edited
+                    const label = category === "active" && CONFIG.SR5.activeSkills?.[skillId]
+                        ? game.i18n.localize(CONFIG.SR5.activeSkills[skillId])
+                        : (skillId.charAt(0).toUpperCase() + skillId.slice(1));
+
+                    let knowledgeType = "";
+                    if (category === "knowledge") {
+                        const parts = key.split(".");
+                        const groupKey = parts[3];
+                        knowledgeType = groupKey;
+                    }
+
+                    itemsToCreate.push({
+                        name: label,
+                        type: "skill",
+                        system: {
+                            type: "skill",
+                            key: skillId,
+                            rating: { value: skillNumVal },
+                            value: skillNumVal,
+                            skill: {
+                                category: category,
+                                knowledgeType: knowledgeType,
+                                rating: skillNumVal,
+                                value: skillNumVal
+                            }
+                        }
+                    });
+                }
+                
+                delete data[key]; // Remove original field to avoid conflicts
+            }
+        }
+
+        if (itemUpdates.length > 0) {
+            console.log("SR5 Marketplace | Executing updateEmbeddedDocuments with:", itemUpdates);
+            await this.document.updateEmbeddedDocuments("Item", itemUpdates);
+        }
+        if (itemsToCreate.length > 0) {
+            console.log("SR5 Marketplace | Executing createEmbeddedDocuments with:", itemsToCreate);
+            await this.document.createEmbeddedDocuments("Item", itemsToCreate);
+        }
+
+        // Only update the main actor document if there is remaining data to persist (e.g. biography, employees)
+        if (Object.keys(data).length > 0) {
+            console.log("SR5 Marketplace | Executing main actor update with remaining data:", data);
+            await this.document.update(data);
+        }
+
         return data;
     }
 
@@ -371,6 +588,154 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
 
             // 3. (The Fix) Trigger a re-render of the sheet to update the UI.
             this.render();
+        }
+    }
+
+    /**
+     * Action handler to create a new custom skill.
+     */
+    static async #onCreateSkill(event, target) {
+        if (!this.isEditMode) return;
+
+        // Prompt the user for skill details using V2 Dialog
+        const content = `
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 8px; font-family: sans-serif;">
+                <label style="font-weight: bold;">Skill Name:</label>
+                <input type="text" name="skillName" placeholder="e.g. Guitar Playing, German..." style="padding: 6px; border: 1px solid #ccc; border-radius: 4px;" required/>
+                
+                <label style="font-weight: bold; margin-top: 8px;">Category / Type:</label>
+                <select name="skillCategory" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="active">Active Skill</option>
+                    <option value="academic">Knowledge: Academic</option>
+                    <option value="interests">Knowledge: Interest / Hobby</option>
+                    <option value="professional">Knowledge: Professional</option>
+                    <option value="street">Knowledge: Street</option>
+                    <option value="language">Language</option>
+                </select>
+            </div>
+        `;
+
+        const choice = await foundry.applications.api.DialogV2.prompt({
+            window: { title: "Create Custom Skill" },
+            content: content,
+            ok: {
+                label: "Create",
+                callback: (event, button) => {
+                    const form = button.form;
+                    const name = form.querySelector('[name="skillName"]').value.trim();
+                    const type = form.querySelector('[name="skillCategory"]').value;
+                    return { name, type };
+                }
+            },
+            rejectClose: false
+        });
+
+        if (!choice?.name) return;
+
+        // Map Category & Type to the skill item schema
+        let category = "active";
+        let knowledgeType = "";
+
+         if (choice.type === "language") {
+             category = "language";
+         } else if (choice.type !== "active") {
+             category = "knowledge";
+             knowledgeType = choice.type;
+         }
+
+        const initialRating = (category === "knowledge" || category === "language") ? 1 : 0;
+        const skillItemData = {
+            name: choice.name,
+            type: "skill",
+            system: {
+                type: "skill",
+                key: choice.name.toLowerCase().replace(/[^a-z0-9]/g, ''),
+                rating: {
+                    value: initialRating
+                },
+                value: initialRating,
+                skill: {
+                    category: category,
+                    knowledgeType: knowledgeType,
+                    rating: initialRating,
+                    value: initialRating
+                }
+            }
+        };
+
+        // Check duplicates: reject if any skill with the same name already exists on the actor
+        const normalizeName = n => String(n ?? '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+        const alreadyExists = this.document.items.some(i => 
+            i.type === "skill" && 
+            normalizeName(i.name) === normalizeName(choice.name)
+        );
+
+        if (alreadyExists) {
+            return ui.notifications.warn(`Skill "${choice.name}" already exists on this actor.`);
+        }
+
+        await this.document.createEmbeddedDocuments("Item", [skillItemData]);
+        ui.notifications.info(`Created skill "${choice.name}".`);
+        this.render();
+    }
+
+    /**
+     * Action handler to delete an embedded skill.
+     */
+    static async #onDeleteSkill(event, target) {
+        if (!this.isEditMode) return;
+        const itemId = target.dataset.itemId;
+        if (!itemId) return;
+
+        const skillItem = this.document.items.get(itemId);
+        if (!skillItem) return;
+
+        const choice = await foundry.applications.api.DialogV2.confirm({
+            window: { title: `Delete ${skillItem.name}` },
+            content: `<p>Are you sure you want to delete the skill <strong>${skillItem.name}</strong>?</p>`,
+            rejectClose: false
+        });
+
+        if (choice) {
+            await this.document.deleteEmbeddedDocuments("Item", [itemId]);
+            ui.notifications.info(`Deleted skill "${skillItem.name}".`);
+            this.render();
+        }
+    }
+
+    /**
+     * Action handler when clicking on a skill's name.
+     * - In PLAY mode: triggers a roll for the skill (like on the system actor).
+     * - In EDIT mode: opens the skill's embedded Item document sheet (if it has an itemId).
+     */
+    static async #onClickSkillName(event, target) {
+        const skillId = target.dataset.skillId;
+        const itemId = target.dataset.itemId;
+        
+        if (this.isPlayMode) {
+            // Trigger a roll using the system actor's rollSkill method
+            if (typeof this.document.rollSkill === "function") {
+                console.log(`SR5 Marketplace | Triggering rollSkill for: ${skillId}`);
+                await this.document.rollSkill(skillId, { event });
+            } else if (itemId) {
+                // Fallback: roll via item if actor.rollSkill doesn't exist
+                const skillItem = this.document.items.get(itemId);
+                if (skillItem && typeof skillItem.roll === "function") {
+                    await skillItem.roll();
+                }
+            } else {
+                ui.notifications.warn("Roll logic is not supported on this actor.");
+            }
+        } else if (this.isEditMode) {
+            // Open the item sheet for editing
+            if (itemId) {
+                const skillItem = this.document.items.get(itemId);
+                if (skillItem) {
+                    skillItem.sheet.render(true);
+                }
+            } else {
+                ui.notifications.warn("This skill is a legacy entry and does not have an associated Item document. Please add it via the '+' button to enable editing.");
+            }
         }
     }
 
@@ -467,27 +832,73 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
 
         const actor = this.document;
 
-        // 1. Create a minimal data object. We only need to pass the values that are unique
-        //    to this test and cannot be derived from a standard action.
-        const testData = {
-            // We add our custom availability string here so the test class can use it.
-            availabilityStr: availabilityStr,
+        // 1. Retrieve linked actors (Owner and Employees) from the shop actor
+        const owner = typeof actor.getOwner === "function" ? await actor.getOwner() : null;
+        const employees = typeof actor.getEmployees === "function" ? await actor.getEmployees() : [];
+        const candidates = [owner, ...employees].filter(Boolean);
+
+        // 2. Find the highest Negotiation skill rating among the candidates
+        const getNegotiationRating = (act) => {
+            if (!act) return 0;
+            
+            // Check if the system has getSkill
+            if (typeof act.getSkill === "function") {
+                const skill = act.getSkill("negotiation");
+                if (skill) {
+                    const val = Number(skill.value ?? skill.rating ?? skill ?? 0);
+                    if (val > 0) return val;
+                }
+            }
+            
+            // Check embedded skill items
+            const skillItem = act.items?.find(i => i.type === "skill" && (i.system?.key === "negotiation" || i.name?.toLowerCase() === "negotiation"));
+            if (skillItem) {
+                return Number(skillItem.system?.rating?.value ?? skillItem.system?.value ?? 0);
+            }
+            
+            // Check system skills active fallback
+            const systemSkill = act.system?.skills?.active?.negotiation;
+            if (systemSkill) {
+                return Number(systemSkill.value ?? systemSkill.rating ?? systemSkill ?? 0);
+            }
+            
+            return 0;
         };
 
+        let maxNegotiation = 0;
+        for (const candidate of candidates) {
+            const rating = getNegotiationRating(candidate);
+            if (rating > maxNegotiation) {
+                maxNegotiation = rating;
+            }
+        }
+
+        const entryId = target.dataset.entryId;
+
+        console.log(`Marketplace | Shop Availability Roll: maxNegotiation calculated as ${maxNegotiation} from ${candidates.length} candidates. entryId: ${entryId}`);
+
         try {
-            // 2. Create a new instance of our test class. The constructor will automatically
-            //    call _prepareData to build the full data structure.
+            // 3. Create the test instance matching the advanced options / interactive run mode
             const test = new game.shadowrun5e.tests.AvailabilityTest(
-                testData,
-                { actor }
+                {
+                    availabilityStr: availabilityStr,
+                    action: {
+                        availabilityStr: availabilityStr,
+                        maxNegotiation: maxNegotiation,
+                        entryId: entryId
+                    },
+                    maxNegotiation: maxNegotiation,
+                    entryId: entryId
+                },
+                { actor },
+                { availability: availabilityStr, showDialog: true, showMessage: true, entryId: entryId }
             );
 
-            // 3. Execute the test.
+            // 4. Execute the test
             await test.execute();
 
         } catch (e) {
             console.error("Marketplace | AvailabilityTest failed:", e);
-            //ui.notifications.error("Failed to run the Availability Test. See console (F12) for details.");
         }
     }
 
@@ -526,12 +937,34 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
      */
     async _onDrop(event) {
         event.preventDefault();
-        const dropTarget = event.target.closest(".drop-target");
-        if (!dropTarget || !this.isEditMode) return;
 
         let data;
         try { data = JSON.parse(event.dataTransfer.getData('text/plain')); }
         catch (err) { return; }
+
+        if (data.type !== "Item") return;
+        const item = await Item.fromDropData(data);
+        if (!item) return;
+
+        // If the item is a skill (active, knowledge, or language), add it to the actor directly
+        if (item.type === "skill") {
+            const category = item.system.skill?.category || "";
+            const name = item.name;
+            const normalizeName = n => String(n ?? '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+            const alreadyExists = this.document.items.some(i => 
+                i.type === "skill" && 
+                i.system.skill?.category === category && 
+                normalizeName(i.name) === normalizeName(name)
+            );
+            if (alreadyExists) {
+                ui.notifications.warn(game.i18n.format('SR5.Errors.SkillAlreadyExists', { name: item.name, actorName: this.document.name, actorUuid: this.document.uuid }));
+                return;
+            }
+            return this.document.createEmbeddedDocuments('Item', [item.toObject()]);
+        }
+
+        const dropTarget = event.target.closest(".drop-target");
+        if (!dropTarget || !this.isEditMode) return;
 
         const dropZone = dropTarget.dataset.dropZone;
 

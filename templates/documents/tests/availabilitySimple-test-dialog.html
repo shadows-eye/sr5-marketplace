@@ -4,7 +4,10 @@
         {{!-- Actor Information --}}
         <div class="document">
             <img src="{{actor.img}}" data-edit="img" title="{{actor.name}}"/>
-            <a class="content-link" data-uuid="{{actor.uuid}}">{{actor.name}}</a>
+            <div>
+                <a class="content-link" data-uuid="{{actor.uuid}}">{{actor.name}}</a>
+                <span class="test-type" style="display: block; font-size: 11px; color: var(--color-grey-lightest); margin-top: 2px;">{{test.title}}</span>
+            </div>
         </div>
         <hr>
 

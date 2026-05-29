@@ -1,29 +1,15 @@
 // --- IMPORT PRE-INSTANTIATED SERVICES FROM BARREL FILE ---
 import '../styles/marketplace.css';
-import { 
-    MODULE_ID, 
-    SHOP_ACTOR_TYPE, 
-    parseAvailability, 
+import {
+    MODULE_ID,
+    SHOP_ACTOR_TYPE,
+    parseAvailability,
     LocalizationService,
-    registerBasicHelpers 
+    registerBasicHelpers,
+    migrateShopSkills
 } from './lib/_module.mjs';
-import {defineShopActorClass} from '../models/actor/shopActor.mjs';
-import { 
-    actorItemServices, 
-    basketService, 
-    purchaseService, 
-    indexService, 
-    builderStateService, 
-    deliveryTimeService,
-    diceHelperService,
-    themeService,
-    systemDataMapperService,
-    ItemDataServices // <-- We import the class here because you need 'new ItemDataServices()' for your API
-} from './services/_module.mjs';
-
-// Re-export instances/classes as well ONLY IF you need them available globally 
-// to other modules/scripts that import marketHooks directly.
-export { 
+import { defineShopActorClass } from '../models/actor/shopActor.mjs';
+import {
     actorItemServices,
     basketService,
     purchaseService,
@@ -33,7 +19,22 @@ export {
     diceHelperService,
     themeService,
     systemDataMapperService,
-    ItemDataServices 
+    ItemDataServices // <-- We import the class here because you need 'new ItemDataServices()' for your API
+} from './services/_module.mjs';
+
+// Re-export instances/classes as well ONLY IF you need them available globally 
+// to other modules/scripts that import marketHooks directly.
+export {
+    actorItemServices,
+    basketService,
+    purchaseService,
+    indexService,
+    builderStateService,
+    deliveryTimeService,
+    diceHelperService,
+    themeService,
+    systemDataMapperService,
+    ItemDataServices
 };
 
 import { inGameMarketplace } from "./apps/inGameMarketplace.mjs";
@@ -55,7 +56,7 @@ function drawBadge(html) {
 
     // Get the latest count directly from the service every time the controls are rendered.
     const pendingCount = PurchaseService.getPendingRequestCount();
-    
+
     const controlButton = html.find('[data-tool="sr5-marketplace"]');
     if (!controlButton.length) return;
 
@@ -162,19 +163,19 @@ const initializeSettings = () => {
         restricted: true,
         type: Object, // Use a simple type
         default: {
-        "armor": "single",
-        "ammo": "stack",
-        "action": "unique",
-        "adept_power": "unique",
-        "complex_form": "unique",
-        "critter_power": "unique",
-        "cyberware": "unique",
-        "echo": "unique",
-        "modification": "stack",
-        "quality": "unique",
-        "spell": "unique",
-        "sprite_power": "unique"
-    }  
+            "armor": "single",
+            "ammo": "stack",
+            "action": "unique",
+            "adept_power": "unique",
+            "complex_form": "unique",
+            "critter_power": "unique",
+            "cyberware": "unique",
+            "echo": "unique",
+            "modification": "stack",
+            "quality": "unique",
+            "spell": "unique",
+            "sprite_power": "unique"
+        }
     });
 
     game.settings.register("sr5-marketplace", "availabilityTestRule", {
@@ -212,7 +213,7 @@ Hooks.on("renderSettingsConfig", (app, html, data) => {
 
     // Hide the placeholder's original input element.
     settingInput.style.display = "none";
-    
+
     // --- Button Injection ---
     const buttonClass = "sr5-marketplace-settings-button";
     if (!formFields.querySelector(`.${buttonClass}`)) {
@@ -220,7 +221,7 @@ Hooks.on("renderSettingsConfig", (app, html, data) => {
         button.type = "button";
         button.classList.add(buttonClass);
         button.innerHTML = `<i class="fas fa-cogs"></i> ${game.i18n.localize("SR5Marketplace.Marketplace.Settings.Menu.buttonLabel")}`;
-        
+
         button.addEventListener("click", () => {
             new MarketplaceSettingsApp().render(true);
         });
@@ -244,14 +245,14 @@ Hooks.on("renderSettingsConfig", (app, html, data) => {
     if (allTypes.length > 0) {
         const summaryContainer = document.createElement("div");
         summaryContainer.classList.add("behavior-summary");
-        
+
         // 3. Loop through the COMPLETE list of all types.
         for (const type of allTypes) {
             // Filter out internal types that we don't want to show.
             if (["base"].includes(type)) continue;
 
             const behavior = behaviors[type] || 'single'; // Default to 'single'
-            
+
             const tag = document.createElement("span");
             tag.classList.add("behavior-tag", behavior);
             tag.textContent = type; // The CSS will handle capitalizing.
@@ -268,7 +269,7 @@ Hooks.on("renderSettingsConfig", (app, html, data) => {
             }
             summaryContainer.appendChild(tag);
         }
-        
+
         // Place the summary container after the entire form group for correct layout.
         settingGroup.after(summaryContainer);
     }
@@ -298,12 +299,17 @@ Hooks.once("init", () => {
     game.sr5marketplace.api = {
         system: new SR5SystemAPI(),
         itemData: new ItemDataServices(), // Pulled perfectly from your services barrel!
-        
+
         // 3. Instantiate your sub-APIs using the static properties
         marketplace: new MarketplaceAPI.Marketplace(),
         itemBuilder: new MarketplaceAPI.ItemBuilder()
     };
 
+    // Register custom tests during setup after system has initialized its globals but before ready
+    Hooks.once("setup", async () => {
+        const { registerTests } = await import('../utils/tests.mjs');
+        registerTests();
+    });
 });
 
 /**
@@ -311,12 +317,15 @@ Hooks.once("init", () => {
  */
 Hooks.on("ready", async () => {
     console.log("SR5 Marketplace | Module is ready!");
-    
+
     // --- REMOVED: await game.sr5marketplace.api.itemData.initialize(); ---
     game.sr5marketplace.api.itemData.buildIndex().then(() => {
         console.log("SR5 Marketplace | Item index successfully cached in memory.");
     });
     if (game.user.isGM) {
+        // Automatically run shop actor legacy skills migration
+        migrateShopSkills();
+
         game.socket.on("module.sr5-marketplace", () => {
             // A real-time event was received. Trigger a re-draw after a short delay.
             setTimeout(() => {
@@ -326,9 +335,7 @@ Hooks.on("ready", async () => {
         // On first load, render the controls to set the initial badge state.
         setTimeout(() => { if (ui.controls) ui.controls.render(true); }, 1000);
     }
-    
-    const tests = await import('../utils/tests.mjs');
-    tests.registerTests();
+
 });
 
 /**
@@ -360,14 +367,14 @@ Hooks.on("getSceneControlButtons", (controls) => {
             visible: true,
             toggle: true,
             active: false, // Default state
-            onChange: () => { 
+            onChange: () => {
                 const app = Object.values(ui.windows).find(app => app.id === "inGameMarketplace");
                 if (app) {
                     app.close();
                 } else {
                     new inGameMarketplace().render(true);
                 }
-                
+
                 // Set the toggle back to false and redraw the UI
                 tokenGroup.tools["sr5-marketplace"].active = false;
                 if (ui.controls) ui.controls.render(true);
@@ -408,7 +415,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
             visible: true,
             toggle: true,
             active: Object.values(ui.windows).some(app => app.id === "inGameMarketplace"),
-            onClick: (toggled) => { 
+            onClick: (toggled) => {
                 const app = Object.values(ui.windows).find(app => app.id === "inGameMarketplace");
                 if (toggled) {
                     if (!app) new inGameMarketplace().render(true);
@@ -448,31 +455,92 @@ Hooks.on("renderSceneControls", (app, html) => {
  * We use this to add a global listener for double-clicking on Shop Actor tokens.
  */
 Hooks.on("canvasReady", () => {
-  // A flag to prevent attaching the listener multiple times.
-  if (canvas.marketplaceListenerAttached) return;
+    // A flag to prevent attaching the listener multiple times.
+    if (canvas.marketplaceListenerAttached) return;
 
-  // Listen for the browser's native 'dblclick' event on the main canvas element.
-  canvas.app.view.addEventListener('dblclick', event => {
-    // We only care about interactions when the token select tool is active.
-    if ( game.activeTool !== "select" ) return;
+    // Listen for the browser's native 'dblclick' event on the main canvas element.
+    canvas.app.view.addEventListener('dblclick', event => {
+        // We only care about interactions when the token select tool is active.
+        if (game.activeTool !== "select") return;
 
-    // Get the token currently under the user's mouse cursor.
-    const hoveredToken = canvas.tokens.hover;
+        // Get the token currently under the user's mouse cursor.
+        const hoveredToken = canvas.tokens.hover;
 
-    // If there is a hovered token and its actor is a shop, we take over.
-    if ( hoveredToken?.actor?.type === "sr5-marketplace.shop" ) {
-      // Stop the event from propagating to prevent Foundry's default behavior.
-      event.preventDefault();
-      event.stopPropagation();
+        // If there is a hovered token and its actor is a shop, we take over.
+        if (hoveredToken?.actor?.type === "sr5-marketplace.shop") {
+            // Stop the event from propagating to prevent Foundry's default behavior.
+            event.preventDefault();
+            event.stopPropagation();
 
-      console.log(`Marketplace | Intercepted double-click on Shop Actor: ${hoveredToken.name}`);
+            console.log(`Marketplace | Intercepted double-click on Shop Actor: ${hoveredToken.name}`);
 
-      // Open the marketplace application, passing the shop's UUID as an option.
-      new inGameMarketplace({ shopActorUuid: hoveredToken.actor.uuid }).render(true);
+            // Open the marketplace application, passing the shop's UUID as an option.
+            new inGameMarketplace({ shopActorUuid: hoveredToken.actor.uuid }).render(true);
+        }
+    });
+
+    // Set the flag so this hook only runs once per canvas session.
+    canvas.marketplaceListenerAttached = true;
+    console.log("Marketplace | Double-click listener for shops is now active.");
+});
+
+// --- Seed default skills on new Shop Actor creation ---
+async function seedDefaultSkills(actor) {
+    const SYSTEM_ID = 'shadowrun5e';
+    const pack = game.packs.find(p => 
+        p.metadata.system === SYSTEM_ID && p.metadata.name === 'sr5e-skills'
+    ) || game.packs.find(p => p.metadata.name === 'sr5e-skills');
+
+    if (!pack) {
+        console.warn("SR5 Marketplace | Skills compendium ('sr5e-skills') not found. Fallback seeding generic active skills.");
+        const defaultSkillKeys = ["negotiation", "instruction", "etiquette", "intimidation", "leadership", "con", "impersonation", "performance"];
+        const itemsToCreate = defaultSkillKeys.map(key => {
+            const label = key.charAt(0).toUpperCase() + key.slice(1);
+            return {
+                name: label,
+                type: 'skill',
+                system: {
+                    type: 'skill',
+                    skill: {
+                        category: 'active',
+                        attribute: 'charisma',
+                        rating: 0,
+                        value: 0
+                    }
+                }
+            };
+        });
+        await actor.createEmbeddedDocuments('Item', itemsToCreate);
+        return;
     }
-  });
 
-  // Set the flag so this hook only runs once per canvas session.
-  canvas.marketplaceListenerAttached = true;
-  console.log("Marketplace | Double-click listener for shops is now active.");
+    try {
+        const compendiumSkills = await pack.getDocuments();
+        console.log(`SR5 Marketplace | Seeding ${compendiumSkills.length} skills from compendium onto new Shop Actor "${actor.name}"...`);
+
+        const itemsToCreate = compendiumSkills.map(item => {
+            const itemData = item.toObject();
+            if (itemData.system) {
+                if (!itemData.system.skill) itemData.system.skill = {};
+                itemData.system.skill.rating = 0;
+                itemData.system.skill.value = 0;
+                itemData.system.rating = { value: 0 };
+                itemData.system.value = 0;
+            }
+            return itemData;
+        });
+
+        if (itemsToCreate.length > 0) {
+            await actor.createEmbeddedDocuments('Item', itemsToCreate);
+            console.log(`SR5 Marketplace | Successfully seeded ${itemsToCreate.length} skills onto new Shop Actor "${actor.name}".`);
+        }
+    } catch (err) {
+        console.error("SR5 Marketplace | Failed to seed skills from compendium:", err);
+    }
+}
+
+Hooks.on("createActor", async (actor, options, userId) => {
+    if (game.user.id !== userId) return;
+    if (actor.type !== "sr5-marketplace.shop") return;
+    await seedDefaultSkills(actor);
 });

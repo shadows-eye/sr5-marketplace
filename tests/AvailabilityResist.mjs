@@ -5,6 +5,15 @@ import {DialogList} from '../scripts/services/dialogList.mjs';
  */
 export class AvailabilityResist extends game.shadowrun5e.tests.OpposedTest {
 
+    static get name() {
+        return "AvailabilityResist";
+    }
+
+    /** @override */
+    get type() {
+        return "AvailabilityResist";
+    }
+
     constructor(data, documents, options) {
         super(data, documents, options);
     }
@@ -64,3 +73,5 @@ export class AvailabilityResist extends game.shadowrun5e.tests.OpposedTest {
         return "SR5.Marketplace.Tests.AvailabilityTest";
     }
 }
+
+Object.defineProperty(AvailabilityResist, 'name', { value: 'AvailabilityResist' });

@@ -121,6 +121,11 @@ export function defineShopActorClass() {
     }
 
     CONFIG.Actor.dataModels[SHOP_ACTOR_TYPE] = ShopActorData;
+    
+    // Copy allowed item types from character to shop so the shop can hold embedded skill items, gear, etc.
+    if (CONFIG.Actor.allowedItemTypes) {
+        CONFIG.Actor.allowedItemTypes[SHOP_ACTOR_TYPE] = CONFIG.Actor.allowedItemTypes.character || [];
+    }
     /**
      * The custom Actor class for Shops, with a full API for data management.
      */
@@ -131,6 +136,12 @@ export function defineShopActorClass() {
          */
         get shop() {
             return this.system.shop;
+        }
+
+        /** @override */
+        isType(type) {
+            if (type === "character") return true;
+            return super.isType(type);
         }
 
         /**

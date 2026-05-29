@@ -210,6 +210,7 @@
             "KnowledgeSkillStreet": "Straße",
             "KnowledgeSkillAcademic": "Akademisch",
             "KnowledgeSkillProfessional": "Beruflich",
+            "KnowledgeSkillInterest": "Interessen",
             "KnowledgeSkillInterests": "Interessen",
             "Roll": "Würfeln"
         },
@@ -444,6 +445,11 @@
             "Acquisition": {
                 "Success": "Kauf Erfolg",
                 "Failure": "Konnte nicht beschafft werden."
+            },
+            "Availability": {
+                "SuccessMessage": "{actor} hat {item} erfolgreich beschafft! Die Anzahl ist nun {qty}.",
+                "RetryPrompt": "Möchtest du es mit einem Malus von {penalty} auf den Würfelpool erneut versuchen?",
+                "RetryPenalty": "Wiederholungsmalus ({penalty})"
             },
             "Notifications": {
                 "BehaviorsSaved": "Verhalten gespeichert.",

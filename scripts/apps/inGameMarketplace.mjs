@@ -45,6 +45,21 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         // --- Handle passed-in shop context ---
         this.shopActorUuid = options.shopActorUuid ?? null;
+
+        // If no explicit shop context was passed, detect if the controlled token is inside a shop region
+        if (!this.shopActorUuid && canvas.ready && canvas.tokens?.controlled[0]) {
+            const controlledToken = canvas.tokens.controlled[0];
+            const tokenDoc = controlledToken.document;
+            const shopRegion = canvas.scene?.regions?.find(r => {
+                const shopUuid = r.flags?.["sr5-marketplace"]?.shopActorUuid;
+                if (!shopUuid) return false;
+                return r.tokens?.has(tokenDoc);
+            });
+            if (shopRegion) {
+                this.shopActorUuid = shopRegion.flags["sr5-marketplace"].shopActorUuid;
+            }
+        }
+
         this.selectedSource = this.shopActorUuid ?? "global"; // Default to global or specific shop
 
         // --- FIX: Leave this null! The _prepareContext method will handle picking the first category ---
@@ -167,6 +182,24 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             actorForDisplay = game.user.character || canvas.tokens.controlled[0]?.actor || null;
         }
         this.purchasingActor = actorForDisplay;
+
+        // Dynamically re-evaluate shop region context if no explicit shop context was set
+        if (!this.shopActorUuid && this.purchasingActor && canvas.ready) {
+            const token = canvas.tokens.controlled.find(t => t.actor?.uuid === this.purchasingActor.uuid) 
+                          || this.purchasingActor.getActiveTokens(false, true)[0];
+            if (token) {
+                const tokenDoc = token.document || token;
+                const shopRegion = canvas.scene?.regions?.find(r => {
+                    const shopUuid = r.flags?.["sr5-marketplace"]?.shopActorUuid;
+                    if (!shopUuid) return false;
+                    return r.tokens?.has(tokenDoc);
+                });
+                if (shopRegion) {
+                    this.shopActorUuid = shopRegion.flags["sr5-marketplace"].shopActorUuid;
+                    this.selectedSource = this.shopActorUuid;
+                }
+            }
+        }
         
         let purchasingActorData = null;
         if (this.purchasingActor) {
