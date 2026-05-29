@@ -469,6 +469,11 @@ export function defineShopActorClass() {
          * @param {string} inventoryEntryId The unique ID of the inventory entry to remove.
          * @returns {Promise<this>}
          */
+        /**
+         * Removes an item from the shop's inventory.
+         * @param {string} inventoryEntryId The unique ID of the inventory entry to remove.
+         * @returns {Promise<this>}
+         */
         async removeItemFromInventory(inventoryEntryId) {
             const updateData = {
                 [`system.shop.inventory.-=${inventoryEntryId}`]: null
@@ -476,7 +481,134 @@ export function defineShopActorClass() {
             
             console.log("Attempting to apply update:", updateData);
             return this.update(updateData);
-        }    
+        }
+
+        /**
+         * Returns the shop's embedded Host item if one exists.
+         * @type {SR5Item|null}
+         */
+        get hostItem() {
+            return this.items.find(i => i.type === "host") || null;
+        }
+
+        /**
+         * Calculates the default Host Rating dynamically based on connection contacts in the world.
+         * @returns {number} The calculated Host Rating (1-12).
+         */
+        calculateDefaultHostRating() {
+            const ownerUuid = this.shop.owner;
+            if (!ownerUuid) return 1;
+
+            let highestRating = 1;
+            if (game.actors) {
+                for (const actor of game.actors) {
+                    const contacts = actor.itemTypes.contact || actor.items.filter(i => i.type === "contact") || [];
+                    for (const contact of contacts) {
+                        if (contact.system.linkedActor === ownerUuid) {
+                            const connectionRating = contact.system.connection ?? 1;
+                            if (connectionRating > highestRating) {
+                                highestRating = connectionRating;
+                            }
+                        }
+                    }
+                }
+            }
+            return highestRating;
+        }
+
+        /**
+         * Synchronizes employee actors and commlinks/cyberdecks to the shop's host.
+         */
+        async syncEmployeeDevicesToHost() {
+            if (this._syncingDevices) return;
+            this._syncingDevices = true;
+
+            try {
+                const host = this.hostItem;
+                if (!host) return;
+
+                const baseEmployees = await this.getEmployees();
+                
+                // Gather all actor documents to sync (both base sidebar actors and any active token actors on canvas)
+                const employees = [];
+                for (const emp of baseEmployees) {
+                    // Always add the sidebar actor
+                    if (!employees.some(e => e.uuid === emp.uuid)) {
+                        employees.push(emp);
+                    }
+                    // Add any active token actors
+                    if (typeof emp.getActiveTokens === "function") {
+                        const tokens = emp.getActiveTokens() || [];
+                        for (const t of tokens) {
+                            if (t.document?.actor) {
+                                if (!employees.some(e => e.uuid === t.document.actor.uuid)) {
+                                    employees.push(t.document.actor);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 1. Sync employee actors themselves to the host network
+                const currentSlaved = host.slaves || [];
+                const currentSlavedActors = currentSlaved.filter(s => s.documentName === "Actor");
+                
+                const actorsToAdd = employees.filter(emp => !currentSlavedActors.some(s => s.uuid === emp.uuid));
+                const actorsToRemove = currentSlavedActors.filter(s => !employees.some(emp => emp.uuid === s.uuid));
+
+                for (const emp of actorsToRemove) {
+                    console.log(`SR5 Marketplace | Disconnecting employee actor "${emp.name}" from Host "${host.name}"`);
+                    if (game.shadowrun5e?.storage?.matrix?.networks) {
+                        await game.shadowrun5e.storage.matrix.networks.removeSlave(host, emp);
+                    } else if (typeof emp.disconnectNetwork === "function") {
+                        await emp.disconnectNetwork();
+                    } else {
+                        await host.removeSlave(emp);
+                    }
+                }
+
+                for (const emp of actorsToAdd) {
+                    console.log(`SR5 Marketplace | Connecting employee actor "${emp.name}" to Host "${host.name}"`);
+                    if (typeof host.addSlave === "function") {
+                        await host.addSlave(emp, { triggerUpdate: false });
+                    } else if (typeof emp.connectNetwork === "function") {
+                        await emp.connectNetwork(host);
+                    } else {
+                        await host.addSlave(emp, { triggerUpdate: true });
+                    }
+                }
+
+                // 2. Clean up any previously slaved devices belonging to our employees from the host WAN
+                const employeeDevices = [];
+                for (const employee of employees) {
+                    const devices = employee.items.filter(i => 
+                        i.type === "device" && 
+                        ["commlink", "cyberdeck"].includes(i.system.category)
+                    );
+                    employeeDevices.push(...devices);
+                }
+
+                const currentSlavedDevices = currentSlaved.filter(s => s.documentName === "Item" && s.type === "device");
+                const devicesToRemove = currentSlavedDevices.filter(s => employeeDevices.some(d => d.uuid === s.uuid));
+
+                for (const dev of devicesToRemove) {
+                    console.log(`SR5 Marketplace | Cleaning up employee device "${dev.name}" from Host "${host.name}"`);
+                    if (game.shadowrun5e?.storage?.matrix?.networks) {
+                        await game.shadowrun5e.storage.matrix.networks.removeSlave(host, dev);
+                    } else {
+                        await host.removeSlave(dev);
+                    }
+                }
+
+                // 3. Rerender all active sheets locally and synchronously to ensure UI update without database conflicts
+                if (this.sheet) this.sheet.render();
+                for (const emp of employees) {
+                    if (emp.sheet) emp.sheet.render();
+                }
+            } finally {
+                this._syncingDevices = false;
+            }
+        }
     }
     
     CONFIG.Actor.documentClass = ShopActor;

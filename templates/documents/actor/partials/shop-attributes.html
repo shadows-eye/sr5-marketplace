@@ -36,14 +36,65 @@
             "SR5Marketplace.UI.SpecialAttributes"}}</h4>
         <div class="grid grid-cols-2 gap-x-4 gap-y-1">
             {{#each system.attributes.specialAttributes as |attr name|}}
-            <div class="flex justify-between items-center text-xs px-1 hover:bg-[var(--color-white-transparent-05)] rounded transition-colors"
-                data-attribute="{{name}}">
-                <span class="opacity-90 font-semibold">{{localize (concat "FIELDS.attributes." name ".label")}}</span>
-                <span class="font-bold text-[var(--color-yellow-base)]">{{attr.value}}</span>
-            </div>
+                {{#ifgt attr.value 0}}
+                    <div class="flex justify-between items-center text-xs px-1 hover:bg-[var(--color-white-transparent-05)] rounded transition-colors"
+                        data-attribute="{{name}}">
+                        <span class="opacity-90 font-semibold">{{localize (concat "FIELDS.attributes." name ".label")}}</span>
+                        <span class="font-bold text-[var(--color-yellow-base)]">{{attr.value}}</span>
+                    </div>
+                {{/ifgt}}
             {{/each}}
         </div>
     </div>
+
+    {{!-- One-line Host & WAN Information --}}
+    {{#if hostItem}}
+    <div class="col-span-1 md:col-span-3 bg-[var(--color-black-transparent-20)] rounded p-2 flex flex-col md:flex-row md:items-center justify-between gap-4 border-t border-[var(--color-yellow-base)]/20 mt-2">
+        <div class="flex items-center gap-2">
+            <a class="flex items-center gap-1.5 font-bold hover:text-[var(--color-yellow-base)] cursor-pointer text-xs" data-action="openHostSheet" title="Open Host Sheet">
+                <i class="fa-solid fa-server text-[var(--color-yellow-base)]"></i>
+                <span>{{hostItem.name}}</span>
+            </a>
+            <span class="text-[9px] bg-[var(--color-red-bright)] px-1 rounded text-[var(--color-white)] font-bold">Rating {{hostItem.system.rating}}</span>
+        </div>
+
+        {{!-- ASDF Display --}}
+        <div class="flex items-center gap-4 bg-[var(--color-black-transparent-30)] px-3 py-1 rounded">
+            <div class="flex items-center gap-1" title="{{localize 'SR5.MatrixAttrAttack'}}">
+                <span class="opacity-60 text-xs"><i class="fa-solid fa-crosshairs"></i></span>
+                <span class="font-bold text-xs text-[var(--color-yellow-base)]">{{hostItem.system.attributes.attack.value}}</span>
+            </div>
+            <div class="flex items-center gap-1" title="{{localize 'SR5.MatrixAttrSleaze'}}">
+                <span class="opacity-60 text-xs"><i class="fa-solid fa-ghost"></i></span>
+                <span class="font-bold text-xs text-[var(--color-yellow-base)]">{{hostItem.system.attributes.sleaze.value}}</span>
+            </div>
+            <div class="flex items-center gap-1" title="{{localize 'SR5.MatrixAttrDataProc'}}">
+                <span class="opacity-60 text-xs"><i class="fa-solid fa-microchip"></i></span>
+                <span class="font-bold text-xs text-[var(--color-yellow-base)]">{{hostItem.system.attributes.data_processing.value}}</span>
+            </div>
+            <div class="flex items-center gap-1" title="{{localize 'SR5.MatrixAttrFirewall'}}">
+                <span class="opacity-60 text-xs"><i class="fa-solid fa-shield-halved"></i></span>
+                <span class="font-bold text-xs text-[var(--color-yellow-base)]">{{hostItem.system.attributes.firewall.value}}</span>
+            </div>
+        </div>
+
+        {{!-- Smart Chips for Slaved Devices --}}
+        <div class="flex items-center gap-1.5 overflow-x-auto">
+            <span class="text-[9px] font-bold opacity-60 uppercase mr-1">WAN:</span>
+            {{#if slavedDevices.length}}
+                <div class="flex items-center gap-1.5 pr-2">
+                    {{#each slavedDevices as |dev|}}
+                        <a class="flex items-center justify-center bg-[var(--color-black-transparent-40)] hover:bg-[var(--color-black-transparent-60)] p-0.5 rounded-full border border-[var(--color-grey-medium)]/30 cursor-pointer transition-transform hover:scale-105" data-action="openDocumentLink" data-uuid="{{dev.uuid}}" title="{{dev.name}} ({{dev.ownerName}})">
+                            <img src="{{dev.img}}" class="w-6 h-6 object-cover rounded-full flex-shrink-0" />
+                        </a>
+                    {{/each}}
+                </div>
+            {{else}}
+                <span class="text-[9px] italic opacity-40">No slaved devices</span>
+            {{/if}}
+        </div>
+    </div>
+    {{/if}}
 
 </div>
 {{/if}}

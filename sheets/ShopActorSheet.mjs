@@ -97,7 +97,9 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             createSkill: this.#onCreateSkill,
             deleteSkill: this.#onDeleteSkill,
             clickSkillName: this.#onClickSkillName,
-            setServingEmployee: this.#onSetServingEmployee
+                        setServingEmployee: this.#onSetServingEmployee,
+            openHostSheet: this.#onOpenHostSheet,
+            openMatrixTab: this.#onOpenMatrixTab
         }
     }, { inplace: false });
 
@@ -199,7 +201,58 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             };
         }
     
-    return context;
+        // Resolve employees and Matrix Host globally so they are available to both attributes and management parts
+        const baseEmployees = await this.document.getEmployees();
+        const employees = [];
+        for (const emp of baseEmployees) {
+            if (!employees.some(e => e.uuid === emp.uuid)) {
+                employees.push(emp);
+            }
+            if (typeof emp.getActiveTokens === "function") {
+                const tokens = emp.getActiveTokens() || [];
+                for (const t of tokens) {
+                    if (t.document?.actor) {
+                        if (!employees.some(e => e.uuid === t.document.actor.uuid)) {
+                            employees.push(t.document.actor);
+                        }
+                    }
+                }
+            }
+        }
+        context.employees = employees;
+
+        const hostItem = this.document.hostItem;
+        context.hostItem = hostItem;
+        if (hostItem) {
+            context.hostASDF = hostItem.ASDF;
+            const slavedDevices = [];
+            const seen = new Set();
+            for (const emp of context.employees || []) {
+                const devices = emp.items.filter(i => 
+                    i.type === "device" && 
+                    ["commlink", "cyberdeck"].includes(i.system.category) &&
+                    i.system.technology?.equipped !== false
+                );
+                for (const d of devices) {
+                    const key = `${d.name}-${emp.name}`;
+                    if (!seen.has(key)) {
+                        seen.add(key);
+                        slavedDevices.push({
+                            id: d.id,
+                            uuid: d.uuid,
+                            name: d.name,
+                            category: d.system.category,
+                            ownerName: emp.name,
+                            ownerUuid: emp.uuid,
+                            img: d.img
+                        });
+                    }
+                }
+            }
+            context.slavedDevices = slavedDevices;
+        }
+    
+        return context;
     }
 
     /** 
@@ -388,7 +441,6 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             case "management": // Logic routed to the new tab
                 context.owner = await this.document.getOwner();
                 context.connection = await this.document.getConnection();
-                context.employees = await this.document.getEmployees();
                 context.shopEmployees = this.document.system.shop?.employees?.join('\n') || "";
                 
                 // Fetch the serving employee document for layout
@@ -554,6 +606,45 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         const targetUuid = (current === uuid) ? "" : uuid;
         await this.document.update({ "system.shop.servingEmployee": targetUuid });
         this.render();
+    }
+
+    /**
+     * Handles opening the embedded Host item sheet for detailed configuration.
+     */
+    static #onOpenHostSheet(event, target) {
+        const hostItem = this.document.hostItem;
+        if (hostItem?.sheet) {
+            hostItem.sheet.render(true);
+        } else {
+            ui.notifications.warn("No Matrix Host is configured for this Shop. Drag and drop a Host item to set one up.");
+        }
+    }
+
+    /**
+     * Handles opening an actor's sheet directly to the matrix tab.
+     */
+    static async #onOpenMatrixTab(event, target) {
+        const uuid = target.dataset.uuid;
+        if (!uuid) return;
+        
+        const doc = await fromUuid(uuid);
+        if (doc?.sheet) {
+            const sheet = doc.sheet;
+            await sheet.render(true);
+            
+            // Allow a tiny delay for rendering, then switch to matrix tab
+            setTimeout(() => {
+                try {
+                    if (typeof sheet.activateTab === "function") {
+                        sheet.activateTab("matrix");
+                    } else if (sheet._tabs && sheet._tabs[0]) {
+                        sheet._tabs[0].activate("matrix");
+                    }
+                } catch (err) {
+                    console.warn("SR5 Marketplace | Could not automatically switch to matrix tab:", err);
+                }
+            }, 100);
+        }
     }
 
     /**
@@ -1028,6 +1119,38 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                 } else {
                     return this.document.update({ [targetField]: data.uuid });
                 }
+            }
+
+            case "host": {
+                if (data.type !== "Item") return;
+                const item = await Item.fromDropData(data);
+                if (!item) return;
+
+                if (item.type !== "host") {
+                    ui.notifications.warn("Only Items of type 'Host' can be dropped on the Host field.");
+                    return;
+                }
+
+                const existingHostIds = this.document.items.filter(i => i.type === "host").map(i => i.id);
+                if (existingHostIds.length > 0) {
+                    await this.document.deleteEmbeddedDocuments("Item", existingHostIds);
+                }
+
+                const itemObj = item.toObject();
+                // Take dropped host's original rating value, otherwise fallback to dynamic connection calculation
+                const dynamicRating = item.system.rating || item.system.technology?.rating || this.document.calculateDefaultHostRating();
+                foundry.utils.setProperty(itemObj, "system.rating", dynamicRating);
+                foundry.utils.setProperty(itemObj, "system.technology.rating", dynamicRating);
+
+                console.log(`SR5 Marketplace | Dropping Host item "${item.name}" onto Shop Actor "${this.document.name}". Calculated dynamic rating: ${dynamicRating}`);
+                
+                const created = await this.document.createEmbeddedDocuments("Item", [itemObj]);
+                if (created.length > 0) {
+                    ui.notifications.info(`Successfully initialized Matrix Host "${item.name}" with Rating ${dynamicRating}.`);
+                }
+
+                this.render();
+                return;
             }
         }
     }

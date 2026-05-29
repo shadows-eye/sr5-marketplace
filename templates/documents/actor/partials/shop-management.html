@@ -108,6 +108,72 @@
                     </div>
                 </div>
 
+                {{!-- MATRIX HOST INTEGRATION --}}
+                <div class="flex flex-col gap-2 md:col-span-2 {{#if isEditMode}}drop-target p-2 border-2 border-dashed border-[var(--color-grey-medium)] hover:border-[var(--color-yellow-base)] bg-[var(--color-black-transparent-20)] transition-colors rounded{{/if}}" {{#if isEditMode}}data-drop-zone="host" data-drop-type="Item"{{/if}}>
+                    <label class="text-xs font-bold opacity-80 pb-1 mb-1">Matrix Host (WAN Master)</label>
+                    <div class="flex flex-col gap-1 min-h-[36px]">
+                        {{#if hostItem}}
+                            <div class="flex flex-col gap-2 bg-[var(--color-black-transparent-30)] p-2 rounded">
+                                <div class="flex items-center justify-between gap-2 w-full">
+                                    <div class="flex items-center gap-2 overflow-hidden text-xs">
+                                        <a class="flex items-center gap-2 cursor-pointer hover:text-[var(--color-yellow-base)] overflow-hidden" data-action="openHostSheet" title="Open Host Sheet">
+                                            <i class="fa-solid fa-server text-[var(--color-yellow-base)] text-lg"></i>
+                                            <span class="text-xs font-bold truncate">{{hostItem.name}}</span>
+                                        </a>
+                                        <span class="text-[10px] bg-[var(--color-red-bright)] px-1 py-0.5 rounded text-[var(--color-white)] font-bold">Rating {{hostItem.system.rating}}</span>
+                                    </div>
+                                </div>
+
+                                {{!-- ASDF Display --}}
+                                <div class="grid grid-cols-4 gap-1 text-center bg-[var(--color-black-transparent-40)] p-1 rounded mt-1">
+                                    <div class="flex flex-col items-center justify-center p-1" title="{{localize 'SR5.MatrixAttrAttack'}}">
+                                        <span class="opacity-60 text-sm mb-0.5"><i class="fa-solid fa-crosshairs"></i></span>
+                                        <span class="font-bold text-xs text-[var(--color-yellow-base)]">{{hostItem.system.attributes.attack.value}}</span>
+                                    </div>
+                                    <div class="flex flex-col items-center justify-center p-1" title="{{localize 'SR5.MatrixAttrSleaze'}}">
+                                        <span class="opacity-60 text-sm mb-0.5"><i class="fa-solid fa-ghost"></i></span>
+                                        <span class="font-bold text-xs text-[var(--color-yellow-base)]">{{hostItem.system.attributes.sleaze.value}}</span>
+                                    </div>
+                                    <div class="flex flex-col items-center justify-center p-1" title="{{localize 'SR5.MatrixAttrDataProc'}}">
+                                        <span class="opacity-60 text-sm mb-0.5"><i class="fa-solid fa-microchip"></i></span>
+                                        <span class="font-bold text-xs text-[var(--color-yellow-base)]">{{hostItem.system.attributes.data_processing.value}}</span>
+                                    </div>
+                                    <div class="flex flex-col items-center justify-center p-1" title="{{localize 'SR5.MatrixAttrFirewall'}}">
+                                        <span class="opacity-60 text-sm mb-0.5"><i class="fa-solid fa-shield-halved"></i></span>
+                                        <span class="font-bold text-xs text-[var(--color-yellow-base)]">{{hostItem.system.attributes.firewall.value}}</span>
+                                    </div>
+                                </div>
+
+                                {{!-- Slaved Devices --}}
+                                <div class="mt-2 flex flex-col gap-1 border-t border-[var(--color-grey-medium)] pt-2">
+                                    <span class="text-[10px] font-bold opacity-60">SLAVED WAN DEVICES:</span>
+                                    {{#if slavedDevices.length}}
+                                        {{#each slavedDevices as |dev|}}
+                                            <a class="flex items-center justify-between gap-2 bg-[var(--color-black-transparent-50)] hover:bg-[var(--color-black-transparent-60)] p-1 rounded text-[11px] cursor-pointer hover:text-[var(--color-yellow-base)] overflow-hidden" data-action="openMatrixTab" data-uuid="{{dev.ownerUuid}}" title="Open Employee Matrix Tab">
+                                                <div class="flex items-center gap-1.5 overflow-hidden">
+                                                    {{#if dev.img}}
+                                                        <img src="{{dev.img}}" class="w-4 h-4 object-cover rounded-sm flex-shrink-0"/>
+                                                    {{else}}
+                                                        <i class="fa-solid fa-microchip opacity-70"></i>
+                                                    {{/if}}
+                                                    <span class="font-semibold truncate">{{dev.name}}</span>
+                                                </div>
+                                                <span class="text-[9px] opacity-50 italic truncate">Owner: {{dev.ownerName}}</span>
+                                            </a>
+                                        {{/each}}
+                                    {{else}}
+                                        <span class="text-[10px] italic opacity-40">No slaved employee commlinks/cyberdecks found</span>
+                                    {{/if}}
+                                </div>
+                            </div>
+                        {{else if isEditMode}}
+                            <span class="text-xs font-bold text-[var(--color-red-bright)] opacity-70 w-full text-center py-2">Drag & Drop Host Item Here to Initialize WAN</span>
+                        {{else}}
+                            <span class="text-xs italic opacity-40">No Matrix Host active for this shop</span>
+                        {{/if}}
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
