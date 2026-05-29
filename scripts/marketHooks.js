@@ -544,3 +544,95 @@ Hooks.on("createActor", async (actor, options, userId) => {
     if (actor.type !== "sr5-marketplace.shop") return;
     await seedDefaultSkills(actor);
 });
+
+function getShopsForEmployee(actor) {
+    if (!game.actors) return [];
+    return game.actors.filter(a => a.type === "sr5-marketplace.shop" && a.system.shop?.servingEmployee === actor.uuid);
+}
+
+Hooks.on("updateActor", async (actor, changes, options, userId) => {
+    if (game.user.id !== userId) return;
+    
+    const shops = getShopsForEmployee(actor);
+    if (shops.length === 0) return;
+    
+    // 1. Sync attributes
+    if (foundry.utils.hasProperty(changes, "system.attributes")) {
+        for (const shop of shops) {
+            const updateData = {};
+            let hasChanges = false;
+            for (const attrKey of ["body", "agility", "reaction", "strength", "willpower", "logic", "intuition", "charisma", "magic", "resonance", "essence", "edge"]) {
+                const newVal = actor.system.attributes[attrKey]?.base ?? actor.system.attributes[attrKey]?.value ?? 0;
+                const currentVal = shop.system.attributes[attrKey]?.base ?? shop.system.attributes[attrKey]?.value ?? 0;
+                if (newVal !== currentVal) {
+                    updateData[`system.attributes.${attrKey}.base`] = newVal;
+                    updateData[`system.attributes.${attrKey}.value`] = newVal;
+                    hasChanges = true;
+                }
+            }
+            if (hasChanges) {
+                console.log(`SR5 Marketplace | Automatically syncing serving employee "${actor.name}" attributes to Shop Actor "${shop.name}"`);
+                await shop.update(updateData);
+            }
+        }
+    }
+
+    // 2. Sync legacy skills
+    if (foundry.utils.hasProperty(changes, "system.skills")) {
+        for (const shop of shops) {
+            console.log(`SR5 Marketplace | Automatically syncing serving employee "${actor.name}" legacy skills to Shop Actor "${shop.name}"`);
+            await shop.update({
+                "system.skills": foundry.utils.duplicate(actor.system.skills || {})
+            });
+        }
+    }
+});
+
+Hooks.on("createItem", async (item, options, userId) => {
+    if (game.user.id !== userId) return;
+    if (item.type !== "skill" || !item.parent) return;
+    
+    const actor = item.parent;
+    const shops = getShopsForEmployee(actor);
+    for (const shop of shops) {
+        const alreadyExists = shop.items.some(i => i.type === "skill" && i.name === item.name);
+        if (!alreadyExists) {
+            console.log(`SR5 Marketplace | Skill item created on serving employee "${actor.name}". Syncing skill "${item.name}" to Shop "${shop.name}"`);
+            const itemObj = item.toObject();
+            delete itemObj._id;
+            await shop.createEmbeddedDocuments("Item", [itemObj]);
+        }
+    }
+});
+
+Hooks.on("updateItem", async (item, changes, options, userId) => {
+    if (game.user.id !== userId) return;
+    if (item.type !== "skill" || !item.parent) return;
+    
+    const actor = item.parent;
+    const shops = getShopsForEmployee(actor);
+    for (const shop of shops) {
+        const shopSkill = shop.items.find(i => i.type === "skill" && i.name === item.name);
+        if (shopSkill) {
+            console.log(`SR5 Marketplace | Skill item updated on serving employee "${actor.name}". Syncing skill "${item.name}" to Shop "${shop.name}"`);
+            const itemChanges = foundry.utils.duplicate(changes);
+            itemChanges._id = shopSkill.id;
+            await shop.updateEmbeddedDocuments("Item", [itemChanges]);
+        }
+    }
+});
+
+Hooks.on("deleteItem", async (item, options, userId) => {
+    if (game.user.id !== userId) return;
+    if (item.type !== "skill" || !item.parent) return;
+    
+    const actor = item.parent;
+    const shops = getShopsForEmployee(actor);
+    for (const shop of shops) {
+        const shopSkill = shop.items.find(i => i.type === "skill" && i.name === item.name);
+        if (shopSkill) {
+            console.log(`SR5 Marketplace | Skill item deleted on serving employee "${actor.name}". Deleting skill "${item.name}" from Shop "${shop.name}"`);
+            await shop.deleteEmbeddedDocuments("Item", [shopSkill.id]);
+        }
+    }
+});

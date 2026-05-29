@@ -1,4 +1,4 @@
-<section class="tab management" data-group="primary" data-tab="management" data-application-part="management">
+<section class="tab management{{#if tab.active}} active{{/if}}" data-group="primary" data-tab="management" data-application-part="management">
     <div class="management-content h-full overflow-hidden flex flex-col gap-4 text-[var(--text-color-primary)]">
         <div class="bg-[var(--color-black-transparent-20)] flex flex-col shadow-sm max-w-4xl rounded p-2">
             
@@ -15,13 +15,22 @@
                     <label class="text-xs font-bold opacity-80 pb-1 mb-1">{{localize "SR5Marketplace.Marketplace.Shop.OwnerUuid"}}</label>
                     <div class="flex items-center min-h-[36px]">
                         {{#if owner}}
-                            <div class="flex items-center gap-2 bg-[var(--color-black-transparent-30)] p-1 pr-2 w-full relative group rounded">
-                                <a class="flex items-center gap-2 cursor-pointer hover:text-[var(--color-yellow-base)] overflow-hidden" data-uuid="{{owner.uuid}}" data-action="openDocumentLink">
-                                    <img src="{{owner.img}}" class="w-8 h-8 object-cover flex-shrink-0 rounded-sm"/>
-                                    <span class="text-xs font-bold truncate">{{owner.name}}</span>
-                                </a>
+                            <div class="flex items-center justify-between gap-2 bg-[var(--color-black-transparent-30)] p-1 pr-2 w-full relative group rounded">
+                                <div class="flex items-center gap-2 overflow-hidden">
+                                    <a class="cursor-pointer hover:text-[var(--color-yellow-base)] flex items-center justify-center w-5" data-action="setServingEmployee" data-uuid="{{owner.uuid}}" title="Set as Serving Employee">
+                                        {{#ifeq @root.system.shop.servingEmployee owner.uuid}}
+                                            <i class="fa-solid fa-bell-concierge text-sm" style="color: var(--color-green-button);"></i>
+                                        {{else}}
+                                            <i class="fa-solid fa-bell-concierge text-sm" style="color: var(--color-grey-medium-light);"></i>
+                                        {{/ifeq}}
+                                    </a>
+                                    <a class="flex items-center gap-2 cursor-pointer hover:text-[var(--color-yellow-base)] overflow-hidden" data-uuid="{{owner.uuid}}" data-action="openDocumentLink">
+                                        <img src="{{owner.img}}" class="w-8 h-8 object-cover flex-shrink-0 rounded-sm"/>
+                                        <span class="text-xs font-bold truncate">{{owner.name}}</span>
+                                    </a>
+                                </div>
                                 {{#if @root.isEditMode}}
-                                    <a class="absolute right-2 text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity" data-action="removeOwner" title="{{localize 'SR5Marketplace.UI.Remove'}}"><i class="fa-solid fa-xmark text-lg"></i></a>
+                                    <a class="text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity" data-action="removeOwner" title="{{localize 'SR5Marketplace.UI.Remove'}}"><i class="fa-solid fa-xmark text-lg"></i></a>
                                 {{/if}}
                             </div>
                         {{else if isEditMode}}
@@ -59,13 +68,22 @@
                     <label class="text-xs font-bold opacity-80 pb-1 mb-1">{{localize "SR5Marketplace.Marketplace.Shop.Employees"}}</label>
                     <div class="flex flex-col gap-1 min-h-[36px]">
                         {{#each employees as |employee|}}
-                            <div class="flex items-center gap-2 bg-[var(--color-black-transparent-30)] p-1 pr-2 w-full relative group rounded" data-uuid="{{employee.uuid}}">
-                                <a class="flex items-center gap-2 cursor-pointer hover:text-[var(--color-yellow-base)] overflow-hidden" data-uuid="{{employee.uuid}}" data-action="openDocumentLink">
-                                    <img src="{{employee.img}}" class="w-6 h-6 object-cover flex-shrink-0 rounded-sm"/>
-                                    <span class="text-xs font-bold truncate">{{employee.name}}</span>
-                                </a>
+                            <div class="flex items-center justify-between gap-2 bg-[var(--color-black-transparent-30)] p-1 pr-2 w-full relative group rounded" data-uuid="{{employee.uuid}}">
+                                <div class="flex items-center gap-2 overflow-hidden">
+                                    <a class="cursor-pointer hover:text-[var(--color-yellow-base)] flex items-center justify-center w-5" data-action="setServingEmployee" data-uuid="{{employee.uuid}}" title="Set as Serving Employee">
+                                        {{#ifeq ../system.shop.servingEmployee employee.uuid}}
+                                            <i class="fa-solid fa-bell-concierge text-xs" style="color: var(--color-green-button);"></i>
+                                        {{else}}
+                                            <i class="fa-solid fa-bell-concierge text-xs" style="color: var(--color-grey-medium-light);"></i>
+                                        {{/ifeq}}
+                                    </a>
+                                    <a class="flex items-center gap-2 cursor-pointer hover:text-[var(--color-yellow-base)] overflow-hidden" data-uuid="{{employee.uuid}}" data-action="openDocumentLink">
+                                        <img src="{{employee.img}}" class="w-6 h-6 object-cover flex-shrink-0 rounded-sm"/>
+                                        <span class="text-xs font-bold truncate">{{employee.name}}</span>
+                                    </a>
+                                </div>
                                 {{#if @root.isEditMode}}
-                                    <a class="absolute right-2 text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity" data-action="removeEmployee" data-uuid="{{employee.uuid}}" title="{{localize 'SR5Marketplace.UI.Remove'}}"><i class="fa-solid fa-xmark text-lg"></i></a>
+                                    <a class="text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity" data-action="removeEmployee" data-uuid="{{employee.uuid}}" title="{{localize 'SR5Marketplace.UI.Remove'}}"><i class="fa-solid fa-xmark text-lg"></i></a>
                                 {{/if}}
                             </div>
                         {{/each}}

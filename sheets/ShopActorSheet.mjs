@@ -96,7 +96,8 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             rollAvailability: this.#onRollAvailability,
             createSkill: this.#onCreateSkill,
             deleteSkill: this.#onDeleteSkill,
-            clickSkillName: this.#onClickSkillName
+            clickSkillName: this.#onClickSkillName,
+            setServingEmployee: this.#onSetServingEmployee
         }
     }, { inplace: false });
 
@@ -389,6 +390,10 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                 context.connection = await this.document.getConnection();
                 context.employees = await this.document.getEmployees();
                 context.shopEmployees = this.document.system.shop?.employees?.join('\n') || "";
+                
+                // Fetch the serving employee document for layout
+                const servingEmployeeUuid = this.document.system.shop?.servingEmployee;
+                context.servingEmployeeDoc = servingEmployeeUuid ? await fromUuid(servingEmployeeUuid) : null;
                 break;
             case "biography":
                 context.biographyHTML = await enrichHTML(this.document.system.description.value, {
@@ -537,6 +542,18 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         if (employeeUuid) {
             await this.document.removeEmployee(employeeUuid);
         }
+    }
+
+    /**
+     * Handles setting the serving employee of the shop.
+     */
+    static async #onSetServingEmployee(event, target) {
+        const uuid = target.dataset.uuid;
+        const current = this.document.system.shop?.servingEmployee;
+        // Toggle serving employee off if clicking already active, otherwise set new
+        const targetUuid = (current === uuid) ? "" : uuid;
+        await this.document.update({ "system.shop.servingEmployee": targetUuid });
+        this.render();
     }
 
     /**

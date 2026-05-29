@@ -85,6 +85,7 @@ export function defineShopActorClass() {
                 owner: new foundry.data.fields.StringField({ initial: "", label: "Owner "}),
                 employees: new foundry.data.fields.ArrayField(new foundry.data.fields.StringField({initial: "", label: "Employees"})),
                 connection: new foundry.data.fields.StringField({ initial: "", label: "Connection"}),
+                servingEmployee: new foundry.data.fields.StringField({ initial: "", label: "Serving Employee" }),
                 modifierValue: new foundry.data.fields.SchemaField({
                     value: new foundry.data.fields.NumberField({ initial: 0 }),
                     base: new foundry.data.fields.NumberField({ initial: 0 })
@@ -140,8 +141,92 @@ export function defineShopActorClass() {
 
         /** @override */
         isType(type) {
+            if (this.type !== "sr5-marketplace.shop") return super.isType(type);
             if (type === "character") return true;
             return super.isType(type);
+        }
+
+        /** @override */
+        prepareBaseData() {
+            if (this.type !== "sr5-marketplace.shop") {
+                super.prepareBaseData();
+                return;
+            }
+            const originalType = this.type;
+            try {
+                this.type = "character";
+                super.prepareBaseData();
+            } finally {
+                this.type = originalType;
+            }
+        }
+
+        /** @override */
+        prepareDerivedData() {
+            if (this.type !== "sr5-marketplace.shop") {
+                super.prepareDerivedData();
+                return;
+            }
+            const originalType = this.type;
+            try {
+                this.type = "character";
+                super.prepareDerivedData();
+            } finally {
+                this.type = originalType;
+            }
+        }
+
+        /** @override */
+        async _preUpdate(changed, options, user) {
+            await super._preUpdate(changed, options, user);
+            if (this.type !== "sr5-marketplace.shop") return;
+            if (foundry.utils.hasProperty(changed, "system.shop.servingEmployee")) {
+                const newUuid = foundry.utils.getProperty(changed, "system.shop.servingEmployee");
+                if (newUuid) {
+                    const employeeActor = await fromUuid(newUuid);
+                    if (employeeActor) {
+                        for (const attrKey of ["body", "agility", "reaction", "strength", "willpower", "logic", "intuition", "charisma", "magic", "resonance", "essence", "edge"]) {
+                            const val = employeeActor.system.attributes[attrKey]?.base ?? employeeActor.system.attributes[attrKey]?.value ?? 0;
+                            foundry.utils.setProperty(changed, `system.attributes.${attrKey}.base`, val);
+                            foundry.utils.setProperty(changed, `system.attributes.${attrKey}.value`, val);
+                        }
+
+                        // Derive legacy skills
+                        if (employeeActor.system.skills) {
+                            foundry.utils.setProperty(changed, "system.skills", foundry.utils.duplicate(employeeActor.system.skills));
+                        }
+
+                        // Derive embedded skill items
+                        const currentSkillIds = this.items.filter(i => i.type === "skill").map(i => i.id);
+                        if (currentSkillIds.length > 0) {
+                            await this.deleteEmbeddedDocuments("Item", currentSkillIds, { render: false });
+                        }
+                        const employeeSkills = employeeActor.items.filter(i => i.type === "skill");
+                        const itemsToCreate = employeeSkills.map(i => {
+                            const itemObj = i.toObject();
+                            delete itemObj._id;
+                            return itemObj;
+                        });
+                        if (itemsToCreate.length > 0) {
+                            await this.createEmbeddedDocuments("Item", itemsToCreate, { render: false });
+                        }
+                    }
+                } else {
+                    for (const attrKey of ["body", "agility", "reaction", "strength", "willpower", "logic", "intuition", "charisma", "magic", "resonance", "essence", "edge"]) {
+                        foundry.utils.setProperty(changed, `system.attributes.${attrKey}.base`, 0);
+                        foundry.utils.setProperty(changed, `system.attributes.${attrKey}.value`, 0);
+                    }
+
+                    // Reset legacy skills
+                    foundry.utils.setProperty(changed, "system.skills", {});
+
+                    // Delete embedded skill items
+                    const currentSkillIds = this.items.filter(i => i.type === "skill").map(i => i.id);
+                    if (currentSkillIds.length > 0) {
+                        await this.deleteEmbeddedDocuments("Item", currentSkillIds, { render: false });
+                    }
+                }
+            }
         }
 
         /**
@@ -154,6 +239,7 @@ export function defineShopActorClass() {
          */
         _onUpdate(data, options, userId) {
             super._onUpdate(data, options, userId);
+            if (this.type !== "sr5-marketplace.shop") return;
             if (foundry.utils.hasProperty(data, "system.shop.shopRadius")) {
                 this._updateTokensInRadius();
             }
