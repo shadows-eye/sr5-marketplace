@@ -213,14 +213,16 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
 
         // Update count text
         if (resultsCountSpan) {
-            resultsCountSpan.textContent = `${this.matchedItems.length} item${this.matchedItems.length === 1 ? "" : "s"} found`;
+            resultsCountSpan.textContent = this.matchedItems.length === 1
+                ? game.i18n.localize("SR5Marketplace.Marketshouter.ItemFound")
+                : game.i18n.format("SR5Marketplace.Marketshouter.ItemsFound", { count: this.matchedItems.length });
         }
 
         if (displayItems.length === 0) {
             resultsList.innerHTML = `
                 <li class="no-results-item">
                     <i class="fas fa-exclamation-circle"></i>
-                    <span>No matching items found</span>
+                    <span>${game.i18n.localize("SR5Marketplace.Marketshouter.NoMatchingItemsFound")}</span>
                 </li>
             `;
         } else {

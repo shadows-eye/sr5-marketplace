@@ -120,6 +120,29 @@ class inGameMarketplaceAPI {
             marketplace.render();
         }
     }
+
+    /**
+     * Filters a list of items using search tags and a search term.
+     * @param {Array<object>} items - The list of items to filter.
+     * @param {Array<string>} tags - The active filter tags.
+     * @param {string} searchTerm - The live search term.
+     * @returns {Array<object>} The filtered list of items.
+     */
+    filterItems(items, tags = [], searchTerm = "") {
+        if (!items) return [];
+        let filtered = items;
+        if ((tags && tags.length > 0) || searchTerm) {
+            const cleanSearch = searchTerm ? searchTerm.trim().toLowerCase() : "";
+            const cleanTags = tags ? tags.map(t => t.toLowerCase()) : [];
+            filtered = filtered.filter(item => {
+                const itemName = item.name ? item.name.toLowerCase() : "";
+                const matchesTags = cleanTags.every(tag => itemName.includes(tag));
+                const matchesLive = cleanSearch ? itemName.includes(cleanSearch) : true;
+                return matchesTags && matchesLive;
+            });
+        }
+        return filtered;
+    }
 }
 
 

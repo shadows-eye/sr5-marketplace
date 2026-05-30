@@ -219,7 +219,18 @@
             "DeleteSkill": "Delete Skill",
             "RemoveItem": "Remove Item",
             "StockOrder": "Stock / Order",
-            "InStock": "In Stock"
+            "InStock": "In Stock",
+            "Compendiums": "Compendiums",
+            "Folders": "Folders",
+            "Items": "Items",
+            "AddSelected": "Add Selected",
+            "NoCompendiumSelectedTitle": "No Compendium Selected",
+            "NoCompendiumSelectedDesc": "Please select a compendium pack from the left sidebar to browse and add its contents.",
+            "SelectAll": "Select All",
+            "DeselectAll": "Deselect All",
+            "CostOrKarma": "Cost / Karma",
+            "Nuyen": "Nuyen",
+            "CopyDocumentUuid": "Copy Document UUID"
         },
         "Marketplace": {
             "Title": "Marketplace Purchase Screen",
@@ -265,7 +276,16 @@
                 },
                 "ItemTypeBehaviors": {
                     "name": "Item Type Behaviors"
-                }
+                },
+                "SetToUnique": "Set '{label}' to Unique",
+                "SetToStacking": "Set '{label}' to Stacking",
+                "SetToSingle": "Set '{label}' to Single",
+                "UniqueAllowOnlyOne": "Unique (Allow Only One)",
+                "StackQuantity": "Stack Quantity",
+                "AddAsSingleItem": "Add as Single Item",
+                "AbbreviationUnique": "U",
+                "AbbreviationStack": "St",
+                "AbbreviationSingle": "S"
             },
             "Tests": {
                 "title": "Marketplace Tests",
@@ -295,6 +315,15 @@
                 "Owner": "Shop Owner",
                 "OwnerUuid": "Owner UUID",
                 "AddItem": "Add Item",
+                "ItemMarkup": "Markup",
+                "IncreaseMarkup": "Increase markup by 5%",
+                "DecreaseMarkup": "Decrease markup by 5%",
+                "SetAsServingEmployee": "Set as Serving Employee",
+                "ClearInventoryTitle": "Clear Inventory",
+                "ClearInventoryPrompt": "Are you sure you want to delete all items in the inventory?",
+                "ClearInventoryButton": "Delete All",
+                "ClearInventorySuccess": "Inventory cleared successfully.",
+                "ClearInventoryTooltip": "Clear entire inventory",
                 "DragDropHint": "Drag & Drop items here to add to Shop Inventory",
                 "WAN": "WAN",
                 "NoSlavedDevices": "No slaved devices",
@@ -393,7 +422,20 @@
                 "Of": "of",
                 "Each": "each",
                 "ApproveItem": "Approve Item",
-                "RejectItem": "Reject Item"
+                "RejectItem": "Reject Item",
+                "PurchaseRequestByUser": "Purchase Request by User:",
+                "EstimatedDeliveryForRequest": "Estimated Delivery for this request:",
+                "AvailabilityRollResults": "Availability Roll Results",
+                "PlayersRoll": "Player's Roll ({hits} Net Hits)",
+                "ItemsResistance": "Item's Resistance ({hits} Hits)",
+                "FinalRollWithHits": "Final Roll ({hits} Net Hits)",
+                "ThresholdRequired": "Threshold Required",
+                "LastRollWithHits": "Last Roll ({hits} Net Hits)",
+                "TotalRollsMade": "Total Rolls Made:",
+                "HitsAccumulated": "Hits Accumulated:",
+                "ConnectionRatingUsed": "Connection Rating Used:",
+                "ResolveRequestFrom": "Resolve request from",
+                "ConsolidatedTotalsFor": "Consolidated Totals for"
             },
             "system": {
                 "avail": {
@@ -545,7 +587,31 @@
                 "SelectDerivedValueLabel": "Select a property from the Base Item",
                 "CustomEffect": "Custom Effect"
             },
-            "SearchPlaceholder": "Search items..."
+            "SearchPlaceholder": "Search items...",
+            "ClearEntireBuild": "Clear entire build",
+            "RemoveMod": "Remove Mod",
+            "ItemBuild": "Item Build",
+            "ActiveEffects": "Active Effects",
+            "SelectAnItem": "Select an Item",
+            "BuildQueueEmpty": "Your build queue is empty.",
+            "BuildQueueEmptyDesc": "Use the 'Builder' tab to design an item, then click 'Add to Queue' to send it here.",
+            "BaseItemType": "Base Item Type",
+            "BuildTest": "Build Test",
+            "CreateAllItems": "Create All Items",
+            "SubmitAllToGM": "Submit All to GM",
+            "ClearEntireQueue": "Clear Entire Queue"
+        },
+        "Marketshouter": {
+            "SearchingInShop": "Searching in: {name}",
+            "SearchShop": "Search {name}...",
+            "SearchCompendiumItems": "Search compendium items...",
+            "ClearSearch": "Clear Search",
+            "ReviewPurchaseRequests": "Review Purchase Requests",
+            "OpenMarketplace": "Open Marketplace",
+            "OpenShoppingCart": "Open Shopping Cart",
+            "ItemFound": "1 item found",
+            "ItemsFound": "{count} items found",
+            "NoMatchingItemsFound": "No matching items found"
         },
         "AppDialogItem": {
             "result": {

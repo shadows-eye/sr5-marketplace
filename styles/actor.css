@@ -41,7 +41,7 @@ hint {
 }
 
 /* Show the hint on hover */
-add i:hover > hint {
+add i:hover>hint {
     visibility: visible;
     opacity: 1;
 }
@@ -50,7 +50,7 @@ add i:hover > hint {
 .sr5-marketplace-shop .window-header {
     background: var(--app-window-header-bg);
     border-bottom: 2px solid var(--app-window-header-border);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 /* Style the title in the window header */
@@ -96,11 +96,24 @@ add i:hover > hint {
     border: 1px solid var(--border-color-highlight);
 }
 
-section.tab.shop-details.active {
-    overflow-y: auto;
+.application.sr5-marketplace-shop .window-content section.tab {
+    display: none;
 }
 
-.shop-column-1, .shop-column-2 {
+.application.sr5-marketplace-shop .window-content section.tab.active {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.application.sr5-marketplace-shop .window-content section.tab.actorShop.active {
+    overflow: hidden;
+}
+
+.shop-column-1,
+.shop-column-2 {
     background: var(--attribute-group-bg);
 }
 
@@ -132,9 +145,9 @@ section.tab.shop-details.active {
     gap: 10px 15px;
     align-items: start;
     grid-template-areas:
-    "owner      connection employees"
-    "modifier  modifier  radius"
-    "inventory  inventory inventory";
+        "owner      connection employees"
+        "modifier  modifier  radius"
+        "inventory  inventory inventory";
     margin-right: -1px;
     border: none;
     min-height: 100px;
@@ -142,13 +155,46 @@ section.tab.shop-details.active {
 }
 
 /* Assign grid areas to the form groups */
-.form-group.owner { grid-area: owner; min-height: inherit; }
-.form-group.connection { grid-area: connection; min-height: inherit; }
-.form-group.modifier { grid-area: modifier; }
-.form-group.radius { grid-area: radius; display: grid; grid-template-columns: 1fr 1fr; gap: 1em; align-items: center; }
-.form-group.employees { grid-area: employees; min-height: inherit; }
-.form-group.inventory { grid-area: inventory; border: none; height: 65%; width: 100%; display: block; overflow: hidden; }
-.form-group.subHeading, legend.subHeading, label.subHeading, .subHeading {
+.form-group.owner {
+    grid-area: owner;
+    min-height: inherit;
+}
+
+.form-group.connection {
+    grid-area: connection;
+    min-height: inherit;
+}
+
+.form-group.modifier {
+    grid-area: modifier;
+}
+
+.form-group.radius {
+    grid-area: radius;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1em;
+    align-items: center;
+}
+
+.form-group.employees {
+    grid-area: employees;
+    min-height: inherit;
+}
+
+.form-group.inventory {
+    grid-area: inventory;
+    border: none;
+    height: 65%;
+    width: 100%;
+    display: block;
+    overflow: hidden;
+}
+
+.form-group.subHeading,
+legend.subHeading,
+label.subHeading,
+.subHeading {
     color: var(--text-color-subheader);
 }
 
@@ -240,8 +286,9 @@ section.tab.shop-details.active {
     flex-direction: column;
     gap: 8px;
     padding-right: 5px;
-    max-height: 580px;
+    flex-grow: 1;
     overflow-y: auto;
+    min-height: 0;
 }
 
 /* --- Collapsible Logic --- */
@@ -270,13 +317,14 @@ section.tab.shop-details.active {
     padding-left: 20px;
 }
 
-.skills-list input.toggle:checked ~ .toggle-content {
+.skills-list input.toggle:checked~.toggle-content {
     min-height: fit-content;
     max-height: none;
     transition: max-height 0.5s ease-in;
 }
 
-.sr5-marketplace-input.value-input, .sr5-marketplace-input.value {
+.sr5-marketplace-input.value-input,
+.sr5-marketplace-input.value {
     border: none;
     background: transparent;
     text-align: center;
@@ -374,7 +422,7 @@ section.tab.shop-details.active {
     border-top: 1px solid var(--border-color-dark);
 }
 
-.employee-list input.toggle:checked ~ .toggle-content {
+.employee-list input.toggle:checked~.toggle-content {
     max-height: 100px;
     transition: max-height 0.5s ease-in;
 }
@@ -395,6 +443,7 @@ section.tab.shop-details.active {
     display: grid;
     grid-template-columns: 1fr 6fr 20px;
 }
+
 input.marketplace.name {
     width: 5em;
     height: fit-content;
@@ -423,23 +472,26 @@ input.marketplace.name {
 .application.sr5-marketplace-shop .window-content .marketplace-gradient-bar span,
 .application.sr5-marketplace-shop .window-content .marketplace-gradient-bar i {
     color: var(--header-gradient-text);
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
 }
 
 /* 2. Target Foundry's Generic Tabs (Smaller, Tighter & Glassy) */
 .application.sr5-marketplace-shop .window-content nav.sheet-tabs.marketplace-tabs {
     display: flex;
-    justify-content: flex-start; /* Aligns tabs to the left */
+    justify-content: flex-start;
+    /* Aligns tabs to the left */
     align-items: flex-end;
-    gap: 0.5em; /* 0.5em separation between tabs */
-    border-top: none; 
+    gap: 0.5em;
+    /* 0.5em separation between tabs */
+    border-top: none;
     border-bottom: 2px solid var(--tab-line);
-    padding: 0 10px 2px 10px; /* The 2px bottom padding creates the exact 2px gap above the line */
-    margin: 0 0 12px 0; 
+    padding: 0 10px 2px 10px;
+    /* The 2px bottom padding creates the exact 2px gap above the line */
+    margin: 0 0 12px 0;
 }
 
 /* Inactive Tab Styles (Flat/Subtle) */
-.application.sr5-marketplace-shop .window-content nav.sheet-tabs.marketplace-tabs > a {
+.application.sr5-marketplace-shop .window-content nav.sheet-tabs.marketplace-tabs>a {
     background: var(--tab-inactive-bg-grad);
     border-bottom: none;
     border-radius: 6px 6px 0 0;
@@ -450,35 +502,35 @@ input.marketplace.name {
     margin: 0;
     cursor: pointer;
     text-decoration: none;
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.1);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
     transition: filter 0.2s ease, transform 0.1s ease;
 }
 
-.application.sr5-marketplace-shop .window-content nav.sheet-tabs.marketplace-tabs > a span {
+.application.sr5-marketplace-shop .window-content nav.sheet-tabs.marketplace-tabs>a span {
     color: var(--tab-inactive-color);
 }
 
-.application.sr5-marketplace-shop .window-content nav.sheet-tabs.marketplace-tabs > a:hover {
+.application.sr5-marketplace-shop .window-content nav.sheet-tabs.marketplace-tabs>a:hover {
     filter: brightness(1.2);
 }
 
 /* Active Tab Styles (Glassy Apple Mac Bubble) */
-.application.sr5-marketplace-shop .window-content nav.sheet-tabs.marketplace-tabs > a.active {
+.application.sr5-marketplace-shop .window-content nav.sheet-tabs.marketplace-tabs>a.active {
     background: var(--header-gradient-bar);
     border-bottom: none;
     color: var(--header-gradient-text);
-    
+
     /* The Glassy Highlight Magic: Top white reflection + Dark inner bottom */
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -10px 10px rgba(0,0,0,0.2), 0 -2px 5px rgba(0,0,0,0.3);
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-    
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -10px 10px rgba(0, 0, 0, 0.2), 0 -2px 5px rgba(0, 0, 0, 0.3);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+
     /* Zeroed out bottom margin to keep it perfectly aligned with inactive tabs and the 2px padding */
     margin-bottom: 0;
     padding-bottom: 4px;
     z-index: 2;
 }
 
-.application.sr5-marketplace-shop .window-content nav.sheet-tabs.marketplace-tabs > a.active span {
+.application.sr5-marketplace-shop .window-content nav.sheet-tabs.marketplace-tabs>a.active span {
     color: var(--header-gradient-text);
 }
 
@@ -489,17 +541,17 @@ input.marketplace.name {
     padding: 4px 10px;
     border-radius: 4px;
     margin: 0.25em 0.5em 0.25em 0.5em;
-    
+
     /* The Glassy Highlight Magic */
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -10px 10px rgba(0,0,0,0.25), 0 2px 4px rgba(0,0,0,0.4);
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -10px 10px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.4);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
     transition: filter 0.2s ease;
 }
 
 .application.sr5-marketplace-shop .window-content .skills-list .glossy-red-btn span {
     color: var(--header-gradient-text);
     font-size: 11px;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .application.sr5-marketplace-shop .window-content .skills-list .glossy-red-btn:hover {
@@ -514,7 +566,7 @@ input.marketplace.name {
 }
 
 /* Ensure inventory items only have a subtle bottom divider, no outer bounding boxes */
-.application.sr5-marketplace-shop .window-content .inventory-list > div {
+.application.sr5-marketplace-shop .window-content .inventory-list>div {
     border-bottom: 1px solid var(--color-black-transparent-30);
     border-top: none;
     border-left: none;
@@ -530,7 +582,7 @@ input.marketplace.name {
     background-color: var(--color-grey-darkest);
     border-radius: 9999px;
     transition: background-color 0.3s;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.8);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8);
     border: 1px solid var(--color-black);
 }
 
@@ -547,10 +599,104 @@ input.marketplace.name {
     box-shadow: 0 1px 2px var(--color-black);
 }
 
-.application.sr5-marketplace-shop .window-content .mode-toggle-checkbox:checked + .mode-toggle-switch {
+.application.sr5-marketplace-shop .window-content .mode-toggle-checkbox:checked+.mode-toggle-switch {
     background: var(--header-gradient-bar);
 }
 
-.application.sr5-marketplace-shop .window-content .mode-toggle-checkbox:checked + .mode-toggle-switch::after {
+.application.sr5-marketplace-shop .window-content .mode-toggle-checkbox:checked+.mode-toggle-switch::after {
     transform: translateX(14px);
+}
+
+/* --- Inventory Collapsible Group Styles --- */
+.inventory-group input.toggle {
+    display: none;
+}
+
+.inventory-group .toggle-content {
+    display: none;
+}
+
+.inventory-group input.toggle:checked~.toggle-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.category-blue-icon {
+    filter: invert(53%) sepia(93%) saturate(1487%) hue-rotate(187deg) brightness(96%) contrast(101%);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), filter 0.25s ease, opacity 0.25s ease;
+}
+
+.category-blue-icon:hover {
+    filter: invert(70%) sepia(93%) saturate(2000%) hue-rotate(190deg) brightness(1.1) contrast(105%);
+    transform: scale(1.15) rotate(15deg);
+}
+
+.inventory-group input.toggle:not(:checked)~.category-icon-sidebar .category-blue-icon {
+    opacity: 0.45;
+    transform: rotate(-90deg);
+}
+
+/* --- Persistent Price Markup & Clear Inventory Button Styles --- */
+
+/* Colorized and interactive markup adjustment controls */
+.application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .markup-control-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+    outline: none;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .markup-control-btn.btn-decrement i {
+    color: var(--color-green-button) !important;
+    opacity: 0.8;
+}
+
+.application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .markup-control-btn.btn-increment i {
+    color: var(--color-red-bright) !important;
+    opacity: 0.8;
+}
+
+.application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .markup-control-btn:hover {
+    transform: scale(1.2);
+}
+
+.application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .markup-control-btn:hover i {
+    color: #ffffff !important;
+    opacity: 1;
+}
+
+/* Clear inventory trash bin icon button */
+.application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .clear-inventory-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+    outline: none;
+    opacity: 0.15;
+    transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .clear-inventory-btn i {
+    color: var(--color-red-bright) !important;
+}
+
+.application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .clear-inventory-btn:hover {
+    opacity: 1;
+    transform: scale(1.15);
+}
+
+.application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .clear-inventory-btn:hover i {
+    color: var(--color-red-bright) !important;
+    filter: drop-shadow(0 0 4px var(--color-red-bright));
 }

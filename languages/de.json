@@ -219,7 +219,18 @@
             "DeleteSkill": "Fertigkeit löschen",
             "RemoveItem": "Gegenstand entfernen",
             "StockOrder": "Bestand / Bestellung",
-            "InStock": "Auf Lager"
+            "InStock": "Auf Lager",
+            "Compendiums": "Kompendien",
+            "Folders": "Ordner",
+            "Items": "Artikel",
+            "AddSelected": "Auswahl hinzufügen",
+            "NoCompendiumSelectedTitle": "Kein Kompendium ausgewählt",
+            "NoCompendiumSelectedDesc": "Bitte wählen Sie ein Kompendium aus der linken Seitenleiste aus, um dessen Inhalt zu durchsuchen und hinzuzufügen.",
+            "SelectAll": "Alle auswählen",
+            "DeselectAll": "Auswahl aufheben",
+            "CostOrKarma": "Kosten / Karma",
+            "Nuyen": "Nuyen",
+            "CopyDocumentUuid": "Dokumenten-UUID kopieren"
         },
         "Marketplace": {
             "Title": "Marktplatz Fenster",
@@ -265,7 +276,16 @@
                 },
                 "ItemTypeBehaviors": {
                     "name": "Artikeltyp-Verhalten"
-                }
+                },
+                "SetToUnique": "'{label}' auf Einzigartig setzen",
+                "SetToStacking": "'{label}' auf Stapelfähig setzen",
+                "SetToSingle": "'{label}' auf Einzeln setzen",
+                "UniqueAllowOnlyOne": "Einzigartig (Nur eines erlauben)",
+                "StackQuantity": "Stapelmenge",
+                "AddAsSingleItem": "Als einzelnen Gegenstand hinzufügen",
+                "AbbreviationUnique": "E",
+                "AbbreviationStack": "St",
+                "AbbreviationSingle": "E"
             },
             "Tests": {
                 "title": "Marketplace Tests",
@@ -295,6 +315,15 @@
                 "Owner": "Geschäftsinhaber",
                 "OwnerUuid": "Besitzer UUID",
                 "AddItem": "Artikel hinzufügen",
+                "ItemMarkup": "Aufschlag",
+                "IncreaseMarkup": "Aufschlag um 5% erhöhen",
+                "DecreaseMarkup": "Aufschlag um 5% verringern",
+                "SetAsServingEmployee": "Als aktiven Mitarbeiter festlegen",
+                "ClearInventoryTitle": "Inventar leeren",
+                "ClearInventoryPrompt": "Bist du sicher, dass du alle Artikel im Inventar löschen möchtest?",
+                "ClearInventoryButton": "Alle löschen",
+                "ClearInventorySuccess": "Inventar erfolgreich geleert.",
+                "ClearInventoryTooltip": "Gesamtes Inventar leeren",
                 "DragDropHint": "Ziehe Gegenstände hierher, um sie dem Shop-Inventar hinzuzufügen",
                 "WAN": "WAN",
                 "NoSlavedDevices": "Keine Slaved-Geräte",
@@ -393,7 +422,20 @@
                 "Of": "von",
                 "Each": "pro Stück",
                 "ApproveItem": "Gegenstand genehmigen",
-                "RejectItem": "Gegenstand ablehnen"
+                "RejectItem": "Gegenstand ablehnen",
+                "PurchaseRequestByUser": "Kaufanfrage von Benutzer:",
+                "EstimatedDeliveryForRequest": "Voraussichtliche Lieferung für diese Anfrage:",
+                "AvailabilityRollResults": "Ergebnisse des Verfügbarkeitswurfs",
+                "PlayersRoll": "Wurf des Spielers ({hits} Nettoerfolge)",
+                "ItemsResistance": "Widerstand des Gegenstands ({hits} Erfolge)",
+                "FinalRollWithHits": "Letzter Wurf ({hits} Nettoerfolge)",
+                "ThresholdRequired": "Erforderlicher Schwellenwert",
+                "LastRollWithHits": "Letzter Wurf ({hits} Nettoerfolge)",
+                "TotalRollsMade": "Gesamtzahl der Würfe:",
+                "HitsAccumulated": "Angesammelte Erfolge:",
+                "ConnectionRatingUsed": "Verwendete Connection-Stufe:",
+                "ResolveRequestFrom": "Anfrage auflösen von",
+                "ConsolidatedTotalsFor": "Konsolidierte Gesamtwerte für"
             },
             "system": {
                 "avail": {
@@ -546,7 +588,31 @@
                 "SelectDerivedValueLabel": "Wähle eine Eigenschaft vom Basisartikel",
                 "CustomEffect": "Eigener Effekt"
             },
-            "SearchPlaceholder": "Suchen..."
+            "SearchPlaceholder": "Suchen...",
+            "ClearEntireBuild": "Gesamten Entwurf löschen",
+            "RemoveMod": "Modifikation entfernen",
+            "ItemBuild": "Gegenstandsentwurf",
+            "ActiveEffects": "Aktive Effekte",
+            "SelectAnItem": "Wähle einen Gegenstand",
+            "BuildQueueEmpty": "Deine Bauschlange ist leer.",
+            "BuildQueueEmptyDesc": "Benutze den 'Builder'-Tab, um einen Gegenstand zu entwerfen, und klicke dann auf 'Zur Warteschlange hinzufügen', um ihn hierher zu senden.",
+            "BaseItemType": "Basis-Gegenstandstyp",
+            "BuildTest": "Bau-Probe",
+            "CreateAllItems": "Alle Gegenstände erstellen",
+            "SubmitAllToGM": "Alle an GM senden",
+            "ClearEntireQueue": "Ganze Warteschlange leeren"
+        },
+        "Marketshouter": {
+            "SearchingInShop": "Suche in: {name}",
+            "SearchShop": "Durchsuche {name}...",
+            "SearchCompendiumItems": "Kompendium durchsuchen...",
+            "ClearSearch": "Suche leeren",
+            "ReviewPurchaseRequests": "Kaufanfragen überprüfen",
+            "OpenMarketplace": "Marktplatz öffnen",
+            "OpenShoppingCart": "Einkaufswagen öffnen",
+            "ItemFound": "1 Gegenstand gefunden",
+            "ItemsFound": "{count} Gegenstände gefunden",
+            "NoMatchingItemsFound": "Keine passenden Gegenstände gefunden"
         },
         "AppDialogItem": {
             "result": {

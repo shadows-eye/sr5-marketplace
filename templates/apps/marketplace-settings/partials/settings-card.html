@@ -1,17 +1,17 @@
 <div class="item-type-card">
     <span class="type-label">{{this.label}}</span>
     <div class="radio-button-group">
-        <label title="Unique (Allow Only One)">
+        <label title="{{localize 'SR5Marketplace.Marketplace.Settings.UniqueAllowOnlyOne'}}">
             <input type="radio" name="{{this.key}}" value="unique" {{#if (eq this.behavior 'unique')}}checked{{/if}}>
-            <span>U</span>
+            <span>{{localize "SR5Marketplace.Marketplace.Settings.AbbreviationUnique"}}</span>
         </label>
-        <label title="Stack Quantity">
+        <label title="{{localize 'SR5Marketplace.Marketplace.Settings.StackQuantity'}}">
             <input type="radio" name="{{this.key}}" value="stack" {{#if (eq this.behavior 'stack')}}checked{{/if}}>
-            <span>St</span>
+            <span>{{localize "SR5Marketplace.Marketplace.Settings.AbbreviationStack"}}</span>
         </label>
-        <label title="Add as Single Item">
+        <label title="{{localize 'SR5Marketplace.Marketplace.Settings.AddAsSingleItem'}}">
             <input type="radio" name="{{this.key}}" value="single" {{#if (eq this.behavior 'single')}}checked{{/if}}>
-            <span>S</span>
+            <span>{{localize "SR5Marketplace.Marketplace.Settings.AbbreviationSingle"}}</span>
         </label>
     </div>
 </div>

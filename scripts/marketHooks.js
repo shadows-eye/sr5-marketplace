@@ -5,8 +5,7 @@ import {
     SHOP_ACTOR_TYPE,
     parseAvailability,
     LocalizationService,
-    registerBasicHelpers,
-    migrateShopSkills
+    registerBasicHelpers
 } from './lib/_module.mjs';
 import { defineShopActorClass } from '../models/actor/shopActor.mjs';
 import {
@@ -301,7 +300,7 @@ Hooks.on("ready", async () => {
     });
     if (game.user.isGM) {
         // Automatically run shop actor legacy skills migration
-        migrateShopSkills();
+        //migrateShopSkills();
     }
 
 });
@@ -398,7 +397,7 @@ Hooks.on("collapseSidebar", (sidebar, collapsed) => {
 // --- Seed default skills on new Shop Actor creation ---
 async function seedDefaultSkills(actor) {
     const SYSTEM_ID = 'shadowrun5e';
-    const pack = game.packs.find(p => 
+    const pack = game.packs.find(p =>
         p.metadata.system === SYSTEM_ID && p.metadata.name === 'sr5e-skills'
     ) || game.packs.find(p => p.metadata.name === 'sr5e-skills');
 
@@ -468,7 +467,7 @@ function getShopsForAnyEmployee(actor) {
 
 Hooks.on("updateActor", async (actor, changes, options, userId) => {
     if (game.user.id !== userId) return;
-    
+
     // If the Shop Actor itself is updated and its employees/serving employee changed, sync their devices to host
     if (actor.type === "sr5-marketplace.shop") {
         if (foundry.utils.hasProperty(changes, "system.shop.servingEmployee") || foundry.utils.hasProperty(changes, "system.shop.employees")) {
@@ -477,7 +476,7 @@ Hooks.on("updateActor", async (actor, changes, options, userId) => {
         }
         return;
     }
-    
+
     const shops = getShopsForEmployee(actor);
     if (shops.length > 0) {
         // 1. Sync attributes
@@ -525,7 +524,7 @@ Hooks.on("updateActor", async (actor, changes, options, userId) => {
 Hooks.on("createItem", async (item, options, userId) => {
     if (game.user.id !== userId) return;
     if (!item.parent) return;
-    
+
     const actor = item.parent;
     if (actor.type === "sr5-marketplace.shop" && item.type === "host") {
         console.log(`SR5 Marketplace | Host item "${item.name}" created/dropped on Shop Actor "${actor.name}". Syncing employee devices after delay.`);
@@ -560,7 +559,7 @@ Hooks.on("createItem", async (item, options, userId) => {
 Hooks.on("updateItem", async (item, changes, options, userId) => {
     if (game.user.id !== userId) return;
     if (!item.parent) return;
-    
+
     const actor = item.parent;
     if (actor.type === "sr5-marketplace.shop" && item.type === "host") {
         console.log(`SR5 Marketplace | Host item "${item.name}" updated on Shop Actor "${actor.name}". Syncing employee devices after delay.`);
@@ -595,7 +594,7 @@ Hooks.on("updateItem", async (item, changes, options, userId) => {
 Hooks.on("deleteItem", async (item, options, userId) => {
     if (game.user.id !== userId) return;
     if (!item.parent) return;
-    
+
     const actor = item.parent;
     if (item.type === "skill") {
         const shops = getShopsForEmployee(actor);

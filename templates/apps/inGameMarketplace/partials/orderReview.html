@@ -23,7 +23,7 @@
             {{#each requests}}
             <div class="pending-request-block" data-user-id="{{this.user._id}}" data-basket-uuid="{{this.basket.basketUUID}}">
                 <h3 class="actor-request-header">
-                    <span>Purchase Request by User: <strong>{{this.user.name}}</strong></span>
+                    <span>{{localize "SR5Marketplace.Marketplace.OrderReview.PurchaseRequestByUser"}} <strong>{{this.user.name}}</strong></span>
                     <span class="request-time font-normal text-xs opacity-75">({{this.basket.creationTime}})</span>
                 </h3>
 
@@ -61,7 +61,7 @@
                 {{/each}}
 
                 <div class="request-delivery-time-info">
-                    <i class="fa-solid fa-truck-fast"></i> <strong>Estimated Delivery for this request:</strong> 
+                    <i class="fa-solid fa-truck-fast"></i> <strong>{{localize "SR5Marketplace.Marketplace.OrderReview.EstimatedDeliveryForRequest"}}</strong> 
                     <span>{{this.deliveryTime.value}} {{this.deliveryTime.unit}}</span>
                 </div>
 
@@ -69,7 +69,7 @@
                 {{#if this.basket.testContext}}
                 <details class="test-result-details">
                     <summary class="test-result-summary-header">
-                        <i class="fas fa-dice-d6"></i> <strong>Availability Roll Results</strong>:
+                        <i class="fas fa-dice-d6"></i> <strong>{{localize "SR5Marketplace.Marketplace.OrderReview.AvailabilityRollResults"}}</strong>:
                         {{#if this.basket.testContext.isAvailable}}
                             <span class="success-text"><i class="fas fa-check-circle"></i> {{localize "SR5Marketplace.Marketplace.Acquisition.Success"}}</span>
                         {{else}}
@@ -81,7 +81,7 @@
                             <!-- Opposed Test Render -->
                             <div class="opposed-results-grid">
                                 <div class="opposed-column">
-                                    <div class="opposed-column-title">Player's Roll ({{this.basket.testContext.initialRoll.netHits}} Net Hits)</div>
+                                    <div class="opposed-column-title">{{localize "SR5Marketplace.Marketplace.OrderReview.PlayersRoll" hits=this.basket.testContext.initialRoll.netHits}}</div>
                                     <div class="dice-tray-mini">
                                         {{#each this.basket.testContext.initialRoll.renderedDice as |die|}}
                                             <div class="die-face {{die.cssClass}}"><span>{{die.text}}</span></div>
@@ -89,7 +89,7 @@
                                     </div>
                                 </div>
                                 <div class="opposed-column">
-                                    <div class="opposed-column-title">Item's Resistance ({{this.basket.testContext.resistRoll.hits}} Hits)</div>
+                                    <div class="opposed-column-title">{{localize "SR5Marketplace.Marketplace.OrderReview.ItemsResistance" hits=this.basket.testContext.resistRoll.hits}}</div>
                                     <div class="dice-tray-mini">
                                         {{#each this.basket.testContext.resistRoll.renderedDice as |die|}}
                                             <div class="die-face {{die.cssClass}}"><span>{{die.text}}</span></div>
@@ -101,7 +101,7 @@
                             <!-- Simple Test Render -->
                             <div class="simple-results-grid">
                                 <div class="simple-column">
-                                    <div class="simple-column-title">Final Roll ({{this.basket.testContext.initialRoll.netHits}} Net Hits)</div>
+                                    <div class="simple-column-title">{{localize "SR5Marketplace.Marketplace.OrderReview.FinalRollWithHits" hits=this.basket.testContext.initialRoll.netHits}}</div>
                                     <div class="dice-tray-mini">
                                         {{#each this.basket.testContext.initialRoll.renderedDice as |die|}}
                                             <div class="die-face {{die.cssClass}}"><span>{{die.text}}</span></div>
@@ -109,7 +109,7 @@
                                     </div>
                                 </div>
                                 <div class="simple-column text-center">
-                                    <div class="simple-column-title">Threshold Required</div>
+                                    <div class="simple-column-title">{{localize "SR5Marketplace.Marketplace.OrderReview.ThresholdRequired"}}</div>
                                     <div class="threshold-badge">{{this.basket.testContext.initialRoll.threshold}}</div>
                                 </div>
                             </div>
@@ -117,7 +117,7 @@
                             <!-- Extended Test Render -->
                             <div class="extended-results-grid">
                                 <div class="extended-column">
-                                    <div class="extended-column-title">Last Roll ({{this.basket.testContext.initialRoll.netHits}} Net Hits)</div>
+                                    <div class="extended-column-title">{{localize "SR5Marketplace.Marketplace.OrderReview.LastRollWithHits" hits=this.basket.testContext.initialRoll.netHits}}</div>
                                     <div class="dice-tray-mini">
                                         {{#each this.basket.testContext.initialRoll.renderedDice as |die|}}
                                             <div class="die-face {{die.cssClass}}"><span>{{die.text}}</span></div>
@@ -126,10 +126,10 @@
                                 </div>
                                 <div class="extended-column">
                                     <div class="details-list">
-                                        <div><strong>Total Rolls Made:</strong> {{this.basket.testContext.totalRolls}}</div>
-                                        <div><strong>Hits Accumulated:</strong> {{this.basket.testContext.initialRoll.cumulativeHits}} / {{this.basket.testContext.initialRoll.threshold}}</div>
+                                        <div><strong>{{localize "SR5Marketplace.Marketplace.OrderReview.TotalRollsMade"}}</strong> {{this.basket.testContext.totalRolls}}</div>
+                                        <div><strong>{{localize "SR5Marketplace.Marketplace.OrderReview.HitsAccumulated"}}</strong> {{this.basket.testContext.initialRoll.cumulativeHits}} / {{this.basket.testContext.initialRoll.threshold}}</div>
                                         {{#if this.basket.testContext.connectionUsed}}
-                                        <div><strong>Connection Rating Used:</strong> {{this.basket.testContext.connectionUsed}}</div>
+                                        <div><strong>{{localize "SR5Marketplace.Marketplace.OrderReview.ConnectionRatingUsed"}}</strong> {{this.basket.testContext.connectionUsed}}</div>
                                         {{/if}}
                                     </div>
                                 </div>
@@ -141,7 +141,7 @@
 
                 {{#if (gt this.basket.basketItems.length 1)}}
                 <div class="basket-actions full-basket-actions">
-                    <span>Resolve request from <strong>{{this.user.name}}</strong>:</span>
+                    <span>{{localize "SR5Marketplace.Marketplace.OrderReview.ResolveRequestFrom"}} <strong>{{this.user.name}}</strong>:</span>
                     <button class="approve-all-btn" data-action="approveAll">{{localize "SR5Marketplace.Marketplace.OrderReview.AllApproved"}}</button>
                     <button class="reject-all-btn" data-action="rejectAll">{{localize "SR5Marketplace.Marketplace.OrderReview.AllRejected"}}</button>
                 </div>
@@ -152,7 +152,7 @@
 
         <!-- Overall Consolidated Statistics for Selected Actor (Moved to bottom, reads like shop order!) -->
         <div class="review-overall-summary">
-            <h3>Consolidated Totals for <strong>{{actor.name}}</strong></h3>
+            <h3>{{localize "SR5Marketplace.Marketplace.OrderReview.ConsolidatedTotalsFor"}} <strong>{{actor.name}}</strong></h3>
             <div class="overall-metrics-grid">
                 <div class="overall-metric-card">
                     <span class="metric-label">{{localize "SR5Marketplace.Marketplace.Basket.TotalCost"}}</span>
