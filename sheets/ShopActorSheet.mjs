@@ -3,6 +3,8 @@ import enrichHTML from '../scripts/services/enricher.mjs';
 import { simpleAll, opposedAll, teamworkAll } from "../tests/SR5_Tests.mjs";
 import { InventoryRules } from "../scripts/services/_module.mjs";
 import { inGameMarketplace } from "../scripts/apps/inGameMarketplace.mjs";
+import { CompendiumItemBrowserApp } from "../scripts/apps/CompendiumItemBrowserApp.mjs";
+import { SearchService } from "../scripts/services/searchTag.mjs";
 // We get the base ActorSheet class from Foundry's API.
 const { ActorSheet } = foundry.applications.sheets;
 
@@ -100,7 +102,10 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             clickSkillName: this.#onClickSkillName,
             setServingEmployee: this.#onSetServingEmployee,
             openHostSheet: this.#onOpenHostSheet,
-            openMatrixTab: this.#onOpenMatrixTab
+            openMatrixTab: this.#onOpenMatrixTab,
+            incrementMarkup: this.#onIncrementMarkup,
+            decrementMarkup: this.#onDecrementMarkup,
+            clearInventory: this.#onClearInventory
         }
     }, { inplace: false });
 
@@ -275,10 +280,12 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     async _preparePartContext(partId, context) {
         context.tab = context.tabs[partId];
         context.isEditMode = this._mode === "edit";
+        context.isPlayMode = this._mode === "play";
         switch (partId) {
             case "actorShop":
                 context.owner = await this.document.getOwner();
                 context.connection = await this.document.getConnection();
+                context.itemMarkup = this.document.system.shop?.itemMarkup || 0;
                 context.employees = await this.document.getEmployees();
                 const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
                 context.shopEmployees = this.document.system.shop?.employees?.join('\n') || "";
@@ -417,9 +424,9 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                     languageSkillsList = languageSkillsList.filter(s => s.value > 0);
                 }
                 context.languageSkills = languageSkillsList;
-                // --- ADDED: Prepare Inventory Data ---
+                // --- ADDED: Prepare Inventory Data (Grouped by Type & Filtered) ---
                 const inventory = this.document.system.shop.inventory;
-                const preparedInventory = {};
+                const preparedInventory = [];
 
                 for (const [entryId, itemData] of Object.entries(inventory)) {
                     // Fetch the full item document from its UUID
@@ -437,18 +444,82 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                     }
                     sourceCost = Number(sourceCost) || 0;
 
+                    let categoryType = sourceItem.type;
+                    if (categoryType === "weapon") {
+                        if (sourceItem.system.category === "range") {
+                            categoryType = "ranged_weapon";
+                        } else if (sourceItem.system.category === "melee") {
+                            categoryType = "melee_weapon";
+                        }
+                    }
+
                     // Combine system data with your module's shop data
-                    preparedInventory[entryId] = {
+                    preparedInventory.push({
                         ...itemData, // Includes sellPrice, buyPrice, etc. from your data model
+                        entryId,
                         img: sourceItem.img,
                         name: sourceItem.name,
+                        type: categoryType,
                         rating: sourceItem.system.rating || 0,
                         itemPrice: itemData.itemPrice ?? { value: sourceCost, base: sourceCost },
-                        // Override availability.value with the system's if you want
-                        // availability: { value: sourceItem.system.availability, base: itemData.availability.base }
-                    };
+                    });
                 }
-                context.inventory = preparedInventory;
+
+                // Filter using the search service values
+                const filteredInventory = game.sr5marketplace.api.marketplace.filterItems(
+                    preparedInventory,
+                    this._inventorySearchTags || [],
+                    this._inventorySearchTerm || ""
+                );
+
+                // Group by type like in a normal shadowrun actor
+                const groupMapping = {
+                    ranged_weapon: { key: "ranged_weapons", label: "SR5Marketplace.Marketplace.ItemTypes.RangedWeapons", img: "systems/shadowrun5e/dist/icons/importer/weapon/weapon.svg" },
+                    melee_weapon: { key: "melee_weapons", label: "SR5Marketplace.Marketplace.ItemTypes.MeleeWeapons", img: "systems/shadowrun5e/dist/icons/importer/weapon/weapon.svg" },
+                    weapon: { key: "weapons", label: "SR5Marketplace.Marketplace.ItemTypes.MeleeWeapons", img: "systems/shadowrun5e/dist/icons/importer/weapon/weapon.svg" },
+                    armor: { key: "armor", label: "TYPES.Item.armor", img: "systems/shadowrun5e/dist/icons/importer/armor/armor.svg" },
+                    equipment: { key: "equipment", label: "TYPES.Item.equipment", img: "systems/shadowrun5e/dist/icons/importer/equipment/equipment.svg" },
+                    device: { key: "devices", label: "TYPES.Item.device", img: "systems/shadowrun5e/dist/icons/importer/device/device.svg" },
+                    ammo: { key: "ammo", label: "TYPES.Item.ammo", img: "systems/shadowrun5e/dist/icons/importer/ammo/ammo.svg" },
+                    cyberware: { key: "cyberware", label: "TYPES.Item.cyberware", img: "systems/shadowrun5e/dist/icons/importer/cyberware/cyberware.svg" },
+                    bioware: { key: "bioware", label: "TYPES.Item.bioware", img: "systems/shadowrun5e/dist/icons/importer/bioware/bioware.svg" },
+                    program: { key: "programs", label: "TYPES.Item.program", img: "systems/shadowrun5e/dist/icons/importer/program/program.svg" },
+                    spell: { key: "spells", label: "TYPES.Item.spell", img: "systems/shadowrun5e/dist/icons/importer/spell/spell.svg" },
+                    adept_power: { key: "adept_powers", label: "TYPES.Item.adept_power", img: "systems/shadowrun5e/dist/icons/importer/adept_power/adept_power.svg" },
+                    complex_form: { key: "complex_forms", label: "TYPES.Item.complex_form", img: "systems/shadowrun5e/dist/icons/importer/complex_form/complex_form.svg" },
+                    quality: { key: "qualities", label: "TYPES.Item.quality", img: "systems/shadowrun5e/dist/icons/importer/quality/quality.svg" },
+                    lifestyle: { key: "lifestyles", label: "TYPES.Item.lifestyle", img: "systems/shadowrun5e/dist/icons/importer/lifestyle/lifestyle.svg" },
+                    sin: { key: "sins", label: "TYPES.Item.sin", img: "systems/shadowrun5e/dist/icons/importer/sin/sin.svg" },
+                    modification: { key: "modifications", label: "TYPES.Item.modification", img: "systems/shadowrun5e/dist/icons/importer/modification/modification.svg" },
+                    action: { key: "actions", label: "TYPES.Item.action", img: "systems/shadowrun5e/dist/icons/importer/action.svg" },
+                    echo: { key: "echoes", label: "TYPES.Item.echo", img: "systems/shadowrun5e/dist/icons/importer/echo/echo.svg" },
+                    ritual: { key: "rituals", label: "TYPES.Item.ritual", img: "systems/shadowrun5e/dist/icons/importer/ritual/ritual.svg" }
+                };
+
+                const groups = {};
+                for (const item of filteredInventory) {
+                    const groupInfo = groupMapping[item.type] || { key: "equipment", label: "TYPES.Item.equipment", img: "systems/shadowrun5e/dist/icons/importer/equipment/equipment.svg" };
+                    if (!groups[groupInfo.key]) {
+                        groups[groupInfo.key] = {
+                            key: groupInfo.key,
+                            label: groupInfo.label,
+                            img: groupInfo.img,
+                            items: {}
+                        };
+                    }
+                    groups[groupInfo.key].items[item.entryId] = item;
+                }
+
+                // Convert to array and sort to maintain consistent rendering order
+                const sortOrder = ["ranged_weapons", "melee_weapons", "weapons", "armor", "ammo", "equipment", "devices", "cyberware", "bioware", "programs", "spells", "adept_powers", "complex_forms", "qualities", "lifestyles", "sins", "modifications", "actions", "echoes", "rituals"];
+                const groupedInventoryList = Object.values(groups).sort((a, b) => {
+                    const idxA = sortOrder.indexOf(a.key);
+                    const idxB = sortOrder.indexOf(b.key);
+                    return (idxA > -1 ? idxA : 99) - (idxB > -1 ? idxB : 99);
+                });
+
+                context.groupedInventory = groupedInventoryList;
+                context.inventorySearchTerm = this._inventorySearchTerm || "";
                 break;
             case "management": // Logic routed to the new tab
                 context.owner = await this.document.getOwner();
@@ -869,7 +940,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
      */
     static #onAddItem(event, target) {
         if (!this.isEditMode) return;
-        ui.notifications.info("Please drag and drop an item from the sidebar or a compendium into the inventory list.");
+        new CompendiumItemBrowserApp(this.document, this).render(true);
     }
     /**
      * Toggle Edit vs. Play mode.
@@ -1036,6 +1107,51 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         this.element.classList.toggle("edit-mode", this._mode === "edit");
     }
 
+    /** @override */
+    _onRender(context, options) {
+        super._onRender(context, options);
+        
+        // Initialize search service if we are on the actorShop tab
+        const searchBox = this.element.querySelector("#search-box");
+        if (searchBox) {
+            if (!this.searchService) {
+                this.searchService = new SearchService(this.element, this._applyInventorySearchFilter.bind(this));
+            } else {
+                this.searchService.appElement = this.element;
+            }
+            
+            // Restore active search query to DOM
+            if (this._inventorySearchTerm) {
+                searchBox.value = this._inventorySearchTerm;
+            }
+            if (this._inventorySearchTags) {
+                this.searchService.activeFilters = [...this._inventorySearchTags];
+            }
+            
+            this._isInitializingSearch = true;
+            this.searchService.initialize();
+            this._isInitializingSearch = false;
+        } else {
+            this.searchService = null;
+        }
+    }
+
+    /**
+     * Callback from search service to apply live filtering to the inventory list.
+     */
+    _applyInventorySearchFilter(tags, searchTerm) {
+        if (this._isInitializingSearch) return; // Prevent render loop during init
+        
+        const tagsChanged = JSON.stringify(tags) !== JSON.stringify(this._inventorySearchTags);
+        const termChanged = searchTerm !== this._inventorySearchTerm;
+        
+        if (tagsChanged || termChanged) {
+            this._inventorySearchTags = tags;
+            this._inventorySearchTerm = searchTerm;
+            this.render(false);
+        }
+    }
+
     /**
      * @override
      * Force the sheet to re-render when switching tabs.
@@ -1066,25 +1182,98 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         try { data = JSON.parse(event.dataTransfer.getData('text/plain')); }
         catch (err) { return; }
 
-        if (data.type !== "Item") return;
-        const item = await Item.fromDropData(data);
-        if (!item) return;
+        if (data.type !== "Item" && data.type !== "Folder" && data.type !== "Actor") return;
 
-        // If the item is a skill (active, knowledge, or language), add it to the actor directly
-        if (item.type === "skill") {
-            const category = item.system.skill?.category || "";
-            const name = item.name;
-            const normalizeName = n => String(n ?? '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-            const alreadyExists = this.document.items.some(i => 
-                i.type === "skill" && 
-                i.system.skill?.category === category && 
-                normalizeName(i.name) === normalizeName(name)
-            );
-            if (alreadyExists) {
-                ui.notifications.warn(game.i18n.format('SR5.Errors.SkillAlreadyExists', { name: item.name, actorName: this.document.name, actorUuid: this.document.uuid }));
+        if (data.type === "Folder") {
+            const folder = await fromUuid(data.uuid);
+            if (!folder) return;
+
+            let isItemFolder = folder.type === "Item";
+            if (!isItemFolder && folder.pack) {
+                const pack = game.packs.get(folder.pack);
+                if (pack && pack.metadata.type === "Item") {
+                    isItemFolder = true;
+                }
+            }
+
+            if (!isItemFolder) {
+                ui.notifications.warn("Only Folders containing Items can be dropped onto the shop inventory.");
                 return;
             }
-            return this.document.createEmbeddedDocuments('Item', [item.toObject()]);
+
+            const dropTarget = event.target.closest(".drop-target");
+            if (!dropTarget || !this.isEditMode) return;
+            const dropZone = dropTarget.dataset.dropZone;
+            if (dropZone !== "inventory") return;
+
+            const items = await this._getItemsFromFolder(folder);
+            const inventoryItems = items.filter(item => item.type !== "skill" && item.type !== "contact");
+
+            if (!inventoryItems.length) {
+                ui.notifications.warn(`No valid inventory items found in folder "${folder.name}".`);
+                return;
+            }
+
+            let addedCount = 0;
+            const updates = {};
+            const markup = this.document.system.shop?.itemMarkup || 0;
+            for (const item of inventoryItems) {
+                if (this.document.findInventoryItem(item.uuid)) continue;
+
+                const newItemId = foundry.utils.randomID();
+                const calculatedData = await InventoryRules.getCalculatedItemData(this.document, item);
+                
+                const itemPriceVal = calculatedData.itemPrice?.value ?? calculatedData.itemPrice ?? 0;
+                const sellPriceVal = calculatedData.sellPrice?.value ?? calculatedData.sellPrice ?? 0;
+                const buyPriceVal = calculatedData.buyPrice?.value ?? calculatedData.buyPrice ?? 0;
+                const availVal = calculatedData.availability?.value ?? calculatedData.availability ?? "1R";
+
+                // Apply markup to sell price
+                const markedUpSellPrice = Math.round(sellPriceVal * (1 + markup / 100));
+
+                updates[`system.shop.inventory.${newItemId}`] = {
+                    itemUuid: item.uuid,
+                    qty: calculatedData.qty ?? 1,
+                    itemPrice: { value: itemPriceVal, base: itemPriceVal },
+                    sellPrice: { value: markedUpSellPrice, base: sellPriceVal },
+                    buyPrice: { value: buyPriceVal, base: buyPriceVal },
+                    availability: { value: availVal, base: availVal },
+                    buyTime: calculatedData.buyTime ?? { value: 24, unit: "hours" },
+                    comments: ""
+                };
+                addedCount++;
+            }
+
+            if (addedCount > 0) {
+                await this.document.update(updates);
+                ui.notifications.info(`Successfully added ${addedCount} items from folder "${folder.name}" to the inventory.`);
+                this.render();
+            } else {
+                ui.notifications.warn("All items in this folder are already in the shop's inventory.");
+            }
+            return;
+        }
+
+        if (data.type === "Item") {
+            const item = await Item.fromDropData(data);
+            if (!item) return;
+
+            // If the item is a skill (active, knowledge, or language), add it to the actor directly
+            if (item.type === "skill") {
+                const category = item.system.skill?.category || "";
+                const name = item.name;
+                const normalizeName = n => String(n ?? '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+                const alreadyExists = this.document.items.some(i => 
+                    i.type === "skill" && 
+                    i.system.skill?.category === category && 
+                    normalizeName(i.name) === normalizeName(name)
+                );
+                if (alreadyExists) {
+                    ui.notifications.warn(game.i18n.format('SR5.Errors.SkillAlreadyExists', { name: item.name, actorName: this.document.name, actorUuid: this.document.uuid }));
+                    return;
+                }
+                return this.document.createEmbeddedDocuments('Item', [item.toObject()]);
+            }
         }
 
         const dropTarget = event.target.closest(".drop-target");
@@ -1108,6 +1297,16 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                 // (Make sure getCalculatedItemData is accessible on your imported InventoryRules instance/class)
                 const calculatedData = await InventoryRules.getCalculatedItemData(this.document, item);
                 
+                // Apply markup to sell price
+                const markup = this.document.system.shop?.itemMarkup || 0;
+                const baseSellPrice = calculatedData.sellPrice?.value ?? calculatedData.sellPrice ?? 0;
+                const markedUp = Math.round(baseSellPrice * (1 + markup / 100));
+                
+                calculatedData.sellPrice = {
+                    value: markedUp,
+                    base: baseSellPrice
+                };
+
                 // 2. Pass the calculated data down into the Document's internal handler
                 await this.document.addItemToInventory(item, calculatedData);
                 this.render();
@@ -1178,6 +1377,89 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                 this.render();
                 return;
             }
+        }
+    }
+
+    /**
+     * Helper to recursively retrieve all item documents from a folder.
+     * Works for both world folders and compendium folders.
+     * @param {Folder} folder
+     * @returns {Promise<Item[]>}
+     * @private
+     */
+    async _getItemsFromFolder(folder) {
+        let items = [];
+        
+        const traverse = async (f) => {
+            if (f.contents && f.contents.length > 0) {
+                for (const doc of f.contents) {
+                    if (doc.documentName === "Item") {
+                        items.push(doc);
+                    }
+                }
+            }
+            
+            let childFolders = [];
+            if (f.pack) {
+                const pack = game.packs.get(f.pack);
+                if (pack && pack.folders) {
+                    childFolders = pack.folders.filter(sub => sub.folder?.id === f.id);
+                }
+            } else {
+                childFolders = game.folders.filter(sub => sub.folder?.id === f.id);
+            }
+            
+            for (const sub of childFolders) {
+                await traverse(sub);
+            }
+        };
+        
+        await traverse(folder);
+        return items;
+    }
+
+    /**
+     * Increment the persistent item markup percentage by 5%.
+     */
+    static async #onIncrementMarkup(event, target) {
+        const current = this.document.system.shop?.itemMarkup || 0;
+        const newMarkup = current + 5;
+        await this.document.update({ "system.shop.itemMarkup": newMarkup });
+    }
+
+    /**
+     * Decrement the persistent item markup percentage by 5% (min 0%).
+     */
+    static async #onDecrementMarkup(event, target) {
+        const current = this.document.system.shop?.itemMarkup || 0;
+        const newMarkup = Math.max(0, current - 5);
+        await this.document.update({ "system.shop.itemMarkup": newMarkup });
+    }
+
+    /**
+     * Clear all items in the inventory.
+     */
+    static async #onClearInventory(event, target) {
+        const choice = await foundry.applications.api.DialogV2.wait({
+            window: { title: game.i18n.localize("SR5Marketplace.Marketplace.Shop.ClearInventoryTitle") },
+            content: `<p>${game.i18n.localize("SR5Marketplace.Marketplace.Shop.ClearInventoryPrompt")}</p>`,
+            buttons: [
+                { label: game.i18n.localize("SR5Marketplace.Marketplace.Shop.ClearInventoryButton"), action: "clear", icon: "fa-solid fa-trash" },
+                { label: game.i18n.localize("SR5Marketplace.UI.Cancel") || "Cancel", action: "cancel", icon: "fa-solid fa-times" }
+            ],
+            default: "cancel"
+        });
+
+        if (choice === "clear") {
+            const updates = {};
+            const inventory = this.document.system.shop?.inventory || {};
+            for (const entryId of Object.keys(inventory)) {
+                updates[`system.shop.inventory.-=${entryId}`] = null;
+            }
+            
+            await this.document.update(updates);
+            ui.notifications.info(game.i18n.localize("SR5Marketplace.Marketplace.Shop.ClearInventorySuccess"));
+            this.render();
         }
     }
 }

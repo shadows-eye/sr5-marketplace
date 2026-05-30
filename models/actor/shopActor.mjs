@@ -96,6 +96,7 @@ export function defineShopActorClass() {
                         base: new foundry.data.fields.NumberField({ initial: 1, min: 1 })
                     }),
                 tokenInRadius: new foundry.data.fields.ObjectField({ initial: {}, label: "Token in Radius" }),
+                itemMarkup: new foundry.data.fields.NumberField({ initial: 0, integer: true, min: 0, label: "Item Markup Percentage" }),
 
                 // Validating the inventory as an object with dynamic keys
                 // Each key is an inventory entry ID, and each value is an inventory item object.
@@ -439,7 +440,7 @@ export function defineShopActorClass() {
                 itemUuid: itemData.uuid,
                 qty: shopData.qty ?? 1,
                 itemPrice: { value: itemPriceVal, base: itemPriceVal },
-                sellPrice: { value: sellPriceVal, base: sellPriceVal },
+                sellPrice: { value: sellPriceVal, base: shopData.sellPrice?.base ?? sellPriceVal },
                 buyPrice: { value: buyPriceVal, base: buyPriceVal },
                 availability: { value: availVal, base: availVal },
                 buyTime: shopData.buyTime ?? { value: 24, unit: "hours" },

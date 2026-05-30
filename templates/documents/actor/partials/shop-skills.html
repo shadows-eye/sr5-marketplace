@@ -1,7 +1,7 @@
-<div class="skills-list flex flex-col gap-2">
-
+<div class="shop-skills flex flex-col h-full overflow-hidden">
+    
     {{!-- HEADER ROW --}}
-    <div class="marketplace-gradient-bar flex justify-between items-center p-2 mb-1">
+    <div class="marketplace-gradient-bar flex justify-between items-center p-2 mb-1 flex-shrink-0">
         <h3 class="text-sm font-bold text-[var(--color-white)] m-0 drop-shadow">
             <i class="fa-solid fa-user-graduate mr-1 opacity-80"></i> {{localize "FIELDS.skills.label"}}
         </h3>
@@ -12,51 +12,15 @@
         {{/if}}
     </div>
 
-    {{!-- Active Skills --}}
-    <div class="collapsible-section bg-[var(--color-black-transparent-20)] rounded">
-        <input type="checkbox" id="toggle-active-skills-{{@root.actor.id}}" class="toggle" checked>
+    {{!-- SCROLLABLE SKILLS LIST --}}
+    <div class="skills-list flex flex-col gap-2 overflow-y-auto mt-1 pb-2 pr-1 flex-grow">
         
-        <label class="toggle-label glossy-red-btn flex justify-center items-center p-2 cursor-pointer m-0 relative z-10 rounded" for="toggle-active-skills-{{@root.actor.id}}">
-            <span class="font-bold text-xs tracking-wide">{{localize "SR5Marketplace.UI.ActiveSkills"}}</span>
-        </label>
-        
-        <div class="toggle-content relative z-10">
-            <div class="px-2 pb-2 pt-2">
-                <div class="grid {{#if @root.isEditMode}}grid-cols-[1fr_50px_16px]{{else}}grid-cols-[1fr_40px]{{/if}} gap-2 text-xs font-bold text-[var(--color-red-bright)] mb-1 pb-1 ml-2">
-                    <div>{{localize "SR5Marketplace.UI.Name"}}</div>
-                    <div class="text-center">{{localize "SR5Marketplace.UI.Rating"}}</div>
-                    {{#if @root.isEditMode}}<div></div>{{/if}}
-                </div>
-                <div class="flex flex-col gap-0.5 ml-2">
-                    {{#each activeSkills as |skill|}}
-                        <div class="grid {{#if @root.isEditMode}}grid-cols-[1fr_50px_16px]{{else}}grid-cols-[1fr_40px]{{/if}} gap-2 items-center text-sm py-1 hover:bg-[var(--color-white-transparent-05)] px-1 transition-colors rounded">
-                            <div class="truncate opacity-90 font-semibold text-xs cursor-pointer hover:text-[var(--color-yellow-base)]" title="{{skill.name}}" data-action="clickSkillName" data-skill-id="{{skill.id}}" data-item-id="{{skill.itemId}}">{{skill.name}}</div>
-                            {{#if @root.isEditMode}}
-                                <input class="w-full bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded text-xs" type="number" name="system.skills.active.{{skill.id}}.value" value="{{skill.value}}"/>
-                                {{#if skill.itemId}}
-                                    <a class="text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer text-center flex items-center justify-center" data-action="deleteSkill" data-item-id="{{skill.itemId}}" title="{{localize 'SR5Marketplace.UI.DeleteSkill'}}">
-                                        <i class="fas fa-trash text-xs"></i>
-                                    </a>
-                                {{else}}
-                                    <div></div>
-                                {{/if}}
-                            {{else}}
-                                <div class="text-center font-bold text-[var(--color-yellow-base)]">{{skill.value}}</div>
-                            {{/if}}
-                        </div>
-                    {{/each}}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{!-- Knowledge Skills --}}
-    {{#each knowledgeSkillGroups as |group|}}
+        {{!-- Active Skills --}}
         <div class="collapsible-section bg-[var(--color-black-transparent-20)] rounded">
-            <input type="checkbox" id="toggle-knowledge-{{group.key}}-{{@root.actor.id}}" class="toggle">
+            <input type="checkbox" id="toggle-active-skills-{{@root.actor.id}}" class="toggle" checked>
             
-            <label class="toggle-label glossy-red-btn flex justify-center items-center p-2 cursor-pointer m-0 relative z-10 rounded" for="toggle-knowledge-{{group.key}}-{{@root.actor.id}}">
-                <span class="font-bold text-xs tracking-wide">{{group.label}}</span>
+            <label class="toggle-label glossy-red-btn flex justify-center items-center p-2 cursor-pointer m-0 relative z-10 rounded" for="toggle-active-skills-{{@root.actor.id}}">
+                <span class="font-bold text-xs tracking-wide">{{localize "SR5Marketplace.UI.ActiveSkills"}}</span>
             </label>
             
             <div class="toggle-content relative z-10">
@@ -67,11 +31,11 @@
                         {{#if @root.isEditMode}}<div></div>{{/if}}
                     </div>
                     <div class="flex flex-col gap-0.5 ml-2">
-                        {{#each group.skills as |skill|}}
+                        {{#each activeSkills as |skill|}}
                             <div class="grid {{#if @root.isEditMode}}grid-cols-[1fr_50px_16px]{{else}}grid-cols-[1fr_40px]{{/if}} gap-2 items-center text-sm py-1 hover:bg-[var(--color-white-transparent-05)] px-1 transition-colors rounded">
                                 <div class="truncate opacity-90 font-semibold text-xs cursor-pointer hover:text-[var(--color-yellow-base)]" title="{{skill.name}}" data-action="clickSkillName" data-skill-id="{{skill.id}}" data-item-id="{{skill.itemId}}">{{skill.name}}</div>
                                 {{#if @root.isEditMode}}
-                                    <input class="w-full bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded text-xs" type="number" name="system.skills.knowledge.{{group.key}}.value.{{skill.id}}.value" value="{{skill.value}}"/>
+                                    <input class="w-full bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded text-xs" type="number" name="system.skills.active.{{skill.id}}.value" value="{{skill.value}}"/>
                                     {{#if skill.itemId}}
                                         <a class="text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer text-center flex items-center justify-center" data-action="deleteSkill" data-item-id="{{skill.itemId}}" title="{{localize 'SR5Marketplace.UI.DeleteSkill'}}">
                                             <i class="fas fa-trash text-xs"></i>
@@ -88,44 +52,84 @@
                 </div>
             </div>
         </div>
-    {{/each}}
 
-    {{!-- Language Skills --}}
-    <div class="collapsible-section bg-[var(--color-black-transparent-20)] rounded">
-        <input type="checkbox" id="toggle-language-skills-{{@root.actor.id}}" class="toggle">
-        
-        <label class="toggle-label glossy-red-btn flex justify-center items-center p-2 cursor-pointer m-0 relative z-10 rounded" for="toggle-language-skills-{{@root.actor.id}}">
-            <span class="font-bold text-xs tracking-wide">{{localize "SR5Marketplace.UI.Languages"}}</span>
-        </label>
-        
-        <div class="toggle-content relative z-10">
-            <div class="px-2 pb-2 pt-2">
-                <div class="grid {{#if @root.isEditMode}}grid-cols-[1fr_50px_16px]{{else}}grid-cols-[1fr_40px]{{/if}} gap-2 text-xs font-bold text-[var(--color-red-bright)] mb-1 pb-1 ml-2">
-                    <div>{{localize "SR5Marketplace.UI.Name"}}</div>
-                    <div class="text-center">{{localize "SR5Marketplace.UI.Rating"}}</div>
-                    {{#if @root.isEditMode}}<div></div>{{/if}}
-                </div>
-                <div class="flex flex-col gap-0.5 ml-2">
-                    {{#each languageSkills as |skill|}}
-                        <div class="grid {{#if @root.isEditMode}}grid-cols-[1fr_50px_16px]{{else}}grid-cols-[1fr_40px]{{/if}} gap-2 items-center text-sm py-1 hover:bg-[var(--color-white-transparent-05)] px-1 transition-colors rounded">
-                            <div class="truncate opacity-90 font-semibold text-xs cursor-pointer hover:text-[var(--color-yellow-base)]" title="{{skill.name}}" data-action="clickSkillName" data-skill-id="{{skill.id}}" data-item-id="{{skill.itemId}}">{{skill.name}}</div>
-                            {{#if @root.isEditMode}}
-                                <input class="w-full bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded text-xs" type="number" name="system.skills.language.value.{{skill.id}}.value" value="{{skill.value}}"/>
-                                {{#if skill.itemId}}
-                                    <a class="text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer text-center flex items-center justify-center" data-action="deleteSkill" data-item-id="{{skill.itemId}}" title="{{localize 'SR5Marketplace.UI.DeleteSkill'}}">
-                                        <i class="fas fa-trash text-xs"></i>
-                                    </a>
-                                {{else}}
-                                    <div></div>
-                                {{/if}}
-                            {{else}}
-                                <div class="text-center font-bold text-[var(--color-yellow-base)]">{{skill.value}}</div>
-                            {{/if}}
+        {{!-- Knowledge Skills --}}
+        {{#each knowledgeSkillGroups as |group|}}
+            <div class="collapsible-section bg-[var(--color-black-transparent-20)] rounded">
+                <input type="checkbox" id="toggle-knowledge-{{group.key}}-{{@root.actor.id}}" class="toggle">
+                
+                <label class="toggle-label glossy-red-btn flex justify-center items-center p-2 cursor-pointer m-0 relative z-10 rounded" for="toggle-knowledge-{{group.key}}-{{@root.actor.id}}">
+                    <span class="font-bold text-xs tracking-wide">{{group.label}}</span>
+                </label>
+                
+                <div class="toggle-content relative z-10">
+                    <div class="px-2 pb-2 pt-2">
+                        <div class="grid {{#if @root.isEditMode}}grid-cols-[1fr_50px_16px]{{else}}grid-cols-[1fr_40px]{{/if}} gap-2 text-xs font-bold text-[var(--color-red-bright)] mb-1 pb-1 ml-2">
+                            <div>{{localize "SR5Marketplace.UI.Name"}}</div>
+                            <div class="text-center">{{localize "SR5Marketplace.UI.Rating"}}</div>
+                            {{#if @root.isEditMode}}<div></div>{{/if}}
                         </div>
-                    {{/each}}
+                        <div class="flex flex-col gap-0.5 ml-2">
+                            {{#each group.skills as |skill|}}
+                                <div class="grid {{#if @root.isEditMode}}grid-cols-[1fr_50px_16px]{{else}}grid-cols-[1fr_40px]{{/if}} gap-2 items-center text-sm py-1 hover:bg-[var(--color-white-transparent-05)] px-1 transition-colors rounded">
+                                    <div class="truncate opacity-90 font-semibold text-xs cursor-pointer hover:text-[var(--color-yellow-base)]" title="{{skill.name}}" data-action="clickSkillName" data-skill-id="{{skill.id}}" data-item-id="{{skill.itemId}}">{{skill.name}}</div>
+                                    {{#if @root.isEditMode}}
+                                        <input class="w-full bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded text-xs" type="number" name="system.skills.knowledge.{{group.key}}.value.{{skill.id}}.value" value="{{skill.value}}"/>
+                                        {{#if skill.itemId}}
+                                            <a class="text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer text-center flex items-center justify-center" data-action="deleteSkill" data-item-id="{{skill.itemId}}" title="{{localize 'SR5Marketplace.UI.DeleteSkill'}}">
+                                                <i class="fas fa-trash text-xs"></i>
+                                            </a>
+                                        {{else}}
+                                            <div></div>
+                                        {{/if}}
+                                    {{else}}
+                                        <div class="text-center font-bold text-[var(--color-yellow-base)]">{{skill.value}}</div>
+                                    {{/if}}
+                                </div>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {{/each}}
+
+        {{!-- Language Skills --}}
+        <div class="collapsible-section bg-[var(--color-black-transparent-20)] rounded">
+            <input type="checkbox" id="toggle-language-skills-{{@root.actor.id}}" class="toggle">
+            
+            <label class="toggle-label glossy-red-btn flex justify-center items-center p-2 cursor-pointer m-0 relative z-10 rounded" for="toggle-language-skills-{{@root.actor.id}}">
+                <span class="font-bold text-xs tracking-wide">{{localize "SR5Marketplace.UI.Languages"}}</span>
+            </label>
+            
+            <div class="toggle-content relative z-10">
+                <div class="px-2 pb-2 pt-2">
+                    <div class="grid {{#if @root.isEditMode}}grid-cols-[1fr_50px_16px]{{else}}grid-cols-[1fr_40px]{{/if}} gap-2 text-xs font-bold text-[var(--color-red-bright)] mb-1 pb-1 ml-2">
+                        <div>{{localize "SR5Marketplace.UI.Name"}}</div>
+                        <div class="text-center">{{localize "SR5Marketplace.UI.Rating"}}</div>
+                        {{#if @root.isEditMode}}<div></div>{{/if}}
+                    </div>
+                    <div class="flex flex-col gap-0.5 ml-2">
+                        {{#each languageSkills as |skill|}}
+                            <div class="grid {{#if @root.isEditMode}}grid-cols-[1fr_50px_16px]{{else}}grid-cols-[1fr_40px]{{/if}} gap-2 items-center text-sm py-1 hover:bg-[var(--color-white-transparent-05)] px-1 transition-colors rounded">
+                                <div class="truncate opacity-90 font-semibold text-xs cursor-pointer hover:text-[var(--color-yellow-base)]" title="{{skill.name}}" data-action="clickSkillName" data-skill-id="{{skill.id}}" data-item-id="{{skill.itemId}}">{{skill.name}}</div>
+                                {{#if @root.isEditMode}}
+                                    <input class="w-full bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded text-xs" type="number" name="system.skills.language.value.{{skill.id}}.value" value="{{skill.value}}"/>
+                                    {{#if skill.itemId}}
+                                        <a class="text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer text-center flex items-center justify-center" data-action="deleteSkill" data-item-id="{{skill.itemId}}" title="{{localize 'SR5Marketplace.UI.DeleteSkill'}}">
+                                            <i class="fas fa-trash text-xs"></i>
+                                        </a>
+                                    {{else}}
+                                        <div></div>
+                                    {{/if}}
+                                {{else}}
+                                    <div class="text-center font-bold text-[var(--color-yellow-base)]">{{skill.value}}</div>
+                                {{/if}}
+                            </div>
+                        {{/each}}
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
+    </div>
 </div>
