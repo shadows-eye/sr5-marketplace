@@ -45,6 +45,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         // --- Handle passed-in shop context ---
         this.shopActorUuid = options.shopActorUuid ?? null;
+        this.initialSearchTerm = options.initialSearchTerm ?? null;
 
         // If no explicit shop context was passed, detect if the controlled token is inside a shop region
         if (!this.shopActorUuid && canvas.ready && canvas.tokens?.controlled[0]) {
@@ -126,6 +127,14 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         if (this.tabGroups.main === "shop") {
             this.searchService = new SearchService(this.element, this._applySearchFilter.bind(this));
+            
+            if (this.initialSearchTerm) {
+                if (this.searchService) {
+                    this.searchService.activeFilters = [this.initialSearchTerm.toLowerCase()];
+                }
+                this.initialSearchTerm = null;
+            }
+
             this.searchService.initialize();
             
             const categorySelector = this.element.querySelector("#item-type-selector");

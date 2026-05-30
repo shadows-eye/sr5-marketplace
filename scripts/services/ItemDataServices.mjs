@@ -31,6 +31,10 @@ export default class ItemDataServices {
         this._indexPromise = null;
     }
 
+    getItems() {
+        return this._globalItemsCache || [];
+    }
+
     async buildIndex() {
         if (this._globalItemsCache) return this._globalItemsCache;
         if (this._indexPromise) return this._indexPromise;

@@ -39,39 +39,14 @@ export {
 
 import { inGameMarketplace } from "./apps/inGameMarketplace.mjs";
 import { MarketplaceSettingsApp } from "./apps/MarketplaceSettingsApp.mjs";
+import { MarketShouterApp } from "./apps/marketshouter.mjs";
 import { registerShopRegionHooks } from "./apps/documents/sceneRegions/shopRegions.mjs";
 import { ShopActorSheet } from "../sheets/ShopActorSheet.mjs";
 // --- 4. API IMPORTS ---
 import { MarketplaceAPI, SR5SystemAPI } from './API/_module.mjs';
 import { ItemBuilderApp } from "./apps/ItemBuilderApp.mjs";
 
-/**
- * Draws the notification badge on the scene control button.
- * This function is called by the 'renderSceneControls' hook.
- * @param {JQuery} html The jQuery object for the scene controls container.
- */
-function drawBadge(html) {
-    // This guard clause prevents errors if the hook fires at an unexpected time.
-    if (!html || !html.length || !game.user.isGM) return;
 
-    // Get the latest count directly from the service every time the controls are rendered.
-    const pendingCount = PurchaseService.getPendingRequestCount();
-
-    const controlButton = html.find('[data-tool="sr5-marketplace"]');
-    if (!controlButton.length) return;
-
-    let badge = controlButton.find(".notification-badge");
-    if (!badge.length) {
-        badge = $('<span class="notification-badge"></span>');
-        controlButton.append(badge);
-    }
-
-    if (pendingCount > 0) {
-        badge.text(pendingCount).show();
-    } else {
-        badge.hide();
-    }
-}
 
 // --- HOOKS SECTION ---
 
@@ -96,7 +71,8 @@ const initializeTemplates = () => {
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/Builder.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/ItemDetails.html",
-        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/multi-select.html"
+        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/multi-select.html",
+        "modules/sr5-marketplace/templates/apps/marketshouter/marketshouter.html"
     ]);
 };
 // Initialize module settings
@@ -321,19 +297,11 @@ Hooks.on("ready", async () => {
     // --- REMOVED: await game.sr5marketplace.api.itemData.initialize(); ---
     game.sr5marketplace.api.itemData.buildIndex().then(() => {
         console.log("SR5 Marketplace | Item index successfully cached in memory.");
+        MarketShouterApp.initialize();
     });
     if (game.user.isGM) {
         // Automatically run shop actor legacy skills migration
         migrateShopSkills();
-
-        game.socket.on("module.sr5-marketplace", () => {
-            // A real-time event was received. Trigger a re-draw after a short delay.
-            setTimeout(() => {
-                if (ui.controls) ui.controls.render(true);
-            }, 250);
-        });
-        // On first load, render the controls to set the initial badge state.
-        setTimeout(() => { if (ui.controls) ui.controls.render(true); }, 1000);
     }
 
 });
@@ -343,112 +311,19 @@ Hooks.on("ready", async () => {
  * We use this to detect changes to a player's basket and update the GM's UI.
  */
 Hooks.on("updateUser", (user, changes) => {
-    // This now correctly checks for changes to the 'basket' flag.
-    if (game.user.isGM && foundry.utils.hasProperty(changes, "flags.sr5-marketplace.basket")) {
-        // A relevant flag changed, so just ask the UI to redraw the controls.
-        setTimeout(() => {
-            if (ui.controls) ui.controls.render(true);
-        }, 250);
+
+    // Refresh the MarketShouter badge when user baskets or approval requests update
+    if (foundry.utils.hasProperty(changes, "flags.sr5-marketplace.basket")) {
+        const shouter = foundry.applications.instances.get("marketshouter");
+        if (shouter) {
+            // Re-render if GM (to show new player requests instantly) OR if the user is modifying their own basket
+            if (game.user.isGM || user.id === game.user.id) {
+                shouter.render();
+            }
+        }
     }
 });
-// Add control buttons for the Marketplace and Item Builder
-Hooks.on("getSceneControlButtons", (controls) => {
-    // --- FOUNDRY V13 METHOD (Objects) ---
-    if (!Array.isArray(controls)) {
-        // Foundry V13 keys the controls object by name (usually "token" or "tokens")
-        const tokenGroup = controls.token || controls.tokens;
-        if (!tokenGroup || !tokenGroup.tools) return;
 
-        // 1. Marketplace Button (Direct Object Assignment)
-        tokenGroup.tools["sr5-marketplace"] = {
-            name: "sr5-marketplace",
-            title: game.i18n.localize("SR5Marketplace.Marketplace.Title") || "Marketplace",
-            icon: "fas fa-shopping-cart",
-            visible: true,
-            toggle: true,
-            active: false, // Default state
-            onChange: () => {
-                const app = Object.values(ui.windows).find(app => app.id === "inGameMarketplace");
-                if (app) {
-                    app.close();
-                } else {
-                    new inGameMarketplace().render(true);
-                }
-
-                // Set the toggle back to false and redraw the UI
-                tokenGroup.tools["sr5-marketplace"].active = false;
-                if (ui.controls) ui.controls.render(true);
-            }
-        };
-        /**
-        // 2. Item Builder Button (Direct Object Assignment)
-        if (game.user.isGM) {
-            tokenGroup.tools["sr5-item-builder"] = {
-                name: "sr5-item-builder",
-                title: "Item Builder",
-                icon: "fas fa-hammer", 
-                visible: true,
-                toggle: true,
-                active: Object.values(ui.windows).some(app => app.id === "ItemBuilderApp"),
-                onChange: (toggled) => {
-                    const app = Object.values(ui.windows).find(app => app.id === "ItemBuilderApp");
-                    if (toggled) {
-                        if (!app) new ItemBuilderApp().render(true);
-                    } else {
-                        if (app) app.close();
-                    }
-                }
-            };
-        }*/
-        return; // Exit out, we are done with V13!
-    }
-
-    // --- FOUNDRY V12 AND OLDER METHOD (Arrays) ---
-    const tokenControls = controls.find(c => c.name === "token");
-    if (!tokenControls || !Array.isArray(tokenControls.tools)) return;
-
-    if (!tokenControls.tools.find(t => t.name === "sr5-marketplace")) {
-        tokenControls.tools.push({
-            name: "sr5-marketplace",
-            title: game.i18n.localize("SR5Marketplace.Marketplace.Title") || "Marketplace",
-            icon: "fas fa-shopping-cart",
-            visible: true,
-            toggle: true,
-            active: Object.values(ui.windows).some(app => app.id === "inGameMarketplace"),
-            onClick: (toggled) => {
-                const app = Object.values(ui.windows).find(app => app.id === "inGameMarketplace");
-                if (toggled) {
-                    if (!app) new inGameMarketplace().render(true);
-                } else {
-                    if (app) app.close();
-                }
-            }
-        });
-    }
-    /**
-    if (game.user.isGM && !tokenControls.tools.find(t => t.name === "sr5-item-builder")) {
-        tokenControls.tools.push({
-            name: "sr5-item-builder",
-            title: "Item Builder",
-            icon: "fas fa-hammer", 
-            visible: true,
-            toggle: true,
-            active: Object.values(ui.windows).some(app => app.id === "ItemBuilderApp"),
-            onClick: (toggled) => {
-                const app = Object.values(ui.windows).find(app => app.id === "ItemBuilderApp");
-                if (toggled) {
-                    if (!app) new ItemBuilderApp().render(true);
-                } else {
-                    if (app) app.close();
-                }
-            }
-        });
-    }*/
-});
-
-Hooks.on("renderSceneControls", (app, html) => {
-    drawBadge(html);
-});
 
 /**
  * A hook that runs when the canvas is ready.
@@ -482,6 +357,42 @@ Hooks.on("canvasReady", () => {
     // Set the flag so this hook only runs once per canvas session.
     canvas.marketplaceListenerAttached = true;
     console.log("Marketplace | Double-click listener for shops is now active.");
+});
+
+/**
+ * Reactively refresh the MarketShouter widget when the active token selection changes on the canvas.
+ */
+Hooks.on("controlToken", (token, controlled) => {
+    const shouter = foundry.applications.instances.get("marketshouter");
+    if (shouter) {
+        shouter.render();
+    }
+});
+
+/**
+ * Reactively refresh the MarketShouter widget when a token moves into/out of a shop region.
+ */
+Hooks.on("updateToken", (token, changes) => {
+    if ("x" in changes || "y" in changes) {
+        const shouter = foundry.applications.instances.get("marketshouter");
+        if (shouter) {
+            shouter.render();
+        }
+    }
+});
+
+/**
+ * Reactively refresh the MarketShouter widget when the sidebar is collapsed or expanded.
+ */
+Hooks.on("collapseSidebar", (sidebar, collapsed) => {
+    const shouter = foundry.applications.instances.get("marketshouter");
+    if (shouter) {
+        if (typeof shouter.updatePosition === "function") {
+            shouter.updatePosition();
+        } else {
+            shouter.render();
+        }
+    }
 });
 
 // --- Seed default skills on new Shop Actor creation ---
