@@ -1,0 +1,137 @@
+/* ======================================================== */
+/* Compendium Item Browser Layout & Styles                  */
+/* ======================================================== */
+
+.compendium-browser-app {
+    color: var(--text-color-primary);
+    font-family: sans-serif;
+    height: 100%;
+}
+
+.compendium-sidebar {
+    background-color: var(--color-black-transparent-20);
+    border-color: var(--border-color-medium) !important;
+}
+
+.compendium-sidebar h4 {
+    color: var(--text-color-header);
+    margin: 0;
+    padding: 4px 8px;
+    letter-spacing: 0.05em;
+}
+
+.compendium-tab-btn {
+    border: 1px solid transparent;
+    padding: 8px 12px;
+    color: var(--text-color-primary);
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    background: transparent;
+}
+
+.compendium-tab-btn:hover {
+    background-color: var(--color-black-transparent-15);
+    border-color: var(--border-color-medium);
+}
+
+.compendium-tab-btn.active {
+    background: var(--header-gradient-bar);
+    border-color: var(--border-color-highlight) !important;
+    color: var(--header-gradient-text) !important;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.2), 0 1px 3px rgba(0,0,0,0.3);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.browser-main {
+    background-color: var(--app-window-content-bg);
+}
+
+/* Custom Custom checkboxes */
+.checkbox-custom {
+    appearance: none;
+    background-color: var(--input-bg-transparent);
+    border: 1px solid var(--border-color-medium);
+    padding: 6px;
+    border-radius: 3px;
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.15s ease;
+}
+
+.checkbox-custom:checked {
+    background-color: var(--color-yellow-base);
+    border-color: var(--color-yellow-dark);
+}
+
+.checkbox-custom:checked::after {
+    content: '\f00c';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 8px;
+    color: var(--color-black);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Rows Styling */
+.folder-row, .item-row {
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    background-color: var(--color-black-transparent-15) !important;
+}
+
+.folder-row:hover, .item-row:hover {
+    background-color: var(--color-black-transparent-20) !important;
+    border-color: var(--border-color-medium) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+/* Section styling */
+.folders-section h3, .items-section h3 {
+    color: var(--color-yellow-base) !important;
+    border-bottom: 1px solid var(--border-color-medium) !important;
+}
+
+/* Inputs */
+.search-input {
+    background-color: var(--input-bg-transparent) !important;
+    color: var(--input-color) !important;
+    border-color: var(--border-color-medium) !important;
+    transition: all 0.2s ease;
+}
+
+.search-input:focus {
+    border-color: var(--color-yellow-base) !important;
+    box-shadow: 0 0 5px rgba(231, 201, 62, 0.4);
+}
+
+/* Buttons */
+.select-all-btn, .deselect-all-btn, .cancel-btn {
+    background-color: var(--tab-inactive-bg) !important;
+    color: var(--text-color-primary) !important;
+    border: 1px solid var(--border-color-medium) !important;
+    transition: all 0.2s ease !important;
+}
+
+.select-all-btn:hover, .deselect-all-btn:hover, .cancel-btn:hover {
+    background-color: var(--bg-dark-section-hover) !important;
+    filter: brightness(1.1);
+}
+
+.submit-btn {
+    background-color: var(--color-green-button) !important;
+    color: var(--color-white) !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+.submit-btn:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+    transform: translateY(-1px);
+}

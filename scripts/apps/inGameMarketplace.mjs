@@ -1188,18 +1188,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
      * and search text, then instantly redraws the Virtual Scroller.
      */
     _applySearchFilter(tags, searchTerm) {
-        // 1. Start with the full, unfiltered list of items for this category
-        let filtered = this.currentCategoryItems;
-
-        // 2. Filter the data array
-        if (tags.length > 0 || searchTerm) {
-            filtered = filtered.filter(item => {
-                const itemName = item.name.toLowerCase();
-                const matchesTags = tags.every(tag => itemName.includes(tag));
-                const matchesLive = searchTerm ? itemName.includes(searchTerm) : true;
-                return matchesTags && matchesLive;
-            });
-        }
+        // 1. Filter using the new Marketplace API method
+        const filtered = game.sr5marketplace.api.marketplace.filterItems(this.currentCategoryItems, tags, searchTerm);
 
         // 3. Update the scroller's active entries
         this.scrollState.entries = filtered;

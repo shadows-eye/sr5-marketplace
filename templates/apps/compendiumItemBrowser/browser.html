@@ -1,0 +1,105 @@
+<div class="compendium-browser-app flex flex-row h-full">
+    {{!-- SIDEBAR: Compendiums list --}}
+    <div class="compendium-sidebar flex flex-col border-r border-[var(--border-color-medium)] p-2 gap-1 w-64 bg-[var(--color-black-transparent-20)]">
+        <h4 class="text-xs font-bold uppercase tracking-wider opacity-60 px-2 py-1 mb-1">
+            <i class="fa-solid fa-atlas mr-1"></i> {{localize "SR5Marketplace.UI.Compendiums"}}
+        </h4>
+        <div class="compendium-list flex flex-col gap-1 overflow-y-auto pr-1">
+            {{#each compendiums}}
+            <button type="button" class="compendium-tab-btn flex items-center gap-2 p-2 rounded text-left text-xs font-semibold border-none transition-all cursor-pointer {{#if (eq id ../activeCompendiumId)}}active bg-[var(--color-yellow-base)] text-[var(--color-black-dark)]{{else}}bg-transparent text-[var(--text-color-primary)] hover:bg-[var(--color-black-transparent-10)]{{/if}}" data-pack-id="{{id}}">
+                <i class="fa-solid fa-box-open opacity-80"></i>
+                <span class="truncate">{{title}}</span>
+            </button>
+            {{/each}}
+        </div>
+    </div>
+
+    {{!-- MAIN CONTENT AREA --}}
+    <div class="browser-main flex flex-col flex-1 p-3 overflow-hidden bg-[var(--color-black-darkest)]">
+        {{#if activeCompendiumId}}
+            {{!-- SEARCH & CONTROLS --}}
+            <div class="flex items-center gap-2 mb-3">
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 opacity-50 text-xs"></i>
+                    <input type="text" class="search-input w-full pl-8 pr-3 py-1.5 text-xs bg-[var(--input-bg-transparent)] text-[var(--text-color-primary)] border border-[var(--border-color-medium)] rounded focus:border-[var(--color-yellow-base)] outline-none" placeholder="{{localize 'SR5Marketplace.UI.SearchPlaceholder'}}"/>
+                </div>
+                <button type="button" class="select-all-btn px-2 py-1.5 rounded text-xs bg-[var(--color-grey-dark)] text-[var(--text-color-primary)] border-none cursor-pointer hover:bg-[var(--color-grey-medium)] transition-colors">
+                    {{localize "SR5Marketplace.UI.SelectAll"}}
+                </button>
+                <button type="button" class="deselect-all-btn px-2 py-1.5 rounded text-xs bg-[var(--color-grey-dark)] text-[var(--text-color-primary)] border-none cursor-pointer hover:bg-[var(--color-grey-medium)] transition-colors">
+                    {{localize "SR5Marketplace.UI.DeselectAll"}}
+                </button>
+            </div>
+
+            {{!-- SECTIONS CONTAINER --}}
+            <div class="flex-1 overflow-y-auto flex flex-col gap-4 pr-1 pb-4">
+                {{!-- FOLDERS SECTION --}}
+                {{#if folders.length}}
+                <div class="folders-section border border-[var(--border-color-medium)] rounded p-2 bg-[var(--color-black-transparent-10)]">
+                    <h3 class="text-xs font-bold text-[var(--color-yellow-base)] border-b border-[var(--border-color-medium)] pb-1.5 mb-2 flex items-center justify-between">
+                        <span><i class="fa-solid fa-folder-tree mr-1"></i> {{localize "SR5Marketplace.UI.Folders"}}</span>
+                        <span class="text-[10px] opacity-60 font-normal">({{folders.length}})</span>
+                    </h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        {{#each folders}}
+                        <label class="folder-row flex items-center gap-2 p-1.5 bg-[var(--color-black-transparent-10)] rounded hover:bg-[var(--color-black-transparent-20)] cursor-pointer transition-colors border border-transparent hover:border-[var(--border-color-medium)]">
+                            <input type="checkbox" class="folder-checkbox checkbox-custom" data-folder-id="{{id}}"/>
+                            <i class="fa-solid fa-folder text-[var(--color-yellow-base)] opacity-80 text-sm"></i>
+                            <span class="text-xs font-semibold truncate" title="{{name}}">{{name}}</span>
+                        </label>
+                        {{/each}}
+                    </div>
+                </div>
+                {{/if}}
+
+                {{!-- ITEMS SECTION --}}
+                <div class="items-section border border-[var(--border-color-medium)] rounded p-2 bg-[var(--color-black-transparent-10)]">
+                    <h3 class="text-xs font-bold text-[var(--color-yellow-base)] border-b border-[var(--border-color-medium)] pb-1.5 mb-2 flex items-center justify-between">
+                        <span><i class="fa-solid fa-cube mr-1"></i> {{localize "SR5Marketplace.UI.Items"}}</span>
+                        <span class="text-[10px] opacity-60 font-normal">({{items.length}})</span>
+                    </h3>
+                    <div class="item-grid flex flex-col gap-1.5">
+                        {{#each items}}
+                        <label class="item-row flex items-center justify-between p-1.5 bg-[var(--color-black-transparent-10)] rounded hover:bg-[var(--color-black-transparent-20)] cursor-pointer transition-colors border border-transparent hover:border-[var(--border-color-medium)]" data-item-name="{{name}}" data-item-type="{{type}}">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="item-checkbox checkbox-custom" data-item-id="{{id}}" data-folder-id="{{folderId}}"/>
+                                <img src="{{img}}" alt="{{name}}" class="w-6 h-6 object-cover rounded bg-[var(--inventory-item-image-bg)]"/>
+                                <div class="flex flex-col min-w-0">
+                                    <span class="text-xs font-bold truncate leading-snug" title="{{name}}">{{name}}</span>
+                                    <span class="text-[9px] opacity-50 uppercase tracking-wider">{{type}}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                {{#if rating}}
+                                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[var(--color-black-transparent-20)] text-[var(--text-color-primary)]">R: {{rating}}</span>
+                                {{/if}}
+                            </div>
+                        </label>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+            
+            {{!-- ACTIONS / FOOTER --}}
+            <div class="flex justify-between items-center border-t border-[var(--border-color-medium)] pt-3 mt-2">
+                <div class="selected-summary text-xs text-[var(--text-color-primary)] opacity-80">
+                    <span class="selected-items-count font-bold text-[var(--color-green-button)]">0</span> items selected
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" class="cancel-btn px-4 py-2 rounded text-xs bg-[var(--color-grey-dark)] text-[var(--text-color-primary)] border-none cursor-pointer hover:bg-[var(--color-grey-medium)] transition-all">
+                        {{localize "SR5Marketplace.UI.Cancel"}}
+                    </button>
+                    <button type="button" class="submit-btn px-4 py-2 rounded text-xs bg-[var(--color-green-button)] text-[var(--color-white)] border-none cursor-pointer hover:brightness-110 font-bold shadow transition-all flex items-center gap-1">
+                        <i class="fa-solid fa-plus"></i> {{localize "SR5Marketplace.UI.AddSelected"}}
+                    </button>
+                </div>
+            </div>
+        {{else}}
+            <div class="flex flex-col items-center justify-center h-full text-center p-6 opacity-60">
+                <i class="fa-solid fa-atlas text-4xl mb-3"></i>
+                <h3 class="text-sm font-bold">{{localize "SR5Marketplace.UI.NoCompendiumSelectedTitle"}}</h3>
+                <p class="text-xs max-w-xs mt-1">{{localize "SR5Marketplace.UI.NoCompendiumSelectedDesc"}}</p>
+            </div>
+        {{/if}}
+    </div>
+</div>
