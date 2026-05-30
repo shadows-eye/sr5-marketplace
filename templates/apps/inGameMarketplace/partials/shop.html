@@ -4,12 +4,13 @@
     <div class="marketplace-filter flex flex-col @md:flex-row flex-wrap items-start @md:items-center gap-2 p-2 bg-black/10 dark:bg-white/5 border border-black/20 dark:border-white/10 rounded shadow-sm" id="marketplaceActorDropzone">
         
         {{!-- Top Row (Mobile) / Left Side (Desktop) --}}
-        <div class="flex flex-wrap items-center gap-3 w-full @md:w-auto">
+        <div class="flex flex-wrap items-center gap-2 w-full @md:w-auto">
             {{#if shopActorUuid}}
-                <div class="flex items-center gap-1.5">
-                    <label for="marketplace-source-toggle" class="text-[11px] font-bold opacity-80 uppercase tracking-wider cursor-pointer">{{localize "SR5Marketplace.Marketplace.Source.Global"}}</label>
-                    <input type="checkbox" id="marketplace-source-toggle" class="sr5-marketplace w-3 h-3 rounded cursor-pointer" {{checked isShopView}}>
-                    <span class="text-[10px] italic opacity-70 ml-1 truncate max-w-[80px]">{{shopName}}</span>
+                <div class="flex items-center shrink-0">
+                    <label class="marketplace-switch mx-0.5" title="{{localize 'SR5Marketplace.Marketplace.Source.Global'}} / {{shopName}}">
+                        <input type="checkbox" id="marketplace-source-toggle" {{checked isShopView}}>
+                        <span class="marketplace-slider" style="--thumb-image: url({{shopImg}});"></span>
+                    </label>
                 </div>
             {{/if}}
 

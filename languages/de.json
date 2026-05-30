@@ -369,7 +369,8 @@
                 "Description": "Beschreibung",
                 "AddItem": "Hinzufügen",
                 "DecreaseQuantity": "Menge verringern",
-                "IncreaseQuantity": "Menge erhöhen"
+                "IncreaseQuantity": "Menge erhöhen",
+                "OutOfStockWarning": "Kann '{name}' nicht weiter hinzufügen. Das Geschäft hat nur {qty} auf Lager."
             },
             "OrderReview": {
                 "Title": "Order Überprüfung",

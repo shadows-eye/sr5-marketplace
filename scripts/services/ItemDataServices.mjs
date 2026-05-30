@@ -257,6 +257,10 @@ export default class ItemDataServices {
             if (item) {
                 const itemData = item.toObject(false);
                 itemData.uuid = item.uuid;
+                if (itemData.system?.technology) {
+                    itemData.system.technology.cost = invItem.sellPrice?.value ?? itemData.system.technology.cost;
+                    itemData.system.technology.availability = invItem.availability?.value ?? itemData.system.technology.availability;
+                }
                 shopItems.push(itemData);
             }
         }

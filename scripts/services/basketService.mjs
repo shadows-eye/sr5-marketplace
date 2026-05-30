@@ -33,7 +33,34 @@ export class BasketService {
         if (!user) return this._getDefaultBasketState();
 
         const savedBasket = await user.getFlag(MODULE_ID, FLAGKEY_Basket) || {};
-        return foundry.utils.mergeObject(this._getDefaultBasketState(), savedBasket);
+        const basket = foundry.utils.mergeObject(this._getDefaultBasketState(), savedBasket);
+
+        if (basket.shopActorUuid) {
+            const shopActor = await fromUuid(basket.shopActorUuid);
+            if (shopActor && typeof shopActor.findInventoryItem === "function") {
+                let updated = false;
+                for (const cartItem of basket.shoppingCartItems) {
+                    const entry = shopActor.findInventoryItem(cartItem.itemUuid);
+                    if (entry) {
+                        const shopItem = entry[1];
+                        if (cartItem.cost !== shopItem.sellPrice.value) {
+                            cartItem.cost = shopItem.sellPrice.value;
+                            updated = true;
+                        }
+                        if (cartItem.availability !== shopItem.availability.value) {
+                            cartItem.availability = shopItem.availability.value;
+                            updated = true;
+                        }
+                    }
+                }
+                if (updated) {
+                    this._recalculateTotals(basket);
+                    await this.saveBasket(basket, userId);
+                }
+            }
+        }
+
+        return basket;
     }
 
     /**
@@ -81,6 +108,28 @@ export class BasketService {
             }
         }
 
+        // --- Shop Actor & Stock Limit Checks ---
+        let shopItem = null;
+        if (basket.shopActorUuid) {
+            const shopActor = await fromUuid(basket.shopActorUuid);
+            if (shopActor && typeof shopActor.findInventoryItem === "function") {
+                const entry = shopActor.findInventoryItem(item.uuid);
+                if (entry) {
+                    shopItem = entry[1];
+                }
+            }
+        }
+
+        if (shopItem) {
+            const totalInBasket = basket.shoppingCartItems
+                .filter(i => i.itemUuid === item.uuid)
+                .reduce((sum, i) => sum + i.buyQuantity, 0);
+            if (totalInBasket + 1 > shopItem.qty) {
+                ui.notifications.warn(game.i18n.format("SR5Marketplace.Marketplace.Basket.OutOfStockWarning", { name: item.name, qty: shopItem.qty }));
+                return;
+            }
+        }
+
         if (behavior === 'stack' && existingItemInCart) {
             existingItemInCart.buyQuantity += 1;
         } else {
@@ -94,19 +143,40 @@ export class BasketService {
             } else if (item.type === "complex_form" && calculatedKarma === 0) {
                 calculatedKarma = game.settings.get("sr5-marketplace", "karmaCostForComplexForm");
             }
+
+            const defaultRating = item.system.technology?.rating || 0;
+            let finalCost = item.system.technology?.cost || 0;
+            let finalAvailability = item.system.technology?.availability || "0";
+            let finalEssence = item.system.essence || 0;
+
+            if (defaultRating > 0) {
+                try {
+                    const cloned = item.clone({ "system.technology.rating": defaultRating }, { keepId: true });
+                    finalCost = cloned.system.technology?.cost ?? finalCost;
+                    finalAvailability = cloned.system.technology?.availability ?? finalAvailability;
+                    finalEssence = cloned.system.essence ?? finalEssence;
+                } catch (err) {
+                    console.warn("SR5 Marketplace | Failed to clone item for dynamic calculation on add:", err);
+                }
+            }
+
+            if (shopItem) {
+                finalCost = shopItem.sellPrice.value;
+            }
+
             const basketItem = {
                 basketItemUuid: "basket." + foundry.utils.randomID(),
                 itemUuid: item.uuid,
                 buyQuantity: 1,
                 name: item.name, 
                 img: item.img, 
-                cost: item.system.technology?.cost || 0,
+                cost: finalCost,
                 karma: calculatedKarma, 
-                availability: item.system.technology?.availability || "0",
-                essence: item.system.essence || 0, 
+                availability: finalAvailability,
+                essence: finalEssence, 
                 itemQuantity: behavior === 'stack' ? 10 : (item.system.quantity || 1),
-                rating: item.system.technology?.rating || 1, 
-                selectedRating: item.system.technology?.rating || 1,
+                rating: defaultRating, 
+                selectedRating: defaultRating,
             };
             basket.shoppingCartItems.push(basketItem);
         }
@@ -153,6 +223,24 @@ export class BasketService {
 
         const behavior = itemBehaviors[sourceItem.type] || 'single';
 
+        // --- Shop Actor & Stock Limit Checks on Increase ---
+        if (change > 0 && basket.shopActorUuid) {
+            const shopActor = await fromUuid(basket.shopActorUuid);
+            if (shopActor && typeof shopActor.findInventoryItem === "function") {
+                const entry = shopActor.findInventoryItem(targetItem.itemUuid);
+                if (entry) {
+                    const shopItem = entry[1];
+                    const totalInBasket = basket.shoppingCartItems
+                        .filter(i => i.itemUuid === targetItem.itemUuid)
+                        .reduce((sum, i) => sum + i.buyQuantity, 0);
+                    if (totalInBasket + change > shopItem.qty) {
+                        ui.notifications.warn(game.i18n.format("SR5Marketplace.Marketplace.Basket.OutOfStockWarning", { name: targetItem.name, qty: shopItem.qty }));
+                        return;
+                    }
+                }
+            }
+        }
+
         switch (behavior) {
             case 'stack':
                 targetItem.buyQuantity += change;
@@ -176,6 +264,50 @@ export class BasketService {
             case 'unique':
                 // The UI should prevent this, but we do nothing here for safety.
                 return;
+        }
+
+        const updatedBasket = this._recalculateTotals(basket);
+        await this.saveBasket(updatedBasket);
+    }
+
+    /**
+     * Updates a property on an item in the active shopping cart and recalculates.
+     * @param {string} basketItemUuid The unique instance ID of the item.
+     * @param {string} property The property name to update.
+     * @param {*} value The new value for the property.
+     */
+    async updateItemProperty(basketItemUuid, property, value) {
+        if (!basketItemUuid || !property) return;
+
+        const basket = await this.getBasket();
+        const targetItem = basket.shoppingCartItems.find(i => i.basketItemUuid === basketItemUuid);
+        if (!targetItem) return;
+
+        targetItem[property] = value;
+
+        if (property === "selectedRating") {
+            const sourceItem = await fromUuid(targetItem.itemUuid);
+            if (sourceItem) {
+                try {
+                    let shopItem = null;
+                    if (basket.shopActorUuid) {
+                        const shopActor = await fromUuid(basket.shopActorUuid);
+                        if (shopActor && typeof shopActor.findInventoryItem === "function") {
+                            const entry = shopActor.findInventoryItem(targetItem.itemUuid);
+                            if (entry) {
+                                shopItem = entry[1];
+                            }
+                        }
+                    }
+
+                    const cloned = sourceItem.clone({ "system.technology.rating": value }, { keepId: true });
+                    targetItem.cost = shopItem ? shopItem.sellPrice.value : (cloned.system.technology?.cost ?? targetItem.cost);
+                    targetItem.availability = cloned.system.technology?.availability ?? targetItem.availability;
+                    targetItem.essence = cloned.system.essence ?? targetItem.essence;
+                } catch (err) {
+                    console.warn("SR5 Marketplace | Failed to clone item for dynamic calculation on update:", err);
+                }
+            }
         }
 
         const updatedBasket = this._recalculateTotals(basket);

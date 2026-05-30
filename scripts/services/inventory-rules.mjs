@@ -12,9 +12,39 @@ export class InventoryRules {
         console.group("Marketplace | InventoryRules Calculation");
         console.log(`Evaluating Item: ${item.name} (${item.uuid})`);
 
-        // SR5 items store these values under system.technology
-        const baseCost = item.system?.technology?.cost ?? item.system?.cost ?? 0;
-        const baseAvailability = item.system?.technology?.availability ?? item.system?.availability ?? "1R";
+        // Highly robust extraction of base cost and availability
+        let baseCost = item.system?.technology?.cost;
+        if (baseCost && typeof baseCost === "object") {
+            baseCost = baseCost.value;
+        }
+        baseCost = Number(baseCost) || 0;
+
+        if (baseCost === 0) {
+            let altCost = item.system?.cost;
+            if (altCost && typeof altCost === "object") {
+                altCost = altCost.value;
+            }
+            baseCost = Number(altCost) || 0;
+        }
+
+        if (baseCost === 0) {
+            baseCost = Number(item.system?.technology?.calculated?.cost?.value) || 0;
+        }
+
+        let baseAvailability = item.system?.technology?.availability;
+        if (baseAvailability && typeof baseAvailability === "object") {
+            baseAvailability = baseAvailability.value;
+        }
+        if (!baseAvailability) {
+            baseAvailability = item.system?.availability;
+            if (baseAvailability && typeof baseAvailability === "object") {
+                baseAvailability = baseAvailability.value;
+            }
+        }
+        if (!baseAvailability) {
+            baseAvailability = item.system?.technology?.calculated?.availability?.value;
+        }
+        baseAvailability = String(baseAvailability || "1R").trim();
         
         console.log("Base Cost extracted:", baseCost);
         console.log("Base Availability extracted:", baseAvailability);

@@ -69,11 +69,11 @@
                             <label for="toggle-mod-group-{{index}}" class="place-collapsible-header">{{localize group.title}}</label>
 
                             {{!-- The content that will be shown or hidden --}}
-                            <div class="collapsible-content">
+                            <div class="place-collapsible-content">
                                 <div class="modifier-items-grid">
                                     {{#each group.items as |mod|}}
                                         <label>{{localize mod.description}}</label>
-                                        <button type="button" class="modifier-button {{#if (isModifierActive mod.label @root.activeTestState.modifiers)}}active{{/if}}" 
+                                        <button type="button" class="modifier-button {{#if (isModifierActive mod.label @root.activeTestState.appliedModifiers)}}active{{/if}}" 
                                                 data-action="applyModifier" 
                                                 data-label="{{mod.label}}" 
                                                 data-value="{{mod.value}}">

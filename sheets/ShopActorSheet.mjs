@@ -80,6 +80,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             width: 1080,
             height: 900
         },
+        dragDrop: [{ dropSelector: ".drop-target" }],
         actions: {
             toggleMode: this.#onToggleMode,
             editImage: this.#onEditImage,
@@ -97,7 +98,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             createSkill: this.#onCreateSkill,
             deleteSkill: this.#onDeleteSkill,
             clickSkillName: this.#onClickSkillName,
-                        setServingEmployee: this.#onSetServingEmployee,
+            setServingEmployee: this.#onSetServingEmployee,
             openHostSheet: this.#onOpenHostSheet,
             openMatrixTab: this.#onOpenMatrixTab
         }
@@ -425,13 +426,24 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                     const sourceItem = await fromUuid(itemData.itemUuid);
                     if (!sourceItem) continue;
 
+                    let sourceCost = sourceItem.system?.technology?.cost;
+                    if (sourceCost && typeof sourceCost === "object") sourceCost = sourceCost.value;
+                    if (sourceCost === undefined || sourceCost === null || sourceCost === 0) {
+                        sourceCost = sourceItem.system?.cost;
+                        if (sourceCost && typeof sourceCost === "object") sourceCost = sourceCost.value;
+                    }
+                    if (sourceCost === undefined || sourceCost === null || sourceCost === 0) {
+                        sourceCost = sourceItem.system?.technology?.calculated?.cost?.value;
+                    }
+                    sourceCost = Number(sourceCost) || 0;
+
                     // Combine system data with your module's shop data
                     preparedInventory[entryId] = {
                         ...itemData, // Includes sellPrice, buyPrice, etc. from your data model
                         img: sourceItem.img,
                         name: sourceItem.name,
                         rating: sourceItem.system.rating || 0,
-                        itemPrice: itemData.itemPrice ?? { value: fallbackCost, base: fallbackCost },
+                        itemPrice: itemData.itemPrice ?? { value: sourceCost, base: sourceCost },
                         // Override availability.value with the system's if you want
                         // availability: { value: sourceItem.system.availability, base: itemData.availability.base }
                     };
@@ -1097,7 +1109,9 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                 const calculatedData = await InventoryRules.getCalculatedItemData(this.document, item);
                 
                 // 2. Pass the calculated data down into the Document's internal handler
-                return this.document.addItemToInventory(item, calculatedData);
+                await this.document.addItemToInventory(item, calculatedData);
+                this.render();
+                return;
             }
 
             case "connection": {
@@ -1111,18 +1125,26 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                     return;
                 }
                 const targetField = dropTarget.dataset.targetField;
-                return this.document.update({ [targetField]: data.uuid });
+                await this.document.update({ [targetField]: data.uuid });
+                this.render();
+                return;
             }
 
             case "owner":
             case "employees": {
-                if (data.type !== "Actor") return;
+                const droppedActor = await fromUuid(data.uuid);
+                if (droppedActor?.documentName !== "Actor") {
+                    ui.notifications.warn("Only Actors can be dropped here.");
+                    return;
+                }
                 const targetField = dropTarget.dataset.targetField;
                 if (targetField === "system.shop.employees") {
-                    return this.document.addEmployee(data.uuid);
+                    await this.document.addEmployee(data.uuid);
                 } else {
-                    return this.document.update({ [targetField]: data.uuid });
+                    await this.document.update({ [targetField]: data.uuid });
                 }
+                this.render();
+                return;
             }
 
             case "host": {

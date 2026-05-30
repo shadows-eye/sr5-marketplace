@@ -211,7 +211,12 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         const ownedActors = game.actors.filter(a => a.isOwner).map(a => ({ uuid: a.uuid, name: a.name, img: a.img }));
         const itemsByType = this.itemData.itemsByType;
-        const basket = await this.basketService.getBasket();
+        const currentShopUuid = this.selectedSource === "global" ? null : this.selectedSource;
+        let basket = await this.basketService.getBasket();
+        if (basket.shopActorUuid !== currentShopUuid) {
+            await this.basketService.setShopActor(currentShopUuid);
+            basket = await this.basketService.getBasket();
+        }
         console.log(basket);
         const basketItemCount = basket.shoppingCartItems.length;
         //Initial Dialog States
@@ -229,7 +234,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             this.availabilityStr = basket.totalAvailability;
             this.skill = activeTestState.skill;
             this.attribute = activeTestState.attribute;
-            this.modifiers = activeTestState.modifiers;
+            this.modifiers = activeTestState.appliedModifiers;
             this.activeTestState = activeTestState;
         }
 
@@ -321,6 +326,11 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 if (this.shopActorUuid) {
                     const shopActor = await fromUuid(this.shopActorUuid);
                     partialContext.shopName = shopActor?.name ?? "SR5Marketplace.Marketplace.Tabs.Shop";
+                    let imgPath = shopActor?.img ?? "/icons/svg/mystery-man.svg";
+                    if (imgPath && !imgPath.startsWith("/") && !imgPath.startsWith("http") && !imgPath.startsWith("data:")) {
+                        imgPath = "/" + imgPath;
+                    }
+                    partialContext.shopImg = imgPath;
                 }
                 
                 partialContext.itemsByType = itemsByType;
@@ -635,7 +645,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const newModifiers = DialogModifierService.calculateNewModifierList(currentModifiers, clickedModifier);
 
         // 4. Update the state on the instance for the next re-render.
-        this.activeTestState.modifiers = newModifiers;
+        this.activeTestState.appliedModifiers = newModifiers;
         
         // 5. Save the complete, updated list of modifiers back to the flag.
         //    FIX: Pass the 'newModifiers' array under the 'modifier' key.
@@ -725,22 +735,23 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const parsedAvail = game.shadowrun5e.tests.AvailabilityTest.parseAvailability(availabilityStr);
         const pool = Math.max(parsedAvail.rating, 1);
 
-        // Construct the 'data' object for the AvailabilityResistTest.
+        // Construct the 'data' object for the AvailabilityResistTest using system schema creators.
+        const poolField = game.shadowrun5e.data.createData('value_field', { base: 0 });
+        poolField.mod = [
+            { name: game.i18n.localize("SR5.Labels.Availability"), value: pool }
+        ];
+
+        const thresholdField = game.shadowrun5e.data.createData('value_field', { base: threshold });
+        const limitField = game.shadowrun5e.data.createData('value_field', { base: 0 });
+        const actionField = game.shadowrun5e.data.createData('action_roll');
+        actionField.categories = ["social"];
+
         const data = {
             against: TestObject,
-            action:{
-                categories:["social"]
-            },
-            pool: {
-                base: 0,
-                mod: [
-                    { name: game.i18n.localize("SR5.Labels.Availability"), value: pool }
-                ]
-            },
-            threshold: {
-                base: threshold,
-                mod: []
-            },
+            action: actionField,
+            pool: poolField,
+            limit: limitField,
+            threshold: thresholdField,
         };
 
         //Set options for a silent roll (no standard dialog but appDialog, no chat message but App message).
@@ -835,7 +846,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             action: {
                 skill: this.activeTestState.skill,
                 attribute: this.activeTestState.attribute,
-                modifiers: this.activeTestState.modifiers,
+                modifiers: this.activeTestState.appliedModifiers,
                 itemUuids: this.activeTestState.itemUuids,
                 connectionUuid: this.activeTestState.connectionUuid,
                 availabilityStr: this.activeTestState.availabilityStr,

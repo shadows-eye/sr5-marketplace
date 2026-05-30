@@ -17,7 +17,7 @@
                 <span title="Karma">{{#if this.system.karma}}{{this.system.karma}}{{else}}{{this.flags.sr5-marketplace.Karma}}{{/if}}</span>
                 <i class="fa-duotone fa-solid fa-circle-star" title="Karma"></i>
             {{else}}
-                <span title="Nuyen">{{this.system.technology.cost}}</span>
+                <span title="Nuyen">{{formatNumber this.system.technology.cost}}</span>
                 <i class="fa-duotone fa-solid fa-circle-yen" title="Nuyen"></i>
             {{/if}}
         </div>

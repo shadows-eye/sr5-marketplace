@@ -369,7 +369,8 @@
                 "Description": "Basket Description",
                 "AddItem": "Add Item",
                 "DecreaseQuantity": "Decrease Quantity",
-                "IncreaseQuantity": "Increase Quantity"
+                "IncreaseQuantity": "Increase Quantity",
+                "OutOfStockWarning": "Cannot add more of '{name}'. The shop only has {qty} in stock."
             },
             "OrderReview": {
                 "Title": "Order Review",

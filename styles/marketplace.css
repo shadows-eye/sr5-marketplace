@@ -329,6 +329,65 @@ nav.marketplace-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
 }
 .marketplace-filter label { font-weight: bold; flex-shrink: 0; }
 
+/* Custom Sliding Toggle Switch */
+.marketplace-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 26px;
+    vertical-align: middle;
+}
+
+.marketplace-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.marketplace-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 6px;
+    left: 0;
+    right: 0;
+    bottom: 6px;
+    background-color: var(--color-black-transparent-40, rgba(0, 0, 0, 0.4));
+    transition: 0.3s ease;
+    border-radius: 14px;
+    border: 1px solid var(--color-yellow-dark, #8a6d1c);
+    opacity: 0.5; /* Semi-transparent when not selected */
+}
+
+.marketplace-slider::before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: -2px;
+    top: -7px;
+    background-color: #444;
+    background-image: var(--thumb-image, url('/icons/svg/mystery-man.svg'));
+    background-size: cover;
+    background-position: center;
+    transition: 0.3s ease;
+    border-radius: 50%;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    border: 1.5px solid var(--color-yellow-light, #ffd700);
+    z-index: 2;
+}
+
+.marketplace-switch input:checked + .marketplace-slider {
+    background-color: rgba(212, 175, 55, 0.15);
+    border-color: var(--color-yellow-base, #d4af37);
+    opacity: 1; /* Fully opaque when selected */
+}
+
+.marketplace-switch input:checked + .marketplace-slider::before {
+    transform: translateX(22px);
+    border-color: var(--color-yellow-base, #d4af37);
+}
+
+
 select#item-type-selector {
     width: auto;
     flex-grow: 0;
