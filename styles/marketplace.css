@@ -30,24 +30,24 @@
 
 /* This targets the entire marketplace application */
 .sr5-marketplace {
-    background-image: var(--bg-main);
-    box-shadow: 0 0 10px var(--color-yellow-bright);
+    box-shadow: var(--app-window-shadow);
 }
 
 .sr5-marketplace .window-header {
-    background: var(--color-red-darkest);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    background: var(--app-window-header-bg);
+    border-bottom: 2px solid var(--app-window-header-border);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     max-height: 2em;
 }
 
 .sr5-marketplace .window-header .window-title {
-    text-shadow: none; 
+    color: var(--app-window-header-title-color);
+    text-shadow: none;
 }
 
 .marketplace-title {
-    color: var(--bg-item-card);
-    font-size: 40px;
-    margin-left: -100px;
+    color: var(--header-gradient-text);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
 }
 
 /* ======================================
@@ -77,60 +77,111 @@
 }
 
 .sr5-marketplace .marketplace-header {
-    position: relative;
+    background: var(--header-gradient-bar);
+    border-radius: 4px;
+    border: none;
+    box-shadow: none;
+    margin-bottom: 8px;
+    padding: 6px 12px;
+}
+
+/* Dynamic Outline Contour around transparent image figure edges */
+.sr5-marketplace .marketplace-user-avatar-container {
     display: flex;
-    justify-content: space-between;
-    padding: 0;
-    background-color: var(--color-black);
-    border-bottom: 2px solid var(--color-gold-base);
-    min-height: 4em;
-    max-height: 4.5em;
-    border-radius: 0.5em;
+    align-items: center;
+    justify-content: center;
 }
 
-.sr5-marketplace .marketplace-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    /*background-image: url('../assets/header-bg.webp'); */
-    background-size: cover;
-    background-position: center;
-    opacity: 0.3;
-    z-index: 1;
+.sr5-marketplace .marketplace-user-avatar-container img {
+    filter: drop-shadow(0.5px 0px 0px var(--color-yellow-base)) 
+            drop-shadow(-0.5px 0px 0px var(--color-yellow-base)) 
+            drop-shadow(0px 0.5px 0px var(--color-yellow-base)) 
+            drop-shadow(0px -0.5px 0px var(--color-yellow-base)) 
+            drop-shadow(0 0 2px var(--color-yellow-light));
+    transition: filter 0.2s ease-in-out;
 }
 
-.sr5-marketplace .marketplace-header::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 70%;
-    height: 100%;
-    background: linear-gradient(to right, var(--color-red-deep) 30%, rgba(85, 16, 30, 0) 100%);
+.sr5-marketplace .marketplace-user-avatar-container img:hover {
+    filter: drop-shadow(0.8px 0px 0px var(--color-yellow-light)) 
+            drop-shadow(-0.8px 0px 0px var(--color-yellow-light)) 
+            drop-shadow(0px 0.8px 0px var(--color-yellow-light)) 
+            drop-shadow(0px -0.8px 0px var(--color-yellow-light)) 
+            drop-shadow(0 0 4px var(--color-white));
+}
+
+/* Force text colors within the header bar based on Light/Dark theme */
+.sr5-marketplace .marketplace-header,
+.sr5-marketplace .marketplace-header h1,
+.sr5-marketplace .marketplace-header h3,
+.sr5-marketplace .marketplace-header span,
+.sr5-marketplace .marketplace-header i {
+    color: var(--header-gradient-text);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+}
+
+/* 2. Target Generic Tabs (Smaller, Tighter & Glassy) */
+.sr5-marketplace nav.sheet-tabs.marketplace-tabs {
+    display: flex;
+    justify-content: flex-start; /* Aligns tabs to the left */
+    align-items: flex-end;
+    gap: 0.5em; /* 0.5em separation between tabs */
+    border-top: none; 
+    border-bottom: 2px solid var(--tab-line);
+    padding: 0 10px 2px 10px; /* The 2px bottom padding creates the exact 2px gap above the line */
+    margin: 0 0 12px 0; 
+}
+
+/* Inactive Tab Styles (Flat/Subtle) */
+.sr5-marketplace nav.sheet-tabs.marketplace-tabs > a {
+    background: var(--tab-inactive-bg-grad);
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    color: var(--tab-inactive-color);
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: bold;
+    margin: 0;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.1);
+    transition: filter 0.2s ease, transform 0.1s ease;
+}
+
+.sr5-marketplace nav.sheet-tabs.marketplace-tabs > a span {
+    color: var(--tab-inactive-color);
+}
+
+.sr5-marketplace nav.sheet-tabs.marketplace-tabs > a:hover {
+    filter: brightness(1.2);
+}
+
+/* Active Tab Styles (Glassy Apple Mac Bubble) */
+.sr5-marketplace nav.sheet-tabs.marketplace-tabs > a.active {
+    background: var(--header-gradient-bar);
+    border-bottom: none;
+    color: var(--header-gradient-text);
+    
+    /* The Glassy Highlight Magic: Top white reflection + Dark inner bottom */
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -10px 10px rgba(0,0,0,0.2), 0 -2px 5px rgba(0,0,0,0.3);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    
+    /* Zeroed out bottom margin to keep it perfectly aligned with inactive tabs and the 2px padding */
+    margin-bottom: 0;
+    padding-bottom: 4px;
     z-index: 2;
-    pointer-events: none; 
 }
 
-.sr5-marketplace .marketplace-header > * {
-    position: relative;
-    z-index: 3;
-    padding-top: 0.4em;
-    padding-right: 0.4em;
-}
-
-.sr5-marketplace .marketplace-tabs {
-    padding-top: 2.3em;
+.sr5-marketplace nav.sheet-tabs.marketplace-tabs > a.active span {
+    color: var(--header-gradient-text);
 }
 
 /* --------------------------------------
    2. Base Application & Typography
    -------------------------------------- */
 .sr5-marketplace .window-content {
-    background: var(--bg-main) repeat;
-    padding: 20px;
+    background: var(--app-window-content-bg) repeat;
+    color: var(--app-window-content-color);
+    padding: 10px;
     border-radius: 10px;
     overflow: hidden;
     position: relative;
@@ -138,13 +189,15 @@
     flex-direction: column;
 }
 
-.sr5-marketplace h4, .sr5-market h4 {
+.sr5-marketplace h4,
+.sr5-market h4 {
     margin: -0.3rem 0 0.2rem;
     line-height: 1;
     font-size: 1vw;
-    color: var(--color-red-base);
+    color: var(--text-color-header);
     text-shadow: var(--shadow-text);
 }
+
 /* ======================================
    SVG Resize Handle Style
    ====================================== */
@@ -171,41 +224,74 @@
 /* --------------------------------------
    3. Main Layout Structure
    -------------------------------------- */
-.marketplace-container { display: flex; flex-direction: column; height: 100%; }
-.marketplace-header { flex-shrink: 0; }
-.marketplace-body, .marketplace-tab-content { flex-grow: 1; overflow-y: auto; }
-.shop-container { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
-.grid-container { flex-grow: 1; display: grid; grid-template-columns: repeat(5, 1fr) 25px auto; gap: 15px; }
-.marketplace-user-actor { position: relative; cursor: pointer; width: 50px; height: 50px; }
+.marketplace-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.marketplace-header {
+    flex-shrink: 0;
+}
+
+.marketplace-body,
+.marketplace-tab-content {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.shop-container {
+    container-type: inline-size;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.grid-container {
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr) 25px auto;
+    gap: 15px;
+}
+
+.marketplace-user-actor {
+    position: relative;
+    cursor: pointer;
+    width: 50px;
+    height: 50px;
+}
 
 .user-avatar-container {
-    width: 100%; 
+    width: 100%;
     height: 100%;
     border-radius: 50%;
     border: 2px solid var(--color-yellow-dark);
     overflow: hidden;
     background-color: var(--color-grey-dark);
-    display: flex; 
-    align-items: center; 
+    display: flex;
+    align-items: center;
     justify-content: center;
 }
 
 .sr5-marketplace .remove-selected-actor {
     position: absolute;
-    top: -5px;   
+    top: -5px;
     right: -5px;
     width: 20px;
     height: 20px;
     cursor: pointer;
     transition: all 0.2s ease;
-    z-index: 150; 
+    z-index: 150;
 }
 
-.sr5-marketplace .remove-selected-actor:hover { transform: scale(1.2); }
+.sr5-marketplace .remove-selected-actor:hover {
+    transform: scale(1.2);
+}
 
-.sr5-marketplace .remove-selected-actor > .fa-circle-xmark {
+.sr5-marketplace .remove-selected-actor>.fa-circle-xmark {
     font-size: 20px;
-    color: var(--color-red-dark); 
+    color: var(--color-red-dark);
     background-color: var(--color-white);
     border-radius: 50%;
     display: block;
@@ -213,7 +299,7 @@
     transition: color 0.2s ease;
 }
 
-.sr5-marketplace .remove-selected-actor:hover > .fa-circle-xmark {
+.sr5-marketplace .remove-selected-actor:hover>.fa-circle-xmark {
     color: var(--color-red-base);
 }
 
@@ -222,10 +308,10 @@
     box-shadow: 0 0 10px var(--color-gold-base);
 }
 
-.user-avatar { 
-    width: 100%; 
-    height: 100%; 
-    object-fit: cover; 
+.user-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     transition: transform 0.2s ease;
     object-position: top;
 }
@@ -242,15 +328,17 @@
     border-radius: 5px;
     padding: 10px;
     z-index: 100;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
-.actor-selection-grid{
+
+.actor-selection-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 1em;
     overflow-y: scroll;
 }
-.selectable-actor{
+
+.selectable-actor {
     display: flex;
     align-items: center;
     padding: 5px;
@@ -258,11 +346,12 @@
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
-.selectable-actor:hover { 
-    background-color: var(--actor-background-hover); 
+
+.selectable-actor:hover {
+    background-color: var(--actor-background-hover);
 }
 
-.selectable-actor img{
+.selectable-actor img {
     width: 5em;
     height: 5em;
     object-fit: cover;
@@ -292,12 +381,21 @@
     color: var(--color-grey-lightest);
 }
 
-.user-actor-details .actor-funds span { display: flex; align-items: center; gap: 5px; }
+.user-actor-details .actor-funds span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
 
 /* --------------------------------------
    4. Navigation Tabs & Filters
    -------------------------------------- */
-nav.marketplace-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
+nav.marketplace-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 10px;
+}
+
 .marketplace-tab {
     position: relative;
     padding: 1em 2em;
@@ -311,15 +409,30 @@ nav.marketplace-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
     margin-right: -1.5em;
     margin-left: 0.5em;
 }
-.marketplace-tab.active, .marketplace-tab:hover { background-color: var(--color-grey-tab-active); }
+
+.marketplace-tab.active,
+.marketplace-tab:hover {
+    background-color: var(--color-grey-tab-active);
+}
+
 .basket-count {
-    position: absolute; top: 50%; right: 5px; transform: translateY(-50%);
-    background-color: var(--color-red-dark); 
+    position: absolute;
+    top: 50%;
+    right: 5px;
+    transform: translateY(-50%);
+    background-color: var(--color-red-dark);
     color: var(--color-yellow-base);
-    font-size: 12px; font-weight: bold; width: 18px; height: 18px;
-    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: 1px solid var(--color-grey-dark);
 }
+
 .marketplace-filter {
     flex-shrink: 0;
     padding: 10px;
@@ -328,7 +441,11 @@ nav.marketplace-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
     column-gap: 10px;
     flex-wrap: wrap;
 }
-.marketplace-filter label { font-weight: bold; flex-shrink: 0; }
+
+.marketplace-filter label {
+    font-weight: bold;
+    flex-shrink: 0;
+}
 
 /* Custom Sliding Toggle Switch */
 .marketplace-switch {
@@ -356,7 +473,8 @@ nav.marketplace-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
     transition: 0.3s ease;
     border-radius: 14px;
     border: 1px solid var(--color-yellow-dark, #8a6d1c);
-    opacity: 0.5; /* Semi-transparent when not selected */
+    opacity: 0.5;
+    /* Semi-transparent when not selected */
 }
 
 .marketplace-slider::before {
@@ -377,13 +495,14 @@ nav.marketplace-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
     z-index: 2;
 }
 
-.marketplace-switch input:checked + .marketplace-slider {
+.marketplace-switch input:checked+.marketplace-slider {
     background-color: rgba(212, 175, 55, 0.15);
     border-color: var(--color-yellow-base, #d4af37);
-    opacity: 1; /* Fully opaque when selected */
+    opacity: 1;
+    /* Fully opaque when selected */
 }
 
-.marketplace-switch input:checked + .marketplace-slider::before {
+.marketplace-switch input:checked+.marketplace-slider::before {
     transform: translateX(22px);
     border-color: var(--color-yellow-base, #d4af37);
 }
@@ -407,10 +526,12 @@ input#search-box.marketplace-search {
     background-color: var(--searbarColor);
     border: 1px solid var(--border-highlight-dark-yellow);
 }
-select#item-type-selector option { 
-    background-color: var(--bg-basket-content); 
-    color: var(--color-red-very-dark); 
+
+select#item-type-selector option {
+    background-color: var(--bg-basket-content);
+    color: var(--color-red-very-dark);
 }
+
 #filter-tags-container {
     display: flex;
     gap: 0.2em;
@@ -449,9 +570,19 @@ select#item-type-selector option {
 /* --------------------------------------
    5. Item Card Grid & Layout (Refined)
    -------------------------------------- */
-.marketplace-item { font-family: sans-serif; font-size: larger; }
-.item-all, .item-rating{ font-size: medium; font-family: "Modesto Condensed", serif; }
-.marketplace-items-grid, .marketplace-items {
+.marketplace-item {
+    font-family: sans-serif;
+    font-size: larger;
+}
+
+.item-all,
+.item-rating {
+    font-size: medium;
+    font-family: "Modesto Condensed", serif;
+}
+
+.marketplace-items-grid,
+.marketplace-items {
     flex-grow: 1;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -459,7 +590,9 @@ select#item-type-selector option {
     overflow-y: auto;
     overflow-x: hidden;
 }
-.marketplace-item.grid-item, .item-card {
+
+.marketplace-item.grid-item,
+.item-card {
     background-color: var(--bg-item-card);
     padding: 0.7em;
     border: 0.2em solid rgba(89, 15, 15, 0.15);
@@ -467,99 +600,185 @@ select#item-type-selector option {
     display: flex;
     flex-direction: column;
     max-height: fit-content;
-    min-width: 16em;
+    min-width: 0;
 }
-.marketplace-item.grid-item:hover, .item-card:hover { 
-    background-color: var(--bg-item-card-hover); 
-    color: var(--color-yellow-base); 
+
+.marketplace-item.grid-item:hover,
+.item-card:hover {
+    background-color: var(--bg-item-card-hover);
+    color: var(--color-yellow-base);
 }
-.marketplace-item.grid-item:hover h4, .item-card:hover h4 { color: var(--color-yellow-base); }
-.grid-show { display: grid; grid-template-columns: 6em 2em auto; gap: 10px; align-items: center; margin-bottom: 10px; }
+
+.marketplace-item.grid-item:hover h4,
+.item-card:hover h4 {
+    color: var(--color-yellow-base);
+}
+
+.grid-show {
+    display: grid;
+    grid-template-columns: 6em 2em auto;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
 .market-item-image {
-    max-width: 62px; background-color: rgba(95, 95, 95, 0.27);
-    border-radius: 10px; border: 3px outset;
+    max-width: 62px;
+    background-color: rgba(95, 95, 95, 0.27);
+    border-radius: 10px;
+    border: 3px outset;
 }
-.market-item-image img { max-width: 60px; max-height: 60px; object-fit: contain; border: none; }
-.card-body { flex-grow: 1; }
+
+.market-item-image img {
+    max-width: 60px;
+    max-height: 60px;
+    object-fit: contain;
+    border: none;
+}
+
+.card-body {
+    flex-grow: 1;
+}
+
 .item-details {
     display: grid;
     grid-template-columns: 10em auto;
     gap: 5px;
     font-size: 0.9em;
     text-align: left;
-    white-space: normal; 
-    word-break: break-word; 
+    white-space: normal;
+    word-break: break-word;
 }
 
 /* --------------------------------------
    6. Shopping Basket (Restored & Integrated)
    -------------------------------------- */
-.basket-content { background-color: var(--bg-basket-content); padding: 10px; border-radius: 6px; }
-.SR5-marketplace.grid-basket, .basket-grid { display: grid; gap: 10px; align-items: center; padding-bottom: 10px; }
-.basket-grid.headers, .basket-grid.item-row { grid-template-columns: 3fr 1fr 1fr 1fr 1fr 1fr 0.5fr; }
-.basket-grid .header { font-weight: bold; text-align: center; }
-.basket-item { text-align: center; }
-.basket-item.item-name { display: flex; align-items: center; gap: 5px; text-align: left; }
-.basket-item img.mini-img { width: 20px; border: none; }
-.basket-summary { 
-    font-weight: bold; 
-    padding: 10px; 
+.basket-content {
+    background-color: var(--bg-basket-content);
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.SR5-marketplace.grid-basket,
+.basket-grid {
+    display: grid;
+    gap: 10px;
+    align-items: center;
+    padding-bottom: 10px;
+}
+
+.basket-grid.headers,
+.basket-grid.item-row {
+    grid-template-columns: 3fr 1fr 1fr 1fr 1fr 1fr 0.5fr;
+}
+
+.basket-grid .header {
+    font-weight: bold;
+    text-align: center;
+}
+
+.basket-item {
+    text-align: center;
+}
+
+.basket-item.item-name {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    text-align: left;
+}
+
+.basket-item img.mini-img {
+    width: 20px;
+    border: none;
+}
+
+.basket-summary {
+    font-weight: bold;
+    padding: 10px;
     background-color: var(--bg-basket-summary);
     border-radius: 0.5em;
 }
-.basket-actions{ display: flex; align-items: center; margin-top: 1em; }
-.actor-contact-grid { 
-    display: grid; 
-    grid-template-columns: 1fr 2fr; 
-    gap: 20px; margin: 15px 0; 
-    padding-top: 15px; 
+
+.basket-actions {
+    display: flex;
+    align-items: center;
+    margin-top: 1em;
 }
+
+.actor-contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+    margin: 15px 0;
+    padding-top: 15px;
+}
+
 .actor-contact-grid .grid-header,
 .actor-contact-grid .grid-span-all {
     grid-column: 1 / -1;
 }
-.actor-info-col{ display: grid; grid-template-columns: 1fr 1fr; }
-.actor-funds{ grid-row-start: 2; }
-.actor-link-wrapper{ object-fit: contain; width: 60px; grid-row-start: 2; }
-.contact-cards-container { display: grid; grid-template-columns: repeat(5, 5em) auto; }
-.contact-card{ 
+
+.actor-info-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.actor-funds {
+    grid-row-start: 2;
+}
+
+.actor-link-wrapper {
     object-fit: contain;
-        margin: 0.1em;
-        padding: 0.5em;
-        width: max-content;
+    width: 60px;
+    grid-row-start: 2;
+}
+
+.contact-cards-container {
+    display: grid;
+    grid-template-columns: repeat(5, 5em) auto;
+}
+
+.contact-card {
+    object-fit: contain;
+    margin: 0.1em;
+    padding: 0.5em;
+    width: max-content;
 }
 
 /* For LIGHT mode, we use a dark, vibrant yellow border */
 .sr5-marketplace.theme-light .contact-card.selected {
     border: 2px solid var(--color-yellow-dark);
     border-radius: 0.5em;
-    box-shadow: 0 0 8px var(--color-yellow-dark); /* Adds a subtle glow for better visibility */
+    box-shadow: 0 0 8px var(--color-yellow-dark);
+    /* Adds a subtle glow for better visibility */
 }
 
 /* For DARK mode, we use a bright, vibrant yellow border */
 .sr5-marketplace.theme-dark .contact-card.selected {
     border: 2px solid var(--color-yellow-base);
     border-radius: 0.5em;
-    box-shadow: 0 0 8px var(--color-yellow-base); /* Adds a subtle glow for better visibility */
+    box-shadow: 0 0 8px var(--color-yellow-base);
+    /* Adds a subtle glow for better visibility */
 }
 
-.sr5-marketplace.theme-light .contact-card.selected .contact-card-visible img{
+.sr5-marketplace.theme-light .contact-card.selected .contact-card-visible img {
     width: 40px;
 }
 
-.sr5-marketplace.theme-dark .contact-card.selected .contact-card-visible img{
+.sr5-marketplace.theme-dark .contact-card.selected .contact-card-visible img {
     width: 40px;
 }
 
-.sr5-marketplace.theme-light .contact-card .contact-card-visible img{
+.sr5-marketplace.theme-light .contact-card .contact-card-visible img {
     width: 40px;
 }
 
-.sr5-marketplace.theme-dark .contact-card .contact-card-visible img{
+.sr5-marketplace.theme-dark .contact-card .contact-card-visible img {
     width: 40px;
 }
 
-.shopping-cart-container{
+.shopping-cart-container {
     padding-right: 0.4em;
 }
 
@@ -568,44 +787,82 @@ select#item-type-selector option {
    7. Buttons & Icons
    -------------------------------------- */
 .item-action .add-to-cart {
-    background-color: var(--color-green-button); 
+    background-color: var(--color-green-button);
     color: var(--color-green-text-light);
-    border: none; padding: 5px; border-radius: 5px; cursor: pointer;
+    border: none;
+    padding: 5px;
+    border-radius: 5px;
+    cursor: pointer;
 }
+
 .send-request-button {
     background-image: url(/modules/sr5-marketplace/assets/icons/button_red_60_34.svg);
-    background-size: 103% 110%; background-repeat: no-repeat; background-color: transparent;
-    line-height: 38px; border: none; 
-    color: var(--color-yellow-bright); 
+    background-size: 103% 110%;
+    background-repeat: no-repeat;
+    background-color: transparent;
+    line-height: 38px;
+    border: none;
+    color: var(--color-yellow-bright);
     text-shadow: var(--shadow-text-button);
 }
-.review-request-button { 
-    background-color: var(--color-grey-dark); 
-    color: var(--color-red-dark); 
-    border-color: var(--color-red-dark); 
+
+.review-request-button {
+    background-color: var(--color-grey-dark);
+    color: var(--color-red-dark);
+    border-color: var(--color-red-dark);
 }
-.fa-circle-minus.market-minus { 
-    color: var(--color-red-bright); 
-    cursor: pointer; 
+
+.fa-circle-minus.market-minus {
+    color: var(--color-red-bright);
+    cursor: pointer;
 }
-.fa-circle-plus.market-plus { 
-    color: var(--color-green-base); 
-    cursor: pointer; 
+
+.fa-circle-plus.market-plus {
+    color: var(--color-green-base);
+    cursor: pointer;
 }
+
 .remove-from-basket-btn {
     border: none;
     background: none;
 }
-.fa-trash { color: var(--color-red-dark); }
-.sr5-marketplace-yen { color: var(--color-red-bright); }
-.fa-circle-star, .sr5-marketplace-karma { color: var(--color-yellow-base); }
+
+.fa-trash {
+    color: var(--color-red-dark);
+}
+
+.sr5-marketplace-yen {
+    color: var(--color-red-bright);
+}
+
+.fa-circle-star,
+.sr5-marketplace-karma {
+    color: var(--color-yellow-base);
+}
 
 /* --------------------------------------
    8. Responsive Container Queries
    -------------------------------------- */
-@container (max-width: 900px) { .marketplace-items, .marketplace-items-grid { grid-template-columns: 1fr 1fr 1fr 1fr } }
-@container (max-width: 600px) { .marketplace-items, .marketplace-items-grid { grid-template-columns: 1fr 1fr; } }
-@container (max-width: 400px) { .marketplace-items, .marketplace-items-grid { grid-template-columns: 1fr; } }
+@container (max-width: 950px) {
+    .marketplace-items,
+    .marketplace-items-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@container (max-width: 700px) {
+    .marketplace-items,
+    .marketplace-items-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@container (max-width: 450px) {
+    .marketplace-items,
+    .marketplace-items-grid {
+        grid-template-columns: repeat(1, 1fr);
+    }
+}
 
 /* --------------------------------------
     9. Settings UI (Corrected & Clickable)
@@ -697,27 +954,29 @@ select#item-type-selector option {
     padding: 3px 9px;
     border-radius: 10px;
     font-size: 11px;
-    border: 1px solid rgba(0,0,0,0.2);
+    border: 1px solid rgba(0, 0, 0, 0.2);
     font-weight: bold;
     color: var(--color-grey-text);
     white-space: nowrap;
     text-transform: capitalize;
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
-.behavior-tag.unique { 
+.behavior-tag.unique {
     background-color: var(--color-green-success-bg);
-    border-color: var(--color-green-success-border); 
+    border-color: var(--color-green-success-border);
     cursor: pointer;
 }
-.behavior-tag.stack { 
+
+.behavior-tag.stack {
     background-color: var(--color-blue-info-bg);
     border-color: var(--color-blue-info-border);
     cursor: pointer;
 }
-.behavior-tag.single { 
+
+.behavior-tag.single {
     background-color: var(--color-yellow-warning-bg);
-    border-color: var(--color-yellow-warning-border); 
+    border-color: var(--color-yellow-warning-border);
     cursor: pointer;
 }
 
@@ -733,16 +992,19 @@ select#item-type-selector option {
     font-weight: bold;
     color: rgba(0, 0, 0, 0.7);
     margin-top: 5px;
-    border: 1px solid rgba(0,0,0,0.2);
+    border: 1px solid rgba(0, 0, 0, 0.2);
 }
-.column-header.unique, .column-header.stack, .column-header.single {
+
+.column-header.unique,
+.column-header.stack,
+.column-header.single {
     padding-left: 2em;
 }
 
 .sr5-marketplace-settings-app .column-header.unique .item-count {
     background-color: var(--color-green-success-bg);
     border-color: var(--color-green-success-border);
-    cursor: pointer; 
+    cursor: pointer;
 }
 
 .sr5-marketplace-settings-app .column-header.stack .item-count {
@@ -756,6 +1018,7 @@ select#item-type-selector option {
     border-color: var(--color-yellow-warning-border);
     cursor: pointer;
 }
+
 hr.marketplace-settings-hr {
     height: 6px;
     border: 2px solid var(--color-grey-hr);
@@ -809,7 +1072,8 @@ hr.marketplace-settings-hr {
 /*-- Contact Card and Details --*/
 
 .contact-image {
-    cursor: pointer; /* Add pointer cursor to show the image is clickable */
+    cursor: pointer;
+    /* Add pointer cursor to show the image is clickable */
 }
 
 .contact-toggle-checkbox {
@@ -831,6 +1095,480 @@ hr.marketplace-settings-hr {
 }
 
 /* When the hidden checkbox is checked, show the .contact-details div */
-.contact-toggle-checkbox:checked ~ .contact-details {
+.contact-toggle-checkbox:checked~.contact-details {
     display: block;
+}
+
+/* ========================================================
+   Order Review Rework - Actor Tabs, Consolidated Summary, & Dice Trays
+   ======================================================== */
+
+.review-actor-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin-bottom: 15px;
+    border-bottom: 2px solid var(--tab-line);
+    padding: 0 10px 4px 10px;
+    background: transparent;
+    border-radius: 0;
+}
+
+.review-actor-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    background: var(--tab-inactive-bg-grad);
+    border: 1px solid var(--border-color-medium);
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    color: var(--tab-inactive-color);
+    cursor: pointer;
+    transition: filter 0.2s ease, transform 0.1s ease;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.1);
+}
+
+.review-actor-tab:hover {
+    filter: brightness(1.2);
+    border-color: var(--border-color-highlight);
+    transform: none;
+}
+
+.review-actor-tab.active {
+    background: var(--header-gradient-bar);
+    border: 1px solid var(--border-color-highlight);
+    border-bottom: none;
+    color: var(--header-gradient-text);
+    
+    /* The Glassy Highlight Magic: Top white reflection + Dark inner bottom */
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -10px 10px rgba(0,0,0,0.2), 0 -2px 5px rgba(0,0,0,0.3);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+    font-weight: bold;
+    margin-bottom: 0;
+}
+
+.review-actor-tab-img {
+    width: 25px;
+    height: 25px;
+    object-fit: cover;
+    object-position: top;
+    border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.3);
+}
+
+.review-actor-tab-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.review-actor-tab-name {
+    font-size: 0.9em;
+    font-weight: bold;
+    color: inherit;
+}
+
+.review-actor-tab-stats {
+    font-size: 0.75em;
+    opacity: 0.85;
+    color: inherit;
+}
+
+/* Consolidated Overall Summary */
+.review-overall-summary {
+    background: var(--attribute-group-bg);
+    border: 1px solid var(--border-color-medium);
+    border-radius: 6px;
+    padding: 12px 15px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-inset-dark);
+}
+
+.review-overall-summary h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.1em;
+    color: var(--text-color-subheader);
+    text-transform: none;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--border-color-medium);
+    padding-bottom: 5px;
+}
+
+.overall-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+@media (max-width: 768px) {
+    .overall-metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.overall-metric-card {
+    background: var(--color-black-transparent-15);
+    border: 1px solid var(--border-color-medium);
+    border-radius: 5px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.overall-metric-card.span-two-columns {
+    grid-column: span 2;
+}
+
+.metric-label {
+    font-size: 0.75em;
+    text-transform: none;
+    /* No full caps! */
+    opacity: 0.7;
+    margin-bottom: 4px;
+    color: var(--text-color-primary);
+}
+
+.metric-value {
+    font-size: 1.25em;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+.text-gold {
+    color: var(--color-yellow-light);
+    text-shadow: 0 0 4px var(--color-yellow-base);
+}
+
+.text-yellow {
+    color: var(--color-yellow-base);
+    text-shadow: 0 0 4px var(--color-yellow-light);
+}
+
+.text-blue {
+    color: #4da6ff;
+    text-shadow: 0 0 4px rgba(77, 166, 255, 0.4);
+}
+
+.text-purple {
+    color: var(--color-yellow-base);
+    text-shadow: 0 0 4px var(--color-yellow-light);
+}
+
+.text-green {
+    color: var(--color-green-button);
+    text-shadow: 0 0 4px var(--color-green-button);
+}
+
+.request-delivery-time-info {
+    margin: 12px 0;
+    padding: 8px 12px;
+    background: var(--color-black-transparent-15);
+    border: 1px solid var(--color-green-button);
+    border-radius: 5px;
+    font-size: 0.85em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-green-button);
+}
+
+/* Table Headers Styling */
+.basket-grid.headers {
+    border-bottom: 1px solid var(--border-color-medium);
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+}
+
+.basket-grid.headers .grid-item.header {
+    color: var(--color-grey-lightest) !important;
+    font-weight: bold;
+    font-size: 0.85em;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.85);
+    opacity: 0.95;
+    text-transform: none !important;
+    /* No uppercase! */
+}
+
+/* Accept/Decline Item Buttons */
+.basket-item.item-actions {
+    display: flex;
+    flex-direction: row !important;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.basket-item.item-actions button.approve-item-btn,
+.basket-item.item-actions button.reject-item-btn {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    min-width: unset !important;
+    min-height: unset !important;
+    width: auto !important;
+    height: auto !important;
+    cursor: pointer;
+    font-size: 1.15rem;
+    transition: transform 0.2s ease, filter 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none !important;
+}
+
+.basket-item.item-actions button.approve-item-btn {
+    color: var(--color-green-button) !important;
+}
+
+.basket-item.item-actions button.approve-item-btn:hover {
+    transform: scale(1.25);
+    filter: brightness(1.2);
+}
+
+.basket-item.item-actions button.reject-item-btn {
+    color: var(--color-red-bright) !important;
+}
+
+.basket-item.item-actions button.reject-item-btn:hover {
+    transform: scale(1.25);
+    filter: brightness(1.25);
+}
+
+/* Expandable Test Results Details */
+.test-result-details {
+    background: var(--color-black-transparent-20);
+    border: 1px solid var(--border-color-medium);
+    border-radius: 6px;
+    margin: 10px 0;
+    padding: 8px 12px;
+    cursor: pointer;
+    color: var(--text-color-primary);
+}
+
+.test-result-summary-header {
+    font-weight: bold;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    outline: none;
+    user-select: none;
+}
+
+.test-result-content {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color-medium);
+    cursor: default;
+}
+
+.success-text {
+    color: var(--color-green-button);
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.failure-text {
+    color: var(--color-red-bright);
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.opposed-results-grid,
+.simple-results-grid,
+.extended-results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.opposed-column,
+.simple-column,
+.extended-column {
+    background: var(--color-black-transparent-15);
+    border: 1px solid var(--border-color-medium);
+    border-radius: 4px;
+    padding: 8px 12px;
+}
+
+.opposed-column-title,
+.simple-column-title,
+.extended-column-title {
+    font-size: 0.8em;
+    font-weight: bold;
+    color: var(--text-color-subheader);
+    text-transform: none;
+    /* No full caps */
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border-color-medium);
+    padding-bottom: 3px;
+}
+
+.dice-tray-mini {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: flex-start;
+}
+
+.die-face {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    font-size: 0.8em;
+    font-weight: bold;
+    background: var(--color-grey-dark);
+    border: 1px solid var(--border-color-medium);
+    color: var(--color-grey-lightest);
+}
+
+.die-face.hit {
+    background: var(--color-green-button);
+    border-color: var(--color-green-button);
+    color: var(--color-white);
+    box-shadow: 0 0 4px var(--color-green-button);
+}
+
+.die-face.glitch {
+    background: var(--color-red-bright);
+    border-color: var(--color-red-bright);
+    color: var(--color-white);
+}
+
+.threshold-badge {
+    font-size: 2em;
+    font-weight: bold;
+    color: var(--text-color-subheader);
+    margin-top: 10px;
+    text-shadow: 0 0 8px var(--color-yellow-light);
+}
+
+.details-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.85em;
+    color: var(--text-color-primary);
+}
+
+/* --- Review Item Row Casing & Readability Adjustments --- */
+
+.pending-request-block .basket-grid.item-row {
+    color: var(--text-color-primary) !important;
+}
+
+/* Item Name link high readability */
+.pending-request-block .basket-item.item-name a {
+    color: var(--text-color-primary) !important;
+    font-weight: bold;
+    text-decoration: none;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.pending-request-block .basket-item.item-name a:hover {
+    color: var(--color-yellow-light) !important;
+    text-shadow: 0 0 5px var(--color-yellow-base), 1px 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+/* Item Pack Quantity high readability */
+.pending-request-block .basket-item.item-pack-quantity {
+    color: var(--text-color-primary) !important;
+    opacity: 0.95;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Major Refactoring Styles for Pending Requests Container and Elements */
+.pending-request-block {
+    background: var(--attribute-group-bg);
+    border: 1px solid var(--border-color-medium);
+    border-radius: 6px;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+.actor-request-header {
+    margin: 0 0 12px 0;
+    font-size: 1rem;
+    color: var(--text-color-subheader);
+    border-bottom: 1px solid var(--border-color-medium);
+    padding-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-transform: none;
+}
+
+.gm-review-input {
+    width: 100%;
+    text-align: center;
+    background: var(--input-bg-transparent) !important;
+    color: var(--input-color) !important;
+    border: 1px solid var(--input-border-dark) !important;
+    border-radius: 3px;
+    padding: 2px 4px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gm-review-input:focus {
+    border-color: var(--border-color-highlight) !important;
+    box-shadow: 0 0 5px var(--border-color-highlight);
+    outline: none;
+}
+
+.basket-actions.full-basket-actions {
+    margin-top: 15px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border-color-medium);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.9em;
+}
+
+.basket-actions.full-basket-actions button {
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 4px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.25), 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.basket-actions.full-basket-actions button.approve-all-btn {
+    background: linear-gradient(to bottom, #5cb85c 0%, #449d44 100%);
+    border: 1px solid #449d44;
+    color: #fff;
+}
+
+.basket-actions.full-basket-actions button.approve-all-btn:hover {
+    filter: brightness(1.2);
+}
+
+.basket-actions.full-basket-actions button.reject-all-btn {
+    background: linear-gradient(to bottom, #d9534f 0%, #c9302c 100%);
+    border: 1px solid #c9302c;
+    color: #fff;
+}
+
+.basket-actions.full-basket-actions button.reject-all-btn:hover {
+    filter: brightness(1.2);
 }

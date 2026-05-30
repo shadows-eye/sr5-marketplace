@@ -200,6 +200,7 @@
 --border-color-highlight: var(--color-yellow-dark);
 
 --tab-inactive-bg: var(--attribute-group-bg);
+--tab-inactive-bg-grad: linear-gradient(to bottom, var(--color-grey-very-light) 0%, var(--color-grey-divider) 100%);
 --tab-inactive-border: var(--border-color-medium);
 --tab-inactive-color: var(--color-black);
 --tab-active-bg: #555;
@@ -261,6 +262,7 @@
 --border-color-highlight: var(--color-yellow-dark);
 
 --tab-inactive-bg: var(--color-grey-dark);
+--tab-inactive-bg-grad: linear-gradient(to bottom, var(--color-grey-dark) 0%, var(--color-grey-darkest) 100%);
 --tab-inactive-border: var(--border-color-medium);
 --tab-inactive-color: var(--color-grey-lightest);
 --tab-active-bg: #555;
