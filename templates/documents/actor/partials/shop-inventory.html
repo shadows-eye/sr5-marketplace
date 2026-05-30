@@ -17,7 +17,7 @@
         <div></div>
         <div class="truncate">{{localize "SR5Marketplace.UI.Name"}}</div>
         <div class="text-center truncate" title="{{localize 'SR5Marketplace.UI.Rating'}}">{{localize "SR5Marketplace.UI.Rating"}}</div>
-        <div class="text-center text-[var(--color-yellow-base)] cursor-help" title="{{localize 'SR5Marketplace.UI.Quantity'}}"><i class="fa-solid fa-cubes"></i> Qty</div>
+        <div class="text-center text-[var(--color-yellow-base)] cursor-help" title="{{localize 'SR5Marketplace.UI.Quantity'}}"><i class="fa-solid fa-cubes"></i> {{localize "SR5Marketplace.UI.Qty"}}</div>
         <div class="text-right truncate" title="{{localize 'SR5Marketplace.UI.Cost'}}">{{localize "SR5Marketplace.UI.Cost"}}</div>
         
         <div class="flex justify-end items-center gap-0.5 text-[var(--color-green-button)] cursor-help" title="{{localize 'SR5Marketplace.Marketplace.Shop.BuyPrice'}}">
@@ -32,7 +32,7 @@
             <i class="fa-solid fa-truck"></i><i class="fa-solid fa-globe text-[10px]"></i>
         </div>
         
-        <div class="flex justify-center items-center gap-1 cursor-help opacity-80" title="Stock / Order">
+        <div class="flex justify-center items-center gap-1 cursor-help opacity-80" title="{{localize 'SR5Marketplace.UI.StockOrder'}}">
             <i class="fa-solid fa-box"></i><i class="fa-solid fa-truck-fast text-[10px]"></i>
         </div>
         <div></div>
@@ -68,7 +68,7 @@
                         {{!-- Swapped fixed width for w-full min-w-0 --}}
                         <input type="number" name="system.shop.inventory.{{inventoryEntryId}}.itemPrice.value" value="{{item.itemPrice.value}}" class="w-full min-w-0 bg-[var(--input-bg-transparent)] text-[var(--text-color-primary)] border-none rounded px-1 py-0.5 text-xs text-right font-bold opacity-80 focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none"/>
                     {{else}}
-                        <span class="text-xs font-bold opacity-80">{{item.itemPrice.value}} ¥</span>
+                        <span class="text-xs font-bold opacity-80">{{formatNumber item.itemPrice.value}} ¥</span>
                     {{/if}}
                 </div>
                 
@@ -77,7 +77,7 @@
                         {{!-- Swapped fixed width for w-full min-w-0 --}}
                         <input type="number" name="system.shop.inventory.{{inventoryEntryId}}.buyPrice.value" value="{{item.buyPrice.value}}" class="w-full min-w-0 bg-[var(--input-bg-transparent)] text-[var(--color-green-button)] border-none rounded px-1 py-0.5 text-xs text-right font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none"/>
                     {{else}}
-                        <span class="text-xs font-bold text-[var(--color-green-button)]">{{item.buyPrice.value}} ¥</span>
+                        <span class="text-xs font-bold text-[var(--color-green-button)]">{{formatNumber item.buyPrice.value}} ¥</span>
                     {{/if}}
                 </div>
 
@@ -86,7 +86,7 @@
                         {{!-- Swapped fixed width for w-full min-w-0 --}}
                         <input type="number" name="system.shop.inventory.{{inventoryEntryId}}.sellPrice.value" value="{{item.sellPrice.value}}" class="w-full min-w-0 bg-[var(--input-bg-transparent)] text-[var(--color-red-bright)] border-none rounded px-1 py-0.5 text-xs text-right font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none"/>
                     {{else}}
-                        <span class="text-xs font-bold text-[var(--color-red-bright)]">{{item.sellPrice.value}} ¥</span>
+                        <span class="text-xs font-bold text-[var(--color-red-bright)]">{{formatNumber item.sellPrice.value}} ¥</span>
                     {{/if}}
                 </div>
                 
@@ -103,16 +103,16 @@
                         {{!-- Swapped fixed widths to 50% fractions to fit cleanly --}}
                         <input type="number" name="system.shop.inventory.{{inventoryEntryId}}.buyTime.value" value="{{item.buyTime.value}}" class="w-1/2 min-w-0 bg-[var(--input-bg-transparent)] text-[var(--input-color)] border-none rounded px-1 py-0.5 text-xs text-center outline-none"/>
                         <select name="system.shop.inventory.{{inventoryEntryId}}.buyTime.unit" class="w-1/2 min-w-0 bg-[var(--input-bg-transparent)] text-[var(--input-color)] border-none rounded px-1 py-0.5 text-[10px] outline-none appearance-none cursor-pointer text-center">
-                            <option value="hours" {{#if (eq item.buyTime.unit "hours")}}selected{{/if}}>{{localize "Time.Hours"}}</option>
-                            <option value="days" {{#if (eq item.buyTime.unit "days")}}selected{{/if}}>{{localize "Time.Days"}}</option>
-                            <option value="weeks" {{#if (eq item.buyTime.unit "weeks")}}selected{{/if}}>{{localize "Time.Week"}}</option>
-                            <option value="months" {{#if (eq item.buyTime.unit "months")}}selected{{/if}}>{{localize "Time.Month"}}</option>
+                            <option value="hours" {{#if (eq item.buyTime.unit "hours")}}selected{{/if}}>{{localize "SR5Marketplace.Time.Hours"}}</option>
+                            <option value="days" {{#if (eq item.buyTime.unit "days")}}selected{{/if}}>{{localize "SR5Marketplace.Time.Days"}}</option>
+                            <option value="weeks" {{#if (eq item.buyTime.unit "weeks")}}selected{{/if}}>{{localize "SR5Marketplace.Time.Week"}}</option>
+                            <option value="months" {{#if (eq item.buyTime.unit "months")}}selected{{/if}}>{{localize "SR5Marketplace.Time.Month"}}</option>
                         </select>
                     {{else}}
                         {{#if (eq item.buyTime.value 0)}}
-                            <span class="text-xs font-bold text-[var(--color-green-button)] bg-[var(--color-black-transparent-20)] px-1.5 py-0.5 rounded"><i class="fa-solid fa-check mr-1"></i> In Stock</span>
+                            <span class="text-xs font-bold text-[var(--color-green-button)] bg-[var(--color-black-transparent-20)] px-1.5 py-0.5 rounded"><i class="fa-solid fa-check mr-1"></i> {{localize "SR5Marketplace.UI.InStock"}}</span>
                         {{else}}
-                            <span class="text-xs font-bold text-[var(--color-yellow-base)] bg-[var(--color-black-transparent-20)] px-1.5 py-0.5 rounded"><i class="fa-solid fa-truck-fast mr-1"></i> {{item.buyTime.value}} {{item.buyTime.unit}}</span>
+                            <span class="text-xs font-bold text-[var(--color-yellow-base)] bg-[var(--color-black-transparent-20)] px-1.5 py-0.5 rounded"><i class="fa-solid fa-truck-fast mr-1"></i> {{item.buyTime.value}} {{localize (concat "SR5Marketplace.Time." item.buyTime.unit)}}</span>
                         {{/if}}
                     {{/if}}
                 </div>

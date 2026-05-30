@@ -212,7 +212,14 @@
             "KnowledgeSkillProfessional": "Beruflich",
             "KnowledgeSkillInterest": "Interessen",
             "KnowledgeSkillInterests": "Interessen",
-            "Roll": "Würfeln"
+            "Roll": "Würfeln",
+            "Qty": "Menge",
+            "Owner": "Besitzer",
+            "Type": "Typ",
+            "DeleteSkill": "Fertigkeit löschen",
+            "RemoveItem": "Gegenstand entfernen",
+            "StockOrder": "Bestand / Bestellung",
+            "InStock": "Auf Lager"
         },
         "Marketplace": {
             "Title": "Marktplatz Fenster",
@@ -262,7 +269,12 @@
             },
             "Tests": {
                 "title": "Marketplace Tests",
-                "AvailabilityTest": "Verfügbarkeit Test"
+                "AvailabilityTest": "Verfügbarkeit Test",
+                "ExtendedTestInProgress": "Erweiterte Probe läuft",
+                "Progress": "Fortschritt:",
+                "NextRoll": "Nächster Wurf:",
+                "LastRollResults": "Ergebnisse des letzten Wurfs:",
+                "ContinueTest": "Probe fortsetzen"
             },
             "Source": {
                 "Global": "Laden"
@@ -284,6 +296,25 @@
                 "OwnerUuid": "Besitzer UUID",
                 "AddItem": "Artikel hinzufügen",
                 "DragDropHint": "Ziehe Gegenstände hierher, um sie dem Shop-Inventar hinzuzufügen",
+                "WAN": "WAN",
+                "NoSlavedDevices": "Keine Slaved-Geräte",
+                "DragActorHere": "Akteur hierher ziehen",
+                "DragItemHere": "Gegenstand hierher ziehen",
+                "DragActorsHere": "Akteure hierher ziehen",
+                "ShopRadius": "Shop-Radius (Gitter-Einheiten)",
+                "ShopRadiusHint": "Bestimmt die Größe der Szenenregion",
+                "Units": "Einheiten",
+                "MatrixHost": "Matrix-Host (WAN-Master)",
+                "OpenHostSheet": "Host-Bogen öffnen",
+                "SlavedWANDevices": "SLAVED-WAN-GERÄTE:",
+                "OpenEmployeeMatrixTab": "Matrix-Tab des Mitarbeiters öffnen",
+                "OwnerLabel": "Besitzer:",
+                "NoSlavedDevicesFound": "Keine slaved Mitarbeiter-Kommlinks/Cyberdecks gefunden",
+                "DragDropHostHint": "Ziehe Host-Gegenstand hierher, um WAN zu initialisieren",
+                "NoActiveHost": "Kein Matrix-Host für diesen Shop aktiv",
+                "RemoveShopActor": "Shop-Akteur entfernen",
+                "RemoveConnectionItem": "Verbindung entfernen",
+                "RemoveSelectedActor": "Ausgewählten Akteur entfernen",
                 "FIELDS": {
                     "owner": {
                         "label": "Shop Owner",
@@ -336,7 +367,10 @@
                 "SendRequest": "Kaufen",
                 "CancelRequest": "Abbruch",
                 "Description": "Beschreibung",
-                "AddItem": "Hinzufügen"
+                "AddItem": "Hinzufügen",
+                "DecreaseQuantity": "Menge verringern",
+                "IncreaseQuantity": "Menge erhöhen",
+                "OutOfStockWarning": "Kann '{name}' nicht weiter hinzufügen. Das Geschäft hat nur {qty} auf Lager."
             },
             "OrderReview": {
                 "Title": "Order Überprüfung",
@@ -357,7 +391,9 @@
                 "History": "Historie",
                 "RequestFor": "Anfrage von",
                 "Of": "von",
-                "Each": "pro Stück"
+                "Each": "pro Stück",
+                "ApproveItem": "Gegenstand genehmigen",
+                "RejectItem": "Gegenstand ablehnen"
             },
             "system": {
                 "avail": {
@@ -539,7 +575,15 @@
             "Day": "Tag",
             "Days": "Tage",
             "Week": "Woche",
-            "Month": "Monat"
+            "Month": "Monat",
+            "hours": "Stunden",
+            "days": "Tage",
+            "weeks": "Wochen",
+            "months": "Monate",
+            "hour": "Stunde",
+            "day": "Tag",
+            "week": "Woche",
+            "month": "Monat"
         }
     },
     "TYPES": {

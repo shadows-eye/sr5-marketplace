@@ -138,4 +138,13 @@ export const registerBasicHelpers = () => {
         // 'options.hash' contains all the key=value pairs from the helper call (e.g., rolls=totalRolls)
         return game.i18n.format(key, options.hash);
     });
+    Handlebars.registerHelper('formatNumber', function(num) {
+        const val = Number(num);
+        if (Number.isNaN(val)) return num;
+        if (val >= 1000) {
+            const divided = val / 1000;
+            return (divided % 1 === 0 ? divided : divided.toFixed(1).replace(/\.0$/, "")) + "k";
+        }
+        return val;
+    });
 };

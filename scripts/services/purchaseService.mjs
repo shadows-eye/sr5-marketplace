@@ -1,5 +1,7 @@
 import { BasketService } from "./basketService.mjs";
 import { MODULE_ID, FLAGKEY_Basket } from "../lib/constants.mjs";
+import { AppTestFlagService } from "./AppTestFlagService.mjs";
+
 
 export class PurchaseService {
 
@@ -52,7 +54,14 @@ export class PurchaseService {
                     allPendingRequests.push({ 
                         user: user.toJSON(), 
                         basket: request, 
-                        actor: actor ? { name: actor.name, nuyen: actor.system.nuyen, karma: actor.system.karma.value } : null 
+                        actor: actor ? { 
+                            name: actor.name, 
+                            uuid: actor.uuid, 
+                            img: actor.img, 
+                            nuyen: actor.system.nuyen, 
+                            karma: actor.system.karma.value,
+                            essence: actor.system.attributes.essence?.value ?? 6
+                        } : null 
                     });
                 }
             }
@@ -70,6 +79,9 @@ export class PurchaseService {
             return ui.notifications.warn("Your shopping cart is empty.");
         }
 
+        const testStates = await AppTestFlagService.readState(userId);
+        const testState = Object.values(testStates)[0] || null;
+
         const newRequest = {
             basketUUID: basket.basketUUID,
             creationTime: basket.creationTime,
@@ -81,6 +93,7 @@ export class PurchaseService {
             totalAvailability: basket.totalAvailability,
             totalKarma: basket.totalKarma,
             totalEssenceCost: basket.totalEssenceCost,
+            testState: testState
         };
 
         basket.orderReviewItems.push(newRequest);
@@ -92,6 +105,11 @@ export class PurchaseService {
         this._recalculateTotals(basket); // Recalculate totals to zero them out
         
         await basketService.saveBasket(basket, userId);
+
+        if (testState) {
+            await AppTestFlagService.deleteState(userId);
+        }
+
         ui.notifications.info("Your purchase request has been submitted to the GM for review.");
         game.socket.emit("module.sr5-marketplace", { type: "new_request", senderId: user.id, basketUUID: newRequest.basketUUID });
     }
@@ -157,8 +175,7 @@ export class PurchaseService {
 
     static async approveBasket(userId, basketUUID) {
         const basketService = new BasketService();
-        const CurrentUserId = await game.user.id;
-        const basket = await basketService.getBasket(CurrentUserId);
+        const basket = await basketService.getBasket(userId);
         if (!basket) return;
 
         const requestIndex = basket.orderReviewItems.findIndex(r => r.basketUUID === basketUUID);

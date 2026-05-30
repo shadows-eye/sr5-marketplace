@@ -212,7 +212,14 @@
             "KnowledgeSkillProfessional": "Professional",
             "KnowledgeSkillInterest": "Interests",
             "KnowledgeSkillInterests": "Interests",
-            "Roll": "Roll"
+            "Roll": "Roll",
+            "Qty": "Qty",
+            "Owner": "Owner",
+            "Type": "Type",
+            "DeleteSkill": "Delete Skill",
+            "RemoveItem": "Remove Item",
+            "StockOrder": "Stock / Order",
+            "InStock": "In Stock"
         },
         "Marketplace": {
             "Title": "Marketplace Purchase Screen",
@@ -262,7 +269,12 @@
             },
             "Tests": {
                 "title": "Marketplace Tests",
-                "AvailabilityTest": "Availability Test"
+                "AvailabilityTest": "Availability Test",
+                "ExtendedTestInProgress": "Extended Test In Progress",
+                "Progress": "Progress:",
+                "NextRoll": "Next Roll:",
+                "LastRollResults": "Last Roll's Results:",
+                "ContinueTest": "Continue Test"
             },
             "Source": {
                 "Global": "Shop"
@@ -284,6 +296,25 @@
                 "OwnerUuid": "Owner UUID",
                 "AddItem": "Add Item",
                 "DragDropHint": "Drag & Drop items here to add to Shop Inventory",
+                "WAN": "WAN",
+                "NoSlavedDevices": "No slaved devices",
+                "DragActorHere": "Drag Actor Here",
+                "DragItemHere": "Drag Item Here",
+                "DragActorsHere": "Drag Actors Here",
+                "ShopRadius": "Shop Radius (Grid Units)",
+                "ShopRadiusHint": "Determines the size of the Scene Region",
+                "Units": "Units",
+                "MatrixHost": "Matrix Host (WAN Master)",
+                "OpenHostSheet": "Open Host Sheet",
+                "SlavedWANDevices": "SLAVED WAN DEVICES:",
+                "OpenEmployeeMatrixTab": "Open Employee Matrix Tab",
+                "OwnerLabel": "Owner:",
+                "NoSlavedDevicesFound": "No slaved employee commlinks/cyberdecks found",
+                "DragDropHostHint": "Drag & Drop Host Item Here to Initialize WAN",
+                "NoActiveHost": "No Matrix Host active for this shop",
+                "RemoveShopActor": "Remove Shop Actor",
+                "RemoveConnectionItem": "Remove Connection Item",
+                "RemoveSelectedActor": "Remove Selected Actor",
                 "FIELDS": {
                     "owner": {
                         "label": "Shop Owner",
@@ -336,7 +367,10 @@
                 "SendRequest": "Buy",
                 "CancelRequest": "Cancel",
                 "Description": "Basket Description",
-                "AddItem": "Add Item"
+                "AddItem": "Add Item",
+                "DecreaseQuantity": "Decrease Quantity",
+                "IncreaseQuantity": "Increase Quantity",
+                "OutOfStockWarning": "Cannot add more of '{name}'. The shop only has {qty} in stock."
             },
             "OrderReview": {
                 "Title": "Order Review",
@@ -357,7 +391,9 @@
                 "History": "History",
                 "RequestFor": "Request from",
                 "Of": "of",
-                "Each": "each"
+                "Each": "each",
+                "ApproveItem": "Approve Item",
+                "RejectItem": "Reject Item"
             },
             "system": {
                 "avail": {
@@ -538,7 +574,15 @@
             "Day": "Day",
             "Days": "Days",
             "Week": "Week",
-            "Month": "Month"
+            "Month": "Month",
+            "hours": "Hours",
+            "days": "Days",
+            "weeks": "Weeks",
+            "months": "Months",
+            "hour": "Hour",
+            "day": "Day",
+            "week": "Week",
+            "month": "Month"
         }
     },
     "TYPES": {

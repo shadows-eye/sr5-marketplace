@@ -34,9 +34,9 @@
                                 {{/if}}
                             </div>
                         {{else if isEditMode}}
-                            <span class="text-xs font-bold text-[var(--color-red-bright)] opacity-70 w-full text-center py-2">Drag Actor Here</span>
+                            <span class="text-xs font-bold text-[var(--color-red-bright)] opacity-70 w-full text-center py-2">{{localize "SR5Marketplace.Marketplace.Shop.DragActorHere"}}</span>
                         {{else}}
-                            <span class="text-xs italic opacity-40">None</span>
+                            <span class="text-xs italic opacity-40">{{localize "SR5Marketplace.UI.Cancel"}}</span>
                         {{/if}}
                     </div>
                 </div>
@@ -56,9 +56,9 @@
                                 {{/if}}
                             </div>
                         {{else if isEditMode}}
-                            <span class="text-xs font-bold text-[var(--color-red-bright)] opacity-70 w-full text-center py-2">Drag Item Here</span>
+                            <span class="text-xs font-bold text-[var(--color-red-bright)] opacity-70 w-full text-center py-2">{{localize "SR5Marketplace.Marketplace.Shop.DragItemHere"}}</span>
                         {{else}}
-                            <span class="text-xs italic opacity-40">None</span>
+                            <span class="text-xs italic opacity-40">{{localize "SR5Marketplace.UI.Cancel"}}</span>
                         {{/if}}
                     </div>
                 </div>
@@ -88,39 +88,39 @@
                             </div>
                         {{/each}}
                         {{#if isEditMode}}
-                            <span class="text-xs font-bold text-[var(--color-red-bright)] opacity-70 w-full text-center py-1 mt-1">Drag Actors Here</span>
+                            <span class="text-xs font-bold text-[var(--color-red-bright)] opacity-70 w-full text-center py-1 mt-1">{{localize "SR5Marketplace.Marketplace.Shop.DragActorsHere"}}</span>
                         {{/if}}
                     </div>
                 </div>
 
                 {{!-- SHOP RADIUS SETTING --}}
                 <div class="flex flex-col gap-1 {{#if isEditMode}}p-2 border-2 border-dashed border-transparent bg-[var(--color-black-transparent-20)] transition-colors rounded{{/if}}">
-                    <label class="text-xs font-bold opacity-80 pb-1 mb-1" title="Determines the size of the Scene Region">Shop Radius (Grid Units)</label>
+                    <label class="text-xs font-bold opacity-80 pb-1 mb-1" title="{{localize 'SR5Marketplace.Marketplace.Shop.ShopRadiusHint'}}">{{localize "SR5Marketplace.Marketplace.Shop.ShopRadius"}}</label>
                     <div class="flex items-center min-h-[36px]">
                         {{#if @root.isEditMode}}
                             <div class="flex items-center gap-2 w-full">
                                 <input type="number" name="system.shop.shopRadius.value" value="{{system.shop.shopRadius.value}}" class="w-full bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none rounded px-2 py-1 text-sm font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none" min="1"/>
-                                <span class="text-xs opacity-60">Units</span>
+                                <span class="text-xs opacity-60">{{localize "SR5Marketplace.Marketplace.Shop.Units"}}</span>
                             </div>
                         {{else}}
-                            <span class="text-sm font-bold text-[var(--color-yellow-base)]">{{system.shop.shopRadius.value}} <span class="text-xs opacity-60 font-normal">Units</span></span>
+                            <span class="text-sm font-bold text-[var(--color-yellow-base)]">{{system.shop.shopRadius.value}} <span class="text-xs opacity-60 font-normal">{{localize "SR5Marketplace.Marketplace.Shop.Units"}}</span></span>
                         {{/if}}
                     </div>
                 </div>
 
                 {{!-- MATRIX HOST INTEGRATION --}}
                 <div class="flex flex-col gap-2 md:col-span-2 {{#if isEditMode}}drop-target p-2 border-2 border-dashed border-[var(--color-grey-medium)] hover:border-[var(--color-yellow-base)] bg-[var(--color-black-transparent-20)] transition-colors rounded{{/if}}" {{#if isEditMode}}data-drop-zone="host" data-drop-type="Item"{{/if}}>
-                    <label class="text-xs font-bold opacity-80 pb-1 mb-1">Matrix Host (WAN Master)</label>
+                    <label class="text-xs font-bold opacity-80 pb-1 mb-1">{{localize "SR5Marketplace.Marketplace.Shop.MatrixHost"}}</label>
                     <div class="flex flex-col gap-1 min-h-[36px]">
                         {{#if hostItem}}
                             <div class="flex flex-col gap-2 bg-[var(--color-black-transparent-30)] p-2 rounded">
                                 <div class="flex items-center justify-between gap-2 w-full">
                                     <div class="flex items-center gap-2 overflow-hidden text-xs">
-                                        <a class="flex items-center gap-2 cursor-pointer hover:text-[var(--color-yellow-base)] overflow-hidden" data-action="openHostSheet" title="Open Host Sheet">
+                                        <a class="flex items-center gap-2 cursor-pointer hover:text-[var(--color-yellow-base)] overflow-hidden" data-action="openHostSheet" title="{{localize 'SR5Marketplace.Marketplace.Shop.OpenHostSheet'}}">
                                             <i class="fa-solid fa-server text-[var(--color-yellow-base)] text-lg"></i>
                                             <span class="text-xs font-bold truncate">{{hostItem.name}}</span>
                                         </a>
-                                        <span class="text-[10px] bg-[var(--color-red-bright)] px-1 py-0.5 rounded text-[var(--color-white)] font-bold">Rating {{hostItem.system.rating}}</span>
+                                        <span class="text-[10px] bg-[var(--color-red-bright)] px-1 py-0.5 rounded text-[var(--color-white)] font-bold">{{localize "SR5Marketplace.UI.Rating"}} {{hostItem.system.rating}}</span>
                                     </div>
                                 </div>
 
@@ -146,10 +146,10 @@
 
                                 {{!-- Slaved Devices --}}
                                 <div class="mt-2 flex flex-col gap-1 border-t border-[var(--color-grey-medium)] pt-2">
-                                    <span class="text-[10px] font-bold opacity-60">SLAVED WAN DEVICES:</span>
+                                    <span class="text-[10px] font-bold opacity-60">{{localize "SR5Marketplace.Marketplace.Shop.SlavedWANDevices"}}</span>
                                     {{#if slavedDevices.length}}
                                         {{#each slavedDevices as |dev|}}
-                                            <a class="flex items-center justify-between gap-2 bg-[var(--color-black-transparent-50)] hover:bg-[var(--color-black-transparent-60)] p-1 rounded text-[11px] cursor-pointer hover:text-[var(--color-yellow-base)] overflow-hidden" data-action="openMatrixTab" data-uuid="{{dev.ownerUuid}}" title="Open Employee Matrix Tab">
+                                            <a class="flex items-center justify-between gap-2 bg-[var(--color-black-transparent-50)] hover:bg-[var(--color-black-transparent-60)] p-1 rounded text-[11px] cursor-pointer hover:text-[var(--color-yellow-base)] overflow-hidden" data-action="openMatrixTab" data-uuid="{{dev.ownerUuid}}" title="{{localize 'SR5Marketplace.Marketplace.Shop.OpenEmployeeMatrixTab'}}">
                                                 <div class="flex items-center gap-1.5 overflow-hidden">
                                                     {{#if dev.img}}
                                                         <img src="{{dev.img}}" class="w-4 h-4 object-cover rounded-sm flex-shrink-0"/>
@@ -158,18 +158,18 @@
                                                     {{/if}}
                                                     <span class="font-semibold truncate">{{dev.name}}</span>
                                                 </div>
-                                                <span class="text-[9px] opacity-50 italic truncate">Owner: {{dev.ownerName}}</span>
+                                                <span class="text-[9px] opacity-50 italic truncate">{{localize "SR5Marketplace.Marketplace.Shop.OwnerLabel"}} {{dev.ownerName}}</span>
                                             </a>
                                         {{/each}}
                                     {{else}}
-                                        <span class="text-[10px] italic opacity-40">No slaved employee commlinks/cyberdecks found</span>
+                                        <span class="text-[10px] italic opacity-40">{{localize "SR5Marketplace.Marketplace.Shop.NoSlavedDevicesFound"}}</span>
                                     {{/if}}
                                 </div>
                             </div>
                         {{else if isEditMode}}
-                            <span class="text-xs font-bold text-[var(--color-red-bright)] opacity-70 w-full text-center py-2">Drag & Drop Host Item Here to Initialize WAN</span>
+                            <span class="text-xs font-bold text-[var(--color-red-bright)] opacity-70 w-full text-center py-2">{{localize "SR5Marketplace.Marketplace.Shop.DragDropHostHint"}}</span>
                         {{else}}
-                            <span class="text-xs italic opacity-40">No Matrix Host active for this shop</span>
+                            <span class="text-xs italic opacity-40">{{localize "SR5Marketplace.Marketplace.Shop.NoActiveHost"}}</span>
                         {{/if}}
                     </div>
                 </div>

@@ -1,55 +1,180 @@
 <div class="order-review-container">
     <h2>{{localize "SR5Marketplace.Marketplace.OrderReview.OrderReviewItems"}}</h2>
 
-    {{#each pendingRequests}}
-    <div class="pending-request-block" data-user-id="{{this.user._id}}" data-basket-uuid="{{this.basket.basketUUID}}">
-        <h3 class="actor-request-header">
-            <span>{{localize "SR5Marketplace.Marketplace.OrderReview.RequestFor"}} <strong>{{this.actor.name}}</strong></span>
-            <span class="actor-funds">
-                ({{localize "SR5Marketplace.Marketplace.Actor.Funds"}}: {{this.actor.nuyen}} ¥ / {{this.actor.karma}} K)
-            </span>
-        </h3>
-        
-        <div class="basket-grid headers seven-columns">
-            <div class="grid-item header" style="justify-self: start;">{{localize "SR5Marketplace.UI.Name"}}</div>
-            <div class="grid-item header" title="{{localize 'SR5Marketplace.UI.Quantity'}} (per Pack)">{{localize "SR5Marketplace.Marketplace.Basket.QuantityPerPack"}}</div>
-            <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.Basket.BuyQuantity"}}</div>
-            <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.system.technology.rating"}}</div>
-            <div class="grid-item header">{{localize "SR5Marketplace.UI.Cost"}}</div>
-            <div class="grid-item header">{{localize "SR5Marketplace.UI.Karma"}}</div>
-            <div class="grid-item header">{{localize "SR5Marketplace.UI.Actions"}}</div>
+    {{#if actorGroups.length}}
+        <!-- Actor Sub-Tabs -->
+        <div class="review-actor-tabs">
+            {{#each actorGroups}}
+            <button class="review-actor-tab {{#if this.isActive}}active{{/if}}" data-action="changeReviewActor" data-actor-uuid="{{this.uuid}}" type="button">
+                <img src="{{this.img}}" alt="{{this.name}}" class="review-actor-tab-img">
+                <div class="review-actor-tab-info">
+                    <span class="review-actor-tab-name">{{this.name}}</span>
+                    <span class="review-actor-tab-stats">
+                        (¥: {{formatNumber this.totalCost}} / K: {{this.totalKarma}} / E: {{this.essence}})
+                    </span>
+                </div>
+            </button>
+            {{/each}}
         </div>
 
-        {{#each this.basket.basketItems}}
-        <div class="basket-grid item-row seven-columns" data-basket-item-uuid="{{this.basketItemUuid}}">
-            <div class="basket-item item-name"><a data-action="openDocumentLink" data-uuid="{{this.itemUuid}}">{{this.name}}</a></div>
-            
-            <div class="basket-item item-pack-quantity">
-                {{#if (gt this.itemQuantity 1)}}{{this.itemQuantity}}{{else}}&mdash;{{/if}}
+        {{#with activeGroup}}
+        <!-- Requests list for the selected actor -->
+        <div class="actor-requests-container">
+            {{#each requests}}
+            <div class="pending-request-block" data-user-id="{{this.user._id}}" data-basket-uuid="{{this.basket.basketUUID}}">
+                <h3 class="actor-request-header">
+                    <span>Purchase Request by User: <strong>{{this.user.name}}</strong></span>
+                    <span class="request-time font-normal text-xs opacity-75">({{this.basket.creationTime}})</span>
+                </h3>
+
+                <div class="basket-grid headers seven-columns">
+                    <div class="grid-item header" style="justify-self: start;">{{localize "SR5Marketplace.UI.Name"}}</div>
+                    <div class="grid-item header" title="{{localize 'SR5Marketplace.UI.Quantity'}} (per Pack)">{{localize "SR5Marketplace.Marketplace.Basket.QuantityPerPack"}}</div>
+                    <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.Basket.BuyQuantity"}}</div>
+                    <div class="grid-item header">{{localize "SR5Marketplace.Marketplace.system.technology.rating"}}</div>
+                    <div class="grid-item header">{{localize "SR5Marketplace.UI.Cost"}}</div>
+                    <div class="grid-item header">{{localize "SR5Marketplace.UI.Karma"}}</div>
+                    <div class="grid-item header">{{localize "SR5Marketplace.UI.Actions"}}</div>
+                </div>
+
+                {{#each this.basket.basketItems}}
+                <div class="basket-grid item-row seven-columns" data-basket-item-uuid="{{this.basketItemUuid}}">
+                    <div class="basket-item item-name"><a data-action="openDocumentLink" data-uuid="{{this.itemUuid}}">{{this.name}}</a></div>
+                    
+                    <div class="basket-item item-pack-quantity">
+                        {{#if (gt this.itemQuantity 1)}}{{this.itemQuantity}}{{else}}&mdash;{{/if}}
+                    </div>
+
+                    <div class="basket-item"><input type="number" value="{{this.buyQuantity}}" class="gm-review-input" data-action="updatePendingItem" data-property="buyQuantity" min="1" /></div>
+                    
+                    <div class="basket-item"><input type="number" value="{{this.selectedRating}}" class="gm-review-input" data-action="updatePendingItem" data-property="selectedRating" /></div>
+                    
+                    <div class="basket-item"><input type="number" value="{{this.cost}}" class="gm-review-input" data-action="updatePendingItem" data-property="cost" /></div>
+                    
+                    <div class="basket-item"><input type="number" value="{{this.karma}}" class="gm-review-input" data-action="updatePendingItem" data-property="karma" /></div>
+                    
+                    <div class="basket-item item-actions">
+                        <button class="approve-item-btn" title="{{localize 'SR5Marketplace.Marketplace.OrderReview.ApproveItem'}}" data-action="approveItem"><i class="fas fa-check"></i></button>
+                        <button class="reject-item-btn" title="{{localize 'SR5Marketplace.Marketplace.OrderReview.RejectItem'}}" data-action="rejectItem"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                {{/each}}
+
+                <div class="request-delivery-time-info">
+                    <i class="fa-solid fa-truck-fast"></i> <strong>Estimated Delivery for this request:</strong> 
+                    <span>{{this.deliveryTime.value}} {{this.deliveryTime.unit}}</span>
+                </div>
+
+                <!-- Test Result Details (Expandable) -->
+                {{#if this.basket.testContext}}
+                <details class="test-result-details">
+                    <summary class="test-result-summary-header">
+                        <i class="fas fa-dice-d6"></i> <strong>Availability Roll Results</strong>:
+                        {{#if this.basket.testContext.isAvailable}}
+                            <span class="success-text"><i class="fas fa-check-circle"></i> {{localize "SR5Marketplace.Marketplace.Acquisition.Success"}}</span>
+                        {{else}}
+                            <span class="failure-text"><i class="fas fa-times-circle"></i> {{localize "SR5Marketplace.Marketplace.Acquisition.Failure"}}</span>
+                        {{/if}}
+                    </summary>
+                    <div class="test-result-content">
+                        {{#if (eq this.basket.testState.testType "opposed")}}
+                            <!-- Opposed Test Render -->
+                            <div class="opposed-results-grid">
+                                <div class="opposed-column">
+                                    <div class="opposed-column-title">Player's Roll ({{this.basket.testContext.initialRoll.netHits}} Net Hits)</div>
+                                    <div class="dice-tray-mini">
+                                        {{#each this.basket.testContext.initialRoll.renderedDice as |die|}}
+                                            <div class="die-face {{die.cssClass}}"><span>{{die.text}}</span></div>
+                                        {{/each}}
+                                    </div>
+                                </div>
+                                <div class="opposed-column">
+                                    <div class="opposed-column-title">Item's Resistance ({{this.basket.testContext.resistRoll.hits}} Hits)</div>
+                                    <div class="dice-tray-mini">
+                                        {{#each this.basket.testContext.resistRoll.renderedDice as |die|}}
+                                            <div class="die-face {{die.cssClass}}"><span>{{die.text}}</span></div>
+                                        {{/each}}
+                                    </div>
+                                </div>
+                            </div>
+                        {{else if (eq this.basket.testState.testType "simple")}}
+                            <!-- Simple Test Render -->
+                            <div class="simple-results-grid">
+                                <div class="simple-column">
+                                    <div class="simple-column-title">Final Roll ({{this.basket.testContext.initialRoll.netHits}} Net Hits)</div>
+                                    <div class="dice-tray-mini">
+                                        {{#each this.basket.testContext.initialRoll.renderedDice as |die|}}
+                                            <div class="die-face {{die.cssClass}}"><span>{{die.text}}</span></div>
+                                        {{/each}}
+                                    </div>
+                                </div>
+                                <div class="simple-column text-center">
+                                    <div class="simple-column-title">Threshold Required</div>
+                                    <div class="threshold-badge">{{this.basket.testContext.initialRoll.threshold}}</div>
+                                </div>
+                            </div>
+                        {{else if (eq this.basket.testState.testType "extended")}}
+                            <!-- Extended Test Render -->
+                            <div class="extended-results-grid">
+                                <div class="extended-column">
+                                    <div class="extended-column-title">Last Roll ({{this.basket.testContext.initialRoll.netHits}} Net Hits)</div>
+                                    <div class="dice-tray-mini">
+                                        {{#each this.basket.testContext.initialRoll.renderedDice as |die|}}
+                                            <div class="die-face {{die.cssClass}}"><span>{{die.text}}</span></div>
+                                        {{/each}}
+                                    </div>
+                                </div>
+                                <div class="extended-column">
+                                    <div class="details-list">
+                                        <div><strong>Total Rolls Made:</strong> {{this.basket.testContext.totalRolls}}</div>
+                                        <div><strong>Hits Accumulated:</strong> {{this.basket.testContext.initialRoll.cumulativeHits}} / {{this.basket.testContext.initialRoll.threshold}}</div>
+                                        {{#if this.basket.testContext.connectionUsed}}
+                                        <div><strong>Connection Rating Used:</strong> {{this.basket.testContext.connectionUsed}}</div>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                            </div>
+                        {{/if}}
+                    </div>
+                </details>
+                {{/if}}
+
+                {{#if (gt this.basket.basketItems.length 1)}}
+                <div class="basket-actions full-basket-actions">
+                    <span>Resolve request from <strong>{{this.user.name}}</strong>:</span>
+                    <button class="approve-all-btn" data-action="approveAll">{{localize "SR5Marketplace.Marketplace.OrderReview.AllApproved"}}</button>
+                    <button class="reject-all-btn" data-action="rejectAll">{{localize "SR5Marketplace.Marketplace.OrderReview.AllRejected"}}</button>
+                </div>
+                {{/if}}
             </div>
+            {{/each}}
+        </div>
 
-            <div class="basket-item"><input type="number" value="{{this.buyQuantity}}" class="gm-review-input" data-action="updatePendingItem" data-property="buyQuantity" min="1" /></div>
-            
-            <div class="basket-item"><input type="number" value="{{this.selectedRating}}" class="gm-review-input" data-action="updatePendingItem" data-property="selectedRating" /></div>
-            
-            <div class="basket-item"><input type="number" value="{{this.cost}}" class="gm-review-input" data-action="updatePendingItem" data-property="cost" /></div>
-            
-            <div class="basket-item"><input type="number" value="{{this.karma}}" class="gm-review-input" data-action="updatePendingItem" data-property="karma" /></div>
-            
-            <div class="basket-item item-actions">
-                <button class="approve-item-btn" title="Approve Item" data-action="approveItem"><i class="fas fa-check"></i></button>
-                <button class="reject-item-btn" title="Reject Item" data-action="rejectItem"><i class="fas fa-times"></i></button>
+        <!-- Overall Consolidated Statistics for Selected Actor (Moved to bottom, reads like shop order!) -->
+        <div class="review-overall-summary">
+            <h3>Consolidated Totals for <strong>{{actor.name}}</strong></h3>
+            <div class="overall-metrics-grid">
+                <div class="overall-metric-card">
+                    <span class="metric-label">{{localize "SR5Marketplace.Marketplace.Basket.TotalCost"}}</span>
+                    <span class="metric-value text-gold">{{formatNumber totalCost}} ¥</span>
+                </div>
+                <div class="overall-metric-card">
+                    <span class="metric-label">{{localize "SR5Marketplace.Marketplace.Basket.TotalKarma"}}</span>
+                    <span class="metric-value text-yellow">{{totalKarma}} K</span>
+                </div>
+                <div class="overall-metric-card">
+                    <span class="metric-label">{{localize "SR5Marketplace.Marketplace.Basket.TotalEssence"}}</span>
+                    <span class="metric-value text-blue">{{totalEssenceCost}}</span>
+                </div>
+                <div class="overall-metric-card">
+                    <span class="metric-label">{{localize "SR5Marketplace.Marketplace.Basket.TotalAvailability"}}</span>
+                    <span class="metric-value text-purple">{{totalAvailability}}</span>
+                </div>
             </div>
         </div>
-        {{/each}}
+        {{/with}}
 
-        <div class="basket-actions full-basket-actions">
-            <span><strong>{{this.user.name}}</strong>'s {{localize "SR5Marketplace.Marketplace.OrderReview.PurchaseReview"}}:</span>
-            <button class="approve-all-btn" data-action="approveAll">{{localize "SR5Marketplace.Marketplace.OrderReview.AllApproved"}}</button>
-            <button class="reject-all-btn" data-action="rejectAll">{{localize "SR5Marketplace.Marketplace.OrderReview.AllRejected"}}</button>
-        </div>
-    </div>
     {{else}}
-    <p>{{localize "SR5Marketplace.Marketplace.OrderReview.NoPurchaseRequests"}}</p>
-    {{/each}}
+        <p>{{localize "SR5Marketplace.Marketplace.OrderReview.NoPurchaseRequests"}}</p>
+    {{/if}}
 </div>

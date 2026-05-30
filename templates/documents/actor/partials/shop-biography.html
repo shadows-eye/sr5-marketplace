@@ -1,10 +1,15 @@
 <section class="tab biography{{#if tab.active}} active{{/if}}" data-group="primary" data-tab="biography" data-application-part="biography">
-    <div class="biography-content h-full">
-        {{formGroup systemFields.description.fields.value 
-            enriched=biographyHTML 
-            value=system.description.value 
-            editable=isEditable
-            toggled="true"
-        }}
+    <div class="biography-content h-full p-2">
+        {{#if isBiographyEditable}}
+            {{formGroup systemFields.description.fields.value 
+                enriched=biographyHTML 
+                value=system.description.value 
+                editable=true
+            }}
+        {{else}}
+            <div class="enriched-biography">
+                {{{biographyHTML}}}
+            </div>
+        {{/if}}
     </div>
 </section>

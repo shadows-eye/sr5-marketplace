@@ -120,7 +120,7 @@
             <input type="text" name="system.technology.cost" value="{{displayItem.system.technology.cost}}" class="item-input"/>
             <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen details"></i> 
         {{else}}
-            <span>{{displayItem.system.technology.cost}}</span>
+            <span>{{formatNumber displayItem.system.technology.cost}}</span>
             <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen"></i>
         {{/if}}
     </div>

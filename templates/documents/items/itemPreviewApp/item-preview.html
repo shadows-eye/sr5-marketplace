@@ -30,7 +30,7 @@
                         <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Rating"}}</label><div class="display">{{item.system.technology.rating}}</div></div>
                         {{/if}}
                         {{#if item.system.technology.cost}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Cost"}}</label><div class="display">{{item.system.technology.cost}}<span class="unit"><i class="fas fa-yen-sign"></i></span></div></div>
+                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Cost"}}</label><div class="display">{{formatNumber item.system.technology.cost}}<span class="unit"><i class="fas fa-yen-sign"></i></span></div></div>
                         {{/if}}
                         {{#if item.system.karma}}
                         <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Karma"}}</label><div class="display">{{item.system.karma}}</div></div>

@@ -34,7 +34,7 @@
                             {{#if @root.isEditMode}}
                                 <input class="w-full bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded text-xs" type="number" name="system.skills.active.{{skill.id}}.value" value="{{skill.value}}"/>
                                 {{#if skill.itemId}}
-                                    <a class="text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer text-center flex items-center justify-center" data-action="deleteSkill" data-item-id="{{skill.itemId}}" title="Delete Skill">
+                                    <a class="text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer text-center flex items-center justify-center" data-action="deleteSkill" data-item-id="{{skill.itemId}}" title="{{localize 'SR5Marketplace.UI.DeleteSkill'}}">
                                         <i class="fas fa-trash text-xs"></i>
                                     </a>
                                 {{else}}
@@ -73,7 +73,7 @@
                                 {{#if @root.isEditMode}}
                                     <input class="w-full bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded text-xs" type="number" name="system.skills.knowledge.{{group.key}}.value.{{skill.id}}.value" value="{{skill.value}}"/>
                                     {{#if skill.itemId}}
-                                        <a class="text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer text-center flex items-center justify-center" data-action="deleteSkill" data-item-id="{{skill.itemId}}" title="Delete Skill">
+                                        <a class="text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer text-center flex items-center justify-center" data-action="deleteSkill" data-item-id="{{skill.itemId}}" title="{{localize 'SR5Marketplace.UI.DeleteSkill'}}">
                                             <i class="fas fa-trash text-xs"></i>
                                         </a>
                                     {{else}}
@@ -112,7 +112,7 @@
                             {{#if @root.isEditMode}}
                                 <input class="w-full bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none px-1 py-0.5 text-center font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none rounded text-xs" type="number" name="system.skills.language.value.{{skill.id}}.value" value="{{skill.value}}"/>
                                 {{#if skill.itemId}}
-                                    <a class="text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer text-center flex items-center justify-center" data-action="deleteSkill" data-item-id="{{skill.itemId}}" title="Delete Skill">
+                                    <a class="text-[var(--color-red-bright)] hover:text-[var(--color-red-base)] cursor-pointer text-center flex items-center justify-center" data-action="deleteSkill" data-item-id="{{skill.itemId}}" title="{{localize 'SR5Marketplace.UI.DeleteSkill'}}">
                                         <i class="fas fa-trash text-xs"></i>
                                     </a>
                                 {{else}}

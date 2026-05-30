@@ -304,7 +304,7 @@ export function defineShopActorClass() {
          * @returns {Promise<this>|void} The updated ShopActor document, or void if the employee already exists.
          */
         async addEmployee(actorUuid) {
-            const employees = this.shop.employees;
+            const employees = this.shop.employees || [];
             if (employees.includes(actorUuid)) return;
             return this.update({ "system.shop.employees": [...employees, actorUuid] });
         }
@@ -315,7 +315,7 @@ export function defineShopActorClass() {
          * @returns {Promise<this>} The updated ShopActor document.
          */
         async removeEmployee(actorUuid) {
-            const employees = this.shop.employees.filter(uuid => uuid !== actorUuid);
+            const employees = (this.shop.employees || []).filter(uuid => uuid !== actorUuid);
             return this.update({ "system.shop.employees": employees });
         }
 
@@ -430,6 +430,7 @@ export function defineShopActorClass() {
             const newItemId = foundry.utils.randomID();
             
             // Safely unwrap the nested objects returned by the Rules Engine
+            const itemPriceVal = shopData.itemPrice?.value ?? shopData.itemPrice ?? 0;
             const sellPriceVal = shopData.sellPrice?.value ?? shopData.sellPrice ?? 0;
             const buyPriceVal = shopData.buyPrice?.value ?? shopData.buyPrice ?? 0;
             const availVal = shopData.availability?.value ?? shopData.availability ?? "1R";

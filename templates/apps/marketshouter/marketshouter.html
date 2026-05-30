@@ -1,0 +1,49 @@
+<div class="marketshouter-container">
+    <div class="marketshouter-bar">
+        <!-- Search Input Wrap (Slides out on hover of the capsule bar) -->
+        <div class="marketshouter-search-wrap">
+            {{#if shopActorImg}}
+            <img class="marketshouter-shop-indicator" src="/{{shopActorImg}}" title="Searching in: {{shopActorName}}" onerror="this.src='/icons/svg/mystery-man.svg'">
+            {{/if}}
+            <i class="fas fa-search marketshouter-search-icon"></i>
+            <input type="text" class="marketshouter-search" placeholder="{{#if shopActorName}}Search {{shopActorName}}...{{else}}Search compendium items...{{/if}}" autocomplete="off">
+            <i class="fas fa-times marketshouter-clear-btn hidden" title="Clear Search"></i>
+        </div>
+
+        <!-- Interactive Icon Area -->
+        <div class="marketshouter-icons-area">
+            <!-- GM Megaphone Button -->
+            {{#if isGM}}
+            <button type="button" class="marketshouter-icon-btn marketshouter-megaphone-btn" data-action="openReview" title="Review Purchase Requests">
+                <i class="fas fa-bullhorn"></i>
+                {{#if (gt pendingCount 0)}}
+                <span class="marketshouter-badge megaphone-badge">{{pendingCount}}</span>
+                {{/if}}
+            </button>
+            {{/if}}
+
+            <!-- Shop Button -->
+            <button type="button" class="marketshouter-icon-btn marketshouter-shop-btn" data-action="openMarketplace" title="Open Marketplace">
+                <i class="fas fa-store"></i>
+            </button>
+            
+            <!-- Basket/Cart Button -->
+            <button type="button" class="marketshouter-icon-btn marketshouter-basket-btn" data-action="openCart" title="Open Shopping Cart">
+                <i class="fas fa-shopping-basket"></i>
+                {{#if (gt itemCount 0)}}
+                <span class="marketshouter-badge">{{itemCount}}</span>
+                {{/if}}
+            </button>
+        </div>
+    </div>
+
+    <!-- Live Floating Search Results Dropdown -->
+    <div class="marketshouter-results hidden">
+        <div class="marketshouter-results-header">
+            <span class="results-count">0 items found</span>
+        </div>
+        <ul class="marketshouter-results-list">
+            <!-- Populated dynamically via JS for instant lag-free rendering -->
+        </ul>
+    </div>
+</div>

@@ -31,6 +31,10 @@ export default class ItemDataServices {
         this._indexPromise = null;
     }
 
+    getItems() {
+        return this._globalItemsCache || [];
+    }
+
     async buildIndex() {
         if (this._globalItemsCache) return this._globalItemsCache;
         if (this._indexPromise) return this._indexPromise;
@@ -257,6 +261,10 @@ export default class ItemDataServices {
             if (item) {
                 const itemData = item.toObject(false);
                 itemData.uuid = item.uuid;
+                if (itemData.system?.technology) {
+                    itemData.system.technology.cost = invItem.sellPrice?.value ?? itemData.system.technology.cost;
+                    itemData.system.technology.availability = invItem.availability?.value ?? itemData.system.technology.availability;
+                }
                 shopItems.push(itemData);
             }
         }

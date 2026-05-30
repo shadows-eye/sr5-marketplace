@@ -1,0 +1,399 @@
+/* ==========================================================================
+   MARKETSHOUTER WIDGET STYLES (Premium Top-Bar Search & Navigation)
+   ========================================================================== */
+
+/* Borderless transparent window wrapper */
+.marketshouter-app.window-app {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    pointer-events: none !important; /* Allow clicking through background */
+    overflow: visible !important;
+}
+
+.marketshouter-app .window-content {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    overflow: visible !important;
+}
+
+/* Container positioned fixed at top-right left of Foundry sidebar */
+.marketshouter-container {
+    position: fixed;
+    top: 10px;
+    right: 70px; /* Moved further to the right as requested! */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    pointer-events: auto; /* Re-enable pointer events for the container */
+    z-index: 1000;
+    font-family: 'Outfit', 'Inter', 'Roboto', sans-serif;
+    transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Sleek glassmorphic pill capsule bar */
+.marketshouter-bar {
+    display: flex;
+    align-items: center;
+    background: rgba(18, 18, 18, 0.72);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 28px;
+    padding: 6px 14px;
+    height: 46px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    gap: 8px;
+    overflow: hidden;
+    opacity: 0.35; /* Subtle transparency until hovered */
+}
+
+/* Hovering the bar broadens its border contrast and shadow */
+.marketshouter-bar:hover,
+.marketshouter-bar:focus-within {
+    border-color: rgba(255, 100, 0, 0.35); /* Neon orange hint */
+    box-shadow: 0 8px 32px 0 rgba(255, 100, 0, 0.1), 0 12px 40px 0 rgba(0, 0, 0, 0.6);
+    background: rgba(15, 15, 15, 0.85);
+    opacity: 1; /* Fully visible on hover */
+}
+
+/* Expandable search input wrap */
+.marketshouter-search-wrap {
+    display: flex;
+    align-items: center;
+    position: relative;
+    max-width: 0px;
+    opacity: 0;
+    transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+    overflow: hidden;
+    gap: 8px;
+}
+
+/* Expand search bar when hovering the bar or when focused */
+.marketshouter-bar:hover .marketshouter-search-wrap,
+.marketshouter-bar:focus-within .marketshouter-search-wrap {
+    max-width: 280px;
+    opacity: 1;
+    pointer-events: auto;
+    padding-right: 6px;
+}
+
+/* Small shop actor image indicating boundary filter */
+.marketshouter-shop-indicator {
+    width: 24px;
+    height: 24px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 100, 0, 0.6);
+    box-shadow: 0 0 6px rgba(255, 100, 0, 0.4);
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.marketshouter-shop-indicator:hover {
+    transform: scale(1.1);
+    border-color: #ff6400;
+}
+
+/* Search search icon style */
+.marketshouter-search-icon {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 14px;
+    transition: color 0.3s;
+}
+
+.marketshouter-bar:focus-within .marketshouter-search-icon {
+    color: #ff6400; /* Signature orange glow */
+}
+
+/* Real search input element */
+.marketshouter-search {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 18px !important;
+    height: 32px !important;
+    width: 200px !important;
+    padding: 0 30px 0 12px !important;
+    color: #ffffff !important;
+    font-size: 13px !important;
+    outline: none !important;
+    transition: all 0.3s ease !important;
+}
+
+.marketshouter-search::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.marketshouter-search:focus {
+    background: rgba(0, 0, 0, 0.4) !important;
+    border-color: rgba(255, 100, 0, 0.6) !important;
+    box-shadow: 0 0 8px rgba(255, 100, 0, 0.25) !important;
+}
+
+/* Clear button inside search wrap */
+.marketshouter-clear-btn {
+    position: absolute;
+    right: 15px;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.marketshouter-clear-btn:hover {
+    color: #ff6400;
+    transform: scale(1.1);
+}
+
+/* Icon action area */
+.marketshouter-icons-area {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Shop and Cart/Basket Button styles */
+.marketshouter-icon-btn {
+    background: transparent !important;
+    border: none !important;
+    color: rgba(255, 255, 255, 0.75) !important;
+    font-size: 16px !important;
+    width: 34px !important;
+    height: 34px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    position: relative !important;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.marketshouter-icon-btn:hover {
+    color: #ffffff !important;
+    background: rgba(255, 100, 0, 0.15) !important;
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(255, 100, 0, 0.2) !important;
+}
+
+.marketshouter-icon-btn:active {
+    transform: scale(0.95);
+}
+
+/* Live Basket Item Count Badge */
+.marketshouter-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: linear-gradient(135deg, #ff6400, #ff4500);
+    color: #ffffff;
+    font-size: 9px;
+    font-weight: 800;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 8px rgba(255, 100, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    animation: marketshouter-pulse 2s infinite ease-in-out;
+}
+
+@keyframes marketshouter-pulse {
+    0% { transform: scale(1); box-shadow: 0 0 8px rgba(255, 100, 0, 0.6); }
+    50% { transform: scale(1.1); box-shadow: 0 0 14px rgba(255, 100, 0, 0.85); }
+    100% { transform: scale(1); box-shadow: 0 0 8px rgba(255, 100, 0, 0.6); }
+}
+
+/* Live Floating Search Results Dropdown */
+.marketshouter-results {
+    position: absolute;
+    top: 52px;
+    right: 0;
+    width: 320px;
+    background: rgba(14, 14, 14, 0.94);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 100, 0, 0.35);
+    border-radius: 14px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: top right;
+    pointer-events: auto;
+}
+
+.marketshouter-results.hidden {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+    pointer-events: none;
+    display: block !important; /* Keep block display but hide via scaling/opacity for transition */
+}
+
+/* Header/Summary section of results dropdown */
+.marketshouter-results-header {
+    background: rgba(255, 100, 0, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 8px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.marketshouter-results-header .results-count {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.55);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Results vertical list container */
+.marketshouter-results-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 380px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 100, 0, 0.3) rgba(0, 0, 0, 0.2);
+}
+
+.marketshouter-results-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.marketshouter-results-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 0 0 14px 0;
+}
+
+.marketshouter-results-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 100, 0, 0.35);
+    border-radius: 3px;
+}
+
+.marketshouter-results-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 100, 0, 0.6);
+}
+
+/* Search results list item styles */
+.marketshouter-result-item {
+    display: flex;
+    align-items: center;
+    padding: 9px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    gap: 12px;
+}
+
+.marketshouter-result-item:last-child {
+    border-bottom: none;
+}
+
+.marketshouter-result-item:hover {
+    background: rgba(255, 100, 0, 0.14);
+    transform: translateX(4px);
+}
+
+/* Small representative thumbnail image in results list */
+.marketshouter-result-item .item-thumb {
+    width: 28px;
+    height: 28px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s;
+}
+
+.marketshouter-result-item:hover .item-thumb {
+    transform: scale(1.12) rotate(6deg);
+    border-color: rgba(255, 100, 0, 0.5);
+}
+
+/* Item metadata titles */
+.marketshouter-result-item .item-meta {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+.marketshouter-result-item .item-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    transition: color 0.2s;
+}
+
+.marketshouter-result-item:hover .item-name {
+    color: #ffaa66;
+}
+
+.marketshouter-result-item .item-type {
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-top: 1px;
+}
+
+/* Item price tag style */
+.marketshouter-result-item .item-price {
+    font-size: 11px;
+    font-weight: 700;
+    color: #ffaa66;
+    background: rgba(255, 100, 0, 0.1);
+    border: 1px solid rgba(255, 100, 0, 0.2);
+    padding: 2px 7px;
+    border-radius: 10px;
+    text-shadow: 0 0 4px rgba(255, 100, 0, 0.15);
+}
+
+/* No results state styling */
+.no-results-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 14px;
+    color: rgba(255, 255, 255, 0.45);
+    gap: 8px;
+    text-align: center;
+}
+
+.no-results-item i {
+    font-size: 22px;
+    color: rgba(255, 100, 0, 0.5);
+}
+
+.no-results-item span {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* GM Megaphone Button Hover and Blue Glow Badge styles */
+.marketshouter-megaphone-btn:hover {
+    color: #ffffff !important;
+    background: rgba(0, 150, 255, 0.15) !important;
+    box-shadow: 0 0 10px rgba(0, 150, 255, 0.2) !important;
+}
+
+.marketshouter-badge.megaphone-badge {
+    background: linear-gradient(135deg, #0096ff, #0055ff);
+    box-shadow: 0 0 8px rgba(0, 150, 255, 0.6);
+}

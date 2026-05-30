@@ -4,6 +4,7 @@ import { ItemPreviewApp } from "./documents/items/ItemPreviewApp.mjs";
 import { BasketService } from '../services/basketService.mjs';
 import { PurchaseService } from '../services/purchaseService.mjs';
 import { SearchService } from '../services/searchTag.mjs';
+import { DeliveryTimeService } from '../services/DeliveryTimeService.mjs';
 import { DialogTestModifierService as DialogModifierService } from '../apps/documents/dialog/DialogModifierService.mjs'; // Builder for Dialog For inline-Dialog in Apps
 import { AppTestFlagService } from '../services/AppTestFlagService.mjs';
 import{ MODULE_ID } from '../lib/constants.mjs';
@@ -45,6 +46,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         // --- Handle passed-in shop context ---
         this.shopActorUuid = options.shopActorUuid ?? null;
+        this.initialSearchTerm = options.initialSearchTerm ?? null;
 
         // If no explicit shop context was passed, detect if the controlled token is inside a shop region
         if (!this.shopActorUuid && canvas.ready && canvas.tokens?.controlled[0]) {
@@ -70,6 +72,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             entries: []     // The full list of items we want to render
         };
         this.currentCategoryItems = [];
+        this.selectedReviewActorUuid = null;
     }
 
     /** @override */
@@ -104,7 +107,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 continueExtendedTest: this.#onContinueExtendedTest,
                 runAvailabilityTest: this.#onRunAvailabilityTest,
                 showAvailabilityDialog: this.#onShowAvailabilityDialog,
-                selectContact: this.#onSelectContact
+                selectContact: this.#onSelectContact,
+                changeReviewActor: this.#onChangeReviewActor
             }
         });
     }
@@ -126,6 +130,14 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         if (this.tabGroups.main === "shop") {
             this.searchService = new SearchService(this.element, this._applySearchFilter.bind(this));
+            
+            if (this.initialSearchTerm) {
+                if (this.searchService) {
+                    this.searchService.activeFilters = [this.initialSearchTerm.toLowerCase()];
+                }
+                this.initialSearchTerm = null;
+            }
+
             this.searchService.initialize();
             
             const categorySelector = this.element.querySelector("#item-type-selector");
@@ -139,8 +151,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             if (itemsContainer) {
                 // Attach the scroll listener
                 itemsContainer.addEventListener("scroll", this._onScrollItems.bind(this), { passive: true });
-                // Trigger the first draw (items 0 to 50)
-                this._renderItemSlice(0, 50);
+                // Trigger the first draw dynamically
+                this._updateVirtualScroll();
             }
         } else {
             this.searchService = null;
@@ -211,7 +223,12 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         const ownedActors = game.actors.filter(a => a.isOwner).map(a => ({ uuid: a.uuid, name: a.name, img: a.img }));
         const itemsByType = this.itemData.itemsByType;
-        const basket = await this.basketService.getBasket();
+        const currentShopUuid = this.selectedSource === "global" ? null : this.selectedSource;
+        let basket = await this.basketService.getBasket();
+        if (basket.shopActorUuid !== currentShopUuid) {
+            await this.basketService.setShopActor(currentShopUuid);
+            basket = await this.basketService.getBasket();
+        }
         console.log(basket);
         const basketItemCount = basket.shoppingCartItems.length;
         //Initial Dialog States
@@ -229,7 +246,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             this.availabilityStr = basket.totalAvailability;
             this.skill = activeTestState.skill;
             this.attribute = activeTestState.attribute;
-            this.modifiers = activeTestState.modifiers;
+            this.modifiers = activeTestState.appliedModifiers;
             this.activeTestState = activeTestState;
         }
 
@@ -299,10 +316,103 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             console.log("LOG: Final context object passed to shoppingCart.html:", partialContext);
             tabContent = await render("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.html", partialContext);
             break;
-        case "orderReview":
-                partialContext.pendingRequests = await PurchaseService.getAllPendingRequests();
+        case "orderReview": {
+                const allPendingRequests = await PurchaseService.getAllPendingRequests();
+                const builder = new AppDialogBuilder();
+                
+                // Group requests by actor
+                const groupedByActor = {};
+                for (const req of allPendingRequests) {
+                    const actorUuid = req.actor?.uuid || "unknown";
+                    if (!groupedByActor[actorUuid]) {
+                        groupedByActor[actorUuid] = {
+                            actor: req.actor || { name: "Unknown Actor", img: "icons/svg/mystery-man.svg", uuid: "unknown", essence: 6 },
+                            requests: [],
+                            totalCost: 0,
+                            totalKarma: 0,
+                            totalEssenceCost: 0,
+                            allAvailabilityStrings: []
+                        };
+                    }
+                    
+                    // Enrich request with enriched testContext
+                    if (req.basket.testState) {
+                        try {
+                            req.basket.testContext = await builder.buildTestDialogContext(req.basket.testState, req.basket);
+                        } catch (err) {
+                            console.warn("SR5 Marketplace | Failed to build test dialog context for request:", err);
+                        }
+                    }
+                    
+                    // Calculate delivery time
+                    if (req.basket.testContext && req.basket.testContext.deliveryTime) {
+                        req.deliveryTime = req.basket.testContext.deliveryTime;
+                    } else {
+                        const baseTime = DeliveryTimeService.getBaseDeliveryTime(req.basket.totalCost || 0);
+                        req.deliveryTime = {
+                            value: baseTime.value,
+                            unit: baseTime.unit
+                        };
+                    }
+                    
+                    groupedByActor[actorUuid].requests.push(req);
+                    groupedByActor[actorUuid].totalCost += req.basket.totalCost || 0;
+                    groupedByActor[actorUuid].totalKarma += req.basket.totalKarma || 0;
+                    groupedByActor[actorUuid].totalEssenceCost += req.basket.totalEssenceCost || 0;
+                    groupedByActor[actorUuid].allAvailabilityStrings.push(req.basket.totalAvailability || "0");
+                }
+                
+                // Populate tab bar groups list
+                const actorGroups = Object.values(groupedByActor).map(group => {
+                    const combinedAvailability = this.basketService._combineAvailabilities(group.allAvailabilityStrings);
+                    
+                    // Overall max delivery time calculation
+                    let maxVal = 0;
+                    let maxUnit = "";
+                    for (const r of group.requests) {
+                        if (r.deliveryTime) {
+                            const val = r.deliveryTime.value || 0;
+                            if (val > maxVal) {
+                                maxVal = val;
+                                maxUnit = r.deliveryTime.unit;
+                            }
+                        }
+                    }
+                    const maxDeliveryTime = { value: maxVal, unit: maxUnit || "days" };
+                    
+                    return {
+                        uuid: group.actor.uuid,
+                        name: group.actor.name,
+                        img: group.actor.img,
+                        essence: group.actor.essence,
+                        requests: group.requests,
+                        totalCost: group.totalCost,
+                        totalKarma: group.totalKarma,
+                        totalEssenceCost: group.totalEssenceCost,
+                        totalAvailability: combinedAvailability,
+                        deliveryTime: maxDeliveryTime,
+                        isActive: false
+                    };
+                });
+                
+                // Manage the selected review actor UUID
+                if (actorGroups.length > 0) {
+                    const validActorUuids = actorGroups.map(g => g.uuid);
+                    if (!this.selectedReviewActorUuid || !validActorUuids.includes(this.selectedReviewActorUuid)) {
+                        this.selectedReviewActorUuid = validActorUuids[0];
+                    }
+                    
+                    const activeGroup = actorGroups.find(g => g.uuid === this.selectedReviewActorUuid);
+                    if (activeGroup) {
+                        activeGroup.isActive = true;
+                        partialContext.activeGroup = activeGroup;
+                    }
+                }
+                
+                partialContext.actorGroups = actorGroups;
                 tabContent = await render("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/orderReview.html", partialContext);
                 break;
+        }
         default:
                 // --- ADDED DEBUG LOG ---
                 //console.log(`%cRendering View:`, "color: green; font-weight: bold;", { selectedKey_for_render: this.selectedKey });
@@ -321,6 +431,11 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 if (this.shopActorUuid) {
                     const shopActor = await fromUuid(this.shopActorUuid);
                     partialContext.shopName = shopActor?.name ?? "SR5Marketplace.Marketplace.Tabs.Shop";
+                    let imgPath = shopActor?.img ?? "/icons/svg/mystery-man.svg";
+                    if (imgPath && !imgPath.startsWith("/") && !imgPath.startsWith("http") && !imgPath.startsWith("data:")) {
+                        imgPath = "/" + imgPath;
+                    }
+                    partialContext.shopImg = imgPath;
                 }
                 
                 partialContext.itemsByType = itemsByType;
@@ -336,7 +451,22 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             break;
         }
 
-        return { tabs, tabContent, actor: purchasingActorData, ownedActors };
+        // --- Determine Top-Left Display Image ---
+        let displayImg = actorForDisplay?.img;
+        if (!displayImg || displayImg === "icons/svg/mystery-man.svg" || displayImg === "/icons/svg/mystery-man.svg") {
+            if (this.shopActorUuid) {
+                const shopActor = await fromUuid(this.shopActorUuid);
+                displayImg = shopActor?.img;
+            }
+        }
+        if (!displayImg || displayImg === "icons/svg/mystery-man.svg" || displayImg === "/icons/svg/mystery-man.svg") {
+            displayImg = "modules/sr5-marketplace/assets/icons/types/Umhang_Rot.webp";
+        }
+        if (displayImg && !displayImg.startsWith("/") && !displayImg.startsWith("http") && !displayImg.startsWith("data:")) {
+            displayImg = "/" + displayImg;
+        }
+
+        return { tabs, tabContent, actor: purchasingActorData, ownedActors, displayImg };
     }
     //-- Static Helpers -- //
     /**
@@ -479,14 +609,33 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     }
 
     static async #onApproveRejectItem(event, target) {
+        const requestBlock = target.closest(".pending-request-block");
+        const basketUuid = requestBlock.dataset.basketUuid;
+        const userId = requestBlock.dataset.userId;
+        const itemRow = target.closest(".item-row");
+        const itemUuid = itemRow.dataset.basketItemUuid;
+
         if (target.dataset.action === "rejectItem") {
-            const requestBlock = target.closest(".pending-request-block");
-            const itemRow = target.closest(".item-row");
-            await PurchaseService.rejectItemFromRequest(requestBlock.dataset.userId, requestBlock.dataset.basketUuid, itemRow.dataset.basketItemId);
-            this.render();
+            await PurchaseService.rejectItemFromRequest(userId, basketUuid, itemUuid);
+            
+            // Check if the request is now empty or has no items left, then reject/remove the basket.
+            const user = game.users.get(userId);
+            const basketState = user?.getFlag("sr5-marketplace", "shoppingBasket");
+            const req = basketState?.orderReviewItems?.find(r => r.basketUUID === basketUuid);
+            if (!req || !req.basketItems || req.basketItems.length === 0) {
+                await PurchaseService.rejectBasket(userId, basketUuid);
+            }
         } else {
-            ui.notifications.info("Items are approved by default. Use 'Reject' to remove an item from the request.");
+            // Accept / Approve the request
+            await PurchaseService.approveBasket(userId, basketUuid);
         }
+        this.render();
+    }
+
+    static #onChangeReviewActor(event, target) {
+        const actorUuid = target.dataset.actorUuid;
+        this.selectedReviewActorUuid = actorUuid;
+        this.render();
     }
     
     /**
@@ -513,7 +662,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const itemRow = target.closest(".item-row");
         const property = target.dataset.property;
         const value = (target.type === "number") ? Number(target.value) : target.value;
-        await PurchaseService.updatePendingItem(requestBlock.dataset.userId, requestBlock.dataset.basketUuid, itemRow.dataset.basketItemId, property, value);
+        await PurchaseService.updatePendingItem(requestBlock.dataset.userId, requestBlock.dataset.basketUuid, itemRow.dataset.basketItemUuid, property, value);
         this.render();
     }
 
@@ -635,7 +784,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const newModifiers = DialogModifierService.calculateNewModifierList(currentModifiers, clickedModifier);
 
         // 4. Update the state on the instance for the next re-render.
-        this.activeTestState.modifiers = newModifiers;
+        this.activeTestState.appliedModifiers = newModifiers;
         
         // 5. Save the complete, updated list of modifiers back to the flag.
         //    FIX: Pass the 'newModifiers' array under the 'modifier' key.
@@ -725,22 +874,23 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const parsedAvail = game.shadowrun5e.tests.AvailabilityTest.parseAvailability(availabilityStr);
         const pool = Math.max(parsedAvail.rating, 1);
 
-        // Construct the 'data' object for the AvailabilityResistTest.
+        // Construct the 'data' object for the AvailabilityResistTest using system schema creators.
+        const poolField = game.shadowrun5e.data.createData('value_field', { base: 0 });
+        poolField.mod = [
+            { name: game.i18n.localize("SR5.Labels.Availability"), value: pool }
+        ];
+
+        const thresholdField = game.shadowrun5e.data.createData('value_field', { base: threshold });
+        const limitField = game.shadowrun5e.data.createData('value_field', { base: 0 });
+        const actionField = game.shadowrun5e.data.createData('action_roll');
+        actionField.categories = ["social"];
+
         const data = {
             against: TestObject,
-            action:{
-                categories:["social"]
-            },
-            pool: {
-                base: 0,
-                mod: [
-                    { name: game.i18n.localize("SR5.Labels.Availability"), value: pool }
-                ]
-            },
-            threshold: {
-                base: threshold,
-                mod: []
-            },
+            action: actionField,
+            pool: poolField,
+            limit: limitField,
+            threshold: thresholdField,
         };
 
         //Set options for a silent roll (no standard dialog but appDialog, no chat message but App message).
@@ -835,7 +985,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             action: {
                 skill: this.activeTestState.skill,
                 attribute: this.activeTestState.attribute,
-                modifiers: this.activeTestState.modifiers,
+                modifiers: this.activeTestState.appliedModifiers,
                 itemUuids: this.activeTestState.itemUuids,
                 connectionUuid: this.activeTestState.connectionUuid,
                 availabilityStr: this.activeTestState.availabilityStr,
@@ -954,32 +1104,50 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     }
 
     /**
-     * Renders a specific slice of the item array, padding the top and bottom 
-     * to maintain the illusion of a massive scrollable list.
+     * Unified, column-aware virtual scrolling engine that calculates rows and padding
+     * correctly for responsive multi-column CSS grids (4, 3, 2, or 1 columns).
      */
-    async _renderItemSlice(indexStart, indexEnd) {
-        if (this.scrollState.throttle) return;
-        this.scrollState.throttle = true;
-
+    async _updateVirtualScroll() {
         const container = this.element.querySelector("#marketplace-items");
-        if (!container) {
-            this.scrollState.throttle = false;
-            return;
+        if (!container) return;
+
+        // Get the current scroll position and container bounds
+        const scrollTop = container.scrollTop;
+        const clientHeight = container.clientHeight;
+
+        // 1. Determine current columns dynamically from browser computed style
+        let columns = 4;
+        const gridStyles = window.getComputedStyle(container);
+        const columnsTemplate = gridStyles.getPropertyValue("grid-template-columns");
+        if (columnsTemplate) {
+            const cols = columnsTemplate.split(" ").filter(c => c.trim().length > 0);
+            if (cols.length > 0) {
+                columns = cols.length;
+            }
         }
+
+        const rowHeight = 170; // Precise row height in pixels for the item cards
+        const entries = this.scrollState.entries || [];
+
+        // 2. Calculate row-based indices
+        const visibleRows = Math.ceil(clientHeight / rowHeight);
+        // Load buffer of 2 rows above and 6 rows below for ultra-smooth scrolling
+        const startRow = Math.max(0, Math.floor(scrollTop / rowHeight) - 2);
+        const endRow = Math.min(Math.ceil(entries.length / columns), startRow + visibleRows + 6);
+
+        const startIndex = startRow * columns;
+        const endIndex = endRow * columns;
 
         const toRender = [];
 
-        // 1. Calculate Top Padding
+        // 3. Create Top Padding
         const topPad = document.createElement("div");
-        topPad.style.height = `${indexStart * this.scrollState.itemHeight}px`;
-        topPad.style.gridColumn = "1 / -1"; // Ensures it spans full width if using CSS grid
+        topPad.style.height = `${startRow * rowHeight}px`;
+        topPad.style.gridColumn = "1 / -1"; // Ensure spans full width of grid
         toRender.push(topPad);
 
-        // 2. Render the Visible Items in one Handlebars pass
-        indexStart = Math.max(0, indexStart);
-        indexEnd = Math.min(this.scrollState.entries.length, indexEnd);
-        const itemSlice = this.scrollState.entries.slice(indexStart, indexEnd);
-
+        // 4. Render the slice in a single Handlebars call
+        const itemSlice = entries.slice(startIndex, endIndex);
         const html = await foundry.applications.handlebars.renderTemplate(
             "modules/sr5-marketplace/templates/documents/items/libraryItem.html",
             { items: itemSlice, purchasingActor: this.purchasingActor }
@@ -989,31 +1157,30 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         template.innerHTML = html;
         toRender.push(...template.content.children);
 
-        // 3. Calculate Bottom Padding
+        // 5. Create Bottom Padding
+        const totalRows = Math.ceil(entries.length / columns);
         const bottomPad = document.createElement("div");
-        bottomPad.style.height = `${(this.scrollState.entries.length - indexEnd) * this.scrollState.itemHeight}px`;
+        bottomPad.style.height = `${Math.max(0, totalRows - endRow) * rowHeight}px`;
         bottomPad.style.gridColumn = "1 / -1";
         toRender.push(bottomPad);
 
-        // Instantly swap the DOM elements
+        // Swap children instantly in one DOM repaint
         container.replaceChildren(...toRender);
-        this.scrollState.throttle = false;
     }
 
     /**
-     * Calculates which items should be visible based on scroll position.
+     * Scroll event listener trigger
      */
     async _onScrollItems(event) {
         if (this.scrollState.throttle) return;
-        const target = event.currentTarget;
-        const { scrollTop, clientHeight } = target;
+        this.scrollState.throttle = true;
 
-        const itemsPerScreen = Math.ceil(clientHeight / this.scrollState.itemHeight);
-        // Load a buffer of 2 screens above, and 5 screens below for smooth scrolling
-        const startIndex = Math.max(0, Math.floor(scrollTop / this.scrollState.itemHeight) - (2 * itemsPerScreen));
-        const endIndex = Math.min(this.scrollState.entries.length, startIndex + (5 * itemsPerScreen));
+        await this._updateVirtualScroll();
 
-        await this._renderItemSlice(startIndex, endIndex);
+        // Small micro-throttle for event passive efficiency
+        setTimeout(() => {
+            this.scrollState.throttle = false;
+        }, 15);
     }
 
     /**
@@ -1042,6 +1209,6 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         if (itemsContainer) {
             itemsContainer.scrollTop = 0;
         }
-        this._renderItemSlice(0, 50);
+        this._updateVirtualScroll();
     }
 }
