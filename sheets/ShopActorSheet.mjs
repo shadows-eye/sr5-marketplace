@@ -49,12 +49,12 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
 
     /** A helper getter to check if the sheet is in Play mode. */
     get isPlayMode() {
-        return this._mode === this.constructor.MODES.PLAY;
+        return this._mode === "play";
     }
 
     /** A helper getter to check if the sheet is in Edit mode. */
     get isEditMode() {
-        return this._mode === this.constructor.MODES.EDIT;
+        return this._mode === "edit";
     }
 
     /** * @override 
@@ -452,6 +452,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                     async: true,
                     relativeTo: this.document
                 });
+                context.isBiographyEditable = this.isEditable && this.isEditMode;
                 break;
         }
         return context;
@@ -614,7 +615,8 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     static #onOpenHostSheet(event, target) {
         const hostItem = this.document.hostItem;
         if (hostItem?.sheet) {
-            hostItem.sheet.render(true);
+            const renderOptions = this.isEditMode ? {} : { editable: false };
+            hostItem.sheet.render(true, renderOptions);
         } else {
             ui.notifications.warn("No Matrix Host is configured for this Shop. Drag and drop a Host item to set one up.");
         }
@@ -630,7 +632,8 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         const doc = await fromUuid(uuid);
         if (doc?.sheet) {
             const sheet = doc.sheet;
-            await sheet.render(true);
+            const renderOptions = this.isEditMode ? {} : { editable: false };
+            await sheet.render(true, renderOptions);
             
             // Allow a tiny delay for rendering, then switch to matrix tab
             setTimeout(() => {
@@ -659,7 +662,8 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         
         const doc = await fromUuid(uuid);
         if (doc?.sheet) {
-            doc.sheet.render(true);
+            const renderOptions = this.isEditMode ? {} : { editable: false };
+            doc.sheet.render(true, renderOptions);
         }
     }
 
@@ -868,7 +872,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             ui.notifications.warn("You do not have permission to edit this sheet.");
             return;
         }
-        this._mode = this.isPlayMode ? this.constructor.MODES.EDIT : this.constructor.MODES.PLAY;
+        this._mode = this.isPlayMode ? "edit" : "play";
         this.render();
     }
 

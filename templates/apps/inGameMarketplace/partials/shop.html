@@ -15,7 +15,7 @@
 
             {{#if selectedKey}}
                 <div class="flex items-center gap-1.5 flex-grow @md:flex-none">
-                    <label for="item-type-selector" class="text-[11px] font-bold opacity-80 uppercase tracking-wider whitespace-nowrap">Type:</label>
+                    <label for="item-type-selector" class="text-[11px] font-bold opacity-80 uppercase tracking-wider whitespace-nowrap">{{localize "SR5Marketplace.UI.Type"}}:</label>
                     <select id="item-type-selector" name="category" class="w-full @md:w-auto bg-black/5 dark:bg-black/40 border border-black/20 dark:border-white/10 rounded px-1.5 py-0.5 text-xs focus:ring-1 focus:ring-yellow-500 focus:outline-none cursor-pointer">
                         {{#each itemsByType as |category key|}}
                           {{#if category.items.length}}
@@ -31,7 +31,7 @@
 
         {{!-- Search Box: Stretches to fill space --}}
         <div class="flex items-center gap-1.5 w-full @md:w-auto @md:flex-grow min-w-0">
-            <label for="search-box" class="text-[11px] font-bold opacity-80 uppercase tracking-wider whitespace-nowrap">Search:</label>
+            <label for="search-box" class="text-[11px] font-bold opacity-80 uppercase tracking-wider whitespace-nowrap">{{localize "SR5Marketplace.UI.Search"}}:</label>
             <input type="text" id="search-box" placeholder='{{localize "SR5Marketplace.UI.SearchPlaceholder"}}' class="w-full bg-black/5 dark:bg-black/40 border border-black/20 dark:border-white/10 rounded px-2 py-0.5 text-xs focus:ring-1 focus:ring-yellow-500 focus:outline-none">
         </div>
         
@@ -42,7 +42,7 @@
                     <a data-action="openDocumentLink" data-uuid="{{shopActorBox.shopUuid}}" class="cursor-pointer hover:opacity-80">
                         <img src="{{shopActorBox.shopImg}}" alt="{{shopActorBox.shopName}}" class="w-6 h-6 rounded border border-black/30 bg-black/20">
                     </a>
-                    {{#if isGM}}<span class="remove-link absolute -top-1.5 -right-1.5 bg-red-600 hover:bg-red-500 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center text-[9px] cursor-pointer shadow-sm" title="Remove Shop Actor" data-action="removeShopActor" data-shop-id="{{shopActorBox.shopId}}">&times;</span>{{/if}}
+                    {{#if isGM}}<span class="remove-link absolute -top-1.5 -right-1.5 bg-red-600 hover:bg-red-500 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center text-[9px] cursor-pointer shadow-sm" title="{{localize 'SR5Marketplace.Marketplace.Shop.RemoveShopActor'}}" data-action="removeShopActor" data-shop-id="{{shopActorBox.shopId}}">&times;</span>{{/if}}
                 {{/if}}
             </div>
             
@@ -51,7 +51,7 @@
                     <a data-action="openDocumentLink" data-uuid="{{connectionBox.connectionUuid}}" class="cursor-pointer hover:opacity-80">
                         <img src="{{connectionBox.connectionImg}}" alt="{{connectionBox.connectionName}}" class="w-6 h-6 rounded border border-black/30 bg-black/20">
                     </a>
-                    <span class="remove-link absolute -top-1.5 -right-1.5 bg-red-600 hover:bg-red-500 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center text-[9px] cursor-pointer shadow-sm" title="Remove Connection Item" data-action="removeConnection" data-item-id="{{connectionBox.connectionId}}">&times;</span>
+                    <span class="remove-link absolute -top-1.5 -right-1.5 bg-red-600 hover:bg-red-500 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center text-[9px] cursor-pointer shadow-sm" title="{{localize 'SR5Marketplace.Marketplace.Shop.RemoveConnectionItem'}}" data-action="removeConnection" data-item-id="{{connectionBox.connectionId}}">&times;</span>
                 {{/if}}
             </div>
             
@@ -60,7 +60,7 @@
                     <a data-action="openDocumentLink" data-uuid="{{selectedActorBox.actorUuid}}" class="cursor-pointer hover:opacity-80">
                         <img src="{{selectedActorBox.actorImg}}" alt="{{selectedActorBox.actorName}}" class="w-6 h-6 rounded border border-black/30 bg-black/20">
                     </a>
-                    {{#if isGM}}<span class="remove-link absolute -top-1.5 -right-1.5 bg-red-600 hover:bg-red-500 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center text-[9px] cursor-pointer shadow-sm" title="Remove Selected Actor" data-action="removeSelectedActor" data-actor-id="{{selectedActorBox.actorId}}">&times;</span>{{/if}}
+                    {{#if isGM}}<span class="remove-link absolute -top-1.5 -right-1.5 bg-red-600 hover:bg-red-500 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center text-[9px] cursor-pointer shadow-sm" title="{{localize 'SR5Marketplace.Marketplace.Shop.RemoveSelectedActor'}}" data-action="removeSelectedActor" data-actor-id="{{selectedActorBox.actorId}}">&times;</span>{{/if}}
                 </div>
             {{/if}}
         </div>

@@ -47,51 +47,71 @@
         </div>
     </div>
 
-    {{!-- One-line Host & WAN Information --}}
+    {{!-- Compact Host & WAN Information --}}
     {{#if hostItem}}
-    <div class="col-span-1 md:col-span-3 bg-[var(--color-black-transparent-20)] rounded p-2 flex flex-col md:flex-row md:items-center justify-between gap-4 border-t border-[var(--color-yellow-base)]/20 mt-2">
-        <div class="flex items-center gap-2">
-            <a class="flex items-center gap-1.5 font-bold hover:text-[var(--color-yellow-base)] cursor-pointer text-xs" data-action="openHostSheet" title="Open Host Sheet">
-                <i class="fa-solid fa-server text-[var(--color-yellow-base)]"></i>
-                <span>{{hostItem.name}}</span>
-            </a>
-            <span class="text-[9px] bg-[var(--color-red-bright)] px-1 rounded text-[var(--color-white)] font-bold">Rating {{hostItem.system.rating}}</span>
-        </div>
+    <div class="col-span-1 md:col-span-3 flex justify-start mt-2">
+        <div class="flex flex-row flex-wrap items-center gap-3 bg-[var(--color-black-transparent-20)] rounded px-3 py-1.5 border border-[var(--color-yellow-base)]/20 shadow-sm w-fit">
+            {{!-- Icon and Image --}}
+            <div class="flex items-center gap-1.5">
+                <i class="fa-solid fa-server text-[var(--color-yellow-base)] text-xs" title="{{localize 'SR5Marketplace.Marketplace.Shop.MatrixHost'}}"></i>
+                {{#if hostItem.img}}
+                    <img src="{{hostItem.img}}" class="w-5 h-5 object-cover rounded border border-[var(--color-yellow-base)]/30" title="{{hostItem.name}}"/>
+                {{/if}}
+            </div>
 
-        {{!-- ASDF Display --}}
-        <div class="flex items-center gap-4 bg-[var(--color-black-transparent-30)] px-3 py-1 rounded">
-            <div class="flex items-center gap-1" title="{{localize 'SR5.MatrixAttrAttack'}}">
-                <span class="opacity-60 text-xs"><i class="fa-solid fa-crosshairs"></i></span>
-                <span class="font-bold text-xs text-[var(--color-yellow-base)]">{{hostItem.system.attributes.attack.value}}</span>
+            {{!-- Name and Rating --}}
+            <div class="flex items-center gap-1.5">
+                <a class="font-bold hover:text-[var(--color-yellow-base)] cursor-pointer text-xs transition-colors" data-action="openHostSheet" title="{{localize 'SR5Marketplace.Marketplace.Shop.OpenHostSheet'}}">
+                    {{hostItem.name}}
+                </a>
+                <span class="text-[9px] bg-[var(--color-red-bright)] px-1 py-0.5 rounded text-[var(--color-white)] font-bold whitespace-nowrap">{{localize 'SR5Marketplace.UI.Rating'}} {{hostItem.system.rating}}</span>
             </div>
-            <div class="flex items-center gap-1" title="{{localize 'SR5.MatrixAttrSleaze'}}">
-                <span class="opacity-60 text-xs"><i class="fa-solid fa-ghost"></i></span>
-                <span class="font-bold text-xs text-[var(--color-yellow-base)]">{{hostItem.system.attributes.sleaze.value}}</span>
-            </div>
-            <div class="flex items-center gap-1" title="{{localize 'SR5.MatrixAttrDataProc'}}">
-                <span class="opacity-60 text-xs"><i class="fa-solid fa-microchip"></i></span>
-                <span class="font-bold text-xs text-[var(--color-yellow-base)]">{{hostItem.system.attributes.data_processing.value}}</span>
-            </div>
-            <div class="flex items-center gap-1" title="{{localize 'SR5.MatrixAttrFirewall'}}">
-                <span class="opacity-60 text-xs"><i class="fa-solid fa-shield-halved"></i></span>
-                <span class="font-bold text-xs text-[var(--color-yellow-base)]">{{hostItem.system.attributes.firewall.value}}</span>
-            </div>
-        </div>
 
-        {{!-- Smart Chips for Slaved Devices --}}
-        <div class="flex items-center gap-1.5 overflow-x-auto">
-            <span class="text-[9px] font-bold opacity-60 uppercase mr-1">WAN:</span>
-            {{#if slavedDevices.length}}
-                <div class="flex items-center gap-1.5 pr-2">
-                    {{#each slavedDevices as |dev|}}
-                        <a class="flex items-center justify-center bg-[var(--color-black-transparent-40)] hover:bg-[var(--color-black-transparent-60)] p-0.5 rounded-full border border-[var(--color-grey-medium)]/30 cursor-pointer transition-transform hover:scale-105" data-action="openDocumentLink" data-uuid="{{dev.uuid}}" title="{{dev.name}} ({{dev.ownerName}})">
-                            <img src="{{dev.img}}" class="w-6 h-6 object-cover rounded-full flex-shrink-0" />
-                        </a>
-                    {{/each}}
+            {{!-- Vertical Divider --}}
+            <div class="h-4 w-px bg-[var(--color-grey-medium)]/30"></div>
+
+            {{!-- The 4 ASDF Icons --}}
+            <div class="flex items-center gap-2.5 bg-[var(--color-black-transparent-30)] px-2 py-0.5 rounded">
+                <div class="flex items-center gap-1" title="{{localize 'SR5.MatrixAttrAttack'}}">
+                    <span class="opacity-60 text-[10px]"><i class="fa-solid fa-crosshairs"></i></span>
+                    <span class="font-bold text-xs text-[var(--color-yellow-base)]">{{hostItem.system.attributes.attack.value}}</span>
                 </div>
-            {{else}}
-                <span class="text-[9px] italic opacity-40">No slaved devices</span>
-            {{/if}}
+                <div class="flex items-center gap-1" title="{{localize 'SR5.MatrixAttrSleaze'}}">
+                    <span class="opacity-60 text-[10px]"><i class="fa-solid fa-ghost"></i></span>
+                    <span class="font-bold text-xs text-[var(--color-yellow-base)]">{{hostItem.system.attributes.sleaze.value}}</span>
+                </div>
+                <div class="flex items-center gap-1" title="{{localize 'SR5.MatrixAttrDataProc'}}">
+                    <span class="opacity-60 text-[10px]"><i class="fa-solid fa-microchip"></i></span>
+                    <span class="font-bold text-xs text-[var(--color-yellow-base)]">{{hostItem.system.attributes.data_processing.value}}</span>
+                </div>
+                <div class="flex items-center gap-1" title="{{localize 'SR5.MatrixAttrFirewall'}}">
+                    <span class="opacity-60 text-[10px]"><i class="fa-solid fa-shield-halved"></i></span>
+                    <span class="font-bold text-xs text-[var(--color-yellow-base)]">{{hostItem.system.attributes.firewall.value}}</span>
+                </div>
+            </div>
+
+            {{!-- Vertical Divider --}}
+            <div class="h-4 w-px bg-[var(--color-grey-medium)]/30"></div>
+
+            {{!-- Linked devices, personas etc --}}
+            <div class="flex items-center gap-1.5">
+                <span class="text-[9px] font-bold opacity-60 uppercase tracking-wider whitespace-nowrap">{{localize 'SR5Marketplace.Marketplace.Shop.WAN'}}:</span>
+                {{#if slavedDevices.length}}
+                    <div class="flex items-center gap-1 flex-wrap">
+                        {{#each slavedDevices as |dev|}}
+                            <a class="flex items-center justify-center bg-[var(--color-black-transparent-40)] hover:bg-[var(--color-black-transparent-60)] p-0.5 rounded-full border border-[var(--color-grey-medium)]/30 cursor-pointer transition-transform hover:scale-105" data-action="openDocumentLink" data-uuid="{{dev.uuid}}" title="{{dev.name}} ({{localize 'SR5Marketplace.Marketplace.Shop.OwnerLabel'}} {{dev.ownerName}})">
+                                {{#if dev.img}}
+                                    <img src="{{dev.img}}" class="w-5 h-5 object-cover rounded-full flex-shrink-0" />
+                                {{else}}
+                                    <i class="fa-solid fa-microchip text-[10px] p-1"></i>
+                                {{/if}}
+                            </a>
+                        {{/each}}
+                    </div>
+                {{else}}
+                    <span class="text-[9px] italic opacity-40 whitespace-nowrap">{{localize 'SR5Marketplace.Marketplace.Shop.NoSlavedDevices'}}</span>
+                {{/if}}
+            </div>
         </div>
     </div>
     {{/if}}
