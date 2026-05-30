@@ -17,7 +17,7 @@
                         {{#if owner}}
                             <div class="flex items-center justify-between gap-2 bg-[var(--color-black-transparent-30)] p-1 pr-2 w-full relative group rounded">
                                 <div class="flex items-center gap-2 overflow-hidden">
-                                    <a class="cursor-pointer hover:text-[var(--color-yellow-base)] flex items-center justify-center w-5" data-action="setServingEmployee" data-uuid="{{owner.uuid}}" title="Set as Serving Employee">
+                                    <a class="cursor-pointer hover:text-[var(--color-yellow-base)] flex items-center justify-center w-5" data-action="setServingEmployee" data-uuid="{{owner.uuid}}" title="{{localize 'SR5Marketplace.Marketplace.Shop.SetAsServingEmployee'}}">
                                         {{#ifeq @root.system.shop.servingEmployee owner.uuid}}
                                             <i class="fa-solid fa-bell-concierge text-sm" style="color: var(--color-green-button);"></i>
                                         {{else}}
@@ -70,7 +70,7 @@
                         {{#each employees as |employee|}}
                             <div class="flex items-center justify-between gap-2 bg-[var(--color-black-transparent-30)] p-1 pr-2 w-full relative group rounded" data-uuid="{{employee.uuid}}">
                                 <div class="flex items-center gap-2 overflow-hidden">
-                                    <a class="cursor-pointer hover:text-[var(--color-yellow-base)] flex items-center justify-center w-5" data-action="setServingEmployee" data-uuid="{{employee.uuid}}" title="Set as Serving Employee">
+                                    <a class="cursor-pointer hover:text-[var(--color-yellow-base)] flex items-center justify-center w-5" data-action="setServingEmployee" data-uuid="{{employee.uuid}}" title="{{localize 'SR5Marketplace.Marketplace.Shop.SetAsServingEmployee'}}">
                                         {{#ifeq ../system.shop.servingEmployee employee.uuid}}
                                             <i class="fa-solid fa-bell-concierge text-xs" style="color: var(--color-green-button);"></i>
                                         {{else}}

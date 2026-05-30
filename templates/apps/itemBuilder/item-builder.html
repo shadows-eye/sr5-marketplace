@@ -2,12 +2,12 @@
     {{!-- The header now contains the navigation tabs, just like your marketplace app --}}
     <header class="builder-header">
         <div class="header-left">
-            <img class="item-type-icon" src="{{builder.itemTypeImage}}" alt="Item Type" width="32" height="32"/>
+            <img class="item-type-icon" src="{{builder.itemTypeImage}}" alt="{{localize 'SR5Marketplace.UI.Type'}}" width="32" height="32"/>
         </div> 
         <div class="builderTitle">{{builder.title}}</div>
         <div class="header-right">
             {{!-- Add this new button --}}
-            <button type="button" class="clear-build-btn" data-action="clearBuild" title="Clear entire build">
+            <button type="button" class="clear-build-btn" data-action="clearBuild" title="{{localize 'SR5Marketplace.ItemBuilder.ClearEntireBuild'}}">
                 <i class="fas fa-times-circle"></i>
             </button>
             <button type="button" class="build-item-btn" data-action="buildItem">

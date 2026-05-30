@@ -3,18 +3,18 @@
         <!-- Search Input Wrap (Slides out on hover of the capsule bar) -->
         <div class="marketshouter-search-wrap">
             {{#if shopActorImg}}
-            <img class="marketshouter-shop-indicator" src="/{{shopActorImg}}" title="Searching in: {{shopActorName}}" onerror="this.src='/icons/svg/mystery-man.svg'">
+            <img class="marketshouter-shop-indicator" src="/{{shopActorImg}}" title="{{localize 'SR5Marketplace.Marketshouter.SearchingInShop' name=shopActorName}}" onerror="this.src='/icons/svg/mystery-man.svg'">
             {{/if}}
             <i class="fas fa-search marketshouter-search-icon"></i>
-            <input type="text" class="marketshouter-search" placeholder="{{#if shopActorName}}Search {{shopActorName}}...{{else}}Search compendium items...{{/if}}" autocomplete="off">
-            <i class="fas fa-times marketshouter-clear-btn hidden" title="Clear Search"></i>
+            <input type="text" class="marketshouter-search" placeholder="{{#if shopActorName}}{{localize 'SR5Marketplace.Marketshouter.SearchShop' name=shopActorName}}{{else}}{{localize 'SR5Marketplace.Marketshouter.SearchCompendiumItems'}}{{/if}}" autocomplete="off">
+            <i class="fas fa-times marketshouter-clear-btn hidden" title="{{localize 'SR5Marketplace.Marketshouter.ClearSearch'}}"></i>
         </div>
 
         <!-- Interactive Icon Area -->
         <div class="marketshouter-icons-area">
             <!-- GM Megaphone Button -->
             {{#if isGM}}
-            <button type="button" class="marketshouter-icon-btn marketshouter-megaphone-btn" data-action="openReview" title="Review Purchase Requests">
+            <button type="button" class="marketshouter-icon-btn marketshouter-megaphone-btn" data-action="openReview" title="{{localize 'SR5Marketplace.Marketshouter.ReviewPurchaseRequests'}}">
                 <i class="fas fa-bullhorn"></i>
                 {{#if (gt pendingCount 0)}}
                 <span class="marketshouter-badge megaphone-badge">{{pendingCount}}</span>
@@ -23,12 +23,12 @@
             {{/if}}
 
             <!-- Shop Button -->
-            <button type="button" class="marketshouter-icon-btn marketshouter-shop-btn" data-action="openMarketplace" title="Open Marketplace">
+            <button type="button" class="marketshouter-icon-btn marketshouter-shop-btn" data-action="openMarketplace" title="{{localize 'SR5Marketplace.Marketshouter.OpenMarketplace'}}">
                 <i class="fas fa-store"></i>
             </button>
             
             <!-- Basket/Cart Button -->
-            <button type="button" class="marketshouter-icon-btn marketshouter-basket-btn" data-action="openCart" title="Open Shopping Cart">
+            <button type="button" class="marketshouter-icon-btn marketshouter-basket-btn" data-action="openCart" title="{{localize 'SR5Marketplace.Marketshouter.OpenShoppingCart'}}">
                 <i class="fas fa-shopping-basket"></i>
                 {{#if (gt itemCount 0)}}
                 <span class="marketshouter-badge">{{itemCount}}</span>

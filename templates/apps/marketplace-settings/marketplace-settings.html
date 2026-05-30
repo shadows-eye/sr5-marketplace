@@ -22,7 +22,7 @@
             <div class="item-type-list">
                 {{#each typeSettings}}
                 <div class="item-type-card {{#if (eq this.behavior 'unique')}}active{{else}}inactive{{/if}}" 
-                    data-type="{{this.key}}" data-target-behavior="unique" title="Set '{{this.label}}' to Unique">
+                    data-type="{{this.key}}" data-target-behavior="unique" title="{{localize 'SR5Marketplace.Marketplace.Settings.SetToUnique' label=this.label}}">
                     <span class="type-label">{{this.label}}</span>
                 </div>
                 {{/each}}
@@ -31,7 +31,7 @@
             <div class="item-type-list">
                 {{#each typeSettings}}
                 <div class="item-type-card {{#if (eq this.behavior 'stack')}}active{{else}}inactive{{/if}}"
-                    data-type="{{this.key}}" data-target-behavior="stack" title="Set '{{this.label}}' to Stacking">
+                    data-type="{{this.key}}" data-target-behavior="stack" title="{{localize 'SR5Marketplace.Marketplace.Settings.SetToStacking' label=this.label}}">
                     <span class="type-label">{{this.label}}</span>
                 </div>
                 {{/each}}
@@ -40,7 +40,7 @@
             <div class="item-type-list">
                 {{#each typeSettings}}
                 <div class="item-type-card {{#if (eq this.behavior 'single')}}active{{else}}inactive{{/if}}"
-                    data-type="{{this.key}}" data-target-behavior="single" title="Set '{{this.label}}' to Single">
+                    data-type="{{this.key}}" data-target-behavior="single" title="{{localize 'SR5Marketplace.Marketplace.Settings.SetToSingle' label=this.label}}">
                     <span class="type-label">{{this.label}}</span>
                 </div>
                 {{/each}}

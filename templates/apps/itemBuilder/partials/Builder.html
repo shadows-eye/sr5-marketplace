@@ -114,7 +114,7 @@
                     {{#with builderData.changes.topLeft}}
                         <div class="slot-content-containment" data-item-uuid="{{this.uuid}}" data-hover-delay="1000">
                             <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
-                            <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="topLeft" title="Remove Mod">
+                            <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="topLeft" title="{{localize 'SR5Marketplace.ItemBuilder.RemoveMod'}}">
                                 <i class="SR5Marketplace fas fa-trash"></i>
                             </div>
                         </div>
@@ -124,7 +124,7 @@
                      {{#with builderData.changes.bottomLeft}}
                         <div class="slot-content-containment" data-item-uuid="{{this.uuid}}" data-hover-delay="1000">
                             <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
-                            <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomLeft" title="Remove Mod">
+                            <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomLeft" title="{{localize 'SR5Marketplace.ItemBuilder.RemoveMod'}}">
                                 <i class="SR5Marketplace fas fa-trash"></i>
                             </div>
                         </div>
@@ -132,7 +132,7 @@
                 </div>
 
                 <div class="center-display">
-                    <img src="modules/sr5-marketplace/assets/frames/ItemRing.svg" alt="Item Build" class="ring-image"/>
+                    <img src="modules/sr5-marketplace/assets/frames/ItemRing.svg" alt="{{localize 'SR5Marketplace.ItemBuilder.ItemBuild'}}" class="ring-image"/>
                     <img src="{{builderData.itemTypeImage}}" alt="{{builderData.baseItem.name}}" class="base-item-image"/>
                 </div>
 
@@ -140,7 +140,7 @@
                      {{#with builderData.changes.topRight}}
                         <div class="slot-content-containment" data-item-uuid="{{this.uuid}}" data-hover-delay="1000">
                             <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
-                            <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="topRight" title="Remove Mod">
+                            <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="topRight" title="{{localize 'SR5Marketplace.ItemBuilder.RemoveMod'}}">
                                 <i class="SR5Marketplace fas fa-trash"></i>
                             </div>
                         </div>
@@ -150,7 +150,7 @@
                      {{#with builderData.changes.middleRight}}
                         <div class="slot-content-containment" data-item-uuid="{{this.uuid}}" data-hover-delay="1000">
                             <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
-                            <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="middleRight" title="Remove Mod">
+                            <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="middleRight" title="{{localize 'SR5Marketplace.ItemBuilder.RemoveMod'}}">
                                 <i class="SR5Marketplace fas fa-trash"></i>
                             </div>
                         </div>
@@ -160,7 +160,7 @@
                      {{#with builderData.changes.bottomRight}}
                         <div class="slot-content-containment" data-item-uuid="{{this.uuid}}" data-hover-delay="1000">
                             <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
-                            <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomRight" title="Remove Mod">
+                            <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomRight" title="{{localize 'SR5Marketplace.ItemBuilder.RemoveMod'}}">
                                 <i class="SR5Marketplace fas fa-trash"></i>
                             </div>
                         </div>
@@ -176,11 +176,11 @@
                                 <div class="slot-content-containment" data-item-uuid="{{this.uuid}}" data-hover-delay="1000">
                                     <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
                                     
-                                    <div class="slot-icon-link effects-link" data-action="editEffects" data-item-uuid="{{this.uuid}}" title="Active Effects">
+                                    <div class="slot-icon-link effects-link" data-action="editEffects" data-item-uuid="{{this.uuid}}" title="{{localize 'SR5Marketplace.ItemBuilder.ActiveEffects'}}">
                                         <i class="SR5Marketplace fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}"></i>
                                     </div>
 
-                                    <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomSlot1" title="Remove Mod">
+                                    <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomSlot1" title="{{localize 'SR5Marketplace.ItemBuilder.RemoveMod'}}">
                                         <i class="SR5Marketplace fas fa-trash"></i>
                                     </div>
                                 </div>
@@ -192,11 +192,11 @@
                                 <div class="slot-content-containment" data-item-uuid="{{this.uuid}}" data-hover-delay="1000">
                                     <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
                                     
-                                    <div class="slot-icon-link effects-link" data-action="editEffects" data-item-uuid="{{this.uuid}}" title="Active Effects">
+                                    <div class="slot-icon-link effects-link" data-action="editEffects" data-item-uuid="{{this.uuid}}" title="{{localize 'SR5Marketplace.ItemBuilder.ActiveEffects'}}">
                                         <i class="SR5Marketplace fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}"></i>
                                     </div>
 
-                                    <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomSlot2" title="Remove Mod">
+                                    <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomSlot2" title="{{localize 'SR5Marketplace.ItemBuilder.RemoveMod'}}">
                                         <i class="SR5Marketplace fas fa-trash"></i>
                                     </div>
                                 </div>
@@ -208,11 +208,11 @@
                                 <div class="slot-content-containment" data-item-uuid="{{this.uuid}}" data-hover-delay="1000">
                                     <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
                                     
-                                    <div class="slot-icon-link effects-link" data-action="editEffects" data-item-uuid="{{this.uuid}}" title="Active Effects">
+                                    <div class="slot-icon-link effects-link" data-action="editEffects" data-item-uuid="{{this.uuid}}" title="{{localize 'SR5Marketplace.ItemBuilder.ActiveEffects'}}">
                                         <i class="SR5Marketplace fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}"></i>
                                     </div>
 
-                                    <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomSlot3" title="Remove Mod">
+                                    <div class="slot-icon-link delete-mod-link" data-action="removeChange" data-slot-id="bottomSlot3" title="{{localize 'SR5Marketplace.ItemBuilder.RemoveMod'}}">
                                         <i class="SR5Marketplace fas fa-trash"></i>
                                     </div>
                                 </div>
@@ -224,11 +224,11 @@
                                 <div class="slot-content-containment" data-item-uuid="{{this.uuid}}" data-hover-delay="1000">
                                     <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}"/>
                                     
-                                    <div class="slot-icon-link effects-link" data-action="editEffects" data-item-uuid="{{this.uuid}}" title="Active Effects">
+                                    <div class="slot-icon-link effects-link" data-action="editEffects" data-item-uuid="{{this.uuid}}" title="{{localize 'SR5Marketplace.ItemBuilder.ActiveEffects'}}">
                                         <i class="SR5Marketplace fas fa-bolt effect-indicator {{#if this.effects.length}}has-effects{{else}}no-effects{{/if}}"></i>
                                     </div>
 
-                                    <div class="slot-icon-link delete-mod-link" data-action="removeChange"  data-slot-id="bottomSlot4"title="Remove Mod">
+                                    <div class="slot-icon-link delete-mod-link" data-action="removeChange"  data-slot-id="bottomSlot4"title="{{localize 'SR5Marketplace.ItemBuilder.RemoveMod'}}">
                                         <i class="SR5Marketplace fas fa-trash"></i>
                                     </div>
                                 </div>
@@ -246,7 +246,7 @@
             <img src="modules/sr5-marketplace/assets/frames/corner.svg" class="builder-corner-img corner-bl">
             <img src="modules/sr5-marketplace/assets/frames/corner.svg" class="builder-corner-img corner-br">
             <div class="placeholder-content">
-                <img src="icons/svg/anvil.svg" alt="Select an Item" width="128" height="128"/>
+                <img src="icons/svg/anvil.svg" alt="{{localize 'SR5Marketplace.ItemBuilder.SelectAnItem'}}" width="128" height="128"/>
                 <div class="placeholder-information">
                     <h3>{{localize "SR5Marketplace.ItemBuilder.Items.baseItemPlaceholder.title"}}</h3>
                     <p>{{localize "SR5Marketplace.ItemBuilder.Items.baseItemPlaceholder.description"}}</p>

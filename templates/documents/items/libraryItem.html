@@ -12,13 +12,13 @@
         <h4 class="text-sm font-bold leading-tight flex-grow line-clamp-2" title="{{this.name}}">{{this.name}}</h4>
 
         {{!-- Top Right: Price --}}
-        <div class="text-[14px] font-extrabold flex-shrink-0 flex items-center gap-1 text-right" title="Cost / Karma">
+        <div class="text-[14px] font-extrabold flex-shrink-0 flex items-center gap-1 text-right" title="{{localize 'SR5Marketplace.UI.CostOrKarma'}}">
             {{#if (or (eq this.type "quality") (eq this.type "adept_power") (eq this.type "spell") (eq this.type "complex_form"))}}
-                <span title="Karma">{{#if this.system.karma}}{{this.system.karma}}{{else}}{{this.flags.sr5-marketplace.Karma}}{{/if}}</span>
-                <i class="fa-duotone fa-solid fa-circle-star" title="Karma"></i>
+                <span title="{{localize 'SR5Marketplace.UI.Karma'}}">{{#if this.system.karma}}{{this.system.karma}}{{else}}{{this.flags.sr5-marketplace.Karma}}{{/if}}</span>
+                <i class="fa-duotone fa-solid fa-circle-star" title="{{localize 'SR5Marketplace.UI.Karma'}}"></i>
             {{else}}
-                <span title="Nuyen">{{formatNumber this.system.technology.cost}}</span>
-                <i class="fa-duotone fa-solid fa-circle-yen" title="Nuyen"></i>
+                <span title="{{localize 'SR5Marketplace.UI.Nuyen'}}">{{formatNumber this.system.technology.cost}}</span>
+                <i class="fa-duotone fa-solid fa-circle-yen" title="{{localize 'SR5Marketplace.UI.Nuyen'}}"></i>
             {{/if}}
         </div>
     </div>
@@ -73,7 +73,7 @@
         </div>
 
         {{!-- Bottom Right: Cart Button --}}
-        <button class="add-to-cart flex-shrink-0 px-3 py-1.5 text-white bg-green-600 hover:bg-green-500 rounded shadow-sm transition-colors flex justify-center items-center ml-2 border border-black/20" data-item-id="{{this.uuid}}" data-action="addToCart" title="Add to Cart">
+        <button class="add-to-cart flex-shrink-0 px-3 py-1.5 text-white bg-green-600 hover:bg-green-500 rounded shadow-sm transition-colors flex justify-center items-center ml-2 border border-black/20" data-item-id="{{this.uuid}}" data-action="addToCart" title="{{localize 'SR5Marketplace.Marketplace.Basket.AddToCart'}}">
             <i class="fa-solid fa-cart-plus"></i>
         </button>
     </div>
