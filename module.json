@@ -6,8 +6,8 @@
   "library": false,
   "compatibility": {
     "minimum": 13,
-    "verified": 13,
-    "maximum": 13
+    "verified": 14,
+    "maximum": 14
   },
   "authors": [
     {
@@ -17,15 +17,15 @@
     }
   ],
   "relationships": {
-  "systems": [
-    {
-      "id": "shadowrun5e",
-      "compatibility": {
-        "minimum": "0.30.0"
+    "systems": [
+      {
+        "id": "shadowrun5e",
+        "compatibility": {
+          "minimum": "0.30.0"
+        }
       }
-    }
-  ]
-},
+    ]
+  },
   "socket": true,
   "styles": [
     "styles/marketplace.css"
@@ -33,7 +33,6 @@
   "esmodules": [
     "scripts/marketHooks.js"
   ],
-
   "languages": [
     {
       "lang": "en",
