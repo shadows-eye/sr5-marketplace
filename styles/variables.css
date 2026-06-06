@@ -380,44 +380,8 @@
     --header-gradient-bar: linear-gradient(to right, #0076ff 0%, transparent 100%);
     --header-gradient-text: #ffffff;
     --tab-line: #00d2ff;
-}
 
-/* Cyber Neon Custom Details */
-body.vtt .window-app.theme-neon .marketplace-item.grid-item,
-body.vtt .window-app.theme-neon .item-card {
-    background-color: #131b26;
-    border: 1px solid #1e293b;
-    border-radius: 8px;
-}
 
-body.vtt .window-app.theme-neon .marketplace-item.grid-item:hover,
-body.vtt .window-app.theme-neon .item-card:hover {
-    border-color: #00d2ff;
-    box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
-}
-
-body.vtt .window-app.theme-neon .sr5-marketplace-yen,
-body.vtt .window-app.theme-neon .value {
-    color: #00d2ff;
-    /* neon blue, not green */
-    text-shadow: 0 0 6px rgba(0, 210, 255, 0.4);
-}
-
-body.vtt .window-app.theme-neon .add-to-cart,
-body.vtt .window-app.theme-neon button {
-    background: linear-gradient(135deg, #00b0ff 0%, #2979ff 100%);
-    color: #ffffff;
-    border: none;
-    box-shadow: 0 4px 10px rgba(0, 176, 255, 0.3);
-    border-radius: 6px;
-    text-shadow: none;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-body.vtt .window-app.theme-neon .add-to-cart:hover,
-body.vtt .window-app.theme-neon button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 14px rgba(0, 176, 255, 0.5);
 }
 
 /* ================================================================== */
@@ -482,6 +446,18 @@ body.vtt .window-app.theme-neon button:hover {
     --header-gradient-bar: linear-gradient(to right, #0284c7 0%, transparent 100%);
     --header-gradient-text: #ffffff;
     --tab-line: #0284c7;
+
+    /* Foundry Core UI Text Color Overrides */
+    --color-text-dark-primary: var(--text-color-primary);
+    --color-text-dark-secondary: var(--text-color-subheader);
+    --color-text-dark-header: var(--text-color-header);
+    --color-text-light-primary: var(--text-color-primary);
+    --color-text-light-heading: var(--text-color-header);
+    --color-text-light-highlight: var(--text-color-header);
+    --color-text-primary: var(--text-color-primary);
+    --color-text-secondary: var(--text-color-subheader);
+    --color-text-emphatic: var(--text-color-header);
+    --color-text-hyperlink: var(--text-color-link);
 }
 
 body.vtt .window-app.theme-neon-light .marketplace-item.grid-item,
@@ -568,6 +544,18 @@ body.vtt .window-app.theme-neon-light button {
     --header-gradient-bar: linear-gradient(to right, #f5f5f7 0%, #fafafa 100%);
     --header-gradient-text: #1d1d1f;
     --tab-line: #d2d2d7;
+
+    /* Foundry Core UI Text Color Overrides */
+    --color-text-dark-primary: var(--text-color-primary);
+    --color-text-dark-secondary: var(--text-color-subheader);
+    --color-text-dark-header: var(--text-color-header);
+    --color-text-light-primary: var(--text-color-primary);
+    --color-text-light-heading: var(--text-color-header);
+    --color-text-light-highlight: var(--text-color-header);
+    --color-text-primary: var(--text-color-primary);
+    --color-text-secondary: var(--text-color-subheader);
+    --color-text-emphatic: var(--text-color-header);
+    --color-text-hyperlink: var(--text-color-link);
 }
 
 body.vtt .window-app.theme-silicon .marketplace-item.grid-item,
@@ -761,14 +749,89 @@ body.vtt .theme-silicon .window-header a.header-control:not(.close):not(.configu
 }
 
 /* Ensure Light Themes apply properly to the Window Application and Content */
-body.vtt .window-app.theme-silicon,
-body.vtt .window-app.theme-neon-light {
+body.vtt :is(.window-app, .application).theme-silicon,
+body.vtt :is(.window-app, .application).theme-neon-light {
     background: var(--bg-main-light);
+    background-image: none;
     color: #1d1d1f;
 }
 
-body.vtt .window-app.theme-silicon .window-content,
-body.vtt .window-app.theme-neon-light .window-content {
+body.vtt :is(.window-app, .application).theme-silicon .window-content,
+body.vtt :is(.window-app, .application).theme-neon-light .window-content {
     background: var(--bg-main-light);
+    background-image: none;
     color: #1d1d1f;
+}
+
+/* ================================================================== */
+/* 7. Core Foundry UI Global Overrides for Custom Themes              */
+/* ================================================================== */
+
+/* Cyber Neon Light */
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) .form-group label { color: #0284c7; }
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) .form-group .hint { color: #0ea5e9; }
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) .form-group button,
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) .ui-control,
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) .hotbar-page-control,
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) #action-bar .slot {
+    background: #ffffff;
+    color: #0284c7;
+    border: 1px solid #0284c7;
+    box-shadow: 0 2px 5px rgba(2, 132, 199, 0.2);
+}
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) .form-group button:hover,
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) .ui-control:hover,
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) .hotbar-page-control:hover,
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) #action-bar .slot:hover {
+    background: #f0f9ff;
+    border-color: #0369a1;
+    color: #0369a1;
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+}
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) .ui-control.active,
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) .ui-control[aria-pressed="true"] {
+    background: #0284c7;
+    color: #ffffff;
+}
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) input, 
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) select, 
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) textarea {
+    background: #ffffff;
+    color: #0f172a;
+    border: 1px solid #cbd5e1;
+}
+
+/* Apple Silicon */
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) .form-group label { color: #1d1d1f; font-weight: 500; }
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) .form-group .hint { color: #86868b; }
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) .form-group button,
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) .ui-control,
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) .hotbar-page-control,
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) #action-bar .slot {
+    background: #f5f5f7;
+    color: #1d1d1f;
+    border: 1px solid #d2d2d7;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) .form-group button:hover,
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) .ui-control:hover,
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) .hotbar-page-control:hover,
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) #action-bar .slot:hover {
+    background: #e5e5e7;
+    border-color: #c7c7cc;
+}
+:is(#interface.theme-silicon, .window-app.theme-silicon) .ui-control.active,
+:is(#interface.theme-silicon, .window-app.theme-silicon) .ui-control[aria-pressed="true"] {
+    background: #0066cc;
+    color: #ffffff;
+    border-color: #0066cc;
+}
+:is(#interface.theme-silicon, .window-app.theme-silicon) input, 
+:is(#interface.theme-silicon, .window-app.theme-silicon) select, 
+:is(#interface.theme-silicon, .window-app.theme-silicon) textarea {
+    background: #ffffff;
+    color: #1d1d1f;
+    border: 1px solid #d2d2d7;
+    border-radius: 6px;
 }

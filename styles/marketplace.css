@@ -5,6 +5,7 @@
 /* --- 2. YOUR EXISTING SCOPED CSS (ALL IMPORTS HERE) --- */
 
 @import "./variables.css";
+@import "./foundry.css";
 @import "./multi-select.css";
 @import "./itemDetails.css";
 @import "./Dialog.css";
