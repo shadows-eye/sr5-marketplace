@@ -104,7 +104,7 @@ export class CompendiumItemBrowserApp extends HandlebarsApplicationMixin(Applica
     /** @override */
     _onRender(context, options) {
         super._onRender(context, options);
-        ThemeService.applyTheme("#actors", this.element);
+        ThemeService.applyTheme("#actors", this.element, this.shopActor);
         
         // Listeners for Sidebar
         const sidebar = this.element.querySelector(".compendium-list");

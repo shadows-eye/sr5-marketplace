@@ -178,6 +178,11 @@
         }
     },
     "SR5Marketplace": {
+        "Themes": {
+            "Neon": "Cyber-Neon (Dunkel)",
+            "NeonLight": "Cyber-Neon (Hell)",
+            "Silicon": "Silicon (Apple-Klon)"
+        },
         "UI": {
             "Name": "Name",
             "Rating": "Stufe",

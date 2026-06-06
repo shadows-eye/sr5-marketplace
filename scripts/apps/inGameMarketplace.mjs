@@ -16,7 +16,7 @@ const FLAG_KEY_SELECTED_ACTOR = "selectedActorUuid";
 export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2) {
     constructor(options = {}) {
         // 1. Get the current theme from our helper function.
-        const currentTheme = inGameMarketplace._getThemeFromSetting();
+        const currentTheme = inGameMarketplace._getThemeFromSetting(options.shopActorUuid);
         // 2. Add all required classes, including the detected theme, to the options.
         options.classes = [
             ...(options.classes || []),
@@ -474,18 +474,21 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
      * @returns {string} The detected theme class name ('theme-dark' or 'theme-light').
      * @private
      */
-    static _getThemeFromSetting() {
-        // 1. Get the entire UI configuration object from the core settings.
-        const uiConfig = game.settings.get("core", "uiConfig");
-        
-        // 2. Access the 'applications' property within that object.
-        
-        const themeValue = uiConfig?.colorScheme.applications;
-        console.log(themeValue);
-        if (themeValue === "dark") {
-            return "theme-dark";
+    static _getThemeFromSetting(shopActorUuid = null) {
+        if (shopActorUuid && typeof game !== "undefined" && game.settings) {
+            try {
+                const setting = game.settings.get("core", "sheetThemes");
+                const documentTheme = setting?.documents?.[shopActorUuid];
+                if (documentTheme) {
+                    return `theme-${documentTheme}`;
+                }
+            } catch (err) {
+                console.warn("inGameMarketplace | Failed to read sheetThemes setting synchronously:", err);
+            }
         }
-        return "theme-light"; // Default to light theme
+        const uiConfig = game.settings.get("core", "uiConfig");
+        const themeValue = uiConfig?.colorScheme.applications || "light";
+        return `theme-${themeValue}`;
     }
     // --- ACTION HANDLERS ---
     static #onChangeTab(event, target) {

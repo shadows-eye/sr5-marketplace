@@ -13,38 +13,68 @@ export class ThemeService {
      * // In an ApplicationV2's _onRender method:
      * ThemeService.applyTheme("#actors", this.element);
      */
-    static applyTheme(sourceSelector, targetElement) {
+    /**
+     * Applies a theme class to a target element based on the document's sheet theme
+     * configuration or the global theme.
+     *
+     * @param {string} sourceSelector - The CSS selector for the source element (e.g., '#actors', '#settings').
+     * @param {HTMLElement} targetElement - The DOM element of your application window to apply the theme to.
+     * @param {ClientDocument} [document] - Optional document instance associated with this sheet.
+     *
+     * @example
+     * // In an ApplicationV2's _onRender method:
+     * ThemeService.applyTheme("#actors", this.element, this.document);
+     */
+    static applyTheme(sourceSelector, targetElement, document = null) {
         if (!targetElement) {
             console.warn("ThemeService | Target element not found.", { targetElement });
             return;
         }
 
-        const source = sourceSelector ? document.querySelector(sourceSelector) : null;
         let theme = null;
+        const themeClasses = ["theme-light", "theme-dark", "theme-neon", "theme-neon-light", "theme-silicon"];
 
-        if (source) {
-            if (source.classList.contains("theme-dark")) theme = "theme-dark";
-            else if (source.classList.contains("theme-light")) theme = "theme-light";
+        // 1. Check for document-specific sheet theme override first
+        if (document && typeof foundry !== "undefined" && foundry.applications?.apps?.DocumentSheetConfig) {
+            try {
+                const sheetTheme = foundry.applications.apps.DocumentSheetConfig.getSheetThemeForDocument(document);
+                if (sheetTheme) {
+                    theme = `theme-${sheetTheme}`;
+                }
+            } catch (err) {
+                console.warn("ThemeService | Failed to read document sheet theme:", err);
+            }
         }
 
-        // Fallback to core UI config color scheme
+        // 2. If no document-specific override, check the source element for the active global theme
+        if (!theme && sourceSelector) {
+            const source = document.querySelector(sourceSelector);
+            if (source) {
+                for (const cls of themeClasses) {
+                    if (source.classList.contains(cls)) {
+                        theme = cls;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 3. Fallback to core UI config color scheme if still not determined
         if (!theme) {
             try {
                 const uiConfig = game.settings.get("core", "uiConfig");
-                const themeValue = uiConfig?.colorScheme.applications;
-                theme = themeValue === "dark" ? "theme-dark" : "theme-light";
+                const themeValue = uiConfig?.colorScheme.applications || "light";
+                theme = `theme-${themeValue}`;
             } catch (err) {
                 console.warn("ThemeService | Failed to read core uiConfig setting:", err);
                 theme = "theme-light"; // Final fallback
             }
         }
 
-        if (theme === "theme-dark") {
-            targetElement.classList.remove("theme-light");
-            targetElement.classList.add("theme-dark");
-        } else {
-            targetElement.classList.remove("theme-dark");
-            targetElement.classList.add("theme-light");
+        // Apply theme class safely
+        for (const cls of themeClasses) {
+            targetElement.classList.remove(cls);
         }
+        targetElement.classList.add(theme);
     }
 }

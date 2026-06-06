@@ -1111,7 +1111,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     /** @override */
     _onRender(context, options) {
         super._onRender(context, options);
-        ThemeService.applyTheme("#actors", this.element);
+        ThemeService.applyTheme("#actors", this.element, this.document);
         
         // Initialize search service if we are on the actorShop tab
         const searchBox = this.element.querySelector("#search-box");
