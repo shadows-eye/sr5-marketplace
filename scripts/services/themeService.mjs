@@ -14,22 +14,35 @@ export class ThemeService {
      * ThemeService.applyTheme("#actors", this.element);
      */
     static applyTheme(sourceSelector, targetElement) {
-        // Find the source element in the main document
-        const source = document.querySelector(sourceSelector);
-        
-        // Ensure both elements exist before proceeding
-        if (!source || !targetElement) {
-            console.warn("ThemeService | Source or target element not found.", { sourceSelector, targetElement });
+        if (!targetElement) {
+            console.warn("ThemeService | Target element not found.", { targetElement });
             return;
         }
 
-        // Check for the dark theme and apply it
-        if (source.classList.contains("theme-dark")) {
+        const source = sourceSelector ? document.querySelector(sourceSelector) : null;
+        let theme = null;
+
+        if (source) {
+            if (source.classList.contains("theme-dark")) theme = "theme-dark";
+            else if (source.classList.contains("theme-light")) theme = "theme-light";
+        }
+
+        // Fallback to core UI config color scheme
+        if (!theme) {
+            try {
+                const uiConfig = game.settings.get("core", "uiConfig");
+                const themeValue = uiConfig?.colorScheme.applications;
+                theme = themeValue === "dark" ? "theme-dark" : "theme-light";
+            } catch (err) {
+                console.warn("ThemeService | Failed to read core uiConfig setting:", err);
+                theme = "theme-light"; // Final fallback
+            }
+        }
+
+        if (theme === "theme-dark") {
             targetElement.classList.remove("theme-light");
             targetElement.classList.add("theme-dark");
-        } 
-        // Otherwise, check for the light theme and apply it
-        else if (source.classList.contains("theme-light")) {
+        } else {
             targetElement.classList.remove("theme-dark");
             targetElement.classList.add("theme-light");
         }

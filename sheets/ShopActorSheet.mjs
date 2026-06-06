@@ -5,6 +5,7 @@ import { InventoryRules } from "../scripts/services/_module.mjs";
 import { inGameMarketplace } from "../scripts/apps/inGameMarketplace.mjs";
 import { CompendiumItemBrowserApp } from "../scripts/apps/CompendiumItemBrowserApp.mjs";
 import { SearchService } from "../scripts/services/searchTag.mjs";
+import { ThemeService } from "../scripts/services/themeService.mjs";
 // We get the base ActorSheet class from Foundry's API.
 const { ActorSheet } = foundry.applications.sheets;
 
@@ -1110,6 +1111,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     /** @override */
     _onRender(context, options) {
         super._onRender(context, options);
+        ThemeService.applyTheme("#actors", this.element);
         
         // Initialize search service if we are on the actorShop tab
         const searchBox = this.element.querySelector("#search-box");
