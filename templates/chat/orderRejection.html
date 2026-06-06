@@ -1,8 +1,28 @@
-<div class="sr5-marketplace-order-rejection">
-    <strong>{{localize 'SR5Marketplace.Marketplace.OrderReview.OrderRejected'}}</strong>
-    <ul>
-        {{#each items}}
-            <li>{{this}}</li>
-        {{/each}}
-    </ul>
+<div class="sr5 chat-card roll-card order-rejection sr5-marketplace-order-rejection">
+  <div class="card-title card-header card-header--title">
+    <span class="test-name">{{localize 'SR5Marketplace.Marketplace.OrderReview.OrderRejected'}}</span>
+  </div>
+
+  <div class="card-main-content">
+    <div class="card-content">
+      <div class="left-side">
+        <ul class="properties-list" style="margin: 0; padding-left: 1.25rem; font-size: 0.85rem; line-height: 1.4;">
+          {{#each items}}
+            <li>
+              {{#if this.uuid}}
+                @UUID[{{this.uuid}}]{{this.name}}
+              {{else}}
+                {{this}}
+              {{/if}}
+            </li>
+          {{/each}}
+        </ul>
+      </div>
+    </div>
+    {{#if statusMessage}}
+      <div class="card-content card-content--status" style="justify-content: center; font-style: italic; color: var(--sr5-theme-text-secondary); margin-top: 0.35rem; text-align: center;">
+        {{statusMessage}}
+      </div>
+    {{/if}}
+  </div>
 </div>

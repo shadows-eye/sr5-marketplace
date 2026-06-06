@@ -2,7 +2,6 @@ import ItemDataServices from '../services/ItemDataServices.mjs';
 import { AppDialogBuilder } from './documents/dialog/AppDialogBuilder.mjs';
 import { ItemPreviewApp } from "./documents/items/ItemPreviewApp.mjs"; 
 import { BasketService } from '../services/basketService.mjs';
-import { PurchaseService } from '../services/purchaseService.mjs';
 import { SearchService } from '../services/searchTag.mjs';
 import { DeliveryTimeService } from '../services/DeliveryTimeService.mjs';
 import { DialogTestModifierService as DialogModifierService } from '../apps/documents/dialog/DialogModifierService.mjs'; // Builder for Dialog For inline-Dialog in Apps
@@ -259,7 +258,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             tabs.push({ 
                 id: "orderReview", label: game.i18n.localize("SR5Marketplace.Marketplace.Tabs.OrderReview"),
                 icon: "fa-list-check", cssClass: this.tabGroups.main === "orderReview" ? "active" : "",
-                count: PurchaseService.getPendingRequestCount() 
+                count: game.sr5marketplace.api.marketplace.getPendingRequestCount() 
             });
         }
         if (basketItemCount > 0) {
@@ -317,7 +316,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             tabContent = await render("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.html", partialContext);
             break;
         case "orderReview": {
-                const allPendingRequests = await PurchaseService.getAllPendingRequests();
+                const allPendingRequests = await game.sr5marketplace.api.marketplace.getAllPendingRequests();
                 const builder = new AppDialogBuilder();
                 
                 // Group requests by actor
@@ -579,12 +578,12 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     static async #onSendRequest(event, target) {
         const isApprovalWorkflow = game.settings.get("sr5-marketplace", "approvalWorkflow");
         if (isApprovalWorkflow) {
-            await PurchaseService.submitForReview(game.user.id);
+            await game.sr5marketplace.api.marketplace.submitForReview(game.user.id);
         } else {
             const basket = await this.basketService.getBasket();
             const actor = await fromUuid(basket.createdForActor);
             if (actor) {
-                await PurchaseService.directPurchase(actor, basket);
+                await game.sr5marketplace.api.marketplace.directPurchase(actor, basket);
                 await this.basketService.clearBasket();
             }
         }
@@ -601,9 +600,9 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const userId = requestBlock.dataset.userId;
         const basketUuid = requestBlock.dataset.basketUuid;
         if (target.dataset.action === "approveAll") {
-            await PurchaseService.approveBasket(userId, basketUuid);
+            await game.sr5marketplace.api.marketplace.approveBasket(userId, basketUuid);
         } else {
-            await PurchaseService.rejectBasket(userId, basketUuid);
+            await game.sr5marketplace.api.marketplace.rejectBasket(userId, basketUuid);
         }
         this.render();
     }
@@ -616,18 +615,18 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const itemUuid = itemRow.dataset.basketItemUuid;
 
         if (target.dataset.action === "rejectItem") {
-            await PurchaseService.rejectItemFromRequest(userId, basketUuid, itemUuid);
+            await game.sr5marketplace.api.marketplace.rejectItemFromRequest(userId, basketUuid, itemUuid);
             
             // Check if the request is now empty or has no items left, then reject/remove the basket.
             const user = game.users.get(userId);
-            const basketState = user?.getFlag("sr5-marketplace", "shoppingBasket");
+            const basketState = user?.getFlag("sr5-marketplace", "basket");
             const req = basketState?.orderReviewItems?.find(r => r.basketUUID === basketUuid);
             if (!req || !req.basketItems || req.basketItems.length === 0) {
-                await PurchaseService.rejectBasket(userId, basketUuid);
+                await game.sr5marketplace.api.marketplace.rejectBasket(userId, basketUuid);
             }
         } else {
             // Accept / Approve the request
-            await PurchaseService.approveBasket(userId, basketUuid);
+            await game.sr5marketplace.api.marketplace.approveBasket(userId, basketUuid);
         }
         this.render();
     }
@@ -662,7 +661,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const itemRow = target.closest(".item-row");
         const property = target.dataset.property;
         const value = (target.type === "number") ? Number(target.value) : target.value;
-        await PurchaseService.updatePendingItem(requestBlock.dataset.userId, requestBlock.dataset.basketUuid, itemRow.dataset.basketItemUuid, property, value);
+        await game.sr5marketplace.api.marketplace.updatePendingItem(requestBlock.dataset.userId, requestBlock.dataset.basketUuid, itemRow.dataset.basketItemUuid, property, value);
         this.render();
     }
 

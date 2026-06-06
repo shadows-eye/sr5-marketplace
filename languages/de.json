@@ -252,6 +252,18 @@
                     "name": "GM Genehmigungsprocess",
                     "hint": "Schalte diese Einstellung um den Genehmigungsprocess für Spielerkäufe zu deaktivieren!"
                 },
+                "ChatRequestEnabled": {
+                    "name": "Chat-Nachricht: Kaufanfragen",
+                    "hint": "Postet eine Chat-Nachricht, wenn eine Kaufanfrage zur Überprüfung eingereicht wird."
+                },
+                "ChatRejectionEnabled": {
+                    "name": "Chat-Nachricht: Ablehnungen",
+                    "hint": "Postet eine Chat-Nachricht, wenn eine Anfrage oder ein Artikel abgelehnt wird."
+                },
+                "ChatApprovalEnabled": {
+                    "name": "Chat-Nachricht: Genehmigungen",
+                    "hint": "Postet eine Chat-Nachricht, wenn ein Kauf genehmigt wurde."
+                },
                 "ResetItemLoad": {
                     "name": "Item Verbesserung landen zurücksetzen",
                     "hint": "Dies ermöglicht es die Karma Werte und den Kosten und Verfügbarkeiten von Welt- und Kompendiumsartikeln, ihre Flags für Karma neu zu initialisieren. Wenn Sie diese Einstellung auf true setzen, werden alle Änderungen, die Sie an Karma, Kosten oder Verfügbarkeit der Items vorgenommen haben, rückgängig gemacht."
@@ -531,7 +543,13 @@
             },
             "Notifications": {
                 "BehaviorsSaved": "Verhalten gespeichert.",
-                "IndexComplete": "Index aktualisiert."
+                "IndexComplete": "Index aktualisiert.",
+                "PurchaseRequestSubmitted": "Ihre Kaufanfrage wurde dem Spielleiter zur Überprüfung vorgelegt.",
+                "ItemRejected": "Artikel abgelehnt und aus der Anfrage entfernt.",
+                "PurchaseRequestRejected": "Kaufanfrage für Benutzer {name} wurde abgelehnt.",
+                "PurchaseApproved": "Kauf freigegeben für Benutzer {name}.",
+                "DeductedResources": "{cost} ¥ und {karma} Karma von {actor} abgezogen.",
+                "ItemsAdded": "{count} neue(r) Artikel zu {actor}s Inventar hinzugefügt."
             },
             "NoContacts": "Hat keine Kontakte"
         },

@@ -252,6 +252,18 @@
                     "name": "GM Approval Workflow",
                     "hint": "Toggle this setting to Disable the approval workflow for player purchases!"
                 },
+                "ChatRequestEnabled": {
+                    "name": "Chat Message: Purchase Requests",
+                    "hint": "Post a chat message when a purchase request is submitted for review."
+                },
+                "ChatRejectionEnabled": {
+                    "name": "Chat Message: Rejections",
+                    "hint": "Post a chat message when a request or an item is rejected."
+                },
+                "ChatApprovalEnabled": {
+                    "name": "Chat Message: Approvals",
+                    "hint": "Post a chat message when a purchase is approved."
+                },
                 "ResetItemLoad": {
                     "name": "Reset Item Enhancement Load",
                     "hint": "This will allow the karma values and cost/availability of world and compendium items to get their flags reinitialized. Setting this setting to true will undo any changes you made to Karma, cost, or Availability of the items."
@@ -530,7 +542,13 @@
             },
             "Notifications": {
                 "BehaviorsSaved": "Item behaviors saved successfully.",
-                "IndexComplete": "Marketplace index rebuild complete."
+                "IndexComplete": "Marketplace index rebuild complete.",
+                "PurchaseRequestSubmitted": "Your purchase request has been submitted to the GM for review.",
+                "ItemRejected": "Item rejected and removed from the request.",
+                "PurchaseRequestRejected": "Purchase request for user {name} has been rejected.",
+                "PurchaseApproved": "Purchase approved for user {name}.",
+                "DeductedResources": "Deducted {cost} ¥ and {karma} Karma from {actor}.",
+                "ItemsAdded": "Added {count} new item(s) to {actor}'s inventory."
             },
             "NoContacts": "Has no Contacts"
         },

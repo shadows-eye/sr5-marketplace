@@ -110,9 +110,42 @@ export class PurchaseService {
             await AppTestFlagService.deleteState(userId);
         }
 
-        ui.notifications.info("Your purchase request has been submitted to the GM for review.");
         game.socket.emit("module.sr5-marketplace", { type: "new_request", senderId: user.id, basketUUID: newRequest.basketUUID });
+
+        // Post a ChatMessageRequest to the chat log
+        if (game.settings.get("sr5-marketplace", "chatRequestEnabled")) {
+            try {
+                const actorId = newRequest.createdForActor ? newRequest.createdForActor.split(".").pop() : null;
+                const items = newRequest.basketItems.map(i => ({
+                    ...i,
+                    rating: i.selectedRating ?? i.rating
+                }));
+                const chatData = {
+                    actorId: actorId,
+                    items: items,
+                    totalCost: newRequest.totalCost,
+                    totalAvailability: newRequest.totalAvailability,
+                    totalKarma: newRequest.totalKarma,
+                    totalEssenceCost: newRequest.totalEssenceCost,
+                    id: newRequest.basketUUID,
+                    isGM: game.user.isGM,
+                    statusMessage: game.i18n.localize("SR5Marketplace.Marketplace.Notifications.PurchaseRequestSubmitted")
+                };
+
+                const html = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/chat/chatMessageRequest.html", chatData);
+                const actor = newRequest.createdForActor ? await fromUuid(newRequest.createdForActor) : null;
+                const speaker = actor ? ChatMessage.getSpeaker({ actor }) : {};
+                await ChatMessage.create({
+                    speaker: speaker,
+                    content: html
+                });
+            } catch (err) {
+                console.error("SR5 Marketplace | Failed to post order request to chat log:", err);
+            }
+        }
     }
+
+
 
     static async updatePendingItem(userId, basketUUID, basketItemUuid, property, value) {
         const user = game.users.get(userId);
@@ -146,6 +179,7 @@ export class PurchaseService {
         const request = basket.orderReviewItems.find(r => r.basketUUID === basketUUID);
         if (!request) return;
         
+        const itemToReject = request.basketItems.find(i => i.basketItemUuid === basketItemUuid);
         const initialItemCount = request.basketItems.length;
         request.basketItems = request.basketItems.filter(i => i.basketItemUuid !== basketItemUuid);
 
@@ -153,7 +187,23 @@ export class PurchaseService {
             this._recalculateTotals(request);
             const basketService = new BasketService();
             await basketService.saveBasket(basket, userId);
-            ui.notifications.info("Item rejected and removed from the request.");
+
+            if (itemToReject && game.settings.get("sr5-marketplace", "chatRejectionEnabled")) {
+                try {
+                    const html = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/chat/orderRejection.html", {
+                        items: [{ name: itemToReject.name, uuid: itemToReject.itemUuid }],
+                        statusMessage: game.i18n.localize("SR5Marketplace.Marketplace.Notifications.ItemRejected")
+                    });
+                    const actor = request.createdForActor ? await fromUuid(request.createdForActor) : null;
+                    const speaker = actor ? ChatMessage.getSpeaker({ actor }) : {};
+                    await ChatMessage.create({
+                        speaker: speaker,
+                        content: html
+                    });
+                } catch (err) {
+                    console.error("SR5 Marketplace | Failed to post order item rejection to chat:", err);
+                }
+            }
         }
     }
 
@@ -162,14 +212,37 @@ export class PurchaseService {
         const basket = await this._validateAndGetBasket(userId, {resetInvalid: true});
         if (!basket?.orderReviewItems) return;
 
+        const request = basket.orderReviewItems.find(r => r.basketUUID === basketUUID);
         const initialCount = basket.orderReviewItems.length;
         basket.orderReviewItems = basket.orderReviewItems.filter(r => r.basketUUID !== basketUUID);
 
         if (basket.orderReviewItems.length < initialCount) {
             const basketService = new BasketService();
             await basketService.saveBasket(basket, userId);
-            ui.notifications.warn(`Purchase request for user ${game.users.get(userId)?.name} has been rejected.`);
             game.socket.emit("module.sr5-marketplace", { type: "request_resolved", userId });
+
+            if (request && game.settings.get("sr5-marketplace", "chatRejectionEnabled")) {
+                try {
+                    const rejectedItems = request.basketItems.map(i => ({
+                        name: i.name,
+                        uuid: i.itemUuid
+                    }));
+                    if (rejectedItems.length > 0) {
+                        const html = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/chat/orderRejection.html", {
+                            items: rejectedItems,
+                            statusMessage: game.i18n.format("SR5Marketplace.Marketplace.Notifications.PurchaseRequestRejected", { name: game.users.get(userId)?.name || "" })
+                        });
+                        const actor = request.createdForActor ? await fromUuid(request.createdForActor) : null;
+                        const speaker = actor ? ChatMessage.getSpeaker({ actor }) : {};
+                        await ChatMessage.create({
+                            speaker: speaker,
+                            content: html
+                        });
+                    }
+                } catch (err) {
+                    console.error("SR5 Marketplace | Failed to post order rejection to chat:", err);
+                }
+            }
         }
     }
 
@@ -182,28 +255,41 @@ export class PurchaseService {
         if (requestIndex === -1) return;
         
         const requestToProcess = basket.orderReviewItems[requestIndex];
+        const actor = await fromUuid(requestToProcess.createdForActor);
 
         // --- REFACTOR ---
-        // Call directPurchase with just the request data. It will find the actor itself.
-        const success = await this.directPurchase(requestToProcess);
+        // Call directPurchase with the actor and the request data.
+        const success = await this.directPurchase(actor, requestToProcess, { userName: game.users.get(userId)?.name });
         
         if (success) {
             basket.orderReviewItems.splice(requestIndex, 1);
             await basketService.saveBasket(basket, userId);
-            ui.notifications.info(`Purchase approved for user ${game.users.get(userId)?.name}.`);
             game.socket.emit("module.sr5-marketplace", { type: "request_resolved", userId });
         }
     }
 
     /**
-     * This function is now self-contained. It receives basket data
-     * and is responsible for finding the actor and completing the purchase.
+     * This function handles the purchase operations.
+     * It receives both the actor and the basket/request object.
+     * @param {Actor} actor The actor document making the purchase.
      * @param {object} basket The basket or request object containing purchase data.
+     * @param {object} [options] Additional options.
+     * @param {string} [options.userName=""] The username of the purchaser.
      */
-    static async directPurchase(basket) {
-        if (!basket || !basket.basketItems) return false;
+    static async directPurchase(actor, basket, { userName = "" } = {}) {
+        // Fallback for single-argument call style
+        if (!basket && actor && (actor.basketItems || actor.shoppingCartItems)) {
+            basket = actor;
+            actor = null;
+        }
+        if (!basket) return false;
+
+        const basketItems = basket.basketItems || basket.shoppingCartItems;
+        if (!basketItems || basketItems.length === 0) return false;
         
-        const actor = await fromUuid(basket.createdForActor);
+        if (!actor) {
+            actor = await fromUuid(basket.createdForActor);
+        }
         if (!actor) {
             ui.notifications.error("Could not find the actor associated with this purchase.");
             return false;
@@ -223,10 +309,9 @@ export class PurchaseService {
         }
 
         await actor.update({ "system.nuyen": currentNuyen - basket.totalCost, "system.karma.value": currentKarma - basket.totalKarma });
-        ui.notifications.info(`Deducted ${basket.totalCost} ¥ and ${basket.totalKarma} Karma from ${actor.name}.`);
 
         const itemsToCreate = [];
-        for (const basketItem of basket.basketItems) {
+        for (const basketItem of basketItems) {
             const sourceItem = await fromUuid(basketItem.itemUuid);
             if (sourceItem) {
                 const itemData = sourceItem.toObject();
@@ -246,10 +331,55 @@ export class PurchaseService {
         console.log("Marketplace | Attempting to create the following items on actor:", actor.name, itemsToCreate);
         // --- END DEBUG LOG ---
 
+        let createdDocs = [];
         if (itemsToCreate.length > 0) {
-            await actor.createEmbeddedDocuments("Item", itemsToCreate);
-            ui.notifications.info(`Added ${itemsToCreate.length} new item(s) to ${actor.name}'s inventory.`);
+            createdDocs = await actor.createEmbeddedDocuments("Item", itemsToCreate);
         }
+
+        // Post order confirmation ChatMessage to the chat log
+        if (game.settings.get("sr5-marketplace", "chatApprovalEnabled")) {
+            try {
+                const chatItems = createdDocs.map(d => ({
+                    _id: d.id,
+                    name: d.name,
+                    uuid: d.uuid
+                }));
+
+                const statusMessages = [];
+                if (userName) {
+                    statusMessages.push(game.i18n.format("SR5Marketplace.Marketplace.Notifications.PurchaseApproved", { name: userName }));
+                }
+                statusMessages.push(game.i18n.format("SR5Marketplace.Marketplace.Notifications.DeductedResources", {
+                    cost: basket.totalCost.toLocaleString(),
+                    karma: basket.totalKarma,
+                    actor: actor.name
+                }));
+                statusMessages.push(game.i18n.format("SR5Marketplace.Marketplace.Notifications.ItemsAdded", {
+                    count: itemsToCreate.length,
+                    actor: actor.name
+                }));
+                
+                const confirmData = {
+                    actorId: actor.id,
+                    items: chatItems,
+                    totalCost: basket.totalCost,
+                    totalAvailability: basket.totalAvailability,
+                    totalEssenceCost: basket.totalEssenceCost,
+                    totalKarmaCost: basket.totalKarma,
+                    timestamp: new Date().toLocaleString(),
+                    statusMessage: statusMessages
+                };
+
+                const html = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/chat/orderConfirmation.html", confirmData);
+                await ChatMessage.create({
+                    speaker: ChatMessage.getSpeaker({ actor }),
+                    content: html
+                });
+            } catch (err) {
+                console.error("SR5 Marketplace | Failed to post order confirmation to chat log:", err);
+            }
+        }
+
         return true;
     }
     

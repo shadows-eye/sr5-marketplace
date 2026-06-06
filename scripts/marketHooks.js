@@ -18,7 +18,9 @@ import {
     diceHelperService,
     themeService,
     systemDataMapperService,
-    ItemDataServices // <-- We import the class here because you need 'new ItemDataServices()' for your API
+    ItemDataServices, // <-- We import the class here because you need 'new ItemDataServices()' for your API
+    PurchaseService,
+    BasketService
 } from './services/_module.mjs';
 
 // Re-export instances/classes as well ONLY IF you need them available globally 
@@ -71,9 +73,57 @@ const initializeTemplates = () => {
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/Builder.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/ItemDetails.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/multi-select.html",
-        "modules/sr5-marketplace/templates/apps/marketshouter/marketshouter.html"
+        "modules/sr5-marketplace/templates/apps/marketshouter/marketshouter.html",
+        "modules/sr5-marketplace/templates/chat/chatMessageRequest.html",
+        "modules/sr5-marketplace/templates/chat/orderConfirmation.html",
+        "modules/sr5-marketplace/templates/chat/orderRejection.html"
     ]);
 };
+
+// Render review tab on chat button click
+Hooks.on("renderChatMessageHTML", (message, html, data) => {
+    const htmlElement = html instanceof HTMLElement ? html : html[0];
+    if (!htmlElement) return;
+
+    const requestCard = htmlElement.querySelector(".shopping-basket-summary");
+    if (requestCard) {
+        if (!game.user.isGM) {
+            // Remove the button entirely for players so they never see it
+            const btn = requestCard.querySelector(".review-request-button");
+            btn?.remove();
+            requestCard.querySelector(".card-buttons")?.remove();
+        } else {
+            // For GM, ensure the button exists and has the listener attached
+            let btn = requestCard.querySelector(".review-request-button");
+            if (!btn) {
+                const requestId = requestCard.getAttribute("data-request-id");
+                if (requestId) {
+                    let cardButtons = requestCard.querySelector(".card-buttons");
+                    if (!cardButtons) {
+                        cardButtons = document.createElement("div");
+                        cardButtons.classList.add("card-buttons");
+                        requestCard.appendChild(cardButtons);
+                    }
+                    cardButtons.innerHTML = `<button class="button review-request-button" data-request-id="${requestId}">${game.i18n.localize('SR5Marketplace.Marketplace.OrderReview.ReviewAndConfirm')}</button>`;
+                    btn = cardButtons.querySelector(".review-request-button");
+                }
+            }
+            if (btn) {
+                const newBtn = btn.cloneNode(true);
+                btn.parentNode.replaceChild(newBtn, btn);
+                newBtn.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    let marketplace = foundry.applications.instances.get("inGameMarketplace");
+                    if (!marketplace) {
+                        marketplace = new inGameMarketplace({});
+                    }
+                    marketplace.tabGroups.main = "orderReview";
+                    marketplace.render(true);
+                });
+            }
+        }
+    }
+});
 // Initialize module settings
 const initializeSettings = () => {
     console.log("SR5 Marketplace | Initializing settings...");
@@ -97,6 +147,36 @@ const initializeSettings = () => {
     game.settings.register("sr5-marketplace", "approvalWorkflow", {
         name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.ApprovalWorkflow.name"),
         hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.ApprovalWorkflow.hint"),
+        scope: "world",
+        config: true,
+        type: Boolean,
+        default: true,
+        restricted: true,
+    });
+
+    game.settings.register("sr5-marketplace", "chatRequestEnabled", {
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.ChatRequestEnabled.name"),
+        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.ChatRequestEnabled.hint"),
+        scope: "world",
+        config: true,
+        type: Boolean,
+        default: true,
+        restricted: true,
+    });
+
+    game.settings.register("sr5-marketplace", "chatRejectionEnabled", {
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.ChatRejectionEnabled.name"),
+        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.ChatRejectionEnabled.hint"),
+        scope: "world",
+        config: true,
+        type: Boolean,
+        default: true,
+        restricted: true,
+    });
+
+    game.settings.register("sr5-marketplace", "chatApprovalEnabled", {
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.ChatApprovalEnabled.name"),
+        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.ChatApprovalEnabled.hint"),
         scope: "world",
         config: true,
         type: Boolean,
@@ -274,6 +354,8 @@ Hooks.once("init", () => {
     game.sr5marketplace.api = {
         system: new SR5SystemAPI(),
         itemData: new ItemDataServices(), // Pulled perfectly from your services barrel!
+        PurchaseService: PurchaseService,
+        BasketService: BasketService,
 
         // 3. Instantiate your sub-APIs using the static properties
         marketplace: new MarketplaceAPI.Marketplace(),

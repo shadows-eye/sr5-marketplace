@@ -1,26 +1,73 @@
-<div class="order-confirmation">
-  <h2>{{localize "SR5Marketplace.Marketplace.OrderReview.YourOrderHasArrived"}}: @Actor[{{actorId}}]</h2>
-  <p>{{localize "SR5Marketplace.Marketplace.OrderReview.YourItems"}}:</p>
-  <ul>
-    {{#each items}}
-      <li>@Item[{{this._id}}]</li>
-    {{/each}}
-  </ul>
+<div class="sr5 chat-card roll-card order-confirmation">
+  <div class="card-title card-header card-header--title">
+    <span class="test-name">{{localize "SR5Marketplace.Marketplace.OrderReview.YourOrderHasArrived"}}</span>
+  </div>
 
-  <!-- Total Cost and Total Availability are always displayed -->
-  <p><strong>{{localize "SR5Marketplace.Marketplace.Basket.TotalCost"}}:</strong> {{totalCost}} <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen"></i></p>
-  <p><strong>{{localize "SR5Marketplace.Marketplace.Basket.TotalAvailability"}}:</strong> {{totalAvailability}}</p>
+  <div class="card-main-content">
+    {{#if actorId}}
+      <div class="card-title card-header card-header--entities" style="border-bottom: 1px dashed var(--sr5-card-border-soft); margin-bottom: 0.35rem;">
+        <div class="document">
+          <h3 class="header-name">
+            <a class="chat-document-link" data-uuid="Actor.{{actorId}}">@Actor[{{actorId}}]</a>
+          </h3>
+        </div>
+      </div>
+    {{/if}}
 
-  <!-- Only show Total Essence Cost if it is greater than zero -->
-  {{#if totalEssenceCost}}
-      <p><strong>{{localize "SR5Marketplace.Marketplace.Basket.TotalEssence"}}:</strong> {{totalEssenceCost}}</p>
-  {{/if}}
+    <div class="card-content">
+      <div class="left-side">
+        <span class="key bold">{{localize "SR5Marketplace.Marketplace.OrderReview.YourItems"}}:</span>
+        <ul class="properties-list" style="margin: 0.25rem 0 0 0; padding-left: 1.25rem; font-size: 0.85rem; line-height: 1.4;">
+          {{#each items}}
+            <li>
+              {{#if this.uuid}}
+                @UUID[{{this.uuid}}]{{this.name}}
+              {{else}}
+                @Item[{{this._id}}]
+              {{/if}}
+            </li>
+          {{/each}}
+        </ul>
+      </div>
+    </div>
 
-  <!-- Only show Total Karma Cost if it is greater than zero -->
-  {{#if totalKarmaCost}}
-      <p><strong>{{localize "SR5Marketplace.UI.Karma"}}:</strong> {{totalKarmaCost}} <i class="fa-duotone fa-solid fa-circle-star"></i></p>
-  {{/if}}
+    <div class="card-content card-content--metrics">
+      <div class="left-side">
+        <div class="test-value metric-row">
+          <span class="value">{{localize "SR5Marketplace.Marketplace.Basket.TotalCost"}}:</span>
+          <span class="value-result">{{formatNumber totalCost}} <i class="fa-duotone fa-solid fa-circle-yen"></i></span>
+        </div>
+        <div class="test-value metric-row">
+          <span class="value">{{localize "SR5Marketplace.Marketplace.Basket.TotalAvailability"}}:</span>
+          <span class="value-result sr5-marketplace-availability">{{totalAvailability}}</span>
+        </div>
+      </div>
+      <div class="right-side">
+        {{#if totalKarmaCost}}
+          <div class="test-value metric-row">
+            <span class="value">{{localize "SR5Marketplace.UI.Karma"}}:</span>
+            <span class="value-result">{{totalKarmaCost}} <i class="fa-duotone fa-solid fa-circle-star"></i></span>
+          </div>
+        {{/if}}
+        {{#if totalEssenceCost}}
+          <div class="test-value metric-row">
+            <span class="value">{{localize "SR5Marketplace.Marketplace.Basket.TotalEssence"}}:</span>
+            <span class="value-result">{{totalEssenceCost}} <i class="fa-duotone fa-solid fa-capsules"></i></span>
+          </div>
+        {{/if}}
+      </div>
+    </div>
 
-  <!-- Confirmation timestamp -->
-  <p><strong>{{localize 'SR5Marketplace.Marketplace.OrderReview.ConfirmTime'}}:</strong> {{timestamp}}</p>
+    {{#if statusMessage}}
+      <div class="card-content card-content--status" style="justify-content: center; font-style: italic; color: var(--sr5-theme-text-secondary); margin-top: 0.35rem; text-align: center; display: block; line-height: 1.4;">
+        {{#each statusMessage}}
+          <div>{{this}}</div>
+        {{/each}}
+      </div>
+    {{/if}}
+
+    <div style="font-size: 11px; text-align: right; padding: 0.35rem 0.45rem; color: var(--sr5-theme-text-muted);">
+      <strong>{{localize 'SR5Marketplace.Marketplace.OrderReview.ConfirmTime'}}:</strong> {{timestamp}}
+    </div>
+  </div>
 </div>  

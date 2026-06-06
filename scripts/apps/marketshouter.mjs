@@ -1,5 +1,4 @@
 import { BasketService } from "../services/basketService.mjs";
-import { PurchaseService } from "../services/purchaseService.mjs";
 import { inGameMarketplace } from "./inGameMarketplace.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -90,7 +89,7 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         }
 
         const isGM = game.user.isGM;
-        const pendingCount = isGM ? PurchaseService.getPendingRequestCount() : 0;
+        const pendingCount = isGM ? game.sr5marketplace.api.marketplace.getPendingRequestCount() : 0;
 
         return {
             itemCount,

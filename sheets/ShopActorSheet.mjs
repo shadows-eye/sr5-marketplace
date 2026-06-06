@@ -75,7 +75,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     }
     /** @override */
     static DEFAULT_OPTIONS = foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
-        classes: ["sr5", "shop", "sr5-marketplace-shop"],
+        classes: ["sr5", "shop", "sr5-marketplace-shop", "themed"],
         position: {
             left: 103.5,
             top: 18,
