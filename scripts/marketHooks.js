@@ -46,6 +46,7 @@ import { ShopActorSheet } from "../sheets/ShopActorSheet.mjs";
 // --- 4. API IMPORTS ---
 import { MarketplaceAPI, SR5SystemAPI } from './API/_module.mjs';
 import { ItemBuilderApp } from "./apps/ItemBuilderApp.mjs";
+import { SR5CreateActorApp } from "./apps/SR5CreateActorApp.mjs";
 
 
 
@@ -57,6 +58,7 @@ const initializeTemplates = () => {
     registerBasicHelpers();
 
     foundry.applications.handlebars.loadTemplates([
+        "modules/sr5-marketplace/templates/apps/create-actor.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/orderReview.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/marketplaceUserActor.html",
@@ -566,6 +568,17 @@ Hooks.once("init", () => {
     initializeTemplates();
     // Register the custom ShopActor class
     defineShopActorClass();
+
+    // Override the default Actor creation dialog
+    CONFIG.Actor.documentClass.createDialog = async function(data = {}, options = {}) {
+        return new Promise((resolve) => {
+            new SR5CreateActorApp({
+                resolve,
+                folder: data.folder || options.parent?.id || null,
+                ...options
+            }).render(true);
+        });
+    };
 
     // Register the custom ShopActorSheet
     foundry.documents.collections.Actors.registerSheet("sr5-marketplace", ShopActorSheet, {

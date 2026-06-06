@@ -185,6 +185,41 @@
         },
         "UI": {
             "Name": "Name",
+            "New": "Neuer",
+            "CreateActor": "Akteur erstellen",
+            "CreateType": "Erschaffe {type}",
+            "ActorCreator": {
+                "NamePlaceholder": "z.B. Herr Schmidt, Waffenladen...",
+                "ShopDetailsTitle": "Laden-Details & Regeln",
+                "ShopDescPlaceholder": "Eine kurze Beschreibung des Ladens und seiner Waren...",
+                "HostEmployeesTitle": "Host & Angestellte",
+                "NoHost": "-- Kein Matrix-Host --",
+                "NoActors": "Keine Akteure im Seitenleisten-Verzeichnis verfügbar.",
+                "PopulateInventoryTitle": "Laden-Inventar bestücken",
+                "FilterByType": "Nach Typ filtern",
+                "All": "Alle",
+                "None": "Keine",
+                "Source": "Quelle",
+                "SourceBoth": "Sowohl Welt als auch Kompendien",
+                "SourceWorld": "Nur Welt-Gegenstände",
+                "SourceCompendium": "Nur Kompendium-Gegenstände",
+                "MaxRating": "Max. Gegenstandsstufe",
+                "NoLimit": "Kein Limit",
+                "AvailableItems": "Verfügbare Gegenstände",
+                "Matches": "{count} Treffer",
+                "SelectAll": "Alle auswählen",
+                "ClearAll": "Auswahl aufheben",
+                "RemoveFilter": "Filter entfernen",
+                "SearchPlaceholder": "Name/Typ suchen... (Eingabetaste drücken, um Tag hinzuzufügen)",
+                "LoadingDatabase": "Lade Gegenstands-Datenbank...",
+                "NoMatches": "Keine passenden Gegenstände gefunden. Passe die Filter an.",
+                "SelectedItems": "Ausgewählte Gegenstände",
+                "CountItems": "{count} Gegenstände",
+                "RemoveAll": "Alle entfernen",
+                "RemoveItem": "Gegenstand entfernen",
+                "NoItemsSelected": "Keine Gegenstände ausgewählt. Klicke links auf die Kontrollkästchen, um sie hinzuzufügen.",
+                "RatingAbbrev": "St."
+            },
             "Rating": "Stufe",
             "Cost": "Kosten",
             "Availability": "Verfügbarkeit",
@@ -681,7 +716,7 @@
     },
     "TYPES": {
         "Actor": {
-            "sr5-marketplace.shop": "Marktplatz Laden"
+            "sr5-marketplace.shop": "Marktplatzladen"
         }
     }
 }

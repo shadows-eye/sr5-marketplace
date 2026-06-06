@@ -25,7 +25,7 @@ export class ThemeService {
      * // In an ApplicationV2's _onRender method:
      * ThemeService.applyTheme("#actors", this.element, this.document);
      */
-    static applyTheme(sourceSelector, targetElement, document = null) {
+    static applyTheme(sourceSelector, targetElement, doc = null) {
         if (!targetElement) {
             console.warn("ThemeService | Target element not found.", { targetElement });
             return;
@@ -35,9 +35,9 @@ export class ThemeService {
         const themeClasses = ["theme-light", "theme-dark", "theme-neon", "theme-neon-light", "theme-silicon"];
 
         // 1. Check for document-specific sheet theme override first
-        if (document && typeof foundry !== "undefined" && foundry.applications?.apps?.DocumentSheetConfig) {
+        if (doc && typeof foundry !== "undefined" && foundry.applications?.apps?.DocumentSheetConfig) {
             try {
-                const sheetTheme = foundry.applications.apps.DocumentSheetConfig.getSheetThemeForDocument(document);
+                const sheetTheme = foundry.applications.apps.DocumentSheetConfig.getSheetThemeForDocument(doc);
                 if (sheetTheme) {
                     theme = `theme-${sheetTheme}`;
                 }
@@ -48,7 +48,7 @@ export class ThemeService {
 
         // 2. If no document-specific override, check the source element for the active global theme
         if (!theme && sourceSelector) {
-            const source = document.querySelector(sourceSelector);
+            const source = window.document.querySelector(sourceSelector);
             if (source) {
                 for (const cls of themeClasses) {
                     if (source.classList.contains(cls)) {
