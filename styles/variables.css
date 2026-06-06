@@ -320,7 +320,7 @@
 /* ================================================================== */
 /* 4. Cyber Neon (Dark) Theme                                        */
 /* ================================================================== */
-.themed.theme-neon {
+.theme-neon {
     --bg-basket-summary: #1e293b;
     --Form-background-group: #0f172a;
     --Form-background-group-hover: #1e293b;
@@ -383,28 +383,28 @@
 }
 
 /* Cyber Neon Custom Details */
-body.vtt .window-app.themed.theme-neon .marketplace-item.grid-item,
-body.vtt .window-app.themed.theme-neon .item-card {
+body.vtt .window-app.theme-neon .marketplace-item.grid-item,
+body.vtt .window-app.theme-neon .item-card {
     background-color: #131b26;
     border: 1px solid #1e293b;
     border-radius: 8px;
 }
 
-body.vtt .window-app.themed.theme-neon .marketplace-item.grid-item:hover,
-body.vtt .window-app.themed.theme-neon .item-card:hover {
+body.vtt .window-app.theme-neon .marketplace-item.grid-item:hover,
+body.vtt .window-app.theme-neon .item-card:hover {
     border-color: #00d2ff;
     box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
 }
 
-body.vtt .window-app.themed.theme-neon .sr5-marketplace-yen,
-body.vtt .window-app.themed.theme-neon .value {
+body.vtt .window-app.theme-neon .sr5-marketplace-yen,
+body.vtt .window-app.theme-neon .value {
     color: #00d2ff;
     /* neon blue, not green */
     text-shadow: 0 0 6px rgba(0, 210, 255, 0.4);
 }
 
-body.vtt .window-app.themed.theme-neon .add-to-cart,
-body.vtt .window-app.themed.theme-neon button {
+body.vtt .window-app.theme-neon .add-to-cart,
+body.vtt .window-app.theme-neon button {
     background: linear-gradient(135deg, #00b0ff 0%, #2979ff 100%);
     color: #ffffff;
     border: none;
@@ -414,8 +414,8 @@ body.vtt .window-app.themed.theme-neon button {
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
-body.vtt .window-app.themed.theme-neon .add-to-cart:hover,
-body.vtt .window-app.themed.theme-neon button:hover {
+body.vtt .window-app.theme-neon .add-to-cart:hover,
+body.vtt .window-app.theme-neon button:hover {
     transform: translateY(-1px);
     box-shadow: 0 6px 14px rgba(0, 176, 255, 0.5);
 }
@@ -423,7 +423,7 @@ body.vtt .window-app.themed.theme-neon button:hover {
 /* ================================================================== */
 /* 5. Cyber Neon (Light) Theme                                       */
 /* ================================================================== */
-.themed.theme-neon-light {
+.theme-neon-light {
     --bg-basket-summary: #e2e8f0;
     --Form-background-group: rgba(255, 255, 255, 0.8);
     --Form-background-group-hover: #e2e8f0;
@@ -484,21 +484,21 @@ body.vtt .window-app.themed.theme-neon button:hover {
     --tab-line: #0284c7;
 }
 
-body.vtt .window-app.themed.theme-neon-light .marketplace-item.grid-item,
-body.vtt .window-app.themed.theme-neon-light .item-card {
+body.vtt .window-app.theme-neon-light .marketplace-item.grid-item,
+body.vtt .window-app.theme-neon-light .item-card {
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
 }
 
-body.vtt .window-app.themed.theme-neon-light .sr5-marketplace-yen,
-body.vtt .window-app.themed.theme-neon-light .value {
+body.vtt .window-app.theme-neon-light .sr5-marketplace-yen,
+body.vtt .window-app.theme-neon-light .value {
     color: #0284c7;
     font-weight: bold;
 }
 
-body.vtt .window-app.themed.theme-neon-light .add-to-cart,
-body.vtt .window-app.themed.theme-neon-light button {
+body.vtt .window-app.theme-neon-light .add-to-cart,
+body.vtt .window-app.theme-neon-light button {
     background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
     color: #ffffff;
     border: none;
@@ -509,7 +509,7 @@ body.vtt .window-app.themed.theme-neon-light button {
 /* ================================================================== */
 /* 6. Silicon (Apple Clone Light) Theme                              */
 /* ================================================================== */
-.themed.theme-silicon {
+.theme-silicon {
     --bg-basket-summary: #e5e5e7;
     --Form-background-group: rgba(0, 0, 0, 0.05);
     --Form-background-group-hover: rgba(0, 0, 0, 0.08);
@@ -570,8 +570,8 @@ body.vtt .window-app.themed.theme-neon-light button {
     --tab-line: #d2d2d7;
 }
 
-body.vtt .window-app.themed.theme-silicon .marketplace-item.grid-item,
-body.vtt .window-app.themed.theme-silicon .item-card {
+body.vtt .window-app.theme-silicon .marketplace-item.grid-item,
+body.vtt .window-app.theme-silicon .item-card {
     background-color: #ffffff;
     border: 1px solid #e5e5e7;
     border-radius: 12px;
@@ -579,14 +579,14 @@ body.vtt .window-app.themed.theme-silicon .item-card {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
-body.vtt .window-app.themed.theme-silicon .sr5-marketplace-yen,
-body.vtt .window-app.themed.theme-silicon .value {
+body.vtt .window-app.theme-silicon .sr5-marketplace-yen,
+body.vtt .window-app.theme-silicon .value {
     color: #1d1d1f;
     font-weight: bold;
 }
 
-body.vtt .window-app.themed.theme-silicon .add-to-cart,
-body.vtt .window-app.themed.theme-silicon button {
+body.vtt .window-app.theme-silicon .add-to-cart,
+body.vtt .window-app.theme-silicon button {
     background-color: #0071e3;
     background-image: none;
     color: #ffffff;
@@ -598,8 +598,8 @@ body.vtt .window-app.themed.theme-silicon button {
     box-shadow: none;
 }
 
-body.vtt .window-app.themed.theme-silicon .add-to-cart:hover,
-body.vtt .window-app.themed.theme-silicon button:hover {
+body.vtt .window-app.theme-silicon .add-to-cart:hover,
+body.vtt .window-app.theme-silicon button:hover {
     background-color: #0077ed;
     transform: none;
     box-shadow: none;
@@ -622,8 +622,8 @@ body.vtt .theme-silicon .window-header:has(button[data-action="close"]) .window-
 body.vtt .theme-silicon.window-app .window-header:has(.close) .window-title,
 body.vtt .theme-silicon .window-header:has(.close) .window-title {
     order: 5;
-    margin-left: 48px;
-    /* Leave room for the three dots on the left */
+    margin-left: 8px;
+    /* Reduced margin because the buttons are now native flex items */
 }
 
 /* Align and order the window icon to the right of the traffic lights */
@@ -657,7 +657,7 @@ body.vtt .theme-silicon .window-header a.close {
     font-size: 0;
     padding: 0;
     margin: 0;
-    box-shadow: none;
+    box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.5), inset 0 -2px 2px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.2);
     text-shadow: none;
     box-sizing: border-box;
     display: inline-block;
@@ -665,49 +665,110 @@ body.vtt .theme-silicon .window-header a.close {
     flex: 0 0 12px;
 }
 
-/* Amber dot */
-body.vtt .theme-silicon.window-app .window-header button.header-control[data-action="close"]::before,
-body.vtt .theme-silicon .window-header button.header-control[data-action="close"]::before,
-body.vtt .theme-silicon.window-app .window-header a.close::before,
-body.vtt .theme-silicon .window-header a.close::before {
-    content: "";
-    position: absolute;
-    top: -1px;
-    left: 16px;
-    /* space them out */
+/* Amber dot - Sheet Config */
+body.vtt .theme-silicon.window-app .window-header button.header-control[data-action="configure-sheet"],
+body.vtt .theme-silicon .window-header button.header-control[data-action="configure-sheet"],
+body.vtt .theme-silicon.window-app .window-header a.configure-sheet,
+body.vtt .theme-silicon .window-header a.configure-sheet,
+body.vtt .theme-silicon.window-app .window-header button.header-control[data-action="sheet"],
+body.vtt .theme-silicon .window-header button.header-control[data-action="sheet"] {
+    order: 2;
+    position: relative;
     width: 12px;
     height: 12px;
+    min-width: 12px;
+    max-width: 12px;
+    min-height: 12px;
+    max-height: 12px;
     border-radius: 50%;
-    background-color: #ffbd2e;
-    /* Apple amber */
+    background-color: #ffbd2e; /* Apple amber */
+    background-image: none;
     border: 1px solid #dea123;
-    pointer-events: none;
+    cursor: pointer;
+    overflow: visible;
+    font-size: 0;
+    padding: 0;
+    margin: 0;
+    margin-left: 4px; /* Space from the red dot */
+    box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.5), inset 0 -2px 2px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.2);
+    text-shadow: none;
+    box-sizing: border-box;
+    display: inline-block;
+    align-self: center;
+    flex: 0 0 12px;
+}
+body.vtt .theme-silicon.window-app .window-header button.header-control[data-action="configure-sheet"] i,
+body.vtt .theme-silicon .window-header button.header-control[data-action="configure-sheet"] i,
+body.vtt .theme-silicon.window-app .window-header a.configure-sheet i,
+body.vtt .theme-silicon .window-header a.configure-sheet i,
+body.vtt .theme-silicon.window-app .window-header button.header-control[data-action="sheet"] i,
+body.vtt .theme-silicon .window-header button.header-control[data-action="sheet"] i {
+    display: none; /* Hide internal icon */
 }
 
-/* Green dot */
-body.vtt .theme-silicon.window-app .window-header button.header-control[data-action="close"]::after,
-body.vtt .theme-silicon .window-header button.header-control[data-action="close"]::after,
-body.vtt .theme-silicon.window-app .window-header a.close::after,
-body.vtt .theme-silicon .window-header a.close::after {
-    content: "";
-    position: absolute;
-    top: -1px;
-    left: 32px;
-    /* space them out more */
+/* Green dot - Copy UUID */
+body.vtt .theme-silicon.window-app .window-header button.header-control[data-action="documentId"],
+body.vtt .theme-silicon .window-header button.header-control[data-action="documentId"],
+body.vtt .theme-silicon.window-app .window-header button.header-control[data-action="uuid"],
+body.vtt .theme-silicon .window-header button.header-control[data-action="uuid"],
+body.vtt .theme-silicon.window-app .window-header a.document-id,
+body.vtt .theme-silicon .window-header a.document-id,
+body.vtt .theme-silicon.window-app .window-header a.copy-uuid,
+body.vtt .theme-silicon .window-header a.copy-uuid {
+    order: 3;
+    position: relative;
     width: 12px;
     height: 12px;
+    min-width: 12px;
+    max-width: 12px;
+    min-height: 12px;
+    max-height: 12px;
     border-radius: 50%;
-    background-color: #27c93f;
-    /* Apple green */
+    background-color: #27c93f; /* Apple green */
+    background-image: none;
     border: 1px solid #1aab29;
-    pointer-events: none;
+    cursor: pointer;
+    overflow: visible;
+    font-size: 0;
+    padding: 0;
+    margin: 0;
+    margin-left: 4px; /* Space from the amber dot */
+    box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.5), inset 0 -2px 2px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.2);
+    text-shadow: none;
+    box-sizing: border-box;
+    display: inline-block;
+    align-self: center;
+    flex: 0 0 12px;
+}
+body.vtt .theme-silicon.window-app .window-header button.header-control[data-action="documentId"] i,
+body.vtt .theme-silicon .window-header button.header-control[data-action="documentId"] i,
+body.vtt .theme-silicon.window-app .window-header button.header-control[data-action="uuid"] i,
+body.vtt .theme-silicon .window-header button.header-control[data-action="uuid"] i,
+body.vtt .theme-silicon.window-app .window-header a.document-id i,
+body.vtt .theme-silicon .window-header a.document-id i,
+body.vtt .theme-silicon.window-app .window-header a.copy-uuid i,
+body.vtt .theme-silicon .window-header a.copy-uuid i {
+    display: none; /* Hide internal icon */
 }
 
-/* Push all other controls (sheet config, lock, copy uuid) to the far right */
-body.vtt .theme-silicon.window-app .window-header button.header-control:not([data-action="close"]),
-body.vtt .theme-silicon .window-header button.header-control:not([data-action="close"]),
-body.vtt .theme-silicon.window-app .window-header a.header-control:not(.close),
-body.vtt .theme-silicon .window-header a.header-control:not(.close) {
+/* Push all other controls (e.g. lock) to the far right */
+body.vtt .theme-silicon.window-app .window-header button.header-control:not([data-action="close"]):not([data-action="configure-sheet"]):not([data-action="sheet"]):not([data-action="documentId"]):not([data-action="uuid"]),
+body.vtt .theme-silicon .window-header button.header-control:not([data-action="close"]):not([data-action="configure-sheet"]):not([data-action="sheet"]):not([data-action="documentId"]):not([data-action="uuid"]),
+body.vtt .theme-silicon.window-app .window-header a.header-control:not(.close):not(.configure-sheet):not(.document-id):not(.copy-uuid),
+body.vtt .theme-silicon .window-header a.header-control:not(.close):not(.configure-sheet):not(.document-id):not(.copy-uuid) {
     order: 10;
     display: inline-block;
+}
+
+/* Ensure Light Themes apply properly to the Window Application and Content */
+body.vtt .window-app.theme-silicon,
+body.vtt .window-app.theme-neon-light {
+    background: var(--bg-main-light);
+    color: #1d1d1f;
+}
+
+body.vtt .window-app.theme-silicon .window-content,
+body.vtt .window-app.theme-neon-light .window-content {
+    background: var(--bg-main-light);
+    color: #1d1d1f;
 }

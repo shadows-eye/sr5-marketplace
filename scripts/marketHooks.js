@@ -249,6 +249,16 @@ const initializeSettings = () => {
         default: "opposed", // The default rule will be the core Opposed Test
     });
 
+    game.settings.register("sr5-marketplace", "enablePremiumThemes", {
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.PremiumThemes.name"),
+        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.PremiumThemes.hint"),
+        scope: "world",
+        config: true,
+        restricted: true,
+        type: Boolean,
+        default: false,
+    });
+
     registerShopRegionHooks();
 };
 
@@ -377,6 +387,14 @@ function wrapConfigureUI() {
         // Call core configureUI
         const result = originalConfigureUI.call(this, config);
         
+        // Ensure custom light themes also inherit the core light theme settings for the global UI
+        const uiTheme = config?.colorScheme?.interface;
+        if (uiTheme === "silicon" || uiTheme === "neon-light") {
+            if (document.body) document.body.classList.add("theme-light");
+            const interfaceEl = document.getElementById("interface");
+            if (interfaceEl) interfaceEl.classList.add("theme-light");
+        }
+        
         // Dynamically apply theme changes to active custom applications
         if (typeof foundry !== "undefined" && foundry.applications?.instances) {
             for (const app of foundry.applications.instances.values()) {
@@ -401,10 +419,17 @@ function wrapConfigureUI() {
                         }
                         
                         app.element.classList.add(newTheme);
+                        // Make sure custom light themes inherit base light styles
+                        if (newTheme === "theme-silicon" || newTheme === "theme-neon-light") {
+                            app.element.classList.add("theme-light");
+                        }
                         
                         if (app.options?.classes) {
                             app.options.classes = app.options.classes.filter(c => !ourThemeClasses.includes(c) && c !== "theme-light" && c !== "theme-dark");
                             app.options.classes.push(newTheme);
+                            if (newTheme === "theme-silicon" || newTheme === "theme-neon-light") {
+                                app.options.classes.push("theme-light");
+                            }
                         }
                         
                         app.render({ force: false });
@@ -420,6 +445,12 @@ function wrapConfigureUI() {
 
 function injectThemeChoices() {
     try {
+        if (typeof game !== "undefined" && game.settings && game.settings.settings.has("sr5-marketplace.enablePremiumThemes")) {
+            if (!game.settings.get("sr5-marketplace", "enablePremiumThemes")) {
+                return; // Do not inject themes if setting is disabled
+            }
+        }
+
         wrapConfigureUI();
 
         if (typeof CONFIG !== "undefined" && CONFIG.ui?.menu) {
@@ -530,9 +561,9 @@ function injectSheetThemeChoices() {
 // Initialize the module on startup
 Hooks.once("init", () => {
     console.log("SR5 Marketplace | Initializing module...");
+    initializeSettings();
     injectThemeChoices();
     initializeTemplates();
-    initializeSettings();
     // Register the custom ShopActor class
     defineShopActorClass();
 
