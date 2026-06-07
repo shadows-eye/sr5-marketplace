@@ -1,6 +1,6 @@
 # Basket Service Reference
 
-[← Back to Main Overview](file:///home/shadow/Documents/GitHub/sr5-marketplace/documentation/main.md)
+[← Back to Main Overview](./main.md)
 
 `BasketService` manages player shopping baskets and shopping cart flags. It handles stock limits against Shop Actors, unique item validation (checking if the actor already possesses the unique item), rating recalculations, and availability codes summation.
 

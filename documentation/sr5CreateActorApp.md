@@ -1,6 +1,6 @@
 # Create Actor App Reference
 
-[← Back to Main Overview](file:///home/shadow/Documents/GitHub/sr5-marketplace/documentation/main.md)
+[← Back to Main Overview](./main.md)
 
 `SR5CreateActorApp` is a custom actor creation application that overrides standard Foundry VTT Actor creation screens. When configuring standard actor types (characters, grunts), it behaves like a normal dialog. When selecting `sr5-marketplace.shop`, it transforms into an interactive, full-screen initialization dashboard.
 

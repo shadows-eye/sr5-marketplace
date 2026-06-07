@@ -1,6 +1,6 @@
 # System API Bridge Reference
 
-[← Back to Main Overview](file:///home/shadow/Documents/GitHub/sr5-marketplace/documentation/main.md)
+[← Back to Main Overview](./main.md)
 
 The System API Bridge acts as a centralized interface for retrieving, caching, and localizing configurations and modules from the core **Shadowrun 5e** system. It avoids timing issues during Foundry startup by capturing and processing CONFIG configurations reactively.
 

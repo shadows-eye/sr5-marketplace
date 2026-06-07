@@ -1,6 +1,6 @@
 # App Dialog Builder Reference
 
-[← Back to Main Overview](file:///home/shadow/Documents/GitHub/sr5-marketplace/documentation/main.md)
+[← Back to Main Overview](./main.md)
 
 `AppDialogBuilder` acts as a router and template context builder that constructs parameters for availability tests and contact negotiations. It reads persistent test states stored in user flags, parses attribute/skill values, calculates modifier dice pools, and processes dice rolls to produce template variables.
 

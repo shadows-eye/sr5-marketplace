@@ -1,6 +1,6 @@
 # Item Builder API Reference
 
-[← Back to Main Overview](file:///home/shadow/Documents/GitHub/sr5-marketplace/documentation/main.md)
+[← Back to Main Overview](./main.md)
 
 The Item Builder API provides controls for the custom item creator workspace, allowing developers to programmatically set base items, load modification states, and trigger UI rendering.
 

@@ -1,6 +1,6 @@
 # Item Data Services Reference
 
-[← Back to Main Overview](file:///home/shadow/Documents/GitHub/sr5-marketplace/documentation/main.md)
+[← Back to Main Overview](./main.md)
 
 `ItemDataServices` handles compiling, caching, filtering, and structuring all available Items across the World and active Compendiums. To ensure high performance, it processes indexing asynchronously in the background and caches categorized outputs.
 

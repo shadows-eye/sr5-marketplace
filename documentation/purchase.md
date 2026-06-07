@@ -1,6 +1,6 @@
 # Purchase Service Reference
 
-[← Back to Main Overview](file:///home/shadow/Documents/GitHub/sr5-marketplace/documentation/main.md)
+[← Back to Main Overview](./main.md)
 
 `PurchaseService` provides the backend workflow logic for submits, reviews, rejections, approvals, and resource updates. It handles GM approval workflows, posts confirmation cards to the chat log, and manages resource deduction (Nuyen/Karma) on purchasing characters.
 
