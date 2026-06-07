@@ -1585,3 +1585,17 @@ hr.marketplace-settings-hr {
 .basket-actions.full-basket-actions button.reject-all-btn:hover {
     filter: brightness(1.2);
 }
+
+/* Ensure Tour Tooltip, overlay, and center step stay on top of all application windows */
+#tooltip.tour,
+.tour-center-step.tour {
+    z-index: 30000 !important;
+}
+
+.tour-overlay {
+    z-index: 28000 !important;
+}
+
+.tour-fadeout {
+    z-index: 27000 !important;
+}

@@ -178,6 +178,8 @@ export class AppDialogBuilder {
     async #buildResolvedContext(basket) {
         // --- THIS IS THE ROUTER ON RESOLVED BASED ON RULE in testState.testType (read from the settings [opposed, simple, extended])---
         switch (this.testState.testType) {
+            case "raw":
+                return await this.#_buildRawResolvedContext(basket);
             case "opposed":
                 return this.#_buildOpposedResolvedContext();
             case "simple":
@@ -191,18 +193,28 @@ export class AppDialogBuilder {
     }
 
     #_buildOpposedResolvedContext() {
-        const initialResult = this.testState.result;
-        const resistResult = this.testState.resistResult;
+        const initialResult = this.testState.result || {};
+        const resistResult = this.testState.resistResult || {};
+
+        const rollsData = this.testState.rolls;
+        const initialDiceResults = rollsData?.[0]?.terms[0]?.results || initialResult?.diceResults || [];
+        const initialGlitches = initialResult.values?.glitches?.value || 0;
+        const initialResultForHelper = {
+            diceResults: initialDiceResults,
+            values: { glitches: { value: initialGlitches } }
+        };
+        const initialRenderedDice = DiceHelperService.processDice(initialResultForHelper);
+        const resistRenderedDice = DiceHelperService.processDice(resistResult);
 
         return {
             isAvailable: !resistResult.success,
             initialRoll: {
-                netHits: initialResult.values.netHits.value,
-                renderedDice: DiceHelperService.processDice(initialResult)
+                netHits: initialResult.values?.netHits?.value ?? 0,
+                renderedDice: initialRenderedDice
             },
             resistRoll: {
-                hits: resistResult.values.hits.value,
-                renderedDice: DiceHelperService.processDice(resistResult)
+                hits: resistResult.values?.hits?.value ?? 0,
+                renderedDice: resistRenderedDice
             }
         };
     }
@@ -211,13 +223,27 @@ export class AppDialogBuilder {
         const initialResult = this.testState.result || {};
         const threshold = parseAvailability(this.testState.availabilityStr).rating;
 
+        const rollsData = this.testState.rolls;
+        const initialDiceResults = rollsData?.[0]?.terms[0]?.results || initialResult?.diceResults || [];
+        const initialGlitches = initialResult.values?.glitches?.value || 0;
+        const initialResultForHelper = {
+            diceResults: initialDiceResults,
+            values: { glitches: { value: initialGlitches } }
+        };
+        const initialRenderedDice = DiceHelperService.processDice(initialResultForHelper);
+        const netHits = initialResult.values?.netHits?.value ?? 0;
+
         return {
             isAvailable: initialResult.success ?? false,
             initialRoll: {
-                netHits: initialResult.values?.netHits?.value ?? 0,
-                renderedDice: DiceHelperService.processDice(initialResult),
+                netHits: netHits,
+                renderedDice: initialRenderedDice,
                 threshold: threshold
-            }
+            },
+            netHits: netHits,
+            renderedDice: initialRenderedDice,
+            cumulativeHits: initialResult.values?.hits?.value ?? netHits,
+            threshold: threshold
         };
     }
 
@@ -256,21 +282,87 @@ export class AppDialogBuilder {
             diceResults: lastDiceResults,
             values: { glitches: { value: lastGlitches } }
         };
+        const renderedDice = DiceHelperService.processDice(resultForHelper);
 
         // 3. Return the complete context for the final "resolved" template.
         return {
             isAvailable: isAvailable,
             initialRoll: {
                 netHits: finalNetHits,
-                renderedDice: DiceHelperService.processDice(resultForHelper),
+                renderedDice: renderedDice,
                 threshold: resultData.threshold.value,
                 cumulativeHits: resultData.values.extendedHits.value
             },
+            netHits: finalNetHits,
+            renderedDice: renderedDice,
+            threshold: resultData.threshold.value,
+            cumulativeHits: resultData.values.extendedHits.value,
             totalRolls: this.testState.rollCount,
             deliveryTime: finalDeliveryTime,
             connectionUsed: this.testState.connectionUsed,
             localizedTimeUnit: localizedTimeUnit
+        };
+    }
 
+    /**
+     * @private Builds context for a resolved RAW test.
+     */
+    async #_buildRawResolvedContext(basket) {
+        const initialResult = this.testState.result || {};
+        const resistResult = this.testState.resistResult || {};
+
+        const playerHits = initialResult.values?.hits?.value ?? 0;
+        const resistHits = resistResult.values?.hits?.value ?? 0;
+        const netHits = playerHits - resistHits;
+
+        const isAvailable = playerHits >= resistHits;
+
+        let finalBasket = basket;
+        if (!finalBasket || Object.keys(finalBasket).length === 0) {
+            console.log("AppDialogBuilder | Basket not provided or empty, fetching from flag as a fallback.");
+            finalBasket = await AppTestFlagService.readBasket();
+        }
+        const totalCost = finalBasket?.totalCost || 0;
+        const baseDeliveryTime = DeliveryTimeService.getBaseDeliveryTime(totalCost);
+
+        let finalDeliveryTimeValue = baseDeliveryTime.value;
+        if (isAvailable) {
+            if (netHits > 0) {
+                finalDeliveryTimeValue = Math.ceil(baseDeliveryTime.value / netHits);
+            } else if (netHits === 0) {
+                finalDeliveryTimeValue = baseDeliveryTime.value * 2;
+            }
+        }
+
+        const finalDeliveryTime = {
+            value: finalDeliveryTimeValue,
+            unit: baseDeliveryTime.unit
+        };
+        const localizedTimeUnit = game.i18n.localize(baseDeliveryTime.unit);
+
+        const rollsData = this.testState.rolls;
+        const initialDiceResults = rollsData?.[0]?.terms[0]?.results || initialResult?.diceResults || [];
+        const initialGlitches = initialResult.values?.glitches?.value || 0;
+        const initialResultForHelper = {
+            diceResults: initialDiceResults,
+            values: { glitches: { value: initialGlitches } }
+        };
+        const initialRenderedDice = DiceHelperService.processDice(initialResultForHelper);
+        const resistRenderedDice = DiceHelperService.processDice(resistResult);
+
+        return {
+            isAvailable: isAvailable,
+            initialRoll: {
+                netHits: playerHits,
+                renderedDice: initialRenderedDice
+            },
+            resistRoll: {
+                hits: resistHits,
+                renderedDice: resistRenderedDice
+            },
+            deliveryTime: finalDeliveryTime,
+            localizedTimeUnit: localizedTimeUnit,
+            netHits: netHits
         };
     }
 }

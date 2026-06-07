@@ -298,6 +298,86 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                             contactData.isSelected = c.uuid === basket.selectedContactUuid;
                             return contactData;
                         });
+
+                    // 3. Resolve shop connection and employee contact items if active
+                    if (basket.shopActorUuid) {
+                        const shopActor = await fromUuid(basket.shopActorUuid);
+                        if (shopActor) {
+                            // Shop's own connection contact
+                            if (shopActor.system.shop?.connection) {
+                                const contactItem = await fromUuid(shopActor.system.shop.connection);
+                                if (contactItem) {
+                                    const contactData = contactItem.toObject(false);
+                                    contactData.uuid = contactItem.uuid;
+                                    contactData.isSelected = contactItem.uuid === basket.selectedContactUuid;
+                                    if (!partialContext.contacts) partialContext.contacts = [];
+                                    if (!partialContext.contacts.some(c => c.uuid === contactData.uuid)) {
+                                        partialContext.contacts.push(contactData);
+                                    }
+                                }
+                            }
+
+                            // Shop's own contact items
+                            const shopContacts = shopActor.items.filter(i => i.type === "contact") || [];
+                            for (const contactItem of shopContacts) {
+                                const contactData = contactItem.toObject(false);
+                                contactData.uuid = contactItem.uuid;
+                                contactData.isSelected = contactItem.uuid === basket.selectedContactUuid;
+                                if (!partialContext.contacts) partialContext.contacts = [];
+                                if (!partialContext.contacts.some(c => c.uuid === contactData.uuid)) {
+                                    partialContext.contacts.push(contactData);
+                                }
+                            }
+
+                            // Shop's serving employee contact
+                            const servingEmployeeUuid = shopActor.system.shop?.servingEmployee;
+                            if (servingEmployeeUuid) {
+                                const employeeActor = await fromUuid(servingEmployeeUuid);
+                                if (employeeActor) {
+                                    let employeeContactItem = null;
+                                    
+                                    // Search employee actor items
+                                    employeeContactItem = employeeActor.items.find(i => i.type === "contact" && (i.system?.linkedActor === employeeActor.uuid || i.name === employeeActor.name));
+                                    
+                                    // Search shop actor items
+                                    if (!employeeContactItem) {
+                                        employeeContactItem = shopActor.items.find(i => i.type === "contact" && i.system?.linkedActor === employeeActor.uuid);
+                                    }
+                                    
+                                    // Search player items
+                                    if (!employeeContactItem && itemSource) {
+                                        employeeContactItem = itemSource.items.find(i => i.type === "contact" && i.system?.linkedActor === employeeActor.uuid);
+                                    }
+                                    
+                                    // Search world actors items
+                                    if (!employeeContactItem && game.actors) {
+                                        for (const act of game.actors) {
+                                            const c = act.items.find(i => i.type === "contact" && i.system?.linkedActor === employeeActor.uuid);
+                                            if (c) {
+                                                employeeContactItem = c;
+                                                break;
+                                            }
+                                        }
+                                    }
+
+                                    // Search world items
+                                    if (!employeeContactItem && game.items) {
+                                        employeeContactItem = game.items.find(i => i.type === "contact" && i.system?.linkedActor === employeeActor.uuid);
+                                    }
+
+                                    if (employeeContactItem) {
+                                        const contactData = employeeContactItem.toObject(false);
+                                        contactData.uuid = employeeContactItem.uuid;
+                                        contactData.isSelected = employeeContactItem.uuid === basket.selectedContactUuid;
+                                        if (!partialContext.contacts) partialContext.contacts = [];
+                                        if (!partialContext.contacts.some(c => c.uuid === contactData.uuid)) {
+                                            partialContext.contacts.push(contactData);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // --- FLAG-BASED WORKFLOW ---
@@ -384,6 +464,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                         name: group.actor.name,
                         img: group.actor.img,
                         essence: group.actor.essence,
+                        nuyen: group.actor.nuyen,
+                        karma: group.actor.karma,
                         requests: group.requests,
                         totalCost: group.totalCost,
                         totalKarma: group.totalKarma,
@@ -405,6 +487,13 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                     if (activeGroup) {
                         activeGroup.isActive = true;
                         partialContext.activeGroup = activeGroup;
+                        purchasingActorData = {
+                            uuid: activeGroup.uuid,
+                            name: activeGroup.name,
+                            img: activeGroup.img,
+                            nuyen: activeGroup.nuyen,
+                            karma: activeGroup.karma
+                        };
                     }
                 }
                 
@@ -452,7 +541,9 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         // --- Determine Top-Left Display Image ---
         let displayImg = actorForDisplay?.img;
-        if (!displayImg || displayImg === "icons/svg/mystery-man.svg" || displayImg === "/icons/svg/mystery-man.svg") {
+        if (this.tabGroups.main === "orderReview" && partialContext.activeGroup) {
+            displayImg = partialContext.activeGroup.img;
+        } else if (!displayImg || displayImg === "icons/svg/mystery-man.svg" || displayImg === "/icons/svg/mystery-man.svg") {
             if (this.shopActorUuid) {
                 const shopActor = await fromUuid(this.shopActorUuid);
                 displayImg = shopActor?.img;
@@ -697,6 +788,13 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 if (contactItem?.system?.linkedActor) {
                     newActorForTestUuid = contactItem.system.linkedActor;
                 }
+            } else if (basket.shopActorUuid) {
+                // If a shop is active, revert to the shop's serving employee.
+                const shopActor = await fromUuid(basket.shopActorUuid);
+                const servingEmployeeUuid = shopActor?.system?.shop?.servingEmployee;
+                if (servingEmployeeUuid) {
+                    newActorForTestUuid = servingEmployeeUuid;
+                }
             }
 
             // 4. Prepare the data to be saved to the flag.
@@ -745,6 +843,14 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 console.log(contactItem.system.linkedActor)
                 actorForTestUuid = contactItem.system.linkedActor;
                 console.log(`LOG: Prioritizing linked actor from contact: ${actorForTestUuid}`);
+            }
+        } else if (basket.shopActorUuid) {
+            // 3. If no contact is selected but a shop is active, check the shop's serving employee.
+            const shopActor = await fromUuid(basket.shopActorUuid);
+            const servingEmployeeUuid = shopActor?.system?.shop?.servingEmployee;
+            if (servingEmployeeUuid) {
+                actorForTestUuid = servingEmployeeUuid;
+                console.log(`LOG: Prioritizing serving employee from shop: ${actorForTestUuid}`);
             }
         }
         // --- END OF Actor Check ---
@@ -995,6 +1101,18 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             }
         };
 
+        if (!actor.isOwner && !game.user.isGM) {
+            console.log("Marketplace | Player does not own the test actor. Requesting GM to run availability test via socket.");
+            game.socket.emit("module.sr5-marketplace", {
+                type: "run_availability_test",
+                userId: game.user.id,
+                dialogId: this.activeDialogId,
+                actorUuid: actorForTestUuid,
+                data: data
+            });
+            return;
+        }
+
         const options = { showDialog: false, showMessage: false };
 
         try {
@@ -1009,7 +1127,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 // For an extended test, check if it succeeded on the first roll.
                 // If not, it's 'in-progress'. Otherwise, it's 'resolved'.
                 finalStatus = test.success ? 'resolved' : 'extended-inprogress';
-            } else if (rule === 'opposed') {
+            } else if (rule === 'opposed' || rule === 'raw') {
                 finalStatus = 'result';
             } else {
                 finalStatus = 'resolved';
@@ -1058,6 +1176,19 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             const rollCount = (this.activeTestState.rollCount || 0) + 1;
             const penalty = { label: "Extended Test", value: (rollCount - 1) * -1 };
             const newAppliedModifiers = [...(this.activeTestState.appliedModifiers || []), penalty];
+
+            if (!actor.isOwner && !game.user.isGM) {
+                console.log("Marketplace | Player does not own the test actor. Requesting GM to continue extended test via socket.");
+                game.socket.emit("module.sr5-marketplace", {
+                    type: "continue_extended_test",
+                    userId: game.user.id,
+                    dialogId: this.activeTestState.id,
+                    actorUuid: this.activeTestState.actorUuid,
+                    rollCount: rollCount,
+                    newAppliedModifiers: newAppliedModifiers
+                });
+                return;
+            }
 
             const data = {
                 action: {

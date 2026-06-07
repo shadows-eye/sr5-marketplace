@@ -15,7 +15,7 @@
                     <div class="actor-info">
                         <div class="selectable-actor" actorUuid="{{activeTestState.actor.uuid}}">
                             <img src="{{activeTestState.actor.img}}" title="{{activeTestState.actor.name}}"/>
-                            <span>{{actor.name}}</span>
+                            <span>{{activeTestState.actor.name}}</span>
                         </div>
                     </div>
 
@@ -97,10 +97,10 @@
         <div class="MarketAppDialog-test-result-container">
             <div class="result-title">{{localize "SR5Marketplace.AppDialogItem.result.Test"}}</div>
             
-            <div class="MarketAppDialog-dice-tray">
+            <div class="dice-tray-mini">
                 {{#each activeTestState.renderedDice as |die|}}
-                    <div class="MarketAppDialog-die-result {{die.cssClass}}">
-                        <span class="MarketAppDialog-die-text">{{die.text}}</span>
+                    <div class="die-face {{die.cssClass}}">
+                        <span>{{die.text}}</span>
                     </div>
                 {{/each}}
             </div>
@@ -128,10 +128,10 @@
             </div>
 
             <div class="result-subtitle">{{localize "SR5Marketplace.Marketplace.Tests.LastRollResults"}}</div>
-            <div class="MarketAppDialog-dice-tray">
+            <div class="dice-tray-mini">
                 {{#each activeTestState.renderedDice as |die|}}
-                    <div class="MarketAppDialog-die-result {{die.cssClass}}">
-                        <span class="MarketAppDialog-die-text">{{die.text}}</span>
+                    <div class="die-face {{die.cssClass}}">
+                        <span>{{die.text}}</span>
                     </div>
                 {{/each}}
             </div>
@@ -153,7 +153,6 @@
                         {{/if}}
                     </summary>
 
-                    {{!-- This block ONLY appears for a SUCCESSFUL EXTENDED test --}}
                     {{#if (and activeTestState.isAvailable (eq activeTestState.testType "extended"))}}
                         <div class="acquisition-details">
                             <div class="detail-item">
@@ -166,23 +165,33 @@
                         </div>
                     {{/if}}
 
+                    {{!-- This block ONLY appears for a SUCCESSFUL RAW test --}}
+                    {{#if (and activeTestState.isAvailable (eq activeTestState.testType "raw"))}}
+                        <div class="acquisition-details">
+                            <div class="detail-item">
+                                <i class="fa-solid fa-truck-fast"></i> <strong>{{localize "SR5Marketplace.Marketplace.OrderReview.EstimatedDeliveryForRequest"}}</strong> 
+                                <span>{{activeTestState.deliveryTime.value}} {{activeTestState.deliveryTime.unit}}</span>
+                            </div>
+                        </div>
+                    {{/if}}
+
                     {{!-- Check the test type to render the correct dice display grid --}}
-                    {{#if (eq activeTestState.testType "opposed")}}
+                    {{#if (or (eq activeTestState.testType "opposed") (eq activeTestState.testType "raw"))}}
                         
                         <div class="final-result-grid">
                             <div class="result-column">
                                 <div class="result-title">{{localize "SR5Marketplace.AppDialogItem.YourRoll"}} ({{activeTestState.initialRoll.netHits}} {{localize "SR5Marketplace.AppDialogItem.netHits"}})</div>
-                                <div class="MarketAppDialog-dice-tray">
+                                <div class="dice-tray-mini">
                                     {{#each activeTestState.initialRoll.renderedDice as |die|}}
-                                        <div class="MarketAppDialog-die-result {{die.cssClass}}"><span class="MarketAppDialog-die-text">{{die.text}}</span></div>
+                                        <div class="die-face {{die.cssClass}}"><span>{{die.text}}</span></div>
                                     {{/each}}
                                 </div>
                             </div>
                             <div class="result-column">
                                 <div class="result-title">{{localize "SR5Marketplace.AppDialogItem.Resistance"}} ({{activeTestState.resistRoll.hits}} {{localize "SR5Marketplace.AppDialogItem.Hits"}})</div>
-                                <div class="MarketAppDialog-dice-tray">
+                                <div class="dice-tray-mini">
                                     {{#each activeTestState.resistRoll.renderedDice as |die|}}
-                                        <div class="MarketAppDialog-die-result {{die.cssClass}}"><span class="MarketAppDialog-die-text">{{die.text}}</span></div>
+                                        <div class="die-face {{die.cssClass}}"><span>{{die.text}}</span></div>
                                     {{/each}}
                                 </div>
                             </div>
@@ -192,9 +201,9 @@
                         <div class="final-result-grid">
                             <div class="result-column">
                                 <div class="result-title">{{localize "SR5Marketplace.AppDialogItem.FinalRoll"}} ({{activeTestState.netHits}} {{localize "SR5Marketplace.AppDialogItem.netHits"}})</div>
-                                <div class="MarketAppDialog-dice-tray">
+                                <div class="dice-tray-mini">
                                     {{#each activeTestState.renderedDice as |die|}}
-                                        <div class="MarketAppDialog-die-result {{die.cssClass}}"><span class="MarketAppDialog-die-text">{{die.text}}</span></div>
+                                        <div class="die-face {{die.cssClass}}"><span>{{die.text}}</span></div>
                                     {{/each}}
                                 </div>
                             </div>

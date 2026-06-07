@@ -47,6 +47,9 @@ import { ShopActorSheet } from "../sheets/ShopActorSheet.mjs";
 import { MarketplaceAPI, SR5SystemAPI } from './API/_module.mjs';
 import { ItemBuilderApp } from "./apps/ItemBuilderApp.mjs";
 import { SR5CreateActorApp } from "./apps/SR5CreateActorApp.mjs";
+import { AppDialogBuilder } from "./apps/documents/dialog/AppDialogBuilder.mjs";
+import { AppTestFlagService } from "./services/AppTestFlagService.mjs";
+import { registerMarketplaceTour } from "./tours/marketplaceTour.mjs";
 
 
 
@@ -244,11 +247,12 @@ const initializeSettings = () => {
         type: String, // The setting will store the key of the chosen option (e.g., "opposed")
         choices: {
             // The keys here are what will be saved in the setting
+            "raw": game.i18n.localize("SR5Marketplace.Marketplace.Settings.AvailabilityRule.choices.raw"),
             "opposed": game.i18n.localize("SR5Marketplace.Marketplace.Settings.AvailabilityRule.choices.opposed"),
             "simple": game.i18n.localize("SR5Marketplace.Marketplace.Settings.AvailabilityRule.choices.simple"),
             "extended": game.i18n.localize("SR5Marketplace.Marketplace.Settings.AvailabilityRule.choices.extended")
         },
-        default: "opposed", // The default rule will be the core Opposed Test
+        default: "raw", // The default rule will be the core RAW Test
     });
 
     game.settings.register("sr5-marketplace", "enablePremiumThemes", {
@@ -353,7 +357,7 @@ function safeAddChoice(owner, propName, choiceKey, choiceVal) {
                 owner[propName] = { ...choices };
             }
         }
-        
+
         if (Array.isArray(owner[propName])) {
             if (!owner[propName].includes(choiceKey)) {
                 owner[propName].push(choiceKey);
@@ -370,25 +374,25 @@ let isConfigureUIWrapped = false;
 function wrapConfigureUI() {
     if (isConfigureUIWrapped) return;
     if (typeof game === "undefined" || typeof game.configureUI !== "function") return;
-    
+
     const originalConfigureUI = game.configureUI;
-    game.configureUI = function(config) {
+    game.configureUI = function (config) {
         const ourThemeClasses = ["theme-neon", "theme-neon-light", "theme-silicon"];
-        
+
         // Remove from body
         if (document.body) {
             document.body.classList.remove(...ourThemeClasses);
         }
-        
+
         // Remove from interface element
         const interfaceEl = document.getElementById("interface");
         if (interfaceEl) {
             interfaceEl.classList.remove(...ourThemeClasses);
         }
-        
+
         // Call core configureUI
         const result = originalConfigureUI.call(this, config);
-        
+
         // Ensure custom light themes also inherit the core light theme settings for the global UI
         const uiTheme = config?.colorScheme?.interface;
         if (uiTheme === "silicon" || uiTheme === "neon-light") {
@@ -396,21 +400,21 @@ function wrapConfigureUI() {
             const interfaceEl = document.getElementById("interface");
             if (interfaceEl) interfaceEl.classList.add("theme-light");
         }
-        
+
         // Dynamically apply theme changes to active custom applications
         if (typeof foundry !== "undefined" && foundry.applications?.instances) {
             for (const app of foundry.applications.instances.values()) {
                 const isMarketplace = app.constructor.name === "inGameMarketplace";
                 const isItemBuilder = app.constructor.name === "ItemBuilderApp";
                 const isShopSheet = app.constructor.name === "ShopActorSheet";
-                
+
                 if (isMarketplace || isItemBuilder || isShopSheet) {
                     if (app.element) {
                         app.element.classList.remove(...ourThemeClasses, "theme-light", "theme-dark");
-                        
+
                         let newTheme = "theme-light";
                         const appColorTheme = config?.colorScheme?.applications;
-                        
+
                         if (isShopSheet && app.document) {
                             const sheetTheme = foundry.applications.apps.DocumentSheetConfig.getSheetThemeForDocument(app.document);
                             newTheme = sheetTheme ? `theme-${sheetTheme}` : `theme-${appColorTheme || "light"}`;
@@ -419,13 +423,13 @@ function wrapConfigureUI() {
                         } else {
                             newTheme = `theme-${appColorTheme || "light"}`;
                         }
-                        
+
                         app.element.classList.add(newTheme);
                         // Make sure custom light themes inherit base light styles
                         if (newTheme === "theme-silicon" || newTheme === "theme-neon-light") {
                             app.element.classList.add("theme-light");
                         }
-                        
+
                         if (app.options?.classes) {
                             app.options.classes = app.options.classes.filter(c => !ourThemeClasses.includes(c) && c !== "theme-light" && c !== "theme-dark");
                             app.options.classes.push(newTheme);
@@ -433,13 +437,13 @@ function wrapConfigureUI() {
                                 app.options.classes.push("theme-light");
                             }
                         }
-                        
+
                         app.render({ force: false });
                     }
                 }
             }
         }
-        
+
         return result;
     };
     isConfigureUIWrapped = true;
@@ -469,7 +473,7 @@ function injectThemeChoices() {
                 const originalDefaultOptions = CONFIG.ui.menu.DEFAULT_OPTIONS || {};
                 const originalClasses = originalDefaultOptions.classes || [];
                 const newClasses = [...new Set([...originalClasses, "theme-neon", "theme-neon-light", "theme-silicon"])];
-                
+
                 Object.defineProperty(CONFIG.ui.menu, "DEFAULT_OPTIONS", {
                     get() {
                         return {
@@ -510,7 +514,7 @@ function injectThemeChoices() {
                 safeAddChoice(uiConfigSetting, "choices", "neon", "SR5Marketplace.Themes.Neon");
                 safeAddChoice(uiConfigSetting, "choices", "neon-light", "SR5Marketplace.Themes.NeonLight");
                 safeAddChoice(uiConfigSetting, "choices", "silicon", "SR5Marketplace.Themes.Silicon");
-                
+
                 const schemaField = uiConfigSetting.type;
                 if (schemaField && schemaField.fields) {
                     const appField = schemaField.fields.colorScheme?.fields?.applications;
@@ -537,17 +541,17 @@ function injectThemeChoices() {
 
 function injectSheetThemeChoices() {
     if (typeof CONFIG === "undefined" || !CONFIG.Actor?.sheetClasses) return;
-    
+
     // Inject themes into Actor, Item, and other document sheet configurations
     const documentTypes = ["Actor", "Item", "JournalEntry", "RollTable", "Cards"];
     for (const docName of documentTypes) {
         const docConfig = CONFIG[docName];
         if (!docConfig || !docConfig.sheetClasses) continue;
-        
+
         for (const subType in docConfig.sheetClasses) {
             const sheets = docConfig.sheetClasses[subType];
             if (!sheets) continue;
-            
+
             for (const sheetId in sheets) {
                 const sheetDesc = sheets[sheetId];
                 if (sheetDesc && sheetDesc.themes) {
@@ -570,7 +574,7 @@ Hooks.once("init", () => {
     defineShopActorClass();
 
     // Override the default Actor creation dialog
-    CONFIG.Actor.documentClass.createDialog = async function(data = {}, options = {}) {
+    CONFIG.Actor.documentClass.createDialog = async function (data = {}, options = {}) {
         return new Promise((resolve) => {
             new SR5CreateActorApp({
                 resolve,
@@ -592,23 +596,37 @@ Hooks.once("init", () => {
     // 1. Instantiate the main API container and assign it to the root
     game.sr5marketplace = new MarketplaceAPI();
 
-    // 2. Nest all other API services under the '.api' property
+    // 2. Nest all other API services under the '.api' property for compatibility with new code
     game.sr5marketplace.api = {
         system: new SR5SystemAPI(),
         itemData: new ItemDataServices(), // Pulled perfectly from your services barrel!
         PurchaseService: PurchaseService,
         BasketService: BasketService,
+        AppDialogBuilder: AppDialogBuilder,
+        inGameMarketplace: inGameMarketplace,
+        SR5CreateActorApp: SR5CreateActorApp,
 
         // 3. Instantiate your sub-APIs using the static properties
         marketplace: new MarketplaceAPI.Marketplace(),
         itemBuilder: new MarketplaceAPI.ItemBuilder()
     };
 
+    // 4. Expose them directly on the root API container for backward compatibility
+    //game.sr5marketplace.system = game.sr5marketplace.api.system; // Should not be done as this is under the sr5 namespace!
+    game.sr5marketplace.itemData = game.sr5marketplace.api.itemData;
+    game.sr5marketplace.PurchaseService = game.sr5marketplace.api.PurchaseService;
+    game.sr5marketplace.BasketService = game.sr5marketplace.api.BasketService;
+    //game.sr5marketplace.AppDialogBuilder = game.sr5marketplace.api.AppDialogBuilder;
+    game.sr5marketplace.inGameMarketplace = game.sr5marketplace.api.inGameMarketplace;
+    game.sr5marketplace.SR5CreateActorApp = game.sr5marketplace.api.SR5CreateActorApp;
+    //game.sr5marketplace.itemBuilder = game.sr5marketplace.api.itemBuilder;
+
     // Register custom tests during setup after system has initialized its globals but before ready
     Hooks.once("setup", async () => {
         injectThemeChoices();
         const { registerTests } = await import('../utils/tests.mjs');
         registerTests();
+        registerMarketplaceTour();
     });
 });
 
@@ -629,6 +647,23 @@ Hooks.on("ready", async () => {
         //migrateShopSkills();
     }
 
+    // Register socket listener
+    game.socket.on("module.sr5-marketplace", async (data) => {
+        if (game.user.isGM) {
+            if (data.type === "run_availability_test") {
+                await handleGMRunAvailabilityTest(data);
+            } else if (data.type === "continue_extended_test") {
+                await handleGMContinueExtendedTest(data);
+            }
+        }
+        if (data.type === "request_resolved" || data.type === "new_request") {
+            for (const app of foundry.applications.instances.values()) {
+                if (app.constructor.name === "inGameMarketplace") {
+                    app.render();
+                }
+            }
+        }
+    });
 });
 
 /**
@@ -939,3 +974,100 @@ Hooks.on("deleteItem", async (item, options, userId) => {
         }
     }
 });
+
+async function handleGMRunAvailabilityTest({ userId, dialogId, actorUuid, data }) {
+    try {
+        const actor = await fromUuid(actorUuid);
+        if (!actor) return;
+
+        const options = { showDialog: false, showMessage: false };
+        const test = new game.shadowrun5e.tests.AvailabilityTest(data, { actor }, options);
+        await test.execute();
+
+        const rule = game.settings.get("sr5-marketplace", "availabilityTestRule");
+        let finalStatus;
+
+        if (rule === 'extended') {
+            finalStatus = test.success ? 'resolved' : 'extended-inprogress';
+        } else if (rule === 'opposed' || rule === 'raw') {
+            finalStatus = 'result';
+        } else {
+            finalStatus = 'resolved';
+        }
+
+        const resultForFlag = test.data;
+
+        await AppTestFlagService.updateTest(dialogId, {
+            result: resultForFlag,
+            rolls: test.rolls,
+            status: finalStatus,
+            type: "AvailabilityTest",
+            rollCount: 1
+        }, userId);
+
+        game.socket.emit("module.sr5-marketplace", { type: "request_resolved", userId });
+
+        // Refresh GM's apps
+        for (const app of foundry.applications.instances.values()) {
+            if (app.constructor.name === "inGameMarketplace") {
+                app.render();
+            }
+        }
+    } catch (e) {
+        console.error("SR5 Marketplace | GM failed to execute availability test:", e);
+    }
+}
+
+async function handleGMContinueExtendedTest({ userId, dialogId, actorUuid, rollCount, newAppliedModifiers }) {
+    try {
+        const actor = await fromUuid(actorUuid);
+        if (!actor) return;
+
+        const testStates = await AppTestFlagService.readState(userId);
+        const activeTestState = testStates[dialogId];
+        if (!activeTestState) return;
+
+        const data = {
+            action: {
+                skill: activeTestState.skill,
+                attribute: activeTestState.attribute,
+                modifiers: newAppliedModifiers,
+                connectionUuid: activeTestState.connectionUuid,
+                availabilityStr: activeTestState.availabilityStr,
+                dialogId: dialogId
+            }
+        };
+
+        const options = { showDialog: false, showMessage: false };
+        const test = new game.shadowrun5e.tests.AvailabilityTest(data, { actor }, options);
+        await test.execute();
+
+        const previousHits = activeTestState.result.values.extendedHits.value;
+        test.data.values.extendedHits.value += previousHits;
+        test.data.values.extendedHits.mod.push({ name: "Previous Hits", value: previousHits });
+
+        let finalStatus = 'extended-inprogress';
+        if (test.data.values.extendedHits.value >= test.data.threshold.value || test.pool.value <= 0) {
+            finalStatus = 'resolved';
+        }
+
+        await AppTestFlagService.updateTest(dialogId, {
+            result: test.data,
+            rolls: test.rolls,
+            status: finalStatus,
+            rollCount: rollCount,
+            appliedModifiers: newAppliedModifiers
+        }, userId);
+
+        game.socket.emit("module.sr5-marketplace", { type: "request_resolved", userId });
+
+        // Refresh GM's apps
+        for (const app of foundry.applications.instances.values()) {
+            if (app.constructor.name === "inGameMarketplace") {
+                app.render();
+            }
+        }
+    } catch (e) {
+        console.error("SR5 Marketplace | GM failed to continue extended test:", e);
+    }
+}

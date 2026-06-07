@@ -22,15 +22,15 @@ export class DiceHelperService {
 
         // 3. Map over the dice to create the rendering data.
         return diceResults.map(die => {
-            let cssClass = 'MarketAppDialog-die-result';
+            let cssClass = '';
             
             if (isGlitch && die.result === 1) {
                 // Highlight the 1s that caused the glitch.
-                cssClass = ' glitch';
+                cssClass = 'glitch';
             } else if (die.success) {
-                cssClass = ' success';
+                cssClass = 'hit success';
             } else {
-                cssClass = ' failure';
+                cssClass = 'failure';
             }
             
             return {

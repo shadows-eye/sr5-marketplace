@@ -102,8 +102,9 @@
         "Settings": {
             "AvailabilityRule": {
                 "name": "Availability Rules",
-                "hint": "Selection options for the Rules you want to use, standard is Opposed",
+                "hint": "Selection options for the Rules you want to use, standard is RAW",
                 "choices": {
+                    "raw": "RAW (Rules as Written)",
                     "opposed": "Opposed",
                     "simple": "Simple",
                     "extended": "Extended"
@@ -532,5 +533,53 @@
         "day": "Day",
         "week": "Week",
         "month": "Month"
+    },
+    "Tours": {
+        "GettingStarted": {
+            "Title": "Getting Started with SR5 Marketplace",
+            "Description": "Learn how to create a shop, link connections, place it on the canvas, and run player purchases and GM approvals.",
+            "Steps": {
+                "Intro": {
+                    "Title": "Welcome to SR5 Marketplace!",
+                    "Content": "This step-by-step tour will guide you through setting up a shop actor, populating it with wares, linking it to a player contact connection and employee, placing it on the scene canvas, and executing buying & GM approval workflows."
+                },
+                "CreateActor": {
+                    "Title": "Create a Shop Actor",
+                    "Content": "Start by opening the <strong>Actors Directory</strong> tab in the sidebar. Click the <strong>Create Actor</strong> button. In the creation dialog, make sure to choose the <strong>Shop</strong> actor type and name your shop."
+                },
+                "PopulateShop": {
+                    "Title": "Populating Shop Inventory",
+                    "Content": "Open your newly created Shop Actor. You can populate the shop's inventory by dragging and dropping items from compendiums or the World Items directory directly onto the sheet's inventory or management tab. Alternatively, you can seed items during actor creation using the populate inventory options."
+                },
+                "ConnectPlayer": {
+                    "Title": "Connect Shop to a Player's Contact",
+                    "Content": "On the Shop Actor Sheet, switch to the <strong>Management</strong> tab. Toggle the edit mode checkbox in the header to unlock the drop fields. Drag a contact/connection Item from a Player's character sheet onto the <strong>Connection</strong> drop zone. This links the shop to that player's contact."
+                },
+                "LinkEmployee": {
+                    "Title": "Link Connection Actor as Employee",
+                    "Content": "To allow players to interact with the shop using the contact's skills and network, drag the Actor representing the contact (the Connection Actor) onto the <strong>Employees</strong> drop zone. You can also select it as the active <strong>Serving Employee</strong> by clicking the bell icon next to its name."
+                },
+                "Placement": {
+                    "Title": "Canvas Placement & Shop Size",
+                    "Content": "Drag the Shop Actor from your directory onto the active scene canvas to place its token. On the Shop's Management tab, configure the <strong>Shop Radius</strong> in grid units. Controlled player tokens entering this radius will automatically detect the shop!"
+                },
+                "BuyWithShop": {
+                    "Title": "Buying Using a Shop Actor",
+                    "Content": "Players can open the shop by double-clicking the shop token on the canvas (when their select tool is active) or by clicking the Shop icon in the <strong>MarketShouter</strong> bar. They can add items to their shopping basket and submit the request to the GM."
+                },
+                "BuyOwn": {
+                    "Title": "Buying Using Only Own Actor",
+                    "Content": "If no shop token is placed or nearby, players can still shop. By opening the <strong>MarketShouter</strong> bar and searching, they can browse global items and submit requests directly, representing online Matrix shopping or looking for general gear."
+                },
+                "GMConfirm": {
+                    "Title": "Confirming Requests (GM)",
+                    "Content": "As a GM, when a player submits a request, you will receive a chat card. Click <strong>Review & Confirm</strong> on the card, or click the Megaphone icon in the <strong>MarketShouter</strong> to review the shopping cart, execute availability tests, and approve or reject the items."
+                },
+                "Conclusion": {
+                    "Title": "You're All Set!",
+                    "Content": "That concludes the Getting Started tour! You are now ready to run dynamic, lore-friendly marketplace transactions in your Shadowrun 5e games."
+                }
+            }
+        }
     }
 }
