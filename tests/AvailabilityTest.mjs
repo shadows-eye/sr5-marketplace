@@ -221,9 +221,10 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
                 }
                 break;
 
+            case "raw":
             case "opposed":
             default:
-                console.log("Marketplace | Configuring for Opposed Test Rule (Core)");
+                console.log(`Marketplace | Configuring for ${rule} Test Rule`);
                 this.data.threshold.base = 0;
                 this.data.extended = false;
 

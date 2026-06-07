@@ -102,8 +102,9 @@
         "Settings": {
             "AvailabilityRule": {
                 "name": "Verfügbarkeits Regeln",
-                "hint": "Auswahl welche regeln ihr benutzen wollt, standard ist resistence",
+                "hint": "Auswahl welche regeln ihr benutzen wollt, standard ist RAW",
                 "choices": {
+                    "raw": "RAW (Offizielle Regeln)",
                     "opposed": "Vergleichend",
                     "simple": "Einfach",
                     "extended": "Erweitert"

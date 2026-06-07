@@ -281,8 +281,9 @@
             "Settings": {
                 "AvailabilityRule": {
                     "name": "Availability Rules",
-                    "hint": "Selection options for the Rules you want to use, standard is Opposed",
+                    "hint": "Selection options for the Rules you want to use, standard is RAW",
                     "choices": {
+                        "raw": "RAW (Rules as Written)",
                         "opposed": "Opposed",
                         "simple": "Simple",
                         "extended": "Extended"

@@ -77,7 +77,7 @@
                         {{/if}}
                     </summary>
                     <div class="test-result-content">
-                        {{#if (eq this.basket.testState.testType "opposed")}}
+                        {{#if (or (eq this.basket.testState.testType "opposed") (eq this.basket.testState.testType "raw"))}}
                             <!-- Opposed Test Render -->
                             <div class="opposed-results-grid">
                                 <div class="opposed-column">
@@ -152,7 +152,7 @@
 
         <!-- Overall Consolidated Statistics for Selected Actor (Moved to bottom, reads like shop order!) -->
         <div class="review-overall-summary">
-            <h3>{{localize "SR5Marketplace.Marketplace.OrderReview.ConsolidatedTotalsFor"}} <strong>{{actor.name}}</strong></h3>
+            <h3>{{localize "SR5Marketplace.Marketplace.OrderReview.ConsolidatedTotalsFor"}} <strong>{{name}}</strong></h3>
             <div class="overall-metrics-grid">
                 <div class="overall-metric-card">
                     <span class="metric-label">{{localize "SR5Marketplace.Marketplace.Basket.TotalCost"}}</span>

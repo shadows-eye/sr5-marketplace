@@ -1,4 +1,5 @@
-import {DialogList} from '../scripts/services/dialogList.mjs';
+import { parseAvailability } from "../scripts/lib/availabilityParser.mjs";
+
 /**
  * Represents the opposed part of an Availability Test.
  * Its dice pool is simply the numeric rating of the item's availability.
@@ -17,46 +18,62 @@ export class AvailabilityResist extends game.shadowrun5e.tests.OpposedTest {
     constructor(data, documents, options) {
         super(data, documents, options);
     }
-    static prepareData(data, options) {
-    // Call parent first to apply system-wide modifiers
-        super.prepareData(data, options);
-            // The original AvailabilityTest's data is in `againstData`.
-        // This gives us access to all its properties, including our custom ones.
-        const availabilityStr = againstData.availabilityStr || "";
-        const parsed = AvailabilityTest.parseAvailability(availabilityStr);
-        console.log(parsed);
 
-        // This is the threshold for our resist roll. The OpposedTest parent class
-        // uses this to determine success or failure.
-        const threshold = againstData.values.netHits.value;
+    /** @override */
+    _prepareData(data, options) {
+        data = super._prepareData(data, options);
+
+        // Ensure category and action categories are set correctly
+        data.action = data.action || {};
+        data.action.categories = ["social"];
+
+        // The original AvailabilityTest's data is in `againstData` or `data.against`.
+        const againstData = data.against || options?.against || {};
+        const availabilityStr = againstData.availabilityStr || options?.availability || "";
+        const parsed = parseAvailability(availabilityStr);
+
+        // This is the threshold for our resist roll.
+        const threshold = againstData.values?.netHits?.value ?? 0;
 
         // This is the dice pool for our resist roll.
-        const pool = parsed.rating;
+        const pool = Math.max(parsed.rating || 0, 1);
 
-        // Now we build the complete data object for the new OpposedTest.
-        const resistData = {
-            // This links our resist test to the original test.
-            against: againstData,
-            //categories: ["social"],
-            previousMessageId: previousMessageId,
+        data.against = againstData;
+        data.pool = game.shadowrun5e.data.createData('value_field', { base: pool });
+        data.limit = game.shadowrun5e.data.createData('value_field', { base: 0 });
+        data.threshold = game.shadowrun5e.data.createData('value_field', { base: threshold });
 
-            // Set the pool, limit (none), and threshold.
-            pool: game.shadowrun5e.data.createData('value_field', { base: pool }),
-            limit: game.shadowrun5e.data.createData('value_field', { base: 0 }),
-            threshold: game.shadowrun5e.data.createData('value_field', { base: threshold }),
+        data.title = `${game.i18n.localize("SR5.Labels.Availability")} ${game.i18n.localize("SR5.Resist")}`;
 
-            // These are needed to prevent errors in the parent class.
-            action: game.shadowrun5e.data.createData('action_roll'),
-            values: {},
-            
-            // Set a custom title for the dialog and chat card.
-            title: `${game.i18n.localize("SR5.Labels.Availability")} ${game.i18n.localize("SR5.Resist")}`
-        };
+        return data;
+    }
 
-        // We return the finished data object. The system will then use it to create
-        // a new instance of this AvailabilityResist class and execute it.
-        return resistData;
-        }
+    /** @override */
+    prepareBaseValues() {
+        super.prepareBaseValues();
+
+        const againstData = this.data.against || {};
+        const availabilityStr = againstData.availabilityStr || "";
+        const parsed = parseAvailability(availabilityStr);
+        const pool = Math.max(parsed.rating || 0, 1);
+        const threshold = againstData.values?.netHits?.value ?? 0;
+
+        this.data.pool = this.data.pool || {};
+        this.data.pool.base = pool;
+        this.data.pool.value = pool;
+        this.data.pool.changes = [];
+        this.data.pool.mod = [
+            { name: game.i18n.localize("SR5.Labels.Availability"), value: pool }
+        ];
+
+        this.data.threshold = this.data.threshold || {};
+        this.data.threshold.base = threshold;
+        this.data.threshold.value = threshold;
+
+        this.data.limit = this.data.limit || {};
+        this.data.limit.base = 0;
+        this.data.limit.value = 0;
+    }
 
     /**
      * Set a custom title for this test.
