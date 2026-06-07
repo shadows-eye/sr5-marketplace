@@ -2,3 +2,5 @@
 /dist
 /helpers
 /.agent
+foundry-config.yaml
+/foundry
