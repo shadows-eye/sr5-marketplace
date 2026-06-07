@@ -9,9 +9,8 @@ This dashboard allows GMs to:
 * Assign employees and link Matrix Hosts.
 * Batch seed shop inventories from Compendiums and World templates.
 
-The API is accessible via:
-* `game.sr5marketplace.api.SR5CreateActorApp` (The `SR5CreateActorApp` class)
-* `game.sr5marketplace.SR5CreateActorApp` (Backward compatibility namespace)
+The class is accessible via:
+* `game.sr5marketplace.SR5CreateActorApp` (The `SR5CreateActorApp` class)
 
 ---
 
@@ -19,7 +18,7 @@ The API is accessible via:
 
 ### Constructor Options
 ```javascript
-const app = new game.sr5marketplace.api.SR5CreateActorApp({
+const app = new game.sr5marketplace.SR5CreateActorApp({
     resolve: (actor) => { console.log("Created Actor:", actor); },
     folder: "FolderId123" // ID of parent folder in sidebar (optional)
 });
@@ -48,7 +47,7 @@ When the GM clicks **Create**, the application executes a series of setup routin
 You can launch the custom creation app programmatically from a macro, directing it to yield the shop Actor upon completion:
 
 ```javascript
-const appClass = game.sr5marketplace.api.SR5CreateActorApp;
+const appClass = game.sr5marketplace.SR5CreateActorApp;
 
 const newActor = await new Promise((resolve) => {
     new appClass({

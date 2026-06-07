@@ -4,9 +4,8 @@
 
 `ItemDataServices` handles compiling, caching, filtering, and structuring all available Items across the World and active Compendiums. To ensure high performance, it processes indexing asynchronously in the background and caches categorized outputs.
 
-The API is accessible via:
-* `game.sr5marketplace.api.itemData` (Instance of `ItemDataServices`)
-* `game.sr5marketplace.itemData` (Backward compatibility namespace)
+The service is accessible via:
+* `game.sr5marketplace.itemData` (Instance of `ItemDataServices`)
 
 ---
 
@@ -63,7 +62,7 @@ Use this macro to query a shop and print out its items with their customized sel
 ```javascript
 const shopActor = game.actors.find(a => a.type === "sr5-marketplace.shop");
 if (shopActor) {
-    const itemDataService = game.sr5marketplace.api.itemData;
+    const itemDataService = game.sr5marketplace.itemData;
     const shopData = await itemDataService.getShopItems(shopActor.uuid);
     
     console.log(`Inventory for ${shopActor.name}:`);
@@ -82,7 +81,7 @@ if (shopActor) {
 If you programmatically create items in a compendium, run this script to invalidate the cache and trigger a rebuild:
 
 ```javascript
-const itemDataService = game.sr5marketplace.api.itemData;
+const itemDataService = game.sr5marketplace.itemData;
 
 // Invalidate the cache
 itemDataService.invalidateCache();

@@ -4,13 +4,12 @@
 
 `BasketService` manages player shopping baskets and shopping cart flags. It handles stock limits against Shop Actors, unique item validation (checking if the actor already possesses the unique item), rating recalculations, and availability codes summation.
 
-The API is accessible via:
-* `game.sr5marketplace.api.BasketService` (The `BasketService` class)
-* `game.sr5marketplace.BasketService` (Backward compatibility namespace)
+The service is accessible via:
+* `game.sr5marketplace.BasketService` (The `BasketService` class)
 
 You can also instantiate a new service in custom scripts:
 ```javascript
-const basketService = new game.sr5marketplace.api.BasketService();
+const basketService = new game.sr5marketplace.BasketService();
 ```
 
 ---
@@ -85,7 +84,7 @@ Resets the basket flag for a user to its empty, default state.
 Use this macro to retrieve and display the current user's basket stats:
 
 ```javascript
-const service = new game.sr5marketplace.api.BasketService();
+const service = new game.sr5marketplace.BasketService();
 const basket = await service.getBasket();
 
 if (basket.shoppingCartItems.length === 0) {
@@ -103,7 +102,7 @@ const character = game.user.character;
 const contact = character?.items.find(i => i.type === "contact");
 
 if (contact) {
-    const service = new game.sr5marketplace.api.BasketService();
+    const service = new game.sr5marketplace.BasketService();
     await service.setSelectedContact(contact.uuid);
     ui.notifications.info(`Selected contact ${contact.name} as purchasing agent.`);
 } else {

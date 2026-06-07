@@ -4,9 +4,8 @@
 
 `PurchaseService` provides the backend workflow logic for submits, reviews, rejections, approvals, and resource updates. It handles GM approval workflows, posts confirmation cards to the chat log, and manages resource deduction (Nuyen/Karma) on purchasing characters.
 
-The API is accessible via:
-* `game.sr5marketplace.api.PurchaseService` (The `PurchaseService` class)
-* `game.sr5marketplace.PurchaseService` (Backward compatibility namespace)
+The service is accessible via:
+* `game.sr5marketplace.PurchaseService` (The `PurchaseService` class)
 
 ---
 
@@ -94,7 +93,7 @@ if (!character) {
         ]
     };
 
-    const success = await game.sr5marketplace.api.PurchaseService.directPurchase(character, basketData, {
+    const success = await game.sr5marketplace.PurchaseService.directPurchase(character, basketData, {
         userName: game.user.name
     });
 
@@ -111,7 +110,7 @@ Use this GM macro to approve all pending purchase requests in the game session i
 if (!game.user.isGM) {
     ui.notifications.error("This is a GM-only macro.");
 } else {
-    const PurchaseService = game.sr5marketplace.api.PurchaseService;
+    const PurchaseService = game.sr5marketplace.PurchaseService;
     const pending = await PurchaseService.getAllPendingRequests();
     
     if (pending.length === 0) {
