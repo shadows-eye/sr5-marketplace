@@ -5,6 +5,7 @@
 /* --- 2. YOUR EXISTING SCOPED CSS (ALL IMPORTS HERE) --- */
 
 @import "./variables.css";
+@import "./foundry.css";
 @import "./multi-select.css";
 @import "./itemDetails.css";
 @import "./Dialog.css";
@@ -15,6 +16,7 @@
 @import "./itemBuilder.css";
 @import "./marketshouter.css";
 @import "./compendium-browser.css";
+@import "./create-actor.css";
 
 /* -------------------------------------------------------- */
 /* TAILWIND CONFIG & CUSTOM CSS START HERE                  */
@@ -22,7 +24,6 @@
 
 /* Tell Tailwind where your templates are */
 @source "../templates";
-@source "../scripts";
 @source "../scripts";
 
 /* ======================================
@@ -48,7 +49,7 @@
 
 .marketplace-title {
     color: var(--header-gradient-text);
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
 }
 
 /* ======================================
@@ -94,20 +95,12 @@
 }
 
 .sr5-marketplace .marketplace-user-avatar-container img {
-    filter: drop-shadow(0.5px 0px 0px var(--color-yellow-base)) 
-            drop-shadow(-0.5px 0px 0px var(--color-yellow-base)) 
-            drop-shadow(0px 0.5px 0px var(--color-yellow-base)) 
-            drop-shadow(0px -0.5px 0px var(--color-yellow-base)) 
-            drop-shadow(0 0 2px var(--color-yellow-light));
+    filter: drop-shadow(0.5px 0px 0px var(--color-yellow-base)) drop-shadow(-0.5px 0px 0px var(--color-yellow-base)) drop-shadow(0px 0.5px 0px var(--color-yellow-base)) drop-shadow(0px -0.5px 0px var(--color-yellow-base)) drop-shadow(0 0 2px var(--color-yellow-light));
     transition: filter 0.2s ease-in-out;
 }
 
 .sr5-marketplace .marketplace-user-avatar-container img:hover {
-    filter: drop-shadow(0.8px 0px 0px var(--color-yellow-light)) 
-            drop-shadow(-0.8px 0px 0px var(--color-yellow-light)) 
-            drop-shadow(0px 0.8px 0px var(--color-yellow-light)) 
-            drop-shadow(0px -0.8px 0px var(--color-yellow-light)) 
-            drop-shadow(0 0 4px var(--color-white));
+    filter: drop-shadow(0.8px 0px 0px var(--color-yellow-light)) drop-shadow(-0.8px 0px 0px var(--color-yellow-light)) drop-shadow(0px 0.8px 0px var(--color-yellow-light)) drop-shadow(0px -0.8px 0px var(--color-yellow-light)) drop-shadow(0 0 4px var(--color-white));
 }
 
 /* Force text colors within the header bar based on Light/Dark theme */
@@ -117,23 +110,26 @@
 .sr5-marketplace .marketplace-header span,
 .sr5-marketplace .marketplace-header i {
     color: var(--header-gradient-text);
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
 }
 
 /* 2. Target Generic Tabs (Smaller, Tighter & Glassy) */
 .sr5-marketplace nav.sheet-tabs.marketplace-tabs {
     display: flex;
-    justify-content: flex-start; /* Aligns tabs to the left */
+    justify-content: flex-start;
+    /* Aligns tabs to the left */
     align-items: flex-end;
-    gap: 0.5em; /* 0.5em separation between tabs */
-    border-top: none; 
+    gap: 0.5em;
+    /* 0.5em separation between tabs */
+    border-top: none;
     border-bottom: 2px solid var(--tab-line);
-    padding: 0 10px 2px 10px; /* The 2px bottom padding creates the exact 2px gap above the line */
-    margin: 0 0 12px 0; 
+    padding: 0 10px 2px 10px;
+    /* The 2px bottom padding creates the exact 2px gap above the line */
+    margin: 0 0 12px 0;
 }
 
 /* Inactive Tab Styles (Flat/Subtle) */
-.sr5-marketplace nav.sheet-tabs.marketplace-tabs > a {
+.sr5-marketplace nav.sheet-tabs.marketplace-tabs>a {
     background: var(--tab-inactive-bg-grad);
     border-bottom: none;
     border-radius: 6px 6px 0 0;
@@ -144,35 +140,35 @@
     margin: 0;
     cursor: pointer;
     text-decoration: none;
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.1);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
     transition: filter 0.2s ease, transform 0.1s ease;
 }
 
-.sr5-marketplace nav.sheet-tabs.marketplace-tabs > a span {
+.sr5-marketplace nav.sheet-tabs.marketplace-tabs>a span {
     color: var(--tab-inactive-color);
 }
 
-.sr5-marketplace nav.sheet-tabs.marketplace-tabs > a:hover {
+.sr5-marketplace nav.sheet-tabs.marketplace-tabs>a:hover {
     filter: brightness(1.2);
 }
 
 /* Active Tab Styles (Glassy Apple Mac Bubble) */
-.sr5-marketplace nav.sheet-tabs.marketplace-tabs > a.active {
+.sr5-marketplace nav.sheet-tabs.marketplace-tabs>a.active {
     background: var(--header-gradient-bar);
     border-bottom: none;
     color: var(--header-gradient-text);
-    
+
     /* The Glassy Highlight Magic: Top white reflection + Dark inner bottom */
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -10px 10px rgba(0,0,0,0.2), 0 -2px 5px rgba(0,0,0,0.3);
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-    
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -10px 10px rgba(0, 0, 0, 0.2), 0 -2px 5px rgba(0, 0, 0, 0.3);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+
     /* Zeroed out bottom margin to keep it perfectly aligned with inactive tabs and the 2px padding */
     margin-bottom: 0;
     padding-bottom: 4px;
     z-index: 2;
 }
 
-.sr5-marketplace nav.sheet-tabs.marketplace-tabs > a.active span {
+.sr5-marketplace nav.sheet-tabs.marketplace-tabs>a.active span {
     color: var(--header-gradient-text);
 }
 
@@ -807,11 +803,24 @@ select#item-type-selector option {
     text-shadow: var(--shadow-text-button);
 }
 
-.review-request-button {
-    background-color: var(--color-grey-dark);
-    color: var(--color-red-dark);
-    border-color: var(--color-red-dark);
+.sr5-marketplace-availability {
+    font-weight: bold;
+    color: var(--color-yellow-base);
+    background: rgba(0, 0, 0, 0.25);
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color-dark);
 }
+
+.review-request-button {
+    display: none !important;
+}
+
+body.gm .review-request-button {
+    display: block !important;
+}
+
+
 
 .fa-circle-minus.market-minus {
     color: var(--color-red-bright);
@@ -845,6 +854,7 @@ select#item-type-selector option {
    8. Responsive Container Queries
    -------------------------------------- */
 @container (max-width: 950px) {
+
     .marketplace-items,
     .marketplace-items-grid {
         grid-template-columns: repeat(3, 1fr);
@@ -852,6 +862,7 @@ select#item-type-selector option {
 }
 
 @container (max-width: 700px) {
+
     .marketplace-items,
     .marketplace-items-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -859,6 +870,7 @@ select#item-type-selector option {
 }
 
 @container (max-width: 450px) {
+
     .marketplace-items,
     .marketplace-items-grid {
         grid-template-columns: repeat(1, 1fr);
@@ -1127,7 +1139,7 @@ hr.marketplace-settings-hr {
     color: var(--tab-inactive-color);
     cursor: pointer;
     transition: filter 0.2s ease, transform 0.1s ease;
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.1);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
 .review-actor-tab:hover {
@@ -1141,10 +1153,10 @@ hr.marketplace-settings-hr {
     border: 1px solid var(--border-color-highlight);
     border-bottom: none;
     color: var(--header-gradient-text);
-    
+
     /* The Glassy Highlight Magic: Top white reflection + Dark inner bottom */
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -10px 10px rgba(0,0,0,0.2), 0 -2px 5px rgba(0,0,0,0.3);
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -10px 10px rgba(0, 0, 0, 0.2), 0 -2px 5px rgba(0, 0, 0, 0.3);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
     font-weight: bold;
     margin-bottom: 0;
 }
@@ -1155,7 +1167,7 @@ hr.marketplace-settings-hr {
     object-fit: cover;
     object-position: top;
     border-radius: 3px;
-    border: 1px solid rgba(0,0,0,0.3);
+    border: 1px solid rgba(0, 0, 0, 0.3);
 }
 
 .review-actor-tab-info {
@@ -1500,7 +1512,7 @@ hr.marketplace-settings-hr {
     border-radius: 6px;
     padding: 12px 15px;
     margin-bottom: 15px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
 
 .actor-request-header {
@@ -1550,8 +1562,8 @@ hr.marketplace-settings-hr {
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s ease;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.25), 0 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25), 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .basket-actions.full-basket-actions button.approve-all-btn {

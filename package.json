@@ -1,6 +1,7 @@
 {
   "name": "sr5-marketplace",
   "version": "1.0.0",
+  "type": "module",
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",
     "autoprefixer": "^10.4.27",

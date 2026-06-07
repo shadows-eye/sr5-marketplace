@@ -444,8 +444,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     static _getThemeFromSetting() {
         const uiConfig = game.settings.get("core", "uiConfig");
-        const themeValue = uiConfig?.colorScheme.applications;
-        return themeValue === "dark" ? "theme-dark" : "theme-light";
+        const themeValue = uiConfig?.colorScheme.applications || "light";
+        return `theme-${themeValue}`;
     }
 
     // --- Event Listeners (Bound in _onRender) ---

@@ -5,18 +5,25 @@
     /* ================================================================== */
 
     /* --- Reds --- */
-    --color-red-darkest: #2b0000;              /* Usage: .window-header (bg), .read-only.body-text, .drop-target (border) */
-    --color-red-deep: #5d142b;                 /* Usage: .window-header (border) */
-    --color-red-dark: #770808;                 /* Usage: .sr5-marketplace-attribute (text) */
-    --color-red-base: #a10e0e;                 /* Usage: (Not used in provided actor.css, but defined for semantic --text-color-header) */
+    --color-red-darkest: #2b0000;
+    /* Usage: .window-header (bg), .read-only.body-text, .drop-target (border) */
+    --color-red-deep: #5d142b;
+    /* Usage: .window-header (border) */
+    --color-red-dark: #770808;
+    /* Usage: .sr5-marketplace-attribute (text) */
+    --color-red-base: #a10e0e;
+    /* Usage: (Not used in provided actor.css, but defined for semantic --text-color-header) */
     --color-red-base-transparent: #a10e0e96;
     --color-red-bright: #c50000;
     --color-red-very-dark: rgb(90, 5, 5);
 
     /* --- Yellows & Golds --- */
-    --color-yellow-base: #e7c93e;              /* Usage: .subHeading, .attribute-group h4, .skill-header, .inventory-header, .drop-target.drag-over, hint, .sr5-marketplace-shop (shadow) */
-    --color-yellow-light: #fbde6e;             /* Usage: .sheet-tabs .item.active (text-shadow), .marketplace-collapsible-header:hover, hint (shadow) */
-    --color-yellow-dark: rgb(209, 189, 11);    /* Usage: .sheet-top-content (border), .prosemirror-container.active .editor-content (border) */
+    --color-yellow-base: #e7c93e;
+    /* Usage: .subHeading, .attribute-group h4, .skill-header, .inventory-header, .drop-target.drag-over, hint, .sr5-marketplace-shop (shadow) */
+    --color-yellow-light: #fbde6e;
+    /* Usage: .sheet-tabs .item.active (text-shadow), .marketplace-collapsible-header:hover, hint (shadow) */
+    --color-yellow-dark: rgb(209, 189, 11);
+    /* Usage: .sheet-top-content (border), .prosemirror-container.active .editor-content (border) */
     --color-yellow-bright: #f4cf0e;
     --color-gold-base: #b9a913;
 
@@ -25,21 +32,32 @@
     --color-white: #fff;
     --color-grey-text: #232323;
     --color-grey-darkest: #2b2b2b;
-    --color-grey-dark: #333;                   /* Usage: .sheet-tabs .item (bg) */
-    --color-grey-medium: #444;                 /* Usage: .inventory-item (border), .employee-list li (border), .collapsible-content (border) */
-    --color-grey-medium-light: #666;           /* Usage: .sr5-marketplace-attributes (border), .attribute-group h4 (border), .sheet-tabs .item (border), .skill-header (border) */
-    --color-grey-light: #aaa;                  /* Usage: .employee-list .drop-hint */
+    --color-grey-dark: #333;
+    /* Usage: .sheet-tabs .item (bg) */
+    --color-grey-medium: #444;
+    /* Usage: .inventory-item (border), .employee-list li (border), .collapsible-content (border) */
+    --color-grey-medium-light: #666;
+    /* Usage: .sr5-marketplace-attributes (border), .attribute-group h4 (border), .sheet-tabs .item (border), .skill-header (border) */
+    --color-grey-light: #aaa;
+    /* Usage: .employee-list .drop-hint */
     --color-grey-divider: #ddd;
     --color-grey-hr: #bfb4b4;
     --color-grey-very-light: #ccc;
-    --color-grey-lightest: #F5F5F5;            /* Usage: .window-header .window-title, .window-content, .sheet-tabs .item, .inventory-item input (text) */
+    --color-grey-lightest: #F5F5F5;
+    /* Usage: .window-header .window-title, .window-content, .sheet-tabs .item, .inventory-item input (text) */
     --color-grey-tab-active: #555;
-    --color-black-transparent-15: rgba(0,0,0,0.15); /* Usage: .employee-list .toggle-content (bg) */
-    --color-black-transparent-20: rgba(0,0,0,0.2);  /* Usage: .attribute-group, .shop-column-1, .shop-column-2 */
-    --color-black-transparent-30: rgba(0,0,0,0.3);  /* Usage: .inventory-item input (bg) */
-    --color-black-transparent-80: rgba(0, 0, 0, 0.8); /* Usage: .sheet-top-content (bg) */
-    --color-white-transparent-05: rgba(255, 255, 255, 0.05); /* Usage: .skills-list .toggle-label:hover, .employee-list .toggle-label:hover */
-    --color-white-transparent-10: rgba(255, 255, 255, 0.1);  /* Usage: .inventory-item .item-img img (bg) */
+    --color-black-transparent-15: rgba(0, 0, 0, 0.15);
+    /* Usage: .employee-list .toggle-content (bg) */
+    --color-black-transparent-20: rgba(0, 0, 0, 0.2);
+    /* Usage: .attribute-group, .shop-column-1, .shop-column-2 */
+    --color-black-transparent-30: rgba(0, 0, 0, 0.3);
+    /* Usage: .inventory-item input (bg) */
+    --color-black-transparent-80: rgba(0, 0, 0, 0.8);
+    /* Usage: .sheet-top-content (bg) */
+    --color-white-transparent-05: rgba(255, 255, 255, 0.05);
+    /* Usage: .skills-list .toggle-label:hover, .employee-list .toggle-label:hover */
+    --color-white-transparent-10: rgba(255, 255, 255, 0.1);
+    /* Usage: .inventory-item .item-img img (bg) */
     --color-dark-grey: #333333de;
     /* --- Greens --- */
     --color-green-base: green;
@@ -59,16 +77,16 @@
 
     /* --- Backgrounds --- */
     --bg-main: ;
-    /*-- Light Background */
+    /*-- Light Background for all light Themes */
     --bg-main-light: url(/modules/sr5-marketplace/assets/light-page.webp);
-    /*-- Dark Background */
+    /*-- Dark Background for all dark Themes */
     --bg-main-dark: url(/modules/sr5-marketplace/assets/dark-pageV1.webp);
     --bg-dark-section-hover: #3d3d3d;
     --bg-item-card: #d3af0cd6;
     --bg-item-card-hover: var(--color-red-dark);
     --bg-basket-content: #aaaaaa83;
     --bg-basket-summary: #a3a3a3;
-    
+
     /* --- SVGs & Images --- */
     --headerClose: url("data:image/svg+xml,%3csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 16.4 17.7' style='enable-background:new 0 0 16.4 17.7;' xml:space='preserve'%3e%3cstyle type='text/css'%3e .st0{fill:%23D3AF0C;} .st1{fill:%23B00000;} %3c/style%3e%3cg%3e%3cg%3e%3cg%3e%3cpath class='st0' d='M8.2,17.3c-4.3,0-7.8-3.5-7.8-7.8c0-3.2,1.9-6,4.8-7.2c0,0,0,0,0,0c0,0,0,0,0.1,0c0,0,0.1,0.1,0.1,0.1v2.8 c0,0,0,0.1-0.1,0.1c-1.4,1-2.2,2.5-2.2,4.2c0,2.8,2.3,5.1,5.1,5.1s5.1-2.3,5.1-5.1c0-1.7-0.8-3.2-2.2-4.2c0,0-0.1-0.1-0.1-0.1 V2.3c0,0,0-0.1,0.1-0.1c0,0,0,0,0.1,0c0,0,0,0,0,0C14.2,3.5,16,6.3,16,9.5C16,13.8,12.5,17.3,8.2,17.3z'/%3e%3cpath class='st1' d='M11.2,2.3c2.8,1.2,4.7,3.9,4.7,7.1c0,4.3-3.5,7.7-7.7,7.7c-4.3,0-7.7-3.5-7.7-7.7c0-3.2,2-5.9,4.7-7.1v2.8 C3.9,6.1,3,7.7,3,9.5c0,2.9,2.4,5.2,5.2,5.2c2.9,0,5.2-2.3,5.2-5.2c0-1.8-0.9-3.4-2.3-4.3V2.3 M5.2,2.1C5.2,2.1,5.2,2.1,5.2,2.1 c-3.1,1.3-5,4.2-5,7.4c0,4.4,3.6,8,8,8s8-3.6,8-8c0-3.2-1.9-6.1-4.9-7.3c0,0-0.1,0-0.1,0c0,0-0.1,0-0.1,0c-0.1,0-0.1,0.1-0.1,0.2 v2.8c0,0.1,0,0.2,0.1,0.2c1.3,0.9,2.1,2.5,2.1,4.1c0,2.8-2.2,5-5,5c-2.8,0-5-2.2-5-5c0-1.6,0.8-3.2,2.1-4.1 c0.1,0,0.1-0.1,0.1-0.2V2.3c0-0.1,0-0.2-0.1-0.2C5.3,2.1,5.3,2.1,5.2,2.1L5.2,2.1z'/%3e%3c/g%3e%3cg%3e%3cpath class='st0' d='M8.2,10.8c-0.8,0-1.4-0.6-1.4-1.4V1.7c0-0.8,0.6-1.4,1.4-1.4C9,0.4,9.6,1,9.6,1.7v7.7 C9.6,10.2,9,10.8,8.2,10.8z'/%3e%3cpath class='st1' d='M8.2,0.5c0.7,0,1.2,0.6,1.2,1.2v7.7c0,0.7-0.6,1.2-1.2,1.2C7.5,10.7,7,10.1,7,9.5V1.7 C7,1.1,7.5,0.5,8.2,0.5 M8.2,0.3c-0.8,0-1.5,0.7-1.5,1.5v7.7c0,0.8,0.7,1.5,1.5,1.5c0.8,0,1.5-0.7,1.5-1.5V1.7 C9.7,0.9,9,0.3,8.2,0.3L8.2,0.3z'/%3e%3c/g%3e%3c/g%3e%3c/g%3e%3c/svg%3e");
     --headerCloseHover: url("data:image/svg+xml,%3csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 16.4 17.7' style='enable-background:new 0 0 16.4 17.7;' xml:space='preserve'%3e%3cstyle type='text/css'%3e .st0{fill:%23E80505;} .st1{fill:%23D3AF0C;} %3c/style%3e%3cg%3e%3cg%3e%3cg%3e%3cpath class='st0' d='M8.2,17.3c-4.3,0-7.8-3.5-7.8-7.8c0-3.2,1.9-6,4.8-7.2c0,0,0,0,0,0c0,0,0,0,0.1,0c0,0,0.1,0.1,0.1,0.1v2.8 c0,0,0,0.1-0.1,0.1c-1.4,1-2.2,2.5-2.2,4.2c0,2.8,2.3,5.1,5.1,5.1s5.1-2.3,5.1-5.1c0-1.7-0.8-3.2-2.2-4.2c0,0-0.1-0.1-0.1-0.1 V2.3c0,0,0-0.1,0.1-0.1c0,0,0,0,0.1,0c0,0,0,0,0,0C14.2,3.5,16,6.3,16,9.5C16,13.8,12.5,17.3,8.2,17.3z'/%3e%3cpath class='st1' d='M11.2,2.3c2.8,1.2,4.7,3.9,4.7,7.1c0,4.3-3.5,7.7-7.7,7.7c-4.3,0-7.7-3.5-7.7-7.7c0-3.2,2-5.9,4.7-7.1v2.8 C3.9,6.1,3,7.7,3,9.5c0,2.9,2.4,5.2,5.2,5.2c2.9,0,5.2-2.3,5.2-5.2c0-1.8-0.9-3.4-2.3-4.3V2.3 M5.2,2.1C5.2,2.1,5.2,2.1,5.2,2.1 c-3.1,1.3-5,4.2-5,7.4c0,4.4,3.6,8,8,8s8-3.6,8-8c0-3.2-1.9-6.1-4.9-7.3c0,0-0.1,0-0.1,0c0,0-0.1,0-0.1,0c-0.1,0-0.1,0.1-0.1,0.2 v2.8c0,0.1,0,0.2,0.1,0.2c1.3,0.9,2.1,2.5,2.1,4.1c0,2.8-2.2,5-5,5c-2.8,0-5-2.2-5-5c0-1.6,0.8-3.2,2.1-4.1 c0.1,0,0.1-0.1,0.1-0.2V2.3c0-0.1,0-0.2-0.1-0.2C5.3,2.1,5.3,2.1,5.2,2.1L5.2,2.1z'/%3e%3c/g%3e%3cg%3e%3cpath class='st0' d='M8.2,10.8c-0.8,0-1.4-0.6-1.4-1.4V1.7c0-0.8,0.6-1.4,1.4-1.4C9,0.4,9.6,1,9.6,1.7v7.7 C9.6,10.2,9,10.8,8.2,10.8z'/%3e%3cpath class='st1' d='M8.2,0.5c0.7,0,1.2,0.6,1.2,1.2v7.7c0,0.7-0.6,1.2-1.2,1.2C7.5,10.7,7,10.1,7,9.5V1.7 C7,1.1,7.5,0.5,8.2,0.5 M8.2,0.3c-0.8,0-1.5,0.7-1.5,1.5v7.7c0,0.8,0.7,1.5,1.5,1.5c0.8,0,1.5-0.7,1.5-1.5V1.7 C9.7,0.9,9,0.3,8.2,0.3L8.2,0.3z'/%3e%3c/g%3e%3c/g%3e%3c/g%3e%3c/svg%3e");
@@ -78,6 +96,7 @@
     --shadow-text: 1px 1px 3px var(--color-gold-base);
     --shadow-text-button: -1px 2px 2px #800422;
 }
+
 /* ================================================================== /
 / 2. Semantic (UI Area) Variables                                    /
 / Variables named for their purpose. They are assigned values in     /
@@ -85,89 +104,89 @@
 / ================================================================== */
 
 /* --- App & Window --- */
-.sr5-marketplace-shop{
---app-window-shadow: 0 0 10px var(--color-yellow-base);
---app-window-header-bg: ;
---app-window-header-border: ;
---app-window-header-title-color: ;
---app-window-content-bg: ;
---app-window-content-color: ;
---app-sticky-top-bg: ;
---app-sticky-top-border: ;
+.sr5-marketplace-shop {
+    --app-window-shadow: 0 0 10px var(--color-yellow-base);
+    --app-window-header-bg: ;
+    --app-window-header-border: ;
+    --app-window-header-title-color: ;
+    --app-window-content-bg: ;
+    --app-window-content-color: ;
+    --app-sticky-top-bg: ;
+    --app-sticky-top-border: ;
 
-/* --- Actor --- */
---actor-background-hover: ;
-/* --- Text & Links --- */
---text-color-primary: ;
---text-color-header: ;
---text-color-subheader: ;
---text-color-link: ;
---text-color-link-hover: ;
---text-color-read-only: ;
+    /* --- Actor --- */
+    --actor-background-hover: ;
+    /* --- Text & Links --- */
+    --text-color-primary: ;
+    --text-color-header: ;
+    --text-color-subheader: ;
+    --text-color-link: ;
+    --text-color-link-hover: ;
+    --text-color-read-only: ;
 
-/* --- Borders --- */
---border-color-medium: ;
---border-color-dark: ;
---border-color-highlight: ;
+    /* --- Borders --- */
+    --border-color-medium: ;
+    --border-color-dark: ;
+    --border-color-highlight: ;
 
-/* --- Tabs --- */
---tab-inactive-bg: ;
---tab-inactive-border: ;
---tab-inactive-color: ;
---tab-active-bg: ;
---tab-active-text-shadow: ;
+    /* --- Tabs --- */
+    --tab-inactive-bg: ;
+    --tab-inactive-border: ;
+    --tab-inactive-color: ;
+    --tab-active-bg: ;
+    --tab-active-text-shadow: ;
 
-/* --- Attributes --- */
---attribute-group-bg: ;
---attribute-group-title-color: ;
---attribute-group-border: ;
---attribute-text-color: ;
+    /* --- Attributes --- */
+    --attribute-group-bg: ;
+    --attribute-group-title-color: ;
+    --attribute-group-border: ;
+    --attribute-text-color: ;
 
-/* --- Skills & Lists --- */
---skill-header-color: ;
---skill-header-border: ;
---place-collapsible-header-hover-bg: ;
---place-collapsible-label-hover-bg: ;
---place-collapsible-content-bg: ;
+    /* --- Skills & Lists --- */
+    --skill-header-color: ;
+    --skill-header-border: ;
+    --place-collapsible-header-hover-bg: ;
+    --place-collapsible-label-hover-bg: ;
+    --place-collapsible-content-bg: ;
 
-/* --- Inputs & Forms --- */
---input-bg-transparent: ;
---input-color: ;
---input-border-dark: ;
---input-name-bg: ;
---drop-target-border: ;
---drop-target-border-hover: ;
---drop-target-bg-hover: ;
+    /* --- Inputs & Forms --- */
+    --input-bg-transparent: ;
+    --input-color: ;
+    --input-border-dark: ;
+    --input-name-bg: ;
+    --drop-target-border: ;
+    --drop-target-border-hover: ;
+    --drop-target-bg-hover: ;
 
-/* --- Form Special --- */
---Form-background-group: ;
---Form-background-group-hover: ;
+    /* --- Form Special --- */
+    --Form-background-group: ;
+    --Form-background-group-hover: ;
 
-/* --- Inventory --- */
---inventory-header-color: ;
---inventory-item-border: ;
---inventory-item-image-bg: ;
---searbarColor: ;
+    /* --- Inventory --- */
+    --inventory-header-color: ;
+    --inventory-item-border: ;
+    --inventory-item-image-bg: ;
+    --searbarColor: ;
 
-/* --- Hint Tooltip --- */
---hint-bg: #2b2b2b85;
---hint-color: var(--color-yellow-base);
---hint-shadow: 0 0 7px var(--color-yellow-light);
+    /* --- Hint Tooltip --- */
+    --hint-bg: #2b2b2b85;
+    --hint-color: var(--color-yellow-base);
+    --hint-shadow: 0 0 7px var(--color-yellow-light);
 
-/* Unchanged variables from original file */
---marketplace-collapsible-header: colar: rgb(0 0 0 / 23%);
---bg-item-card: #d3af0cd6;
---bg-item-card-hover: var(--color-primary-red-dark);
---bg-filter-bar: #00000017;
---bg-basket-content: #aaaaaa83;
---bg-basket-summary: ;
---border-highlight-dark-yellow: rgb(209, 146, 11);
---border-inset-top: rgba(67, 32, 1, 0.93);
---border-inset-bottom: rgb(33 16 1);
---shadow-text: 1px 1px 3px var(--color-gold-base);
---shadow-text-button: -1px 2px 2px #800422;
---shadow-box-glow: 0 0 10px rgba(245, 245, 245, 0.897), 0 0 5px rgba(255, 255, 255, 0.897);
---shadow-inset-dark: inset 0 0 8px rgba(0, 0, 0, 0.5);
+    /* Unchanged variables from original file */
+    --marketplace-collapsible-header: colar: rgb(0 0 0 / 23%);
+    --bg-item-card: #d3af0cd6;
+    --bg-item-card-hover: var(--color-primary-red-dark);
+    --bg-filter-bar: #00000017;
+    --bg-basket-content: #aaaaaa83;
+    --bg-basket-summary: ;
+    --border-highlight-dark-yellow: rgb(209, 146, 11);
+    --border-inset-top: rgba(67, 32, 1, 0.93);
+    --border-inset-bottom: rgb(33 16 1);
+    --shadow-text: 1px 1px 3px var(--color-gold-base);
+    --shadow-text-button: -1px 2px 2px #800422;
+    --shadow-box-glow: 0 0 10px rgba(245, 245, 245, 0.897), 0 0 5px rgba(255, 255, 255, 0.897);
+    --shadow-inset-dark: inset 0 0 8px rgba(0, 0, 0, 0.5);
 }
 
 /* ================================================================== */
@@ -176,124 +195,643 @@
 /* ================================================================== */
 
 .themed.theme-light {
---bg-basket-summary: var(--color-grey-medium-light);
---Form-background-group: var(--color-dark-grey);
---Form-background-group-hover: var(--color-dark-grey);
---bg-main: var(--bg-main-light);
---app-window-header-bg: var(--color-red-darkest);
---app-window-header-border: var(--color-red-deep);
---app-window-header-title-color: var(--color-grey-lightest);
---app-window-content-bg: var(--bg-main-light);
---app-window-content-color: var(--color-grey-lightest);
---app-sticky-top-bg: var(--color-black-transparent-80);
---app-sticky-top-border: var(--color-yellow-dark);
+    --bg-basket-summary: var(--color-grey-medium-light);
+    --Form-background-group: var(--color-dark-grey);
+    --Form-background-group-hover: var(--color-dark-grey);
+    --bg-main: var(--bg-main-light);
+    --app-window-header-bg: var(--color-red-darkest);
+    --app-window-header-border: var(--color-red-deep);
+    --app-window-header-title-color: var(--color-grey-lightest);
+    --app-window-content-bg: var(--bg-main-light);
+    --app-window-content-color: var(--color-grey-lightest);
+    --app-sticky-top-bg: var(--color-black-transparent-80);
+    --app-sticky-top-border: var(--color-yellow-dark);
 
---text-color-primary: var(--color-black);
---text-color-header: var(--color-red-base);
---text-color-subheader: var(--color-yellow-dark);
---text-color-link: var(--color-yellow-base);
---text-color-link-hover: var(--color-yellow-light);
---text-color-read-only: var(--color-red-darkest);
+    --text-color-primary: var(--color-black);
+    --text-color-header: var(--color-red-base);
+    --text-color-subheader: var(--color-yellow-dark);
+    --text-color-link: var(--color-yellow-base);
+    --text-color-link-hover: var(--color-yellow-light);
+    --text-color-read-only: var(--color-red-darkest);
 
---border-color-medium: var(--color-grey-medium-light);
---border-color-dark: var(--color-grey-medium);
---border-color-highlight: var(--color-yellow-dark);
+    --border-color-medium: var(--color-grey-medium-light);
+    --border-color-dark: var(--color-grey-medium);
+    --border-color-highlight: var(--color-yellow-dark);
 
---tab-inactive-bg: var(--attribute-group-bg);
---tab-inactive-bg-grad: linear-gradient(to bottom, var(--color-grey-very-light) 0%, var(--color-grey-divider) 100%);
---tab-inactive-border: var(--border-color-medium);
---tab-inactive-color: var(--color-black);
---tab-active-bg: #555;
---tab-active-text-shadow: 0 0 5px var(--color-yellow-light);
+    --tab-inactive-bg: var(--attribute-group-bg);
+    --tab-inactive-bg-grad: linear-gradient(to bottom, var(--color-grey-very-light) 0%, var(--color-grey-divider) 100%);
+    --tab-inactive-border: var(--border-color-medium);
+    --tab-inactive-color: var(--color-black);
+    --tab-active-bg: #555;
+    --tab-active-text-shadow: 0 0 5px var(--color-yellow-light);
 
---attribute-group-bg: var(--color-black-transparent-20);
---attribute-group-title-color: var(--color-yellow-base);
---attribute-group-border: var(--border-color-medium);
---attribute-text-color: var(--color-red-dark);
+    --attribute-group-bg: var(--color-black-transparent-20);
+    --attribute-group-title-color: var(--color-yellow-base);
+    --attribute-group-border: var(--border-color-medium);
+    --attribute-text-color: var(--color-red-dark);
 
---skill-header-color: var(--color-yellow-base);
---skill-header-border: var(--border-color-medium);
---place-collapsible-header-hover-bg: rgb(0 0 0 / 23%);
---place-collapsible-label-hover-bg: var(--tab-active-bg);
---place-collapsible-content-bg: var(--color-black-transparent-15);
+    --skill-header-color: var(--color-yellow-base);
+    --skill-header-border: var(--border-color-medium);
+    --place-collapsible-header-hover-bg: rgb(0 0 0 / 23%);
+    --place-collapsible-label-hover-bg: var(--tab-active-bg);
+    --place-collapsible-content-bg: var(--color-black-transparent-15);
 
---input-bg-transparent: rgba(0,0,0,0.3);
---input-color: var(--text-color-primary);
---input-border-dark: var(--border-color-dark);
---input-name-bg: #fbc61b42;
---drop-target-border: var(--app-window-header-bg);
---drop-target-border-hover: var(--color-yellow-base);
---drop-target-bg-hover: rgba(231, 201, 62, 0.2);
+    --input-bg-transparent: rgba(0, 0, 0, 0.3);
+    --input-color: var(--text-color-primary);
+    --input-border-dark: var(--border-color-dark);
+    --input-name-bg: #fbc61b42;
+    --drop-target-border: var(--app-window-header-bg);
+    --drop-target-border-hover: var(--color-yellow-base);
+    --drop-target-bg-hover: rgba(231, 201, 62, 0.2);
 
---inventory-header-color: var(--color-yellow-base);
---inventory-item-border: var(--border-color-dark);
---inventory-item-image-bg: var(--color-white-transparent-10);
---searbarColor: var(--color-red-darkest);
---actor-background-hover: var(--tab-active-bg);
+    --inventory-header-color: var(--color-yellow-base);
+    --inventory-item-border: var(--border-color-dark);
+    --inventory-item-image-bg: var(--color-white-transparent-10);
+    --searbarColor: var(--color-red-darkest);
+    --actor-background-hover: var(--tab-active-bg);
 
-/* Theme Header Semantic Variables */
---header-gradient-bar: linear-gradient(to right, var(--color-yellow-light) 0%, transparent 100%);
---header-gradient-text: var(--color-red-darkest);
---tab-line: var(--color-red-deep);
+    /* Theme Header Semantic Variables */
+    --header-gradient-bar: linear-gradient(to right, var(--color-yellow-light) 0%, transparent 100%);
+    --header-gradient-text: var(--color-red-darkest);
+    --tab-line: var(--color-red-deep);
 }
 
 .themed.theme-dark {
---bg-basket-summary: var(--color-grey-medium-light);
---Form-background-group: var(--color-dark-grey);
---Form-background-group-hover: var(--color-dark-grey);
---bg-main: var(--bg-main-dark);
---app-window-header-bg: var(--color-red-darkest);
---app-window-header-border: var(--color-red-deep);
---app-window-header-title-color: var(--color-grey-lightest);
---app-window-content-bg: var(--bg-main-dark);
---app-window-content-color: var(--color-grey-lightest);
---app-sticky-top-bg: var(--color-black-transparent-80);
---app-sticky-top-border: var(--color-yellow-dark);
+    --bg-basket-summary: var(--color-grey-medium-light);
+    --Form-background-group: var(--color-dark-grey);
+    --Form-background-group-hover: var(--color-dark-grey);
+    --bg-main: var(--bg-main-dark);
+    --app-window-header-bg: var(--color-red-darkest);
+    --app-window-header-border: var(--color-red-deep);
+    --app-window-header-title-color: var(--color-grey-lightest);
+    --app-window-content-bg: var(--bg-main-dark);
+    --app-window-content-color: var(--color-grey-lightest);
+    --app-sticky-top-bg: var(--color-black-transparent-80);
+    --app-sticky-top-border: var(--color-yellow-dark);
 
---text-color-primary: var(--color-grey-lightest);
---text-color-header: var(--color-red-base);
---text-color-subheader: var(--color-yellow-base);
---text-color-link: var(--color-yellow-base);
---text-color-link-hover: var(--color-yellow-light);
---text-color-read-only: var(--color-red-darkest);
+    --text-color-primary: var(--color-grey-lightest);
+    --text-color-header: var(--color-red-base);
+    --text-color-subheader: var(--color-yellow-base);
+    --text-color-link: var(--color-yellow-base);
+    --text-color-link-hover: var(--color-yellow-light);
+    --text-color-read-only: var(--color-red-darkest);
 
---border-color-medium: var(--color-grey-medium-light);
---border-color-dark: var(--color-grey-medium);
---border-color-highlight: var(--color-yellow-dark);
+    --border-color-medium: var(--color-grey-medium-light);
+    --border-color-dark: var(--color-grey-medium);
+    --border-color-highlight: var(--color-yellow-dark);
 
---tab-inactive-bg: var(--color-grey-dark);
---tab-inactive-bg-grad: linear-gradient(to bottom, var(--color-grey-dark) 0%, var(--color-grey-darkest) 100%);
---tab-inactive-border: var(--border-color-medium);
---tab-inactive-color: var(--color-grey-lightest);
---tab-active-bg: #555;
---tab-active-text-shadow: 0 0 5px var(--color-yellow-light);
+    --tab-inactive-bg: var(--color-grey-dark);
+    --tab-inactive-bg-grad: linear-gradient(to bottom, var(--color-grey-dark) 0%, var(--color-grey-darkest) 100%);
+    --tab-inactive-border: var(--border-color-medium);
+    --tab-inactive-color: var(--color-grey-lightest);
+    --tab-active-bg: #555;
+    --tab-active-text-shadow: 0 0 5px var(--color-yellow-light);
 
---attribute-group-bg: var(--color-black-transparent-20);
---attribute-group-title-color: var(--color-yellow-base);
---attribute-group-border: var(--border-color-medium);
---attribute-text-color: var(--color-red-dark);
+    --attribute-group-bg: var(--color-black-transparent-20);
+    --attribute-group-title-color: var(--color-yellow-base);
+    --attribute-group-border: var(--border-color-medium);
+    --attribute-text-color: var(--color-red-dark);
 
---skill-header-color: var(--color-yellow-base);
---skill-header-border: var(--border-color-medium);
---place-collapsible-header-hover-bg: rgb(0 0 0 / 23%);
---place-collapsible-label-hover-bg: var(--color-white-transparent-05);
---place-collapsible-content-bg: var(--color-black-transparent-15);
+    --skill-header-color: var(--color-yellow-base);
+    --skill-header-border: var(--border-color-medium);
+    --place-collapsible-header-hover-bg: rgb(0 0 0 / 23%);
+    --place-collapsible-label-hover-bg: var(--color-white-transparent-05);
+    --place-collapsible-content-bg: var(--color-black-transparent-15);
 
---input-bg-transparent: rgba(0,0,0,0.3);
---input-color: var(--text-color-primary);
---input-border-dark: var(--border-color-dark);
---input-name-bg: #fbc61b42;
---drop-target-border: var(--app-window-header-bg);
---drop-target-border-hover: var(--color-yellow-base);
---drop-target-bg-hover: rgba(231, 201, 62, 0.2);
+    --input-bg-transparent: rgba(0, 0, 0, 0.3);
+    --input-color: var(--text-color-primary);
+    --input-border-dark: var(--border-color-dark);
+    --input-name-bg: #fbc61b42;
+    --drop-target-border: var(--app-window-header-bg);
+    --drop-target-border-hover: var(--color-yellow-base);
+    --drop-target-bg-hover: rgba(231, 201, 62, 0.2);
 
---inventory-header-color: var(--color-yellow-base);
---inventory-item-border: var(--border-color-dark);
---inventory-item-image-bg: var(--color-white-transparent-10);
---searbarColor: var(--color-red-darkest);
+    --inventory-header-color: var(--color-yellow-base);
+    --inventory-item-border: var(--border-color-dark);
+    --inventory-item-image-bg: var(--color-white-transparent-10);
+    --searbarColor: var(--color-red-darkest);
 
-/* Theme Header Semantic Variables */
---header-gradient-bar: linear-gradient(to right, var(--color-red-darkest) 0%, transparent 100%);
---header-gradient-text: var(--color-white);
---tab-line: var(--color-yellow-base);
+    /* Theme Header Semantic Variables */
+    --header-gradient-bar: linear-gradient(to right, var(--color-red-darkest) 0%, transparent 100%);
+    --header-gradient-text: var(--color-white);
+    --tab-line: var(--color-yellow-base);
+}
+
+/* ================================================================== */
+/* 4. Cyber Neon (Dark) Theme                                        */
+/* ================================================================== */
+.theme-neon {
+    --bg-basket-summary: #1e293b;
+    --Form-background-group: #0f172a;
+    --Form-background-group-hover: #1e293b;
+    --bg-main: var(--bg-main-dark);
+    --app-window-header-bg: #0b0f19;
+    --app-window-header-border: #00d2ff;
+    --app-window-header-title-color: #00f0ff;
+    --app-window-content-bg: #0b1017;
+    --app-window-content-color: #e2e8f0;
+    --app-sticky-top-bg: rgba(11, 16, 23, 0.92);
+    --app-sticky-top-border: #00d2ff;
+
+    --text-color-primary: #e2e8f0;
+    --text-color-header: #00d2ff;
+    /* neon blue, not green */
+    --text-color-subheader: #00f0ff;
+    --text-color-link: #00f0ff;
+    --text-color-link-hover: #38bdf8;
+    --text-color-read-only: #00d2ff;
+
+    --border-color-medium: #1e293b;
+    --border-color-dark: #0f172a;
+    --border-color-highlight: #00d2ff;
+
+    --tab-inactive-bg: #1e293b;
+    --tab-inactive-bg-grad: linear-gradient(to bottom, #1e293b 0%, #0f172a 100%);
+    --tab-inactive-border: #1e293b;
+    --tab-inactive-color: #94a3b8;
+    --tab-active-bg: #0f172a;
+    --tab-active-text-shadow: 0 0 5px #00f0ff;
+
+    --attribute-group-bg: rgba(0, 210, 255, 0.05);
+    --attribute-group-title-color: #00f0ff;
+    --attribute-group-border: #1e293b;
+    --attribute-text-color: #38bdf8;
+
+    --skill-header-color: #00d2ff;
+    --skill-header-border: #1e293b;
+    --place-collapsible-header-hover-bg: rgba(0, 210, 255, 0.1);
+    --place-collapsible-label-hover-bg: #0f172a;
+    --place-collapsible-content-bg: rgba(0, 0, 0, 0.2);
+
+    --input-bg-transparent: rgba(0, 0, 0, 0.4);
+    --input-color: #e2e8f0;
+    --input-border-dark: #1e293b;
+    --input-name-bg: rgba(0, 210, 255, 0.1);
+    --drop-target-border: #00d2ff;
+    --drop-target-border-hover: #00f0ff;
+    --drop-target-bg-hover: rgba(0, 210, 255, 0.15);
+
+    --inventory-header-color: #00f0ff;
+    --inventory-item-border: #1e293b;
+    --inventory-item-image-bg: rgba(255, 255, 255, 0.05);
+    --searbarColor: #0f172a;
+
+    /* Theme Header Semantic Variables */
+    --header-gradient-bar: linear-gradient(to right, #0076ff 0%, transparent 100%);
+    --header-gradient-text: #ffffff;
+    --tab-line: #00d2ff;
+
+
+}
+
+/* ================================================================== */
+/* 5. Cyber Neon (Light) Theme                                       */
+/* ================================================================== */
+.theme-neon-light {
+    --bg-basket-summary: #e2e8f0;
+    --Form-background-group: rgba(255, 255, 255, 0.8);
+    --Form-background-group-hover: #e2e8f0;
+    --bg-main: var(--bg-main-light);
+    --app-window-header-bg: #0f172a;
+    --app-window-header-border: #38bdf8;
+    --app-window-header-title-color: #ffffff;
+    --app-window-content-bg: var(--bg-main-light);
+    --app-window-content-color: #0f172a;
+    --app-sticky-top-bg: rgba(248, 250, 252, 0.95);
+    --app-sticky-top-border: #0284c7;
+
+    --text-color-primary: #0f172a;
+    --text-color-header: #0284c7;
+    --text-color-subheader: #0369a1;
+    --text-color-link: #0284c7;
+    --text-color-link-hover: #0369a1;
+    --text-color-read-only: #0284c7;
+
+    --border-color-medium: #cbd5e1;
+    --border-color-dark: #94a3b8;
+    --border-color-highlight: #0284c7;
+
+    --tab-inactive-bg: #e2e8f0;
+    --tab-inactive-bg-grad: linear-gradient(to bottom, #e2e8f0 0%, #cbd5e1 100%);
+    --tab-inactive-border: #cbd5e1;
+    --tab-inactive-color: #475569;
+    --tab-active-bg: #f1f5f9;
+    --tab-active-text-shadow: 0 0 3px #0284c7;
+
+    --attribute-group-bg: rgba(2, 132, 199, 0.05);
+    --attribute-group-title-color: #0284c7;
+    --attribute-group-border: #cbd5e1;
+    --attribute-text-color: #0369a1;
+
+    --skill-header-color: #0284c7;
+    --skill-header-border: #cbd5e1;
+    --place-collapsible-header-hover-bg: rgba(2, 132, 199, 0.1);
+    --place-collapsible-label-hover-bg: #e2e8f0;
+    --place-collapsible-content-bg: rgba(0, 0, 0, 0.05);
+
+    --input-bg-transparent: rgba(255, 255, 255, 0.8);
+    --input-color: #0f172a;
+    --input-border-dark: #cbd5e1;
+    --input-name-bg: rgba(2, 132, 199, 0.1);
+    --drop-target-border: #0284c7;
+    --drop-target-border-hover: #0369a1;
+    --drop-target-bg-hover: rgba(2, 132, 199, 0.1);
+
+    --inventory-header-color: #0369a1;
+    --inventory-item-border: #cbd5e1;
+    --inventory-item-image-bg: rgba(0, 0, 0, 0.05);
+    --searbarColor: #ffffff;
+
+    /* Theme Header Semantic Variables */
+    --header-gradient-bar: linear-gradient(to right, #0284c7 0%, transparent 100%);
+    --header-gradient-text: #ffffff;
+    --tab-line: #0284c7;
+
+    /* Foundry Core UI Text Color Overrides */
+    --color-text-dark-primary: var(--text-color-primary);
+    --color-text-dark-secondary: var(--text-color-subheader);
+    --color-text-dark-header: var(--text-color-header);
+    --color-text-light-primary: var(--text-color-primary);
+    --color-text-light-heading: var(--text-color-header);
+    --color-text-light-highlight: var(--text-color-header);
+    --color-text-primary: var(--text-color-primary);
+    --color-text-secondary: var(--text-color-subheader);
+    --color-text-emphatic: var(--text-color-header);
+    --color-text-hyperlink: var(--text-color-link);
+}
+
+body.vtt .window-app.theme-neon-light .marketplace-item.grid-item,
+body.vtt .window-app.theme-neon-light .item-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+body.vtt .window-app.theme-neon-light .sr5-marketplace-yen,
+body.vtt .window-app.theme-neon-light .value {
+    color: #0284c7;
+    font-weight: bold;
+}
+
+body.vtt .window-app.theme-neon-light .add-to-cart,
+body.vtt .window-app.theme-neon-light button {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    text-shadow: none;
+}
+
+/* ================================================================== */
+/* 6. Silicon (Apple Clone Light) Theme                              */
+/* ================================================================== */
+.theme-silicon {
+    --bg-basket-summary: #e5e5e7;
+    --Form-background-group: rgba(0, 0, 0, 0.05);
+    --Form-background-group-hover: rgba(0, 0, 0, 0.08);
+    --bg-main: var(--bg-main-light);
+    --app-window-header-bg: #ffffff;
+    --app-window-header-border: #d2d2d7;
+    --app-window-header-title-color: #1d1d1f;
+    --app-window-content-bg: var(--bg-main-light);
+    --app-window-content-color: #1d1d1f;
+    --app-sticky-top-bg: rgba(250, 250, 252, 0.95);
+    --app-sticky-top-border: #0066cc;
+
+    --text-color-primary: #1d1d1f;
+    --text-color-header: #1d1d1f;
+    --text-color-subheader: #515154;
+    --text-color-link: #0066cc;
+    --text-color-link-hover: #0044aa;
+    --text-color-read-only: #1d1d1f;
+
+    --border-color-medium: #e5e5e7;
+    --border-color-dark: #d2d2d7;
+    --border-color-highlight: #0066cc;
+
+    --tab-inactive-bg: #e5e5e7;
+    --tab-inactive-bg-grad: linear-gradient(to bottom, #f5f5f7 0%, #e5e5e7 100%);
+    --tab-inactive-border: #d2d2d7;
+    --tab-inactive-color: #515154;
+    --tab-active-bg: #ffffff;
+    --tab-active-text-shadow: none;
+
+    --attribute-group-bg: rgba(0, 102, 204, 0.03);
+    --attribute-group-title-color: #1d1d1f;
+    --attribute-group-border: #e5e5e7;
+    --attribute-text-color: #0066cc;
+
+    --skill-header-color: #1d1d1f;
+    --skill-header-border: #e5e5e7;
+    --place-collapsible-header-hover-bg: rgba(0, 0, 0, 0.03);
+    --place-collapsible-label-hover-bg: #e5e5e7;
+    --place-collapsible-content-bg: rgba(0, 0, 0, 0.02);
+
+    --input-bg-transparent: #ffffff;
+    --input-color: #1d1d1f;
+    --input-border-dark: #d2d2d7;
+    --input-name-bg: rgba(0, 102, 204, 0.05);
+    --drop-target-border: #0066cc;
+    --drop-target-border-hover: #0044aa;
+    --drop-target-bg-hover: rgba(0, 102, 204, 0.08);
+
+    --inventory-header-color: #515154;
+    --inventory-item-border: #e5e5e7;
+    --inventory-item-image-bg: rgba(0, 0, 0, 0.03);
+    --searbarColor: #ffffff;
+
+    /* Theme Header Semantic Variables */
+    --header-gradient-bar: linear-gradient(to right, #f5f5f7 0%, #fafafa 100%);
+    --header-gradient-text: #1d1d1f;
+    --tab-line: #d2d2d7;
+
+    /* Foundry Core UI Text Color Overrides */
+    --color-text-dark-primary: var(--text-color-primary);
+    --color-text-dark-secondary: var(--text-color-subheader);
+    --color-text-dark-header: var(--text-color-header);
+    --color-text-light-primary: var(--text-color-primary);
+    --color-text-light-heading: var(--text-color-header);
+    --color-text-light-highlight: var(--text-color-header);
+    --color-text-primary: var(--text-color-primary);
+    --color-text-secondary: var(--text-color-subheader);
+    --color-text-emphatic: var(--text-color-header);
+    --color-text-hyperlink: var(--text-color-link);
+}
+
+body.vtt .window-app.theme-silicon .marketplace-item.grid-item,
+body.vtt .window-app.theme-silicon .item-card {
+    background-color: #ffffff;
+    border: 1px solid #e5e5e7;
+    border-radius: 12px;
+    /* Apple style rounded corner */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+body.vtt .window-app.theme-silicon .sr5-marketplace-yen,
+body.vtt .window-app.theme-silicon .value {
+    color: #1d1d1f;
+    font-weight: bold;
+}
+
+body.vtt .window-app.theme-silicon .add-to-cart,
+body.vtt .window-app.theme-silicon button {
+    background-color: #0071e3;
+    background-image: none;
+    color: #ffffff;
+    border: none;
+    border-radius: 980px;
+    /* macOS rounded pill shape */
+    font-weight: 500;
+    text-shadow: none;
+    box-shadow: none;
+}
+
+body.vtt .window-app.theme-silicon .add-to-cart:hover,
+body.vtt .window-app.theme-silicon button:hover {
+    background-color: #0077ed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Silicon macOS Header Controls (Red, Amber, Green) */
+body.vtt .theme-silicon.window-app .window-header:has(button[data-action="close"]),
+body.vtt .theme-silicon .window-header:has(button[data-action="close"]),
+body.vtt .theme-silicon.window-app .window-header:has(.close),
+body.vtt .theme-silicon .window-header:has(.close) {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    position: relative;
+    padding-left: 12px;
+}
+
+body.vtt .theme-silicon.window-app .window-header:has(button[data-action="close"]) .window-title,
+body.vtt .theme-silicon .window-header:has(button[data-action="close"]) .window-title,
+body.vtt .theme-silicon.window-app .window-header:has(.close) .window-title,
+body.vtt .theme-silicon .window-header:has(.close) .window-title {
+    order: 5;
+    margin-left: 8px;
+    /* Reduced margin because the buttons are now native flex items */
+}
+
+/* Align and order the window icon to the right of the traffic lights */
+body.vtt .theme-silicon.window-app .window-header i,
+body.vtt .theme-silicon .window-header i,
+body.vtt .theme-silicon.window-app .window-header .window-icon,
+body.vtt .theme-silicon .window-header .window-icon {
+    order: 4;
+}
+
+/* Style the close button as the macOS Red dot */
+body.vtt .theme-silicon.window-app .window-header button.header-control[data-action="close"],
+body.vtt .theme-silicon .window-header button.header-control[data-action="close"],
+body.vtt .theme-silicon.window-app .window-header a.close,
+body.vtt .theme-silicon .window-header a.close {
+    order: 1;
+    position: relative;
+    width: 12px;
+    height: 12px;
+    min-width: 12px;
+    max-width: 12px;
+    min-height: 12px;
+    max-height: 12px;
+    border-radius: 50%;
+    background-color: #ff5f56;
+    /* Apple red */
+    background-image: none;
+    border: 1px solid #e0443e;
+    cursor: pointer;
+    overflow: visible;
+    font-size: 0;
+    padding: 0;
+    margin: 0;
+    box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.5), inset 0 -2px 2px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.2);
+    text-shadow: none;
+    box-sizing: border-box;
+    display: inline-block;
+    align-self: center;
+    flex: 0 0 12px;
+}
+
+/* Amber dot - Sheet Config */
+body.vtt .theme-silicon.window-app .window-header button.header-control[data-action="configure-sheet"],
+body.vtt .theme-silicon .window-header button.header-control[data-action="configure-sheet"],
+body.vtt .theme-silicon.window-app .window-header a.configure-sheet,
+body.vtt .theme-silicon .window-header a.configure-sheet,
+body.vtt .theme-silicon.window-app .window-header button.header-control[data-action="sheet"],
+body.vtt .theme-silicon .window-header button.header-control[data-action="sheet"] {
+    order: 2;
+    position: relative;
+    width: 12px;
+    height: 12px;
+    min-width: 12px;
+    max-width: 12px;
+    min-height: 12px;
+    max-height: 12px;
+    border-radius: 50%;
+    background-color: #ffbd2e; /* Apple amber */
+    background-image: none;
+    border: 1px solid #dea123;
+    cursor: pointer;
+    overflow: visible;
+    font-size: 0;
+    padding: 0;
+    margin: 0;
+    margin-left: 4px; /* Space from the red dot */
+    box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.5), inset 0 -2px 2px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.2);
+    text-shadow: none;
+    box-sizing: border-box;
+    display: inline-block;
+    align-self: center;
+    flex: 0 0 12px;
+}
+body.vtt .theme-silicon.window-app .window-header button.header-control[data-action="configure-sheet"] i,
+body.vtt .theme-silicon .window-header button.header-control[data-action="configure-sheet"] i,
+body.vtt .theme-silicon.window-app .window-header a.configure-sheet i,
+body.vtt .theme-silicon .window-header a.configure-sheet i,
+body.vtt .theme-silicon.window-app .window-header button.header-control[data-action="sheet"] i,
+body.vtt .theme-silicon .window-header button.header-control[data-action="sheet"] i {
+    display: none; /* Hide internal icon */
+}
+
+/* Green dot - Copy UUID */
+body.vtt .theme-silicon.window-app .window-header button.header-control[data-action="documentId"],
+body.vtt .theme-silicon .window-header button.header-control[data-action="documentId"],
+body.vtt .theme-silicon.window-app .window-header button.header-control[data-action="uuid"],
+body.vtt .theme-silicon .window-header button.header-control[data-action="uuid"],
+body.vtt .theme-silicon.window-app .window-header a.document-id,
+body.vtt .theme-silicon .window-header a.document-id,
+body.vtt .theme-silicon.window-app .window-header a.copy-uuid,
+body.vtt .theme-silicon .window-header a.copy-uuid {
+    order: 3;
+    position: relative;
+    width: 12px;
+    height: 12px;
+    min-width: 12px;
+    max-width: 12px;
+    min-height: 12px;
+    max-height: 12px;
+    border-radius: 50%;
+    background-color: #27c93f; /* Apple green */
+    background-image: none;
+    border: 1px solid #1aab29;
+    cursor: pointer;
+    overflow: visible;
+    font-size: 0;
+    padding: 0;
+    margin: 0;
+    margin-left: 4px; /* Space from the amber dot */
+    box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.5), inset 0 -2px 2px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.2);
+    text-shadow: none;
+    box-sizing: border-box;
+    display: inline-block;
+    align-self: center;
+    flex: 0 0 12px;
+}
+body.vtt .theme-silicon.window-app .window-header button.header-control[data-action="documentId"] i,
+body.vtt .theme-silicon .window-header button.header-control[data-action="documentId"] i,
+body.vtt .theme-silicon.window-app .window-header button.header-control[data-action="uuid"] i,
+body.vtt .theme-silicon .window-header button.header-control[data-action="uuid"] i,
+body.vtt .theme-silicon.window-app .window-header a.document-id i,
+body.vtt .theme-silicon .window-header a.document-id i,
+body.vtt .theme-silicon.window-app .window-header a.copy-uuid i,
+body.vtt .theme-silicon .window-header a.copy-uuid i {
+    display: none; /* Hide internal icon */
+}
+
+/* Push all other controls (e.g. lock) to the far right */
+body.vtt .theme-silicon.window-app .window-header button.header-control:not([data-action="close"]):not([data-action="configure-sheet"]):not([data-action="sheet"]):not([data-action="documentId"]):not([data-action="uuid"]),
+body.vtt .theme-silicon .window-header button.header-control:not([data-action="close"]):not([data-action="configure-sheet"]):not([data-action="sheet"]):not([data-action="documentId"]):not([data-action="uuid"]),
+body.vtt .theme-silicon.window-app .window-header a.header-control:not(.close):not(.configure-sheet):not(.document-id):not(.copy-uuid),
+body.vtt .theme-silicon .window-header a.header-control:not(.close):not(.configure-sheet):not(.document-id):not(.copy-uuid) {
+    order: 10;
+    display: inline-block;
+}
+
+/* Ensure Light Themes apply properly to the Window Application and Content */
+body.vtt :is(.window-app, .application).theme-silicon,
+body.vtt :is(.window-app, .application).theme-neon-light {
+    background: var(--bg-main-light);
+    background-image: none;
+    color: #1d1d1f;
+}
+
+body.vtt :is(.window-app, .application).theme-silicon .window-content,
+body.vtt :is(.window-app, .application).theme-neon-light .window-content {
+    background: var(--bg-main-light);
+    background-image: none;
+    color: #1d1d1f;
+}
+
+/* ================================================================== */
+/* 7. Core Foundry UI Global Overrides for Custom Themes              */
+/* ================================================================== */
+
+/* Cyber Neon Light */
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) .form-group label { color: #0284c7; }
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) .form-group .hint { color: #0ea5e9; }
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) .form-group button,
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) .ui-control,
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) .hotbar-page-control,
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) #action-bar .slot {
+    background: #ffffff;
+    color: #0284c7;
+    border: 1px solid #0284c7;
+    box-shadow: 0 2px 5px rgba(2, 132, 199, 0.2);
+}
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) .form-group button:hover,
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) .ui-control:hover,
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) .hotbar-page-control:hover,
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) #action-bar .slot:hover {
+    background: #f0f9ff;
+    border-color: #0369a1;
+    color: #0369a1;
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+}
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) .ui-control.active,
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) .ui-control[aria-pressed="true"] {
+    background: #0284c7;
+    color: #ffffff;
+}
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) input, 
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) select, 
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) textarea {
+    background: #ffffff;
+    color: #0f172a;
+    border: 1px solid #cbd5e1;
+}
+
+/* Apple Silicon */
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) .form-group label { color: #1d1d1f; font-weight: 500; }
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) .form-group .hint { color: #86868b; }
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) .form-group button,
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) .ui-control,
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) .hotbar-page-control,
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) #action-bar .slot {
+    background: #f5f5f7;
+    color: #1d1d1f;
+    border: 1px solid #d2d2d7;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) .form-group button:hover,
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) .ui-control:hover,
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) .hotbar-page-control:hover,
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) #action-bar .slot:hover {
+    background: #e5e5e7;
+    border-color: #c7c7cc;
+}
+:is(#interface.theme-silicon, .window-app.theme-silicon) .ui-control.active,
+:is(#interface.theme-silicon, .window-app.theme-silicon) .ui-control[aria-pressed="true"] {
+    background: #0066cc;
+    color: #ffffff;
+    border-color: #0066cc;
+}
+:is(#interface.theme-silicon, .window-app.theme-silicon) input, 
+:is(#interface.theme-silicon, .window-app.theme-silicon) select, 
+:is(#interface.theme-silicon, .window-app.theme-silicon) textarea {
+    background: #ffffff;
+    color: #1d1d1f;
+    border: 1px solid #d2d2d7;
+    border-radius: 6px;
 }

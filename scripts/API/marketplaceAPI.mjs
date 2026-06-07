@@ -3,6 +3,7 @@ import { BuilderStateService } from "../services/builderStateService.mjs";
 import { ItemBuilderApp } from "../apps/ItemBuilderApp.mjs";
 import { inGameMarketplace } from "../apps/inGameMarketplace.mjs";
 import { BasketService } from "../services/basketService.mjs";
+import { PurchaseService } from "../services/purchaseService.mjs";
 import { MODULE_ID, SELECTED_ACTOR } from "../lib/constants.mjs";
 
 /**
@@ -10,7 +11,9 @@ import { MODULE_ID, SELECTED_ACTOR } from "../lib/constants.mjs";
  * @private
  */
 class inGameMarketplaceAPI {
-    constructor(){}
+    constructor(){
+        this.basketService = new BasketService();
+    }
 
     /**
      * Initializes the In-Game Marketplace API.
@@ -119,6 +122,92 @@ class inGameMarketplaceAPI {
         if (marketplace) {
             marketplace.render();
         }
+    }
+
+    /**
+     * Submits a user's shopping basket for review.
+     * @param {string} userId - The ID of the user whose basket is to be submitted.
+     * @returns {Promise<void>}
+     */
+    async submitForReview(userId) {
+        if (!userId) return;
+        await PurchaseService.submitForReview(userId);
+    }
+
+    /**
+     * Rejects an item from a pending request.
+     * @param {string} userId - The ID of the user.
+     * @param {string} basketUUID - The UUID of the basket.
+     * @param {string} basketItemUuid - The UUID of the item to reject.
+     * @returns {Promise<void>}
+     */
+    async rejectItemFromRequest(userId, basketUUID, basketItemUuid) {
+        if (!userId || !basketUUID || !basketItemUuid) return;
+        await PurchaseService.rejectItemFromRequest(userId, basketUUID, basketItemUuid);
+    }
+
+    /**
+     * Rejects a pending basket request.
+     * @param {string} userId - The ID of the user.
+     * @param {string} basketUUID - The UUID of the basket.
+     * @returns {Promise<void>}
+     */
+    async rejectBasket(userId, basketUUID) {
+        if (!userId || !basketUUID) return;
+        await PurchaseService.rejectBasket(userId, basketUUID);
+    }
+
+    /**
+     * Directly purchases items for an actor.
+     * @param {Actor} actor - The actor document making the purchase.
+     * @param {object} basket - The basket or request object containing purchase data.
+     * @param {object} [options={}] - Additional options.
+     * @returns {Promise<boolean>} Whether the purchase succeeded.
+     */
+    async directPurchase(actor, basket, options = {}) {
+        if (!actor || !basket) return false;
+        return await PurchaseService.directPurchase(actor, basket, options);
+    }
+
+    /**
+     * Gets the count of pending purchase requests.
+     * @returns {number} The count of pending requests.
+     */
+    getPendingRequestCount() {
+        return PurchaseService.getPendingRequestCount();
+    }
+
+    /**
+     * Gets all pending purchase requests across all users.
+     * @returns {Promise<Array<object>>} A promise resolving to an array of pending requests.
+     */
+    async getAllPendingRequests() {
+        return await PurchaseService.getAllPendingRequests();
+    }
+
+    /**
+     * Approves a pending basket request.
+     * @param {string} userId - The ID of the user.
+     * @param {string} basketUUID - The UUID of the basket.
+     * @returns {Promise<void>}
+     */
+    async approveBasket(userId, basketUUID) {
+        if (!userId || !basketUUID) return;
+        await PurchaseService.approveBasket(userId, basketUUID);
+    }
+
+    /**
+     * Updates properties on a pending item.
+     * @param {string} userId - The ID of the user.
+     * @param {string} basketUUID - The UUID of the basket.
+     * @param {string} basketItemUuid - The UUID of the item in the basket.
+     * @param {string} property - The property path to update.
+     * @param {*} value - The new value.
+     * @returns {Promise<void>}
+     */
+    async updatePendingItem(userId, basketUUID, basketItemUuid, property, value) {
+        if (!userId || !basketUUID || !basketItemUuid) return;
+        await PurchaseService.updatePendingItem(userId, basketUUID, basketItemUuid, property, value);
     }
 
     /**

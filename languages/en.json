@@ -178,8 +178,48 @@
         }
     },
     "SR5Marketplace": {
+        "Themes": {
+            "Neon": "Cyber Neon (Dark)",
+            "NeonLight": "Cyber Neon (Light)",
+            "Silicon": "Silicon"
+        },
         "UI": {
             "Name": "Name",
+            "New": "New",
+            "CreateActor": "Create Actor",
+            "CreateType": "Create {type}",
+            "ActorCreator": {
+                "NamePlaceholder": "e.g. Mr. Smith, Weapon Shop...",
+                "ShopDetailsTitle": "Shop Details & Rules",
+                "ShopDescPlaceholder": "A brief description of the shop and its wares...",
+                "HostEmployeesTitle": "Host & Employees",
+                "NoHost": "-- No Matrix Host --",
+                "NoActors": "No actors available in the sidebar directory.",
+                "PopulateInventoryTitle": "Populate Shop Inventory",
+                "FilterByType": "Filter By Type",
+                "All": "All",
+                "None": "None",
+                "Source": "Source",
+                "SourceBoth": "Both World & Compendiums",
+                "SourceWorld": "World Items Only",
+                "SourceCompendium": "Compendium Items Only",
+                "MaxRating": "Max Item Rating",
+                "NoLimit": "No Limit",
+                "AvailableItems": "Available Items",
+                "Matches": "{count} Matches",
+                "SelectAll": "Select All",
+                "ClearAll": "Clear All",
+                "RemoveFilter": "Remove Filter",
+                "SearchPlaceholder": "Search name/type... (Press Enter to add tag)",
+                "LoadingDatabase": "Loading items database...",
+                "NoMatches": "No matching items found. Adjust filters to search.",
+                "SelectedItems": "Selected Items",
+                "CountItems": "{count} Items",
+                "RemoveAll": "Remove All",
+                "RemoveItem": "Remove item",
+                "NoItemsSelected": "No items selected. Click checkboxes on the left to seed.",
+                "RatingAbbrev": "Rt."
+            },
             "Rating": "Rating",
             "Cost": "Cost",
             "Availability": "Availability",
@@ -252,9 +292,25 @@
                     "name": "GM Approval Workflow",
                     "hint": "Toggle this setting to Disable the approval workflow for player purchases!"
                 },
+                "ChatRequestEnabled": {
+                    "name": "Chat Message: Purchase Requests",
+                    "hint": "Post a chat message when a purchase request is submitted for review."
+                },
+                "ChatRejectionEnabled": {
+                    "name": "Chat Message: Rejections",
+                    "hint": "Post a chat message when a request or an item is rejected."
+                },
+                "ChatApprovalEnabled": {
+                    "name": "Chat Message: Approvals",
+                    "hint": "Post a chat message when a purchase is approved."
+                },
                 "ResetItemLoad": {
                     "name": "Reset Item Enhancement Load",
                     "hint": "This will allow the karma values and cost/availability of world and compendium items to get their flags reinitialized. Setting this setting to true will undo any changes you made to Karma, cost, or Availability of the items."
+                },
+                "PremiumThemes": {
+                    "name": "Enable Premium Themes",
+                    "hint": "Make premium custom themes (Apple Silicon, Cyber Neon, Neon Light) pickable in the core Foundry UI configuration menu."
                 },
                 "title": "Marketplace Settings",
                 "description": "Click on an item type in any column to assign it to that behavior category. Changes are saved instantly. Unique items can only be purchased once per character, stacking items will be stacked in the same item, and single items can be ordered multiple times per order as one Item Instance.",
@@ -530,7 +586,13 @@
             },
             "Notifications": {
                 "BehaviorsSaved": "Item behaviors saved successfully.",
-                "IndexComplete": "Marketplace index rebuild complete."
+                "IndexComplete": "Marketplace index rebuild complete.",
+                "PurchaseRequestSubmitted": "Your purchase request has been submitted to the GM for review.",
+                "ItemRejected": "Item rejected and removed from the request.",
+                "PurchaseRequestRejected": "Purchase request for user {name} has been rejected.",
+                "PurchaseApproved": "Purchase approved for user {name}.",
+                "DeductedResources": "Deducted {cost} ¥ and {karma} Karma from {actor}.",
+                "ItemsAdded": "Added {count} new item(s) to {actor}'s inventory."
             },
             "NoContacts": "Has no Contacts"
         },

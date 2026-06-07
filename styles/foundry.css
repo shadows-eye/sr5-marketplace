@@ -1,0 +1,42 @@
+/* ================================================================== */
+/* Core Foundry & Window Component Overrides                          */
+/* ================================================================== */
+
+/* Cyber Neon Custom Details */
+body.vtt .window-app.theme-neon .marketplace-item.grid-item,
+body.vtt .window-app.theme-neon .item-card {
+    background-color: #131b26;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+}
+
+body.vtt .window-app.theme-neon .marketplace-item.grid-item:hover,
+body.vtt .window-app.theme-neon .item-card:hover {
+    border-color: #00d2ff;
+    box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
+}
+
+body.vtt .window-app.theme-neon .sr5-marketplace-yen,
+body.vtt .window-app.theme-neon .value {
+    color: #00d2ff;
+    /* neon blue, not green */
+    text-shadow: 0 0 6px rgba(0, 210, 255, 0.4);
+}
+
+body.vtt .window-app.theme-neon .add-to-cart,
+body.vtt .window-app.theme-neon button {
+    background: linear-gradient(135deg, #00b0ff 0%, #2979ff 100%);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 10px rgba(0, 176, 255, 0.3);
+    border-radius: 6px;
+    text-shadow: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+body.vtt .window-app.theme-neon .add-to-cart:hover,
+body.vtt .window-app.theme-neon button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(0, 176, 255, 0.5);
+}
+

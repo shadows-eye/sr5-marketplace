@@ -1,0 +1,448 @@
+/* ======================================================== */
+/* Custom Actor Creator & Shop Seeding Layout & Styles      */
+/* ======================================================== */
+
+.create-actor-app-window {
+    color: var(--text-color-primary);
+    font-family: 'Outfit', 'Inter', sans-serif;
+    height: 100%;
+}
+
+.create-actor-form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 15px;
+    padding: 10px;
+    overflow: hidden;
+}
+
+.create-actor-form-body {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-group-custom {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-group-custom label {
+    font-weight: bold;
+    font-size: 13px;
+    color: var(--text-color-header);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.form-input-custom,
+.form-select-custom {
+    background-color: var(--input-bg-transparent) !important;
+    color: var(--input-color) !important;
+    border: 1px solid var(--border-color-medium) !important;
+    border-radius: 4px;
+    padding: 8px 12px !important;
+    font-size: 13px;
+    outline: none;
+    transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-input-custom:focus,
+.form-select-custom:focus {
+    border-color: var(--color-yellow-base) !important;
+    box-shadow: 0 0 8px rgba(231, 201, 62, 0.3);
+}
+
+.form-select-custom option {
+    background-color: var(--app-window-content-bg) !important;
+    color: var(--text-color-primary) !important;
+}
+
+/* Collapsible Section styles */
+.actor-creator-collapsible-section {
+    border: 1px dashed var(--border-color-medium);
+    border-radius: 6px;
+    background-color: var(--color-black-transparent-10);
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+}
+
+.actor-creator-collapsible-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    cursor: pointer;
+    list-style: none; /* Hide default triangle */
+    user-select: none;
+}
+
+.actor-creator-collapsible-header::-webkit-details-marker {
+    display: none; /* Hide default triangle in Safari */
+}
+
+.actor-creator-collapsible-header h3 {
+    margin: 0;
+    color: var(--color-yellow-base) !important;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: none !important;
+    padding: 0 !important;
+}
+
+.actor-creator-collapsible-header .toggle-icon {
+    font-size: 12px;
+    color: var(--text-color-header);
+    transition: transform 0.25s ease;
+}
+
+.actor-creator-collapsible-section:not(.collapsed) .actor-creator-collapsible-header .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.actor-creator-collapsible-section.collapsed .actor-creator-collapsible-content {
+    display: none !important;
+}
+
+.actor-creator-collapsible-content {
+    padding: 0 15px 15px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Grid layout for shop fields */
+.shop-fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.shop-description-textarea {
+    min-height: 60px;
+    resize: vertical;
+}
+
+/* Seeding Panel & Filters */
+.seeding-filters-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 15px;
+}
+
+.item-types-filter-container {
+    border: 1px solid var(--border-color-medium);
+    border-radius: 4px;
+    padding: 10px;
+    background-color: var(--color-black-transparent-15);
+}
+
+.item-types-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border-color-medium);
+    padding-bottom: 4px;
+}
+
+.item-types-header span {
+    font-weight: bold;
+    font-size: 12px;
+    color: var(--text-color-header);
+    text-transform: uppercase;
+}
+
+.item-types-quick-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.quick-action-link {
+    font-size: 10px;
+    color: var(--color-yellow-light);
+    cursor: pointer;
+    text-transform: uppercase;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.quick-action-link:hover {
+    color: var(--color-white);
+}
+
+.item-types-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 12px;
+    max-height: 140px;
+    overflow-y: auto;
+}
+
+.type-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    cursor: pointer;
+    user-select: none;
+    color: var(--text-color-primary);
+}
+
+/* Matching Items List Box */
+.matching-items-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-grow: 1;
+    border: 1px solid var(--border-color-medium);
+    border-radius: 4px;
+    padding: 10px;
+    background-color: var(--color-black-transparent-15);
+}
+
+.matching-items-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color-medium);
+    padding-bottom: 6px;
+}
+
+.matching-items-title {
+    font-weight: bold;
+    font-size: 12px;
+    color: var(--text-color-header);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.matching-items-count-badge {
+    background-color: var(--color-yellow-dark);
+    color: var(--color-black);
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.items-search-bar-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.items-search-input {
+    flex-grow: 1;
+}
+
+/* Scrollable Items List */
+.matching-items-scrollable {
+    flex-grow: 1;
+    overflow-y: auto;
+    border: 1px solid var(--color-black-transparent-20);
+    border-radius: 3px;
+    background-color: var(--color-black-transparent-10);
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.matching-item-card {
+    display: grid;
+    grid-template-columns: 24px 28px 1.2fr 0.8fr 40px 100px;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    background-color: var(--color-black-transparent-15);
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+}
+
+.matching-item-card:hover {
+    background-color: var(--color-black-transparent-25);
+    border-color: var(--border-color-medium);
+}
+
+.matching-item-card.checked {
+    background-color: rgba(212, 175, 55, 0.05);
+    border-color: rgba(212, 175, 55, 0.2);
+}
+
+.matching-item-checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.matching-item-img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    background-color: var(--color-black-transparent-20);
+    border-radius: 4px;
+    border: 1px solid var(--border-color-medium);
+}
+
+.matching-item-name {
+    font-weight: bold;
+    font-size: 12px;
+    color: var(--text-color-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.matching-item-type {
+    font-size: 10.5px;
+    color: var(--text-color-primary);
+    opacity: 0.7;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.matching-item-rating {
+    font-size: 10.5px;
+    color: var(--color-yellow-light);
+    font-weight: bold;
+    text-align: center;
+}
+
+.matching-item-source {
+    font-size: 9.5px;
+    color: var(--text-color-primary);
+    opacity: 0.6;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-style: italic;
+    text-align: right;
+}
+
+.no-items-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-color-primary);
+    opacity: 0.5;
+    font-size: 13px;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+
+.no-items-placeholder i {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+/* Selected Items Column */
+.selected-items-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid var(--border-color-medium);
+    border-radius: 4px;
+    padding: 10px;
+    background-color: var(--color-black-transparent-15);
+}
+
+.selected-items-scrollable {
+    flex-grow: 1;
+    overflow-y: auto;
+    border: 1px solid var(--color-black-transparent-20);
+    border-radius: 3px;
+    background-color: var(--color-black-transparent-10);
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.selected-item-card {
+    display: grid;
+    grid-template-columns: 24px 1fr 24px;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background-color: var(--color-black-transparent-15);
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+}
+
+.selected-item-card:hover {
+    background-color: var(--color-black-transparent-25);
+    border-color: var(--border-color-medium);
+}
+
+.selected-item-remove-btn {
+    color: var(--color-red-dark);
+    cursor: pointer;
+    text-align: center;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 13px;
+    transition: color 0.15s ease;
+}
+
+.selected-item-remove-btn:hover {
+    color: var(--color-red-base);
+}
+
+/* Footer Actions */
+.create-actor-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color-medium);
+    flex-shrink: 0;
+}
+
+.create-btn {
+    background-color: var(--color-green-button) !important;
+    color: var(--color-white) !important;
+    transition: all 0.2s ease !important;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+.create-btn:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+    transform: translateY(-1px);
+}
+
+.cancel-btn-custom {
+    background-color: var(--tab-inactive-bg) !important;
+    color: var(--text-color-primary) !important;
+    border: 1px solid var(--border-color-medium) !important;
+    font-weight: bold;
+    transition: all 0.2s ease !important;
+}
+
+.cancel-btn-custom:hover {
+    background-color: var(--bg-dark-section-hover) !important;
+    filter: brightness(1.1);
+}

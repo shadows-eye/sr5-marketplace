@@ -178,8 +178,48 @@
         }
     },
     "SR5Marketplace": {
+        "Themes": {
+            "Neon": "Cyber-Neon (Dunkel)",
+            "NeonLight": "Cyber-Neon (Hell)",
+            "Silicon": "Silicon"
+        },
         "UI": {
             "Name": "Name",
+            "New": "Neuer",
+            "CreateActor": "Akteur erstellen",
+            "CreateType": "Erschaffe {type}",
+            "ActorCreator": {
+                "NamePlaceholder": "z.B. Herr Schmidt, Waffenladen...",
+                "ShopDetailsTitle": "Laden-Details & Regeln",
+                "ShopDescPlaceholder": "Eine kurze Beschreibung des Ladens und seiner Waren...",
+                "HostEmployeesTitle": "Host & Angestellte",
+                "NoHost": "-- Kein Matrix-Host --",
+                "NoActors": "Keine Akteure im Seitenleisten-Verzeichnis verfügbar.",
+                "PopulateInventoryTitle": "Laden-Inventar bestücken",
+                "FilterByType": "Nach Typ filtern",
+                "All": "Alle",
+                "None": "Keine",
+                "Source": "Quelle",
+                "SourceBoth": "Sowohl Welt als auch Kompendien",
+                "SourceWorld": "Nur Welt-Gegenstände",
+                "SourceCompendium": "Nur Kompendium-Gegenstände",
+                "MaxRating": "Max. Gegenstandsstufe",
+                "NoLimit": "Kein Limit",
+                "AvailableItems": "Verfügbare Gegenstände",
+                "Matches": "{count} Treffer",
+                "SelectAll": "Alle auswählen",
+                "ClearAll": "Auswahl aufheben",
+                "RemoveFilter": "Filter entfernen",
+                "SearchPlaceholder": "Name/Typ suchen... (Eingabetaste drücken, um Tag hinzuzufügen)",
+                "LoadingDatabase": "Lade Gegenstands-Datenbank...",
+                "NoMatches": "Keine passenden Gegenstände gefunden. Passe die Filter an.",
+                "SelectedItems": "Ausgewählte Gegenstände",
+                "CountItems": "{count} Gegenstände",
+                "RemoveAll": "Alle entfernen",
+                "RemoveItem": "Gegenstand entfernen",
+                "NoItemsSelected": "Keine Gegenstände ausgewählt. Klicke links auf die Kontrollkästchen, um sie hinzuzufügen.",
+                "RatingAbbrev": "St."
+            },
             "Rating": "Stufe",
             "Cost": "Kosten",
             "Availability": "Verfügbarkeit",
@@ -252,9 +292,25 @@
                     "name": "GM Genehmigungsprocess",
                     "hint": "Schalte diese Einstellung um den Genehmigungsprocess für Spielerkäufe zu deaktivieren!"
                 },
+                "ChatRequestEnabled": {
+                    "name": "Chat-Nachricht: Kaufanfragen",
+                    "hint": "Postet eine Chat-Nachricht, wenn eine Kaufanfrage zur Überprüfung eingereicht wird."
+                },
+                "ChatRejectionEnabled": {
+                    "name": "Chat-Nachricht: Ablehnungen",
+                    "hint": "Postet eine Chat-Nachricht, wenn eine Anfrage oder ein Artikel abgelehnt wird."
+                },
+                "ChatApprovalEnabled": {
+                    "name": "Chat-Nachricht: Genehmigungen",
+                    "hint": "Postet eine Chat-Nachricht, wenn ein Kauf genehmigt wurde."
+                },
                 "ResetItemLoad": {
                     "name": "Item Verbesserung landen zurücksetzen",
                     "hint": "Dies ermöglicht es die Karma Werte und den Kosten und Verfügbarkeiten von Welt- und Kompendiumsartikeln, ihre Flags für Karma neu zu initialisieren. Wenn Sie diese Einstellung auf true setzen, werden alle Änderungen, die Sie an Karma, Kosten oder Verfügbarkeit der Items vorgenommen haben, rückgängig gemacht."
+                },
+                "PremiumThemes": {
+                    "name": "Premium Themes Aktivieren",
+                    "hint": "Macht Premium-Themes (Apple Silicon, Cyber Neon, Neon Light) im Foundry UI Konfigurationsmenü auswählbar."
                 },
                 "title": "Marktplatz Einstellungen",
                 "description": "Klicke auf einen Artikeltyp in einer Spalte, um ihn der Verhaltenskategorie zuzuordnen. Änderungen werden sofort gespeichert. Einzigartige Artikel können nur einmal pro Charakter gekauft werden, stapelbare Artikel werden im selben Artikel gestapelt und einzelne Artikel können mehrmals pro Bestellung als eine Artikelinstanz bestellt werden.",
@@ -531,7 +587,13 @@
             },
             "Notifications": {
                 "BehaviorsSaved": "Verhalten gespeichert.",
-                "IndexComplete": "Index aktualisiert."
+                "IndexComplete": "Index aktualisiert.",
+                "PurchaseRequestSubmitted": "Ihre Kaufanfrage wurde dem Spielleiter zur Überprüfung vorgelegt.",
+                "ItemRejected": "Artikel abgelehnt und aus der Anfrage entfernt.",
+                "PurchaseRequestRejected": "Kaufanfrage für Benutzer {name} wurde abgelehnt.",
+                "PurchaseApproved": "Kauf freigegeben für Benutzer {name}.",
+                "DeductedResources": "{cost} ¥ und {karma} Karma von {actor} abgezogen.",
+                "ItemsAdded": "{count} neue(r) Artikel zu {actor}s Inventar hinzugefügt."
             },
             "NoContacts": "Hat keine Kontakte"
         },
@@ -654,7 +716,7 @@
     },
     "TYPES": {
         "Actor": {
-            "sr5-marketplace.shop": "Marktplatz Laden"
+            "sr5-marketplace.shop": "Marktplatzladen"
         }
     }
 }
