@@ -9,7 +9,7 @@
 
 # Shadowrun 5e Marketplace
 
-![Foundry Version](https://img.shields.io/badge/Foundry-v13-informational)
+![Foundry Version](https://img.shields.io/badge/Foundry-v14-informational)
 ![Shadowrun 5e System](https://img.shields.io/badge/System-Shadowrun%205e-green)
 
 ## Overview
@@ -102,7 +102,7 @@ This module is distributed under the terms specified in the LICENSE file include
 
 ## Support and Contributions
 
-- **GitHub Repository**: [shadows-eye/sr5-marketplace](https://github.com/shadows-eye/sr5-marketplace)
+- **GitHub Repository**: [shadows-eye/sr5-marketplace](https://shadowplays.de/module/sr5-marketplace)
 - **Author**: Shadow
 - **Discord**: shadows_plays
 
