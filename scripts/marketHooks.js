@@ -49,6 +49,7 @@ import { ItemBuilderApp } from "./apps/ItemBuilderApp.mjs";
 import { SR5CreateActorApp } from "./apps/SR5CreateActorApp.mjs";
 import { AppDialogBuilder } from "./apps/documents/dialog/AppDialogBuilder.mjs";
 import { AppTestFlagService } from "./services/AppTestFlagService.mjs";
+import { registerMarketplaceTour } from "./tours/marketplaceTour.mjs";
 
 
 
@@ -603,6 +604,7 @@ Hooks.once("init", () => {
         BasketService: BasketService,
         AppDialogBuilder: AppDialogBuilder,
         inGameMarketplace: inGameMarketplace,
+        SR5CreateActorApp: SR5CreateActorApp,
 
         // 3. Instantiate your sub-APIs using the static properties
         marketplace: new MarketplaceAPI.Marketplace(),
@@ -616,6 +618,7 @@ Hooks.once("init", () => {
     game.sr5marketplace.BasketService = game.sr5marketplace.api.BasketService;
     //game.sr5marketplace.AppDialogBuilder = game.sr5marketplace.api.AppDialogBuilder;
     game.sr5marketplace.inGameMarketplace = game.sr5marketplace.api.inGameMarketplace;
+    game.sr5marketplace.SR5CreateActorApp = game.sr5marketplace.api.SR5CreateActorApp;
     //game.sr5marketplace.itemBuilder = game.sr5marketplace.api.itemBuilder;
 
     // Register custom tests during setup after system has initialized its globals but before ready
@@ -623,6 +626,7 @@ Hooks.once("init", () => {
         injectThemeChoices();
         const { registerTests } = await import('../utils/tests.mjs');
         registerTests();
+        registerMarketplaceTour();
     });
 });
 

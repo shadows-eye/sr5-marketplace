@@ -534,5 +534,53 @@
         "day": "Tag",
         "week": "Woche",
         "month": "Monat"
+    },
+    "Tours": {
+        "GettingStarted": {
+            "Title": "Erste Schritte mit dem SR5-Marktplatz",
+            "Description": "Lerne, wie du einen Shop erstellst, Connections verknüpfst, ihn auf der Szene platzierst und Einkäufe sowie GM-Freigaben durchführst.",
+            "Steps": {
+                "Intro": {
+                    "Title": "Willkommen beim SR5-Marktplatz!",
+                    "Content": "Diese geführte Tour zeigt dir, wie du einen Shop-Akteur erstellst, ihn mit Waren bestückst, ihn mit der Connection eines Spielers verknüpst, ihn auf der Szene platzierst und Einkäufe sowie die GM-Freigabe durchführst."
+                },
+                "CreateActor": {
+                    "Title": "Einen Shop-Akteur erstellen",
+                    "Content": "Öffne zuerst das Verzeichnis <strong>Akteure</strong> in der Seitenleiste. Klicke auf <strong>Akteur erstellen</strong>. Wähle im Dialog den Typ <strong>Shop</strong> und gib dem Shop einen Namen."
+                },
+                "PopulateShop": {
+                    "Title": "Shop-Inventar bestücken",
+                    "Content": "Öffne den erstellten Shop-Akteur. Du kannst Gegenstände aus Kompendien oder dem Gegenstandsverzeichnis der Welt per Drag-and-Drop auf den Reiter Inventar oder Verwaltung des Shops ziehen, um sein Angebot zu befüllen."
+                },
+                "ConnectPlayer": {
+                    "Title": "Shop mit der Connection eines Spielers verknüpfen",
+                    "Content": "Wechsle auf dem Bogen des Shop-Akteurs zum Reiter <strong>Verwaltung</strong>. Aktiviere den Bearbeitungsmodus (Häkchen im Header). Ziehe die Connection (Gegenstand) vom Charakterbogen eines Spielers in das Feld <strong>Connection</strong>."
+                },
+                "LinkEmployee": {
+                    "Title": "Connection-Akteur als Mitarbeiter verknüpfen",
+                    "Content": "Damit Spieler über die Werte des Kontakts einkaufen können, ziehe den Akteur des Kontakts (Connection-Akteur) in das Feld <strong>Mitarbeiter</strong>. Du kannst ihn auch als aktiven <strong>Mitarbeiter im Dienst</strong> festlegen, indem du auf das Glocken-Symbol klickst."
+                },
+                "Placement": {
+                    "Title": "Platzierung auf der Szene & Shop-Radius",
+                    "Content": "Ziehe den Shop-Akteur auf die aktive Szene, um ein Token zu platzieren. Trage im Reiter Verwaltung einen <strong>Shop-Radius</strong> in Rastern ein. Spieler-Token, die sich in diesem Radius befinden, erkennen den Shop automatisch!"
+                },
+                "BuyWithShop": {
+                    "Title": "Einkaufen über einen Shop",
+                    "Content": "Spieler können den Shop per Doppelklick auf das Shop-Token auf dem Plan öffnen oder das Shop-Symbol im <strong>MarketShouter</strong> anklicken. Sie können Gegenstände in den Warenkorb legen und den Kauf beim GM anfragen."
+                },
+                "BuyOwn": {
+                    "Title": "Einkaufen über das eigene Gerät",
+                    "Content": "Wenn kein Shop-Token in der Nähe ist, können Spieler trotzdem einkaufen. Sie können den <strong>MarketShouter</strong> öffnen und darin nach Gegenständen suchen. Dies simuliert Matrix-Bestellungen oder die Suche nach allgemeiner Ausrüstung."
+                },
+                "GMConfirm": {
+                    "Title": "Anfragen freigeben (GM)",
+                    "Content": "Als GM erhältst du eine Chatnachricht, wenn ein Spieler eine Bestellung aufgibt. Klicke darin auf <strong>Prüfen (Nur GM)</strong> oder öffne die Übersicht über das Sprachrohr (Megafon) im <strong>MarketShouter</strong>, um die Bestellung freizugeben oder abzulehnen."
+                },
+                "Conclusion": {
+                    "Title": "Alles bereit!",
+                    "Content": "Damit ist die Einführung abgeschlossen! Du bist nun bereit, dynamische, regelkonforme Markttransaktionen in deinen Shadowrun 5e-Runden durchzuführen."
+                }
+            }
+        }
     }
 }
