@@ -2,6 +2,8 @@ import { defineConfig } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
+import { mergeLocales } from './merge-locales.js';
+
 
 export default defineConfig({
   esbuild: {
@@ -42,10 +44,24 @@ export default defineConfig({
   },
   plugins: [
     tailwindcss(), // Tailwind v4 Vite integration
+    {
+      name: 'merge-locales-plugin',
+      buildStart() {
+        mergeLocales();
+      },
+      handleHotUpdate({ file, server }) {
+        if (file.includes('/languages/en/') || file.includes('/languages/de/')) {
+          console.log(`\nLocale file changed: ${file}. Re-merging...`);
+          mergeLocales();
+          server.ws.send({ type: 'full-reload' });
+        }
+      }
+    },
     viteStaticCopy({
       targets: [
         { src: 'module.json', dest: '.' },
-        { src: 'languages', dest: '.' },
+        { src: 'languages/en.json', dest: '.' },
+        { src: 'languages/de.json', dest: '.' },
         { src: 'templates', dest: '.' },
         { src: 'assets', dest: '.' }
         // 'styles' is excluded here because Tailwind now compiles 

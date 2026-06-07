@@ -1,0 +1,536 @@
+{
+    "Themes": {
+        "Neon": "Cyber Neon (Dark)",
+        "NeonLight": "Cyber Neon (Light)",
+        "Silicon": "Silicon"
+    },
+    "UI": {
+        "Name": "Name",
+        "New": "New",
+        "CreateActor": "Create Actor",
+        "CreateType": "Create {type}",
+        "ActorCreator": {
+            "NamePlaceholder": "e.g. Mr. Smith, Weapon Shop...",
+            "ShopDetailsTitle": "Shop Details & Rules",
+            "ShopDescPlaceholder": "A brief description of the shop and its wares...",
+            "HostEmployeesTitle": "Host & Employees",
+            "NoHost": "-- No Matrix Host --",
+            "NoActors": "No actors available in the sidebar directory.",
+            "PopulateInventoryTitle": "Populate Shop Inventory",
+            "FilterByType": "Filter By Type",
+            "All": "All",
+            "None": "None",
+            "Source": "Source",
+            "SourceBoth": "Both World & Compendiums",
+            "SourceWorld": "World Items Only",
+            "SourceCompendium": "Compendium Items Only",
+            "MaxRating": "Max Item Rating",
+            "NoLimit": "No Limit",
+            "AvailableItems": "Available Items",
+            "Matches": "{count} Matches",
+            "SelectAll": "Select All",
+            "ClearAll": "Clear All",
+            "RemoveFilter": "Remove Filter",
+            "SearchPlaceholder": "Search name/type... (Press Enter to add tag)",
+            "LoadingDatabase": "Loading items database...",
+            "NoMatches": "No matching items found. Adjust filters to search.",
+            "SelectedItems": "Selected Items",
+            "CountItems": "{count} Items",
+            "RemoveAll": "Remove All",
+            "RemoveItem": "Remove item",
+            "NoItemsSelected": "No items selected. Click checkboxes on the left to seed.",
+            "RatingAbbrev": "Rt."
+        },
+        "Rating": "Rating",
+        "Cost": "Cost",
+        "Availability": "Availability",
+        "Quantity": "Quantity",
+        "Karma": "Karma",
+        "Essence": "Essence",
+        "Image": "Image",
+        "Description": "Description",
+        "Actions": "Actions",
+        "Total": "Total",
+        "Search": "Search",
+        "SearchPlaceholder": "Search items...",
+        "Remove": "Remove",
+        "Cancel": "Cancel",
+        "Save": "Save",
+        "Edit": "Edit",
+        "Delete": "Delete",
+        "Properties": "Properties",
+        "Slot": "Slot",
+        "Slots": "Slots",
+        "MountPoint": "Mount Point",
+        "BaseItem": "Base Item",
+        "LimitPhysical": "Physical Limit",
+        "LimitMental": "Mental Limit",
+        "SpecialAttributes": "Special Attributes",
+        "ActiveSkills": "Active Skills",
+        "Languages": "Languages",
+        "KnowledgeSkillStreet": "Street",
+        "KnowledgeSkillAcademic": "Academic",
+        "KnowledgeSkillProfessional": "Professional",
+        "KnowledgeSkillInterest": "Interests",
+        "KnowledgeSkillInterests": "Interests",
+        "Roll": "Roll",
+        "Qty": "Qty",
+        "Owner": "Owner",
+        "Type": "Type",
+        "DeleteSkill": "Delete Skill",
+        "RemoveItem": "Remove Item",
+        "StockOrder": "Stock / Order",
+        "InStock": "In Stock",
+        "Compendiums": "Compendiums",
+        "Folders": "Folders",
+        "Items": "Items",
+        "AddSelected": "Add Selected",
+        "NoCompendiumSelectedTitle": "No Compendium Selected",
+        "NoCompendiumSelectedDesc": "Please select a compendium pack from the left sidebar to browse and add its contents.",
+        "SelectAll": "Select All",
+        "DeselectAll": "Deselect All",
+        "CostOrKarma": "Cost / Karma",
+        "Nuyen": "Nuyen",
+        "CopyDocumentUuid": "Copy Document UUID"
+    },
+    "Marketplace": {
+        "Title": "Marketplace Purchase Screen",
+        "Tabs": {
+            "Shop": "Shop",
+            "OrderReview": "Order Review"
+        },
+        "Settings": {
+            "AvailabilityRule": {
+                "name": "Availability Rules",
+                "hint": "Selection options for the Rules you want to use, standard is Opposed",
+                "choices": {
+                    "opposed": "Opposed",
+                    "simple": "Simple",
+                    "extended": "Extended"
+                }
+            },
+            "ApprovalWorkflow": {
+                "name": "GM Approval Workflow",
+                "hint": "Toggle this setting to Disable the approval workflow for player purchases!"
+            },
+            "ChatRequestEnabled": {
+                "name": "Chat Message: Purchase Requests",
+                "hint": "Post a chat message when a purchase request is submitted for review."
+            },
+            "ChatRejectionEnabled": {
+                "name": "Chat Message: Rejections",
+                "hint": "Post a chat message when a request or an item is rejected."
+            },
+            "ChatApprovalEnabled": {
+                "name": "Chat Message: Approvals",
+                "hint": "Post a chat message when a purchase is approved."
+            },
+            "ResetItemLoad": {
+                "name": "Reset Item Enhancement Load",
+                "hint": "This will allow the karma values and cost/availability of world and compendium items to get their flags reinitialized. Setting this setting to true will undo any changes you made to Karma, cost, or Availability of the items."
+            },
+            "PremiumThemes": {
+                "name": "Enable Premium Themes",
+                "hint": "Make premium custom themes (Apple Silicon, Cyber Neon, Neon Light) pickable in the core Foundry UI configuration menu."
+            },
+            "title": "Marketplace Settings",
+            "description": "Click on an item type in any column to assign it to that behavior category. Changes are saved instantly. Unique items can only be purchased once per character, stacking items will be stacked in the same item, and single items can be ordered multiple times per order as one Item Instance.",
+            "CategoryUnique": "Unique Items",
+            "StackingItems": "Stacking Items",
+            "SingleItems": "Single Items",
+            "Menu": {
+                "name": "Item Type Menu",
+                "hint": "This menu allows you to assign item types to different behaviors.",
+                "buttonLabel": "Open Item Type Settings"
+            },
+            "KarmaSpell": {
+                "name": "Karma Spell Cost",
+                "hint": "This setting allows you to set the karma cost for spells. Value will be used to pay for spells."
+            },
+            "KarmaComplexForm": {
+                "name": "Karma Complex Form Cost",
+                "hint": "This setting allows you to set the karma cost for complex forms. Value will be used to pay for Complex Forms."
+            },
+            "ItemTypeBehaviors": {
+                "name": "Item Type Behaviors"
+            },
+            "SetToUnique": "Set '{label}' to Unique",
+            "SetToStacking": "Set '{label}' to Stacking",
+            "SetToSingle": "Set '{label}' to Single",
+            "UniqueAllowOnlyOne": "Unique (Allow Only One)",
+            "StackQuantity": "Stack Quantity",
+            "AddAsSingleItem": "Add as Single Item",
+            "AbbreviationUnique": "U",
+            "AbbreviationStack": "St",
+            "AbbreviationSingle": "S"
+        },
+        "Tests": {
+            "title": "Marketplace Tests",
+            "AvailabilityTest": "Availability Test",
+            "ExtendedTestInProgress": "Extended Test In Progress",
+            "Progress": "Progress:",
+            "NextRoll": "Next Roll:",
+            "LastRollResults": "Last Roll's Results:",
+            "ContinueTest": "Continue Test"
+        },
+        "Source": {
+            "Global": "Shop"
+        },
+        "Shop": {
+            "SheetName": "Shop",
+            "Inventory": "Inventory",
+            "SellPrice": "Sell Price",
+            "BuyPrice": "Buy Price",
+            "BuyTime": "Buy Time",
+            "Comment": "Comment",
+            "Employees": "Employees",
+            "OneUuidPerLine": "One UUID per line",
+            "Discount": "Discount",
+            "Fee": "Fee",
+            "Modifier": "Price Modifier",
+            "ConnectionUuid": "Connection",
+            "Owner": "Shop Owner",
+            "OwnerUuid": "Owner UUID",
+            "AddItem": "Add Item",
+            "ItemMarkup": "Markup",
+            "IncreaseMarkup": "Increase markup by 5%",
+            "DecreaseMarkup": "Decrease markup by 5%",
+            "SetAsServingEmployee": "Set as Serving Employee",
+            "ClearInventoryTitle": "Clear Inventory",
+            "ClearInventoryPrompt": "Are you sure you want to delete all items in the inventory?",
+            "ClearInventoryButton": "Delete All",
+            "ClearInventorySuccess": "Inventory cleared successfully.",
+            "ClearInventoryTooltip": "Clear entire inventory",
+            "DragDropHint": "Drag & Drop items here to add to Shop Inventory",
+            "WAN": "WAN",
+            "NoSlavedDevices": "No slaved devices",
+            "DragActorHere": "Drag Actor Here",
+            "DragItemHere": "Drag Item Here",
+            "DragActorsHere": "Drag Actors Here",
+            "ShopRadius": "Shop Radius (Grid Units)",
+            "ShopRadiusHint": "Determines the size of the Scene Region",
+            "Units": "Units",
+            "MatrixHost": "Matrix Host (WAN Master)",
+            "OpenHostSheet": "Open Host Sheet",
+            "SlavedWANDevices": "SLAVED WAN DEVICES:",
+            "OpenEmployeeMatrixTab": "Open Employee Matrix Tab",
+            "OwnerLabel": "Owner:",
+            "NoSlavedDevicesFound": "No slaved employee commlinks/cyberdecks found",
+            "DragDropHostHint": "Drag & Drop Host Item Here to Initialize WAN",
+            "NoActiveHost": "No Matrix Host active for this shop",
+            "RemoveShopActor": "Remove Shop Actor",
+            "RemoveConnectionItem": "Remove Connection Item",
+            "RemoveSelectedActor": "Remove Selected Actor",
+            "FIELDS": {
+                "owner": {
+                    "label": "Shop Owner",
+                    "hint": "The UUID of the Actor who owns this shop."
+                },
+                "employees": {
+                    "label": "Employees",
+                    "hint": "A list of Actor UUIDs who are employees of this shop."
+                },
+                "connection": {
+                    "label": "Connection",
+                    "hint": "The UUID of an Item that represents the shop's primary Connection."
+                },
+                "modifierValue": {
+                    "label": "Modifier Value",
+                    "hint": "The numeric value of the fee or discount."
+                },
+                "modifierType": {
+                    "label": "Modifier Type",
+                    "hint": "Whether the modifier is a fee or a discount."
+                }
+            }
+        },
+        "Actor": {
+            "SelectAnActor": "Select an Actor",
+            "SelectActorTooltip": "Please select an actor to begin shopping.",
+            "RequestActor": "Request From",
+            "Funds": "Funds"
+        },
+        "Contacts": {
+            "SelectContact": "Select a contact to Order with",
+            "NoContacts": "has no contacts.",
+            "SelectContactTooltip": "Click to Select/Deselect Contact",
+            "ToggleDetailsTooltip": "Toggle Details",
+            "Loyalty": "Loyalty",
+            "Connection": "Connection"
+        },
+        "Basket": {
+            "Title": "Shopping Basket",
+            "Contents": "Contents",
+            "CurrentContents": "Current Contents",
+            "SelectItem": "Select Item",
+            "AddToCart": "Add to Cart",
+            "BuyQuantity": "Buy Quantity",
+            "QuantityPerPack": "Quantity / Pack",
+            "TotalCost": "Total Cost",
+            "TotalAvailability": "Total Availability",
+            "TotalKarma": "Total Karma Cost",
+            "TotalEssence": "Total Essence Cost",
+            "SendRequest": "Buy",
+            "CancelRequest": "Cancel",
+            "Description": "Basket Description",
+            "AddItem": "Add Item",
+            "DecreaseQuantity": "Decrease Quantity",
+            "IncreaseQuantity": "Increase Quantity",
+            "OutOfStockWarning": "Cannot add more of '{name}'. The shop only has {qty} in stock."
+        },
+        "OrderReview": {
+            "Title": "Order Review",
+            "YourItems": "Your Items",
+            "OrderReviewItems": "Items List for the Review",
+            "YourOrderHasArrived": "Your order has arrived!",
+            "Approved": "approved",
+            "Rejected": "rejected",
+            "AllApproved": "all approved",
+            "AllRejected": "all rejected",
+            "ConfirmTime": "Date",
+            "ReviewAndConfirm": "Review (GM only)",
+            "ShoppingListRequest": "Shopping List Request",
+            "OrderRejected": "Sorry but the following items can not be confirmed",
+            "NoPurchaseRequests": "There are no purchase requests",
+            "PurchaseReview": "purchase review",
+            "OrderHistory": "Order History",
+            "History": "History",
+            "RequestFor": "Request from",
+            "Of": "of",
+            "Each": "each",
+            "ApproveItem": "Approve Item",
+            "RejectItem": "Reject Item",
+            "PurchaseRequestByUser": "Purchase Request by User:",
+            "EstimatedDeliveryForRequest": "Estimated Delivery for this request:",
+            "AvailabilityRollResults": "Availability Roll Results",
+            "PlayersRoll": "Player's Roll ({hits} Net Hits)",
+            "ItemsResistance": "Item's Resistance ({hits} Hits)",
+            "FinalRollWithHits": "Final Roll ({hits} Net Hits)",
+            "ThresholdRequired": "Threshold Required",
+            "LastRollWithHits": "Last Roll ({hits} Net Hits)",
+            "TotalRollsMade": "Total Rolls Made:",
+            "HitsAccumulated": "Hits Accumulated:",
+            "ConnectionRatingUsed": "Connection Rating Used:",
+            "ResolveRequestFrom": "Resolve request from",
+            "ConsolidatedTotalsFor": "Consolidated Totals for"
+        },
+        "system": {
+            "avail": {
+                "avail": "Avail.",
+                "R": "R",
+                "F": "F",
+                "E": "R",
+                "V": "F"
+            },
+            "technology": {
+                "quantity": "Quantity",
+                "rating": "Rating"
+            },
+            "spell": {
+                "type": "Type",
+                "range": "Range",
+                "duration": "Duration",
+                "damage": "Damage",
+                "drain": "Drain"
+            }
+        },
+        "ItemTypes": {
+            "AllItems": "All Items",
+            "RangedWeapons": "Ranged Weapons",
+            "MeleeWeapons": "Melee Weapons",
+            "Modifications": "Modifications",
+            "WeaponMods": "Weapon Mods",
+            "ArmorMods": "Armor Mods",
+            "VehicleMods": "Vehicle Mods",
+            "Armor": "Armor",
+            "Bioware": "Bioware",
+            "Cyberware": "Cyberware",
+            "Devices": "Devices",
+            "Ammo": "Ammunition",
+            "Equipment": "Equipment",
+            "Lifestyles": "Lifestyles",
+            "Programs": "Programs",
+            "Rituals": "Rituals",
+            "SINs": "SINs",
+            "Spells": "Spells",
+            "Actions": "Actions",
+            "Qualitys": "Qualities",
+            "AdeptPowers": "Adept Powers",
+            "Echo": "Echo",
+            "ComplexForms": "Complex Forms"
+        },
+        "Modifiers": {
+            "General": {
+                "title": "General Social Modifiers",
+                "npcAttitudeFriendly": "NPC has a friendly attitude",
+                "npcAttitudeNeutral": "NPC has a neutral attitude",
+                "npcAttitudeMistrustful": "NPC is mistrustful",
+                "npcAttitudeBiased": "NPC is biased against the character",
+                "npcAttitudeAverse": "NPC is averse to the character",
+                "npcAttitudeHostile": "NPC is hostile",
+                "resultAdvantageous": "Result of failure is advantageous",
+                "resultInsignificant": "Result of failure is insignificant",
+                "resultAnnoying": "Result of failure is annoying",
+                "resultDangerous": "Result of failure is dangerous",
+                "resultCatastrophic": "Result of failure is catastrophic"
+            },
+            "Negotiation": {
+                "title": "Negotiation Modifiers",
+                "notEnoughInfo": "Character has insufficient information",
+                "hasLeverage": "Character has leverage over the target"
+            },
+            "Etiquette": {
+                "title": "Etiquette Modifiers",
+                "improperlyDressed": "Character is improperly dressed",
+                "obviouslyNervous": "Character is obviously nervous"
+            },
+            "Intimidation": {
+                "title": "Intimidation Modifiers",
+                "physicallyImposing": "Character is physically imposing",
+                "outnumbered": "Target is outnumbered",
+                "hasWeapon": "Character is visibly armed or using magic"
+            },
+            "Con": {
+                "title": "Con Modifiers",
+                "plausibleEvidence": "Character presents plausible evidence",
+                "targetDistracted": "Target is distracted or gullible"
+            }
+        },
+        "Acquisition": {
+            "Success": "Success",
+            "Failure": "Could not be acquired."
+        },
+        "Availability": {
+            "SuccessMessage": "{actor} successfully procured {item}! Quantity is now {qty}.",
+            "RetryPrompt": "Would you like to try again with a {penalty} penalty on the dice pool?",
+            "RetryPenalty": "Retry Penalty ({penalty})"
+        },
+        "Notifications": {
+            "BehaviorsSaved": "Item behaviors saved successfully.",
+            "IndexComplete": "Marketplace index rebuild complete.",
+            "PurchaseRequestSubmitted": "Your purchase request has been submitted to the GM for review.",
+            "ItemRejected": "Item rejected and removed from the request.",
+            "PurchaseRequestRejected": "Purchase request for user {name} has been rejected.",
+            "PurchaseApproved": "Purchase approved for user {name}.",
+            "DeductedResources": "Deducted {cost} ¥ and {karma} Karma from {actor}.",
+            "ItemsAdded": "Added {count} new item(s) to {actor}'s inventory."
+        },
+        "NoContacts": "Has no Contacts"
+    },
+    "ItemBuilder": {
+        "Title": "Build Item",
+        "SelectAsBase": "Select as Base Item",
+        "AddToBuilder": "Add to Builder",
+        "SearchAllMods": "Search all modifications...",
+        "SelectImage": "Select Image",
+        "DoneEditing": "Done Editing",
+        "EditBaseItem": "Edit Base Item",
+        "nav": {
+            "builder": "Builder",
+            "effects": "Effects",
+            "dialog": "Dialog"
+        },
+        "Items": {
+            "Header": "Base Items",
+            "baseItemPlaceholder": {
+                "title": "Select a Base Item",
+                "description": "Choose an item from the list on the left to begin building."
+            }
+        },
+        "Modifications": {
+            "Header": "Available Modifications"
+        },
+        "Effects": {
+            "ManageEffects": "Manage Effects",
+            "ManageEffectsHint": "View, create, and edit the active effects applied by the base item and its modifications.",
+            "AddEffect": "Add Effect",
+            "InnateLockedHint": "This is an innate effect of the item and cannot be deleted, but it can be overridden.",
+            "EditEffectHeader": "Edit Effect",
+            "CreateEffectHeader": "Create New Effect",
+            "EffectNameLabel": "Effect Name",
+            "EffectNamePlaceholder": "e.g., Smartlink Bonus",
+            "EffectIconLabel": "Icon",
+            "SelectIconTooltip": "Select an icon for this effect",
+            "ApplyToLabel": "Apply To",
+            "TestFilterLabel": "Filter by Test",
+            "SelectTestsPlaceholder": "Any Test",
+            "CategoryFilterLabel": "Filter by Category",
+            "SelectCategoriesPlaceholder": "Any Category",
+            "SkillFilterLabel": "Filter by Skill",
+            "SelectSkillsPlaceholder": "Any Skill",
+            "AttributeFilterLabel": "Filter by Attribute",
+            "SelectAttributesPlaceholder": "Any Attribute",
+            "LimitFilterLabel": "Filter by Limit",
+            "SelectLimitsPlaceholder": "Any Limit",
+            "AttributeKeyLabel": "Attribute / Property Key",
+            "AttributeKeyPlaceholder": "Select a property to modify from the groups below.",
+            "ChangeModeLabel": "Change Mode",
+            "EffectValueLabel": "Value",
+            "SelectDerivedValueTooltip": "Select a property from the base item to derive this value from.",
+            "SelectDerivedValueLabel": "Select a property from the Base Item",
+            "CustomEffect": "Custom Effect"
+        },
+        "SearchPlaceholder": "Search items...",
+        "ClearEntireBuild": "Clear entire build",
+        "RemoveMod": "Remove Mod",
+        "ItemBuild": "Item Build",
+        "ActiveEffects": "Active Effects",
+        "SelectAnItem": "Select an Item",
+        "BuildQueueEmpty": "Your build queue is empty.",
+        "BuildQueueEmptyDesc": "Use the 'Builder' tab to design an item, then click 'Add to Queue' to send it here.",
+        "BaseItemType": "Base Item Type",
+        "BuildTest": "Build Test",
+        "CreateAllItems": "Create All Items",
+        "SubmitAllToGM": "Submit All to GM",
+        "ClearEntireQueue": "Clear Entire Queue"
+    },
+    "Marketshouter": {
+        "SearchingInShop": "Searching in: {name}",
+        "SearchShop": "Search {name}...",
+        "SearchCompendiumItems": "Search compendium items...",
+        "ClearSearch": "Clear Search",
+        "ReviewPurchaseRequests": "Review Purchase Requests",
+        "OpenMarketplace": "Open Marketplace",
+        "OpenShoppingCart": "Open Shopping Cart",
+        "ItemFound": "1 item found",
+        "ItemsFound": "{count} items found",
+        "NoMatchingItemsFound": "No matching items found"
+    },
+    "AppDialogItem": {
+        "result": {
+            "Test": "Test Result",
+            "text": "You scored ",
+            "Hits": " hits!"
+        },
+        "GlitchText": {
+            "with": "With ",
+            "glitch": " ones... a GLITCH!"
+        },
+        "ThresholdInfo": "This is the threshold for the item's resist roll.",
+        "RollItemResistance": "Roll Item Resistance",
+        "AcquisitionSuccess": "Items can be Acquired",
+        "AcquisitionFailed": "Acquisition Failed",
+        "YourRoll": "Your Roll",
+        "netHits": "Net Hits",
+        "Resistance": "Item Resistance",
+        "Hits": "Hits",
+        "ExtendedSuccessDetails": "Acquisition took {rolls} rolls, using a Connection of {connection}. Final delivery time: {timeValue}",
+        "FinalRoll": "Final Roll",
+        "OrderTest": "Order Availability Test"
+    },
+    "Time": {
+        "Hours": "Hours",
+        "Day": "Day",
+        "Days": "Days",
+        "Week": "Week",
+        "Month": "Month",
+        "hours": "Hours",
+        "days": "Days",
+        "weeks": "Weeks",
+        "months": "Months",
+        "hour": "Hour",
+        "day": "Day",
+        "week": "Week",
+        "month": "Month"
+    }
+}

@@ -1,0 +1,537 @@
+{
+    "Themes": {
+        "Neon": "Cyber-Neon (Dunkel)",
+        "NeonLight": "Cyber-Neon (Hell)",
+        "Silicon": "Silicon"
+    },
+    "UI": {
+        "Name": "Name",
+        "New": "Neuer",
+        "CreateActor": "Akteur erstellen",
+        "CreateType": "Erschaffe {type}",
+        "ActorCreator": {
+            "NamePlaceholder": "z.B. Herr Schmidt, Waffenladen...",
+            "ShopDetailsTitle": "Laden-Details & Regeln",
+            "ShopDescPlaceholder": "Eine kurze Beschreibung des Ladens und seiner Waren...",
+            "HostEmployeesTitle": "Host & Angestellte",
+            "NoHost": "-- Kein Matrix-Host --",
+            "NoActors": "Keine Akteure im Seitenleisten-Verzeichnis verfügbar.",
+            "PopulateInventoryTitle": "Laden-Inventar bestücken",
+            "FilterByType": "Nach Typ filtern",
+            "All": "Alle",
+            "None": "Keine",
+            "Source": "Quelle",
+            "SourceBoth": "Sowohl Welt als auch Kompendien",
+            "SourceWorld": "Nur Welt-Gegenstände",
+            "SourceCompendium": "Nur Kompendium-Gegenstände",
+            "MaxRating": "Max. Gegenstandsstufe",
+            "NoLimit": "Kein Limit",
+            "AvailableItems": "Verfügbare Gegenstände",
+            "Matches": "{count} Treffer",
+            "SelectAll": "Alle auswählen",
+            "ClearAll": "Auswahl aufheben",
+            "RemoveFilter": "Filter entfernen",
+            "SearchPlaceholder": "Name/Typ suchen... (Eingabetaste drücken, um Tag hinzuzufügen)",
+            "LoadingDatabase": "Lade Gegenstands-Datenbank...",
+            "NoMatches": "Keine passenden Gegenstände gefunden. Passe die Filter an.",
+            "SelectedItems": "Ausgewählte Gegenstände",
+            "CountItems": "{count} Gegenstände",
+            "RemoveAll": "Alle entfernen",
+            "RemoveItem": "Gegenstand entfernen",
+            "NoItemsSelected": "Keine Gegenstände ausgewählt. Klicke links auf die Kontrollkästchen, um sie hinzuzufügen.",
+            "RatingAbbrev": "St."
+        },
+        "Rating": "Stufe",
+        "Cost": "Kosten",
+        "Availability": "Verfügbarkeit",
+        "Quantity": "Menge",
+        "Karma": "Karma",
+        "Essence": "Essenz",
+        "Image": "Bild",
+        "Description": "Beschreibung",
+        "Actions": "Aktionen",
+        "Total": "Gesamt",
+        "Search": "Suche",
+        "SearchPlaceholder": "Gegenstände suchen...",
+        "Remove": "Entfernen",
+        "Cancel": "Abbrechen",
+        "Save": "Speichern",
+        "Edit": "Bearbeiten",
+        "Delete": "Löschen",
+        "Properties": "Eigenschaften",
+        "Slot": "Slot",
+        "Slots": "Mod Punkte",
+        "MountPoint": "Rüstplatz",
+        "BaseItem": "Basisartikel",
+        "LimitPhysical": "Körperliches Limit",
+        "LimitMental": "Geistiges Limit",
+        "SpecialAttributes": "Spezialattribute",
+        "ActiveSkills": "Aktive Fertigkeiten",
+        "Languages": "Sprachen",
+        "KnowledgeSkillStreet": "Straße",
+        "KnowledgeSkillAcademic": "Akademisch",
+        "KnowledgeSkillProfessional": "Beruflich",
+        "KnowledgeSkillInterest": "Interessen",
+        "KnowledgeSkillInterests": "Interessen",
+        "Roll": "Würfeln",
+        "Qty": "Menge",
+        "Owner": "Besitzer",
+        "Type": "Typ",
+        "DeleteSkill": "Fertigkeit löschen",
+        "RemoveItem": "Gegenstand entfernen",
+        "StockOrder": "Bestand / Bestellung",
+        "InStock": "Auf Lager",
+        "Compendiums": "Kompendien",
+        "Folders": "Ordner",
+        "Items": "Artikel",
+        "AddSelected": "Auswahl hinzufügen",
+        "NoCompendiumSelectedTitle": "Kein Kompendium ausgewählt",
+        "NoCompendiumSelectedDesc": "Bitte wählen Sie ein Kompendium aus der linken Seitenleiste aus, um dessen Inhalt zu durchsuchen und hinzuzufügen.",
+        "SelectAll": "Alle auswählen",
+        "DeselectAll": "Auswahl aufheben",
+        "CostOrKarma": "Kosten / Karma",
+        "Nuyen": "Nuyen",
+        "CopyDocumentUuid": "Dokumenten-UUID kopieren"
+    },
+    "Marketplace": {
+        "Title": "Marktplatz Fenster",
+        "Tabs": {
+            "Shop": "Laden",
+            "OrderReview": "Überprf."
+        },
+        "Settings": {
+            "AvailabilityRule": {
+                "name": "Verfügbarkeits Regeln",
+                "hint": "Auswahl welche regeln ihr benutzen wollt, standard ist resistence",
+                "choices": {
+                    "opposed": "Vergleichend",
+                    "simple": "Einfach",
+                    "extended": "Erweitert"
+                }
+            },
+            "ApprovalWorkflow": {
+                "name": "GM Genehmigungsprocess",
+                "hint": "Schalte diese Einstellung um den Genehmigungsprocess für Spielerkäufe zu deaktivieren!"
+            },
+            "ChatRequestEnabled": {
+                "name": "Chat-Nachricht: Kaufanfragen",
+                "hint": "Postet eine Chat-Nachricht, wenn eine Kaufanfrage zur Überprüfung eingereicht wird."
+            },
+            "ChatRejectionEnabled": {
+                "name": "Chat-Nachricht: Ablehnungen",
+                "hint": "Postet eine Chat-Nachricht, wenn eine Anfrage oder ein Artikel abgelehnt wird."
+            },
+            "ChatApprovalEnabled": {
+                "name": "Chat-Nachricht: Genehmigungen",
+                "hint": "Postet eine Chat-Nachricht, wenn ein Kauf genehmigt wurde."
+            },
+            "ResetItemLoad": {
+                "name": "Item Verbesserung landen zurücksetzen",
+                "hint": "Dies ermöglicht es die Karma Werte und den Kosten und Verfügbarkeiten von Welt- und Kompendiumsartikeln, ihre Flags für Karma neu zu initialisieren. Wenn Sie diese Einstellung auf true setzen, werden alle Änderungen, die Sie an Karma, Kosten oder Verfügbarkeit der Items vorgenommen haben, rückgängig gemacht."
+            },
+            "PremiumThemes": {
+                "name": "Premium Themes Aktivieren",
+                "hint": "Macht Premium-Themes (Apple Silicon, Cyber Neon, Neon Light) im Foundry UI Konfigurationsmenü auswählbar."
+            },
+            "title": "Marktplatz Einstellungen",
+            "description": "Klicke auf einen Artikeltyp in einer Spalte, um ihn der Verhaltenskategorie zuzuordnen. Änderungen werden sofort gespeichert. Einzigartige Artikel können nur einmal pro Charakter gekauft werden, stapelbare Artikel werden im selben Artikel gestapelt und einzelne Artikel können mehrmals pro Bestellung als eine Artikelinstanz bestellt werden.",
+            "CategoryUnique": "Einzigartige Artikel",
+            "StackingItems": "Stapelfähige Artikel",
+            "SingleItems": "Einzelne Artikel",
+            "Menu": {
+                "name": "Artikeltyp Menü",
+                "hint": "Dieses Menü ermöglicht es Ihnen, Artikeltypen verschiedenen Verhaltensweisen zuzuordnen.",
+                "buttonLabel": "Artikeltyp Einstellungen öffnen"
+            },
+            "KarmaSpell": {
+                "name": "Karma Zauberkosten",
+                "hint": "Diese Einstellung ermöglicht es Ihnen, die Karma Kosten für Zauber festzulegen. Der Wert wird verwendet, um Zauber zu bezahlen."
+            },
+            "KarmaComplexForm": {
+                "name": "Karma Komplexe Form Kosten",
+                "hint": "Diese Einstellung ermöglicht es Ihnen, die Karma Kosten für komplexe Formen festzulegen. Wenn auf true gesetzt, werden die Karma Kosten anstelle der Essenzkosten verwendet."
+            },
+            "ItemTypeBehaviors": {
+                "name": "Artikeltyp-Verhalten"
+            },
+            "SetToUnique": "'{label}' auf Einzigartig setzen",
+            "SetToStacking": "'{label}' auf Stapelfähig setzen",
+            "SetToSingle": "'{label}' auf Einzeln setzen",
+            "UniqueAllowOnlyOne": "Einzigartig (Nur eines erlauben)",
+            "StackQuantity": "Stapelmenge",
+            "AddAsSingleItem": "Als einzelnen Gegenstand hinzufügen",
+            "AbbreviationUnique": "E",
+            "AbbreviationStack": "St",
+            "AbbreviationSingle": "E"
+        },
+        "Tests": {
+            "title": "Marketplace Tests",
+            "AvailabilityTest": "Verfügbarkeit Test",
+            "ExtendedTestInProgress": "Erweiterte Probe läuft",
+            "Progress": "Fortschritt:",
+            "NextRoll": "Nächster Wurf:",
+            "LastRollResults": "Ergebnisse des letzten Wurfs:",
+            "ContinueTest": "Probe fortsetzen"
+        },
+        "Source": {
+            "Global": "Laden"
+        },
+        "Shop": {
+            "SheetName": "Geschäft",
+            "Inventory": "Inventar",
+            "SellPrice": "Verkaufspreis",
+            "BuyPrice": "Kaufpreis",
+            "BuyTime": "Kaufzeit",
+            "Comment": "Kommentar",
+            "Employees": "Mitarbeiter",
+            "OneUuidPerLine": "Eine UUID pro Zeile",
+            "Discount": "Rabatt",
+            "Fee": "Gebühr",
+            "Modifier": "Preisänderung",
+            "ConnectionUuid": "Verbindung",
+            "Owner": "Geschäftsinhaber",
+            "OwnerUuid": "Besitzer UUID",
+            "AddItem": "Artikel hinzufügen",
+            "ItemMarkup": "Aufschlag",
+            "IncreaseMarkup": "Aufschlag um 5% erhöhen",
+            "DecreaseMarkup": "Aufschlag um 5% verringern",
+            "SetAsServingEmployee": "Als aktiven Mitarbeiter festlegen",
+            "ClearInventoryTitle": "Inventar leeren",
+            "ClearInventoryPrompt": "Bist du sicher, dass du alle Artikel im Inventar löschen möchtest?",
+            "ClearInventoryButton": "Alle löschen",
+            "ClearInventorySuccess": "Inventar erfolgreich geleert.",
+            "ClearInventoryTooltip": "Gesamtes Inventar leeren",
+            "DragDropHint": "Ziehe Gegenstände hierher, um sie dem Shop-Inventar hinzuzufügen",
+            "WAN": "WAN",
+            "NoSlavedDevices": "Keine Slaved-Geräte",
+            "DragActorHere": "Akteur hierher ziehen",
+            "DragItemHere": "Gegenstand hierher ziehen",
+            "DragActorsHere": "Akteure hierher ziehen",
+            "ShopRadius": "Shop-Radius (Gitter-Einheiten)",
+            "ShopRadiusHint": "Bestimmt die Größe der Szenenregion",
+            "Units": "Einheiten",
+            "MatrixHost": "Matrix-Host (WAN-Master)",
+            "OpenHostSheet": "Host-Bogen öffnen",
+            "SlavedWANDevices": "SLAVED-WAN-GERÄTE:",
+            "OpenEmployeeMatrixTab": "Matrix-Tab des Mitarbeiters öffnen",
+            "OwnerLabel": "Besitzer:",
+            "NoSlavedDevicesFound": "Keine slaved Mitarbeiter-Kommlinks/Cyberdecks gefunden",
+            "DragDropHostHint": "Ziehe Host-Gegenstand hierher, um WAN zu initialisieren",
+            "NoActiveHost": "Kein Matrix-Host für diesen Shop aktiv",
+            "RemoveShopActor": "Shop-Akteur entfernen",
+            "RemoveConnectionItem": "Verbindung entfernen",
+            "RemoveSelectedActor": "Ausgewählten Akteur entfernen",
+            "FIELDS": {
+                "owner": {
+                    "label": "Shop Owner",
+                    "hint": "The UUID of the Actor who owns this shop."
+                },
+                "employees": {
+                    "label": "Employees",
+                    "hint": "A list of Actor UUIDs who are employees of this shop."
+                },
+                "connection": {
+                    "label": "Connection",
+                    "hint": "The UUID of an Item that represents the shop's primary Connection."
+                },
+                "modifierValue": {
+                    "label": "Modifier Value",
+                    "hint": "The numeric value of the fee or discount."
+                },
+                "modifierType": {
+                    "label": "Modifier Type",
+                    "hint": "Whether the modifier is a fee or a discount."
+                }
+            }
+        },
+        "Actor": {
+            "SelectAnActor": "Wähle einen Akteur",
+            "SelectActorTooltip": "Bitte wähle einen Akteur aus, um einzukaufen.",
+            "RequestActor": "Anfrage von",
+            "Funds": "Budget"
+        },
+        "Contacts": {
+            "SelectContact": "Wählen Sie einen Kontakt der die Bestellung besorgt",
+            "NoContacts": "hat keine Kontakte.",
+            "SelectContactTooltip": "Kontakt auswählen/abwählen",
+            "ToggleDetailsTooltip": "Details umschalten",
+            "Loyalty": "Loyalität",
+            "Connection": "Connection"
+        },
+        "Basket": {
+            "Title": "Einkaufskorb",
+            "Contents": "Inhalt",
+            "CurrentContents": "Aktueller Inhalt",
+            "SelectItem": "Artikel auswählen",
+            "AddToCart": "In den Warenkorb",
+            "BuyQuantity": "Kaufmenge",
+            "QuantityPerPack": "Menge / Packung",
+            "TotalCost": "Gesamtkosten",
+            "TotalAvailability": "Gesamtverfügbarkeit",
+            "TotalKarma": "Gesamtkarma Kosten",
+            "TotalEssence": "Gesamtessenz Kosten",
+            "SendRequest": "Kaufen",
+            "CancelRequest": "Abbruch",
+            "Description": "Beschreibung",
+            "AddItem": "Hinzufügen",
+            "DecreaseQuantity": "Menge verringern",
+            "IncreaseQuantity": "Menge erhöhen",
+            "OutOfStockWarning": "Kann '{name}' nicht weiter hinzufügen. Das Geschäft hat nur {qty} auf Lager."
+        },
+        "OrderReview": {
+            "Title": "Order Überprüfung",
+            "YourItems": "Deine Artikel",
+            "OrderReviewItems": "Artikel Liste für die Überprüfung",
+            "YourOrderHasArrived": "Deine Bestellung ist angekommen!",
+            "Approved": "genehmigt",
+            "Rejected": "abgelehnt",
+            "AllApproved": "alle genehmigt",
+            "AllRejected": "alle abgelehnt",
+            "ConfirmTime": "Datum",
+            "ReviewAndConfirm": "Überprüfen (nur GM)",
+            "ShoppingListRequest": "Einkaufslisten Anfrage",
+            "OrderRejected": "Entschuldigung, aber die folgenden Artikel können nicht bestätigt werden",
+            "NoPurchaseRequests": "Es gibt keine Kaufanfragen",
+            "PurchaseReview": "Kaufüberprüfung",
+            "OrderHistory": "Bestell Historie",
+            "History": "Historie",
+            "RequestFor": "Anfrage von",
+            "Of": "von",
+            "Each": "pro Stück",
+            "ApproveItem": "Gegenstand genehmigen",
+            "RejectItem": "Gegenstand ablehnen",
+            "PurchaseRequestByUser": "Kaufanfrage von Benutzer:",
+            "EstimatedDeliveryForRequest": "Voraussichtliche Lieferung für diese Anfrage:",
+            "AvailabilityRollResults": "Ergebnisse des Verfügbarkeitswurfs",
+            "PlayersRoll": "Wurf des Spielers ({hits} Nettoerfolge)",
+            "ItemsResistance": "Widerstand des Gegenstands ({hits} Erfolge)",
+            "FinalRollWithHits": "Letzter Wurf ({hits} Nettoerfolge)",
+            "ThresholdRequired": "Erforderlicher Schwellenwert",
+            "LastRollWithHits": "Letzter Wurf ({hits} Nettoerfolge)",
+            "TotalRollsMade": "Gesamtzahl der Würfe:",
+            "HitsAccumulated": "Angesammelte Erfolge:",
+            "ConnectionRatingUsed": "Verwendete Connection-Stufe:",
+            "ResolveRequestFrom": "Anfrage auflösen von",
+            "ConsolidatedTotalsFor": "Konsolidierte Gesamtwerte für"
+        },
+        "system": {
+            "avail": {
+                "avail": "Verfg.",
+                "R": "E",
+                "F": "V",
+                "E": "E",
+                "V": "V",
+                "": ""
+            },
+            "technology": {
+                "quantity": "Menge",
+                "rating": "Stufe"
+            },
+            "spell": {
+                "type": "Typ",
+                "range": "Reichweite",
+                "duration": "Dauer",
+                "damage": "Schaden",
+                "drain": "Entzug"
+            }
+        },
+        "ItemTypes": {
+            "AllItems": "Alle Artikel",
+            "RangedWeapons": "Fernkampfwaffen",
+            "MeleeWeapons": "Nahkampfwaffen",
+            "Modifications": "Modifikationen",
+            "WeaponMods": "Waffenmodifikationen",
+            "ArmorMods": "Rüstungmodifikationen",
+            "VehicleMods": "Fahrzeugmodifikationen",
+            "Armor": "Rüstung",
+            "Bioware": "Bioware",
+            "Cyberware": "Cyberware",
+            "Devices": "Geräte",
+            "Ammo": "Munition",
+            "Equipment": "Ausrüstung",
+            "Lifestyles": "Lebensstile",
+            "Programs": "Programme",
+            "Rituals": "Rituale",
+            "SINs": "SINs",
+            "Spells": "Zauber",
+            "Actions": "Aktionen",
+            "Qualitys": "Vor/Nachteile",
+            "AdeptPowers": "Adepten Kräfte",
+            "Echo": "Echo",
+            "ComplexForms": "Komplexe Formen"
+        },
+        "Modifiers": {
+            "General": {
+                "title": "Allgemeine Soziale Modifikatoren",
+                "npcAttitudeFriendly": "NSC hat eine freundliche Haltung",
+                "npcAttitudeNeutral": "NSC hat eine neutrale Haltung",
+                "npcAttitudeMistrustful": "NSC ist misstrauisch",
+                "npcAttitudeBiased": "NSC ist dem Charakter gegenüber voreingenommen",
+                "npcAttitudeAverse": "NSC hat eine Abneigung gegen den Charakter",
+                "npcAttitudeHostile": "NSC ist feindselig",
+                "resultAdvantageous": "Fehlschlag hat vorteilhafte Konsequenzen",
+                "resultInsignificant": "Fehlschlag hat unbedeutende Konsequenzen",
+                "resultAnnoying": "Fehlschlag hat ärgerliche Konsequenzen",
+                "resultDangerous": "Fehlschlag hat gefährliche Konsequenzen",
+                "resultCatastrophic": "Fehlschlag hat katastrophale Konsequenzen"
+            },
+            "Negotiation": {
+                "title": "Verhandlungsmodifikatoren",
+                "notEnoughInfo": "Charakter hat unzureichende Informationen",
+                "hasLeverage": "Charakter hat ein Druckmittel gegen das Ziel"
+            },
+            "Etiquette": {
+                "title": "Etikette-Modifikatoren",
+                "improperlyDressed": "Charakter ist unpassend gekleidet",
+                "obviouslyNervous": "Charakter ist offensichtlich nervös"
+            },
+            "Intimidation": {
+                "title": "Einschüchterungsmodifikatoren",
+                "physicallyImposing": "Charakter ist körperlich imposant",
+                "outnumbered": "Ziel ist in der Unterzahl",
+                "hasWeapon": "Charakter ist sichtbar bewaffnet oder nutzt Magie"
+            },
+            "Con": {
+                "title": "Überreden-Modifikatoren",
+                "plausibleEvidence": "Charakter präsentiert glaubwürdige Beweise",
+                "targetDistracted": "Das Ziel ist abgelenkt oder leichtgläubig"
+            }
+        },
+        "Acquisition": {
+            "Success": "Kauf Erfolg",
+            "Failure": "Konnte nicht beschafft werden."
+        },
+        "Availability": {
+            "SuccessMessage": "{actor} hat {item} erfolgreich beschafft! Die Anzahl ist nun {qty}.",
+            "RetryPrompt": "Möchtest du es mit einem Malus von {penalty} auf den Würfelpool erneut versuchen?",
+            "RetryPenalty": "Wiederholungsmalus ({penalty})"
+        },
+        "Notifications": {
+            "BehaviorsSaved": "Verhalten gespeichert.",
+            "IndexComplete": "Index aktualisiert.",
+            "PurchaseRequestSubmitted": "Ihre Kaufanfrage wurde dem Spielleiter zur Überprüfung vorgelegt.",
+            "ItemRejected": "Artikel abgelehnt und aus der Anfrage entfernt.",
+            "PurchaseRequestRejected": "Kaufanfrage für Benutzer {name} wurde abgelehnt.",
+            "PurchaseApproved": "Kauf freigegeben für Benutzer {name}.",
+            "DeductedResources": "{cost} ¥ und {karma} Karma von {actor} abgezogen.",
+            "ItemsAdded": "{count} neue(r) Artikel zu {actor}s Inventar hinzugefügt."
+        },
+        "NoContacts": "Hat keine Kontakte"
+    },
+    "ItemBuilder": {
+        "Title": "Artikel bauen",
+        "SelectAsBase": "Als Basisartikel auswählen",
+        "AddToBuilder": "Zum Builder hinzufügen",
+        "SearchAllMods": "Alle Modifikationen durchsuchen...",
+        "SelectImage": "Bild auswählen",
+        "DoneEditing": "Bearbeitung beendet",
+        "EditBaseItem": "Basisartikel bearbeiten",
+        "nav": {
+            "builder": "Builder",
+            "effects": "Effekte",
+            "dialog": "Dialog"
+        },
+        "Items": {
+            "Header": "Basisartikel",
+            "baseItemPlaceholder": {
+                "title": "Wähle ein Basisartikel",
+                "description": "Wähle ein Artikel aus der linken Liste, um es zu bauen."
+            }
+        },
+        "Modifications": {
+            "Header": "Verfügbare Modifikationen"
+        },
+        "Effects": {
+            "ManageEffects": "Effekte verwalten",
+            "ManageEffectsHint": "Aktive Effekte des Basisartikels und seiner Modifikationen ansehen, erstellen und bearbeiten.",
+            "AddEffect": "Effekt hinzufügen",
+            "InnateLockedHint": "Dies ist ein angeborener Effekt des Artikels und kann nicht gelöscht, aber überschrieben werden.",
+            "EditEffectHeader": "Effekt bearbeiten",
+            "CreateEffectHeader": "Neuen Effekt erstellen",
+            "EffectNameLabel": "Effektname",
+            "EffectNamePlaceholder": "z.B., Smartlink-Bonus",
+            "EffectIconLabel": "Symbol",
+            "SelectIconTooltip": "Wähle ein Symbol für diesen Effekt",
+            "ApplyToLabel": "Anwenden auf",
+            "TestFilterLabel": "Nach Probe filtern",
+            "SelectTestsPlaceholder": "Jede Probe",
+            "CategoryFilterLabel": "Nach Kategorie filtern",
+            "SelectCategoriesPlaceholder": "Jede Kategorie",
+            "SkillFilterLabel": "Nach Fertigkeit filtern",
+            "SelectSkillsPlaceholder": "Jede Fertigkeit",
+            "AttributeFilterLabel": "Nach Attribut filtern",
+            "SelectAttributesPlaceholder": "Jedes Attribut",
+            "LimitFilterLabel": "Nach Limit filtern",
+            "SelectLimitsPlaceholder": "Jedes Limit",
+            "AttributeKeyLabel": "Attribut / Eigenschaft",
+            "AttributeKeyPlaceholder": "Wähle eine Eigenschaft aus den Gruppen unten aus.",
+            "ChangeModeLabel": "Änderungsmodus",
+            "EffectValueLabel": "Wert",
+            "SelectDerivedValueTooltip": "Wähle eine Eigenschaft vom Basisartikel, um diesen Wert abzuleiten.",
+            "SelectDerivedValueLabel": "Wähle eine Eigenschaft vom Basisartikel",
+            "CustomEffect": "Eigener Effekt"
+        },
+        "SearchPlaceholder": "Suchen...",
+        "ClearEntireBuild": "Gesamten Entwurf löschen",
+        "RemoveMod": "Modifikation entfernen",
+        "ItemBuild": "Gegenstandsentwurf",
+        "ActiveEffects": "Aktive Effekte",
+        "SelectAnItem": "Wähle einen Gegenstand",
+        "BuildQueueEmpty": "Deine Bauschlange ist leer.",
+        "BuildQueueEmptyDesc": "Benutze den 'Builder'-Tab, um einen Gegenstand zu entwerfen, und klicke dann auf 'Zur Warteschlange hinzufügen', um ihn hierher zu senden.",
+        "BaseItemType": "Basis-Gegenstandstyp",
+        "BuildTest": "Bau-Probe",
+        "CreateAllItems": "Alle Gegenstände erstellen",
+        "SubmitAllToGM": "Alle an GM senden",
+        "ClearEntireQueue": "Ganze Warteschlange leeren"
+    },
+    "Marketshouter": {
+        "SearchingInShop": "Suche in: {name}",
+        "SearchShop": "Durchsuche {name}...",
+        "SearchCompendiumItems": "Kompendium durchsuchen...",
+        "ClearSearch": "Suche leeren",
+        "ReviewPurchaseRequests": "Kaufanfragen überprüfen",
+        "OpenMarketplace": "Marktplatz öffnen",
+        "OpenShoppingCart": "Einkaufswagen öffnen",
+        "ItemFound": "1 Gegenstand gefunden",
+        "ItemsFound": "{count} Gegenstände gefunden",
+        "NoMatchingItemsFound": "Keine passenden Gegenstände gefunden"
+    },
+    "AppDialogItem": {
+        "result": {
+            "Test": "Testergebnis",
+            "text": "Du hast ",
+            "Hits": " Erfolge erzielt!"
+        },
+        "GlitchText": {
+            "with": "Mit ",
+            "glitch": " Einsen... ein PATZER!"
+        },
+        "ThresholdInfo": "Dies ist der Schwellenwert für den Widerstandswurf des Gegenstands.",
+        "RollItemResistance": "Gegenstandswiderstand würfeln",
+        "AcquisitionSuccess": "Gegenstände können erworben werden",
+        "AcquisitionFailed": "Erwerb fehlgeschlagen",
+        "YourRoll": "Dein Wurf",
+        "netHits": "Nettoerfolge",
+        "Resistance": "Gegenstandswiderstand",
+        "Hits": "Erfolge",
+        "ExtendedSuccessDetails": "Der Erwerb benötigte {rolls} Würfe, unter Verwendung einer Connection von {connection}. Endgültige Lieferzeit: {timeValue}",
+        "FinalRoll": "Letzter Wurf",
+        "OrderTest": "Verfügbarkeitsprobe"
+    },
+    "Time": {
+        "Hours": "Stunden",
+        "Day": "Tag",
+        "Days": "Tage",
+        "Week": "Woche",
+        "Month": "Monat",
+        "hours": "Stunden",
+        "days": "Tage",
+        "weeks": "Wochen",
+        "months": "Monate",
+        "hour": "Stunde",
+        "day": "Tag",
+        "week": "Woche",
+        "month": "Monat"
+    }
+}
