@@ -68,11 +68,11 @@
                         <div class="form-group">
                             <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyToLabel'}}</label>
                             <div class="button-group applyTo">
-                                <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'actor')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="actor">{{@root.effectApplyToOptions.actor}}</button>
-                                <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'targeted_actor')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="targeted_actor">{{@root.effectApplyToOptions.targeted_actor}}</button>
-                                <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'test_all')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="test_all">{{@root.effectApplyToOptions.test_all}}</button>
-                                <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'test_item')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="test_item">{{@root.effectApplyToOptions.test_item}}</button>
-                                <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'modifier')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="modifier">{{@root.effectApplyToOptions.modifier}}</button>
+                                <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'actor')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="actor">{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.actor'}}</button>
+                                <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'targeted_actor')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="targeted_actor">{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.targeted_actor'}}</button>
+                                <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'test_all')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="test_all">{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.test_all'}}</button>
+                                <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'test_item')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="test_item">{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.test_item'}}</button>
+                                <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'modifier')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="modifier">{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.modifier'}}</button>
                             </div>
                         </div>
                         
@@ -80,7 +80,7 @@
                             {{!-- Test Filters (Only shows for Test modes) --}}
                             {{#if @root.isTestMode}}
                                 <div class="form-group">
-                                    <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.TestFilterLabel'}}</label>
+                                    <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.TestFilterLabel'}} <i class="fa-solid fa-circle-info" style="cursor: help; margin-left: 5px; color: var(--color-grey-light);" title="{{@root.testsOptionsListString}}"></i></label>
                                     {{> "modules/sr5-marketplace/templates/apps/itemBuilder/partials/multi-select.html" 
                                         name="system.selection_tests"
                                         options=@root.selection_test_options
@@ -89,7 +89,7 @@
                                     }}
                                 </div>
                                 <div class="form-group">
-                                    <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.CategoryFilterLabel'}}</label>
+                                    <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.CategoryFilterLabel'}} <i class="fa-solid fa-circle-info" style="cursor: help; margin-left: 5px; color: var(--color-grey-light);" title="{{@root.categoriesOptionsListString}}"></i></label>
                                     {{> "modules/sr5-marketplace/templates/apps/itemBuilder/partials/multi-select.html" 
                                         name="system.selection_categories"
                                         options=@root.selection_category_options
@@ -98,7 +98,7 @@
                                     }}
                                 </div>
                                 <div class="form-group">
-                                    <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.SkillFilterLabel'}}</label>
+                                    <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.SkillFilterLabel'}} <i class="fa-solid fa-circle-info" style="cursor: help; margin-left: 5px; color: var(--color-grey-light);" title="{{@root.skillsOptionsListString}}"></i></label>
                                     {{> "modules/sr5-marketplace/templates/apps/itemBuilder/partials/multi-select.html" 
                                         name="system.selection_skills"
                                         options=@root.selection_skill_options
@@ -107,7 +107,7 @@
                                     }}
                                 </div>
                                 <div class="form-group">
-                                    <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.AttributeFilterLabel'}}</label>
+                                    <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.AttributeFilterLabel'}} <i class="fa-solid fa-circle-info" style="cursor: help; margin-left: 5px; color: var(--color-grey-light);" title="{{@root.attributesOptionsListString}}"></i></label>
                                     {{> "modules/sr5-marketplace/templates/apps/itemBuilder/partials/multi-select.html" 
                                         name="system.selection_attributes"
                                         options=@root.selection_attribute_options
@@ -116,7 +116,7 @@
                                     }}
                                 </div>
                                 <div class="form-group">
-                                    <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.LimitFilterLabel'}}</label>
+                                    <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.LimitFilterLabel'}} <i class="fa-solid fa-circle-info" style="cursor: help; margin-left: 5px; color: var(--color-grey-light);" title="{{@root.limitsOptionsListString}}"></i></label>
                                     {{> "modules/sr5-marketplace/templates/apps/itemBuilder/partials/multi-select.html" 
                                         name="system.selection_limits"
                                         options=@root.selection_limit_options
@@ -128,7 +128,7 @@
 
                             {{!-- Key Selection and Value Section --}}
                             <div class="form-group full-width">
-                                <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.AttributeKeyLabel'}}</label>
+                                <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.AttributeKeyLabel'}}{{#if @root.attributeKeysOptionsListString}} <i class="fa-solid fa-circle-info" style="cursor: help; margin-left: 5px; color: var(--color-grey-light);" title="{{@root.attributeKeysOptionsListString}}"></i>{{/if}}</label>
                                 <input type="text" name="changes.0.key" value="{{@root.draftEffect.changes.[0].key}}" readonly placeholder="{{localize 'SR5Marketplace.ItemBuilder.Effects.AttributeKeyPlaceholder'}}"/>
                             </div>
                             <div class="key-selector-container full-width">

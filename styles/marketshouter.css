@@ -397,3 +397,23 @@
     background: linear-gradient(135deg, #0096ff, #0055ff);
     box-shadow: 0 0 8px rgba(0, 150, 255, 0.6);
 }
+
+/* Item Builder Button Hover and SVG animations */
+.marketshouter-builder-btn:hover {
+    color: #ffffff !important;
+    background: rgba(255, 215, 0, 0.15) !important;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.2) !important;
+}
+
+.marketshouter-builder-btn svg {
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.marketshouter-builder-btn:hover svg {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.marketshouter-builder-btn:active svg {
+    transform: scale(0.9);
+}
+

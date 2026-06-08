@@ -91,12 +91,17 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         const isGM = game.user.isGM;
         const pendingCount = isGM ? game.sr5marketplace.api.marketplace.getPendingRequestCount() : 0;
 
+        // Show item builder for GM (restricted to GM for now).
+        // TODO: In the future, implement a player option (player actor on a scene meets a condition).
+        const showItemBuilder = isGM;
+
         return {
             itemCount,
             shopActorImg,
             shopActorName,
             isGM,
-            pendingCount
+            pendingCount,
+            showItemBuilder
         };
     }
 
@@ -140,6 +145,8 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
                     this._openMarketplace("shoppingCart");
                 } else if (action === "openReview") {
                     this._openMarketplace("orderReview");
+                } else if (action === "openBuilder") {
+                    game.sr5marketplace.api.itemBuilder.open();
                 }
             });
         });
