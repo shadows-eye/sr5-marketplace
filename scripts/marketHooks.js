@@ -81,7 +81,9 @@ const initializeTemplates = () => {
         "modules/sr5-marketplace/templates/apps/marketshouter/marketshouter.html",
         "modules/sr5-marketplace/templates/chat/chatMessageRequest.html",
         "modules/sr5-marketplace/templates/chat/orderConfirmation.html",
-        "modules/sr5-marketplace/templates/chat/orderRejection.html"
+        "modules/sr5-marketplace/templates/chat/orderConfirmationPhone.html",
+        "modules/sr5-marketplace/templates/chat/orderRejection.html",
+        "modules/sr5-marketplace/templates/chat/orderRejectionPhone.html"
     ]);
 };
 

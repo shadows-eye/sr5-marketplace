@@ -1,6 +1,7 @@
 import { BasketService } from "./basketService.mjs";
 import { MODULE_ID, FLAGKEY_Basket } from "../lib/constants.mjs";
 import { AppTestFlagService } from "./AppTestFlagService.mjs";
+import enrichHTML from "./enricher.mjs";
 
 
 export class PurchaseService {
@@ -191,13 +192,18 @@ export class PurchaseService {
 
             if (itemToReject && game.settings.get("sr5-marketplace", "chatRejectionEnabled")) {
                 try {
-                    const html = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/chat/orderRejection.html", {
+                    const actor = request.createdForActor ? await fromUuid(request.createdForActor) : null;
+                    const useSmartphone = !!(game.modules.get("smartphone-widget")?.active && game.settings.get("sr5-marketplace", "sendToSmartphone"));
+                    
+                    const templatePath = useSmartphone && actor
+                        ? "modules/sr5-marketplace/templates/chat/orderRejectionPhone.html"
+                        : "modules/sr5-marketplace/templates/chat/orderRejection.html";
+
+                    let html = await foundry.applications.handlebars.renderTemplate(templatePath, {
                         items: [{ name: itemToReject.name, uuid: itemToReject.itemUuid }],
                         statusMessage: game.i18n.localize("SR5Marketplace.Marketplace.Notifications.ItemRejected")
                     });
-                    const actor = request.createdForActor ? await fromUuid(request.createdForActor) : null;
-                    
-                    const useSmartphone = !!(game.modules.get("smartphone-widget")?.active && game.settings.get("sr5-marketplace", "sendToSmartphone"));
+
                     if (useSmartphone && actor) {
                         const phoneApi = game.modules.get("smartphone-widget")?.api;
                         const phone = await phoneApi?.getPhoneForActor(actor.id);
@@ -218,7 +224,8 @@ export class PurchaseService {
                                     senderAlias = shopActor.name;
                                 }
                             }
-                            await phoneApi.sendSystemMessage(phone.id, html, { senderAlias, senderPhoneId, chat: false });
+                            const enrichedHtml = await enrichHTML(html, { async: true });
+                            await phoneApi.sendSystemMessage(phone.id, enrichedHtml, { senderAlias, senderPhoneId, chat: false });
                         }
                     } else {
                         const speaker = actor ? ChatMessage.getSpeaker({ actor }) : {};
@@ -255,13 +262,18 @@ export class PurchaseService {
                         uuid: i.itemUuid
                     }));
                     if (rejectedItems.length > 0) {
-                        const html = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/chat/orderRejection.html", {
+                        const actor = request.createdForActor ? await fromUuid(request.createdForActor) : null;
+                        const useSmartphone = !!(game.modules.get("smartphone-widget")?.active && game.settings.get("sr5-marketplace", "sendToSmartphone"));
+                        
+                        const templatePath = useSmartphone && actor
+                            ? "modules/sr5-marketplace/templates/chat/orderRejectionPhone.html"
+                            : "modules/sr5-marketplace/templates/chat/orderRejection.html";
+
+                        let html = await foundry.applications.handlebars.renderTemplate(templatePath, {
                             items: rejectedItems,
                             statusMessage: game.i18n.format("SR5Marketplace.Marketplace.Notifications.PurchaseRequestRejected", { name: game.users.get(userId)?.name || "" })
                         });
-                        const actor = request.createdForActor ? await fromUuid(request.createdForActor) : null;
-                        
-                        const useSmartphone = !!(game.modules.get("smartphone-widget")?.active && game.settings.get("sr5-marketplace", "sendToSmartphone"));
+
                         if (useSmartphone && actor) {
                             const phoneApi = game.modules.get("smartphone-widget")?.api;
                             const phone = await phoneApi?.getPhoneForActor(actor.id);
@@ -282,7 +294,8 @@ export class PurchaseService {
                                         senderAlias = shopActor.name;
                                     }
                                 }
-                                await phoneApi.sendSystemMessage(phone.id, html, { senderAlias, senderPhoneId, chat: false });
+                                const enrichedHtml = await enrichHTML(html, { async: true });
+                                await phoneApi.sendSystemMessage(phone.id, enrichedHtml, { senderAlias, senderPhoneId, chat: false });
                             }
                         } else {
                             const speaker = actor ? ChatMessage.getSpeaker({ actor }) : {};
@@ -414,6 +427,8 @@ export class PurchaseService {
                 
                 const confirmData = {
                     actorId: actor.id,
+                    actorName: actor.name,
+                    actorImg: actor.img,
                     items: chatItems,
                     totalCost: basket.totalCost,
                     totalAvailability: basket.totalAvailability,
@@ -423,9 +438,13 @@ export class PurchaseService {
                     statusMessage: statusMessages
                 };
 
-                const html = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/chat/orderConfirmation.html", confirmData);
-                
                 const useSmartphone = !!(game.modules.get("smartphone-widget")?.active && game.settings.get("sr5-marketplace", "sendToSmartphone"));
+                const templatePath = useSmartphone && actor
+                    ? "modules/sr5-marketplace/templates/chat/orderConfirmationPhone.html"
+                    : "modules/sr5-marketplace/templates/chat/orderConfirmation.html";
+
+                let html = await foundry.applications.handlebars.renderTemplate(templatePath, confirmData);
+                
                 if (useSmartphone && actor) {
                     const phoneApi = game.modules.get("smartphone-widget")?.api;
                     const phone = await phoneApi?.getPhoneForActor(actor.id);
@@ -446,7 +465,8 @@ export class PurchaseService {
                                 senderAlias = shopActor.name;
                             }
                         }
-                        await phoneApi.sendSystemMessage(phone.id, html, { senderAlias, senderPhoneId, chat: false });
+                        const enrichedHtml = await enrichHTML(html, { async: true });
+                        await phoneApi.sendSystemMessage(phone.id, enrichedHtml, { senderAlias, senderPhoneId, chat: false });
                     }
                 } else {
                     await ChatMessage.create({

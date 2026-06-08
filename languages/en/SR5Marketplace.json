@@ -285,9 +285,11 @@
         },
         "OrderReview": {
             "Title": "Order Review",
+            "Buyer": "Buyer",
             "YourItems": "Your Items",
             "OrderReviewItems": "Items List for the Review",
             "YourOrderHasArrived": "Your order has arrived!",
+            "ItemsAddedAndArrived": "Items added and have arrived.",
             "Approved": "approved",
             "Rejected": "rejected",
             "AllApproved": "all approved",

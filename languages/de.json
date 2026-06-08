@@ -464,9 +464,11 @@
             },
             "OrderReview": {
                 "Title": "Order Überprüfung",
+                "Buyer": "Käufer",
                 "YourItems": "Deine Artikel",
                 "OrderReviewItems": "Artikel Liste für die Überprüfung",
                 "YourOrderHasArrived": "Deine Bestellung ist angekommen!",
+                "ItemsAddedAndArrived": "Artikel hinzugefügt und angekommen.",
                 "Approved": "genehmigt",
                 "Rejected": "abgelehnt",
                 "AllApproved": "alle genehmigt",
