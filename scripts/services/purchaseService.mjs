@@ -87,6 +87,7 @@ export class PurchaseService {
             creationTime: basket.creationTime,
             createdForActor: basket.createdForActor,
             selectedContactId: basket.selectedContactId,
+            shopActorUuid: basket.shopActorUuid,
             reviewRequest: true,
             basketItems: basket.shoppingCartItems,
             totalCost: basket.totalCost,
@@ -195,13 +196,39 @@ export class PurchaseService {
                         statusMessage: game.i18n.localize("SR5Marketplace.Marketplace.Notifications.ItemRejected")
                     });
                     const actor = request.createdForActor ? await fromUuid(request.createdForActor) : null;
-                    const speaker = actor ? ChatMessage.getSpeaker({ actor }) : {};
-                    await ChatMessage.create({
-                        speaker: speaker,
-                        content: html
-                    });
+                    
+                    const useSmartphone = !!(game.modules.get("smartphone-widget")?.active && game.settings.get("sr5-marketplace", "sendToSmartphone"));
+                    if (useSmartphone && actor) {
+                        const phoneApi = game.modules.get("smartphone-widget")?.api;
+                        const phone = await phoneApi?.getPhoneForActor(actor.id);
+                        if (phone) {
+                            let senderAlias = "Marketplace";
+                            let senderPhoneId = undefined;
+                            if (request.shopActorUuid) {
+                                const shopActor = await fromUuid(request.shopActorUuid);
+                                const servingEmployeeUuid = shopActor?.system?.shop?.servingEmployee;
+                                const employeeActor = servingEmployeeUuid ? await fromUuid(servingEmployeeUuid) : null;
+                                if (employeeActor) {
+                                    senderAlias = employeeActor.name;
+                                    const employeePhone = await phoneApi?.getPhoneForActor(employeeActor.id);
+                                    if (employeePhone) {
+                                        senderPhoneId = employeePhone.id;
+                                    }
+                                } else if (shopActor) {
+                                    senderAlias = shopActor.name;
+                                }
+                            }
+                            await phoneApi.sendSystemMessage(phone.id, html, { senderAlias, senderPhoneId, chat: false });
+                        }
+                    } else {
+                        const speaker = actor ? ChatMessage.getSpeaker({ actor }) : {};
+                        await ChatMessage.create({
+                            speaker: speaker,
+                            content: html
+                        });
+                    }
                 } catch (err) {
-                    console.error("SR5 Marketplace | Failed to post order item rejection to chat:", err);
+                    console.error("SR5 Marketplace | Failed to post order item rejection:", err);
                 }
             }
         }
@@ -233,14 +260,40 @@ export class PurchaseService {
                             statusMessage: game.i18n.format("SR5Marketplace.Marketplace.Notifications.PurchaseRequestRejected", { name: game.users.get(userId)?.name || "" })
                         });
                         const actor = request.createdForActor ? await fromUuid(request.createdForActor) : null;
-                        const speaker = actor ? ChatMessage.getSpeaker({ actor }) : {};
-                        await ChatMessage.create({
-                            speaker: speaker,
-                            content: html
-                        });
+                        
+                        const useSmartphone = !!(game.modules.get("smartphone-widget")?.active && game.settings.get("sr5-marketplace", "sendToSmartphone"));
+                        if (useSmartphone && actor) {
+                            const phoneApi = game.modules.get("smartphone-widget")?.api;
+                            const phone = await phoneApi?.getPhoneForActor(actor.id);
+                            if (phone) {
+                                let senderAlias = "Marketplace";
+                                let senderPhoneId = undefined;
+                                if (request.shopActorUuid) {
+                                    const shopActor = await fromUuid(request.shopActorUuid);
+                                    const servingEmployeeUuid = shopActor?.system?.shop?.servingEmployee;
+                                    const employeeActor = servingEmployeeUuid ? await fromUuid(servingEmployeeUuid) : null;
+                                    if (employeeActor) {
+                                        senderAlias = employeeActor.name;
+                                        const employeePhone = await phoneApi?.getPhoneForActor(employeeActor.id);
+                                        if (employeePhone) {
+                                            senderPhoneId = employeePhone.id;
+                                        }
+                                    } else if (shopActor) {
+                                        senderAlias = shopActor.name;
+                                    }
+                                }
+                                await phoneApi.sendSystemMessage(phone.id, html, { senderAlias, senderPhoneId, chat: false });
+                            }
+                        } else {
+                            const speaker = actor ? ChatMessage.getSpeaker({ actor }) : {};
+                            await ChatMessage.create({
+                                speaker: speaker,
+                                content: html
+                            });
+                        }
                     }
                 } catch (err) {
-                    console.error("SR5 Marketplace | Failed to post order rejection to chat:", err);
+                    console.error("SR5 Marketplace | Failed to post order rejection:", err);
                 }
             }
         }
@@ -371,12 +424,38 @@ export class PurchaseService {
                 };
 
                 const html = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/chat/orderConfirmation.html", confirmData);
-                await ChatMessage.create({
-                    speaker: ChatMessage.getSpeaker({ actor }),
-                    content: html
-                });
+                
+                const useSmartphone = !!(game.modules.get("smartphone-widget")?.active && game.settings.get("sr5-marketplace", "sendToSmartphone"));
+                if (useSmartphone && actor) {
+                    const phoneApi = game.modules.get("smartphone-widget")?.api;
+                    const phone = await phoneApi?.getPhoneForActor(actor.id);
+                    if (phone) {
+                        let senderAlias = "Marketplace";
+                        let senderPhoneId = undefined;
+                        if (basket?.shopActorUuid) {
+                            const shopActor = await fromUuid(basket.shopActorUuid);
+                            const servingEmployeeUuid = shopActor?.system?.shop?.servingEmployee;
+                            const employeeActor = servingEmployeeUuid ? await fromUuid(servingEmployeeUuid) : null;
+                            if (employeeActor) {
+                                senderAlias = employeeActor.name;
+                                const employeePhone = await phoneApi?.getPhoneForActor(employeeActor.id);
+                                if (employeePhone) {
+                                    senderPhoneId = employeePhone.id;
+                                }
+                            } else if (shopActor) {
+                                senderAlias = shopActor.name;
+                            }
+                        }
+                        await phoneApi.sendSystemMessage(phone.id, html, { senderAlias, senderPhoneId, chat: false });
+                    }
+                } else {
+                    await ChatMessage.create({
+                        speaker: ChatMessage.getSpeaker({ actor }),
+                        content: html
+                    });
+                }
             } catch (err) {
-                console.error("SR5 Marketplace | Failed to post order confirmation to chat log:", err);
+                console.error("SR5 Marketplace | Failed to post order confirmation:", err);
             }
         }
 

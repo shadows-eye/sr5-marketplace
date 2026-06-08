@@ -305,6 +305,10 @@
                     "name": "Chat Message: Approvals",
                     "hint": "Post a chat message when a purchase is approved."
                 },
+                "SendToSmartphone": {
+                    "name": "Send Messages to Smartphone Widget",
+                    "hint": "Route order confirmation and rejection messages directly to the player's smartphone messages app instead of posting them to the chat log."
+                },
                 "ResetItemLoad": {
                     "name": "Reset Item Enhancement Load",
                     "hint": "This will allow the karma values and cost/availability of world and compendium items to get their flags reinitialized. Setting this setting to true will undo any changes you made to Karma, cost, or Availability of the items."

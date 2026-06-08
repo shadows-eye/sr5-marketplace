@@ -189,6 +189,17 @@ const initializeSettings = () => {
         restricted: true,
     });
 
+    const isSmartphoneActive = !!game.modules.get('smartphone-widget')?.active;
+    game.settings.register("sr5-marketplace", "sendToSmartphone", {
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.SendToSmartphone.name"),
+        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.SendToSmartphone.hint"),
+        scope: "world",
+        config: isSmartphoneActive,
+        type: Boolean,
+        default: false,
+        restricted: true,
+    });
+
     game.settings.register("sr5-marketplace", "karmaCostForSpell", {
         name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.KarmaSpell.name"),
         hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.KarmaSpell.hint"),
@@ -1078,3 +1089,37 @@ async function handleGMContinueExtendedTest({ userId, dialogId, actorUuid, rollC
         console.error("SR5 Marketplace | GM failed to continue extended test:", e);
     }
 }
+
+// Suppress public ChatMessage creation when smartphone widget routing is active
+Hooks.on("preCreateChatMessage", (message, data, options, userId) => {
+    try {
+        const sendToSmartphone = game.settings.get("sr5-marketplace", "sendToSmartphone");
+        if (sendToSmartphone) {
+            const flags = message.flags || {};
+            const isSmartphoneMsg = flags["smartphone-widget"]?.isSmartphoneMessage;
+            if (isSmartphoneMsg) {
+                const content = message.content || "";
+                if (content.includes("order-confirmation") || content.includes("order-rejection") || content.includes("sr5-marketplace")) {
+                    console.log("SR5 Marketplace | Suppressing ChatMessage for smartphone-widget message:", message.id || message._id);
+                    return false;
+                }
+            }
+        }
+    } catch (e) {
+        console.error("SR5 Marketplace | Error in preCreateChatMessage hook:", e);
+    }
+});
+
+// Debug hook to inspect all created chat messages and identify their source
+Hooks.on("createChatMessage", (message, options, userId) => {
+    if (game.user.isGM) {
+        console.log("SR5 Marketplace Debug | ChatMessage Created:", {
+            id: message.id,
+            speaker: message.speaker,
+            whisper: message.whisper,
+            alias: message.alias,
+            content: message.content,
+            flags: message.flags
+        });
+    }
+});
