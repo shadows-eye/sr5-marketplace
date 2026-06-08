@@ -48,6 +48,12 @@ export default class ItemDataServices {
                 if (!excludedTypes.includes(item.type) && !item.name.includes('#[CF_tempEntity]')) {
                     const itemData = item.toObject(false);
                     itemData.uuid = item.uuid;
+                    // Normalize mount_point from mod_weapon if present
+                    if (itemData.system) {
+                        if (itemData.system.mod_weapon?.mount_point) {
+                            itemData.system.mount_point = itemData.system.mod_weapon.mount_point;
+                        }
+                    }
                     allItems.push(itemData);
                 }
             }
@@ -63,6 +69,7 @@ export default class ItemDataServices {
                         "system.range.ranges.category",
                         "system.drain",
                         "system.mount_point",
+                        "system.mod_weapon.mount_point",
                         "system.slots"
                     ]
                 });
@@ -70,6 +77,12 @@ export default class ItemDataServices {
                 for (const entry of index) {
                     if (!excludedTypes.includes(entry.type) && !entry.name.includes('#[CF_tempEntity]')) {
                         entry.uuid = entry.uuid || `Compendium.${pack.collection}.${entry._id}`;
+                        // Normalize mount_point from mod_weapon if present
+                        if (entry.system) {
+                            if (entry.system.mod_weapon?.mount_point) {
+                                entry.system.mount_point = entry.system.mod_weapon.mount_point;
+                            }
+                        }
                         allItems.push(entry);
                     }
                 }

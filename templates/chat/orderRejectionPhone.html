@@ -1,0 +1,28 @@
+<div class="sr5-marketplace-phone-card rejection-card">
+  <div class="phone-card-header">
+    <span class="phone-card-title"><i class="fa-solid fa-ban"></i> {{localize "SR5Marketplace.Marketplace.OrderReview.OrderRejected"}}</span>
+  </div>
+
+  <div class="phone-card-body">
+    <div class="phone-card-section items-section">
+      <span class="section-label"><strong>{{localize "SR5Marketplace.Marketplace.OrderReview.YourItems"}}:</strong></span>
+      <ul class="phone-items-list">
+        {{#each items}}
+          <li>
+            {{#if this.uuid}}
+              @UUID[{{this.uuid}}]
+            {{else}}
+              {{{this.name}}}
+            {{/if}}
+          </li>
+        {{/each}}
+      </ul>
+    </div>
+
+    {{#if statusMessage}}
+      <div class="phone-card-section status-section">
+        <div class="status-msg-line">{{statusMessage}}</div>
+      </div>
+    {{/if}}
+  </div>
+</div>

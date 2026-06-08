@@ -305,6 +305,10 @@
                     "name": "Chat-Nachricht: Genehmigungen",
                     "hint": "Postet eine Chat-Nachricht, wenn ein Kauf genehmigt wurde."
                 },
+                "SendToSmartphone": {
+                    "name": "Nachrichten an Smartphone-Widget senden",
+                    "hint": "Bestätigungs- und Ablehnungsnachrichten direkt an die Nachrichten-App auf dem Smartphone des Spielers senden, anstatt sie im Chat-Protokoll zu posten."
+                },
                 "ResetItemLoad": {
                     "name": "Item Verbesserung landen zurücksetzen",
                     "hint": "Dies ermöglicht es die Karma Werte und den Kosten und Verfügbarkeiten von Welt- und Kompendiumsartikeln, ihre Flags für Karma neu zu initialisieren. Wenn Sie diese Einstellung auf true setzen, werden alle Änderungen, die Sie an Karma, Kosten oder Verfügbarkeit der Items vorgenommen haben, rückgängig gemacht."
@@ -460,9 +464,11 @@
             },
             "OrderReview": {
                 "Title": "Order Überprüfung",
+                "Buyer": "Käufer",
                 "YourItems": "Deine Artikel",
                 "OrderReviewItems": "Artikel Liste für die Überprüfung",
                 "YourOrderHasArrived": "Deine Bestellung ist angekommen!",
+                "ItemsAddedAndArrived": "Artikel hinzugefügt und angekommen.",
                 "Approved": "genehmigt",
                 "Rejected": "abgelehnt",
                 "AllApproved": "alle genehmigt",
@@ -541,6 +547,31 @@
                 "ComplexForms": "Komplexe Formen"
             },
             "Modifiers": {
+                "Custom": {
+                    "Title": "Eigene Modifikatoren"
+                },
+                "Labels": {
+                    "Friendly": "Freundlich",
+                    "Neutral": "Neutral",
+                    "Mistrustful": "Misstrauisch",
+                    "Biased": "Voreingenommen",
+                    "Averse": "Abgeneigt",
+                    "Hostile": "Feindselig",
+                    "Advantageous": "Vorteilhaft",
+                    "Insignificant": "Bedeutungslos",
+                    "Annoying": "Lästig",
+                    "Dangerous": "Gefährlich",
+                    "Catastrophic": "Katastrophal",
+                    "Insufficient Info": "Unzureichende Infos",
+                    "Leverage": "Druckmittel",
+                    "Improperly Dressed": "Unpassend gekleidet",
+                    "Nervous": "Nervös",
+                    "Physically Imposing": "Körperlich imposant",
+                    "Outnumbered": "Unterzahl",
+                    "Has Weapon/Magic": "Sichtbare Waffen/Magie",
+                    "Plausible Evidence": "Glaubwürdige Beweise",
+                    "Target Distracted": "Ziel abgelenkt"
+                },
                 "General": {
                     "title": "Allgemeine Soziale Modifikatoren",
                     "npcAttitudeFriendly": "NSC hat eine freundliche Haltung",
@@ -633,6 +664,13 @@
                 "EffectIconLabel": "Symbol",
                 "SelectIconTooltip": "Wähle ein Symbol für diesen Effekt",
                 "ApplyToLabel": "Anwenden auf",
+                "ApplyTo": {
+                    "actor": "Charakter",
+                    "targeted_actor": "Ziel-Charakter",
+                    "test_all": "Alle Proben",
+                    "test_item": "Artikel-Proben",
+                    "modifier": "Modifikator"
+                },
                 "TestFilterLabel": "Nach Probe filtern",
                 "SelectTestsPlaceholder": "Jede Probe",
                 "CategoryFilterLabel": "Nach Kategorie filtern",
@@ -673,6 +711,7 @@
             "ReviewPurchaseRequests": "Kaufanfragen überprüfen",
             "OpenMarketplace": "Marktplatz öffnen",
             "OpenShoppingCart": "Einkaufswagen öffnen",
+            "OpenItemBuilder": "Item-Builder öffnen",
             "ItemFound": "1 Gegenstand gefunden",
             "ItemsFound": "{count} Gegenstände gefunden",
             "NoMatchingItemsFound": "Keine passenden Gegenstände gefunden"

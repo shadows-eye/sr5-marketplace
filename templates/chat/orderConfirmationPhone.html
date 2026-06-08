@@ -1,0 +1,47 @@
+<div class="sr5-marketplace-phone-card confirmation-card">
+  <div class="phone-card-header">
+    {{#if actorId}}
+    <a class="content-link buyer-avatar-link" data-link data-uuid="Actor.{{actorId}}" data-type="Actor"
+      title="{{actorName}}">
+      <img class="buyer-avatar" src="{{actorImg}}" alt="{{actorName}}" />
+    </a>
+    {{/if}}
+    <span class="market phone-card-title"><i class="fa-solid fa-cart-shopping"></i> {{localize
+      "SR5Marketplace.Marketplace.OrderReview.YourOrderHasArrived"}}</span>
+  </div>
+
+  <div class="phone-card-body">
+    <div class="phone-card-section items-section">
+      <ul class="phone-items-list">
+        {{#each items}}
+        <li>
+          {{#if this.uuid}}
+          @UUID[{{this.uuid}}]
+          {{else}}
+          @Item[{{this._id}}]
+          {{/if}}
+        </li>
+        {{/each}}
+      </ul>
+    </div>
+
+    <div class="phone-card-section metrics-section">
+      <span class="metric-value cost-nuyen" title="{{localize 'SR5Marketplace.Marketplace.Basket.TotalCost'}}">
+        <i class="fa-solid fa-circle-yen"></i> {{formatNumber totalCost}} ¥
+      </span>
+      {{#if totalKarmaCost}}
+      <span class="metric-value cost-karma" title="{{localize 'SR5Marketplace.UI.Karma'}}">
+        <i class="fa-solid fa-circle-star"></i> {{totalKarmaCost}} K
+      </span>
+      {{/if}}
+    </div>
+
+    <div class="phone-card-section status-section">
+      <div class="status-msg-line">{{localize "SR5Marketplace.Marketplace.OrderReview.ItemsAddedAndArrived"}}</div>
+    </div>
+
+    <div class="phone-card-footer">
+      <span>{{timestamp}}</span>
+    </div>
+  </div>
+</div>

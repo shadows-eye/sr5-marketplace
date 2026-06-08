@@ -13,6 +13,39 @@ const FLAG_KEY = "itemBuilderState";
 export class BuilderStateService {
 
     /**
+     * Converts a changes array or object into a normalized array of objects.
+     * @param {Array|object} changes - The changes to normalize.
+     * @returns {Array<object>} A normalized array.
+     */
+    static _changesToArray(changes) {
+        if (!changes) return [];
+        if (Array.isArray(changes)) return changes.filter(c => c !== null);
+        if (typeof changes === 'object') {
+            // Sort keys numerically to preserve order
+            const keys = Object.keys(changes).sort((a, b) => Number(a) - Number(b));
+            return keys.map(k => changes[k]).filter(c => c !== null);
+        }
+        return [];
+    }
+
+    /**
+     * Converts a changes array or object into an indexed object.
+     * @param {Array|object} changes - The changes to convert.
+     * @returns {object} An indexed object.
+     */
+    static _changesToObject(changes) {
+        if (!changes) return {};
+        if (typeof changes === 'object' && !Array.isArray(changes)) return changes;
+        const obj = {};
+        if (Array.isArray(changes)) {
+            changes.forEach((c, idx) => {
+                if (c !== null) obj[String(idx)] = c;
+            });
+        }
+        return obj;
+    }
+
+    /**
      * Gets the default, empty state for the builder.
      * @returns {object} The default state object.
      * @private
@@ -151,6 +184,15 @@ export class BuilderStateService {
     static async updateDraftEffect(draftUpdate) {
         const state = await this.getState();
         if (!state.draftEffect) return state;
+
+        if (draftUpdate.changes) {
+            const currentChangesObj = this._changesToObject(state.draftEffect.changes);
+            const updateChangesObj = this._changesToObject(draftUpdate.changes);
+            const mergedChangesObj = foundry.utils.mergeObject(currentChangesObj, updateChangesObj);
+            
+            state.draftEffect.changes = this._changesToArray(mergedChangesObj);
+            delete draftUpdate.changes;
+        }
         
         state.draftEffect = foundry.utils.mergeObject(state.draftEffect, draftUpdate);
         
@@ -167,6 +209,15 @@ export class BuilderStateService {
     static async updateDraftAndState(draftUpdate = {}, stateUpdate = {}) {
         const state = await this.getState();
         if (!state.draftEffect) return state;
+
+        if (draftUpdate.changes) {
+            const currentChangesObj = this._changesToObject(state.draftEffect.changes);
+            const updateChangesObj = this._changesToObject(draftUpdate.changes);
+            const mergedChangesObj = foundry.utils.mergeObject(currentChangesObj, updateChangesObj);
+            
+            state.draftEffect.changes = this._changesToArray(mergedChangesObj);
+            delete draftUpdate.changes;
+        }
 
         // 1. Merge updates into the draft effect first.
         state.draftEffect = foundry.utils.mergeObject(state.draftEffect, draftUpdate);
@@ -188,6 +239,10 @@ export class BuilderStateService {
 
         const newState = foundry.utils.deepClone(state);
         const draft = newState.draftEffect;
+        
+        // Ensure the draft changes are in array format
+        draft.changes = this._changesToArray(draft.changes);
+
         if (!newState.modifications) newState.modifications = [];
 
         delete draft.wasCustom; 
@@ -273,6 +328,9 @@ export class BuilderStateService {
             const draft = effectToEdit;
             draft.sourceUuid = sourceUuid;
             draft.isEdit = true;
+            
+            // Ensure draft changes are in array format
+            draft.changes = this._changesToArray(draft.changes);
             
             // --- REFINED LOGIC: Determine targetType ---
             if ( !draft.targetType ) {

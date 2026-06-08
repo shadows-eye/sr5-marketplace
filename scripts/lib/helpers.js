@@ -122,6 +122,16 @@ export const registerBasicHelpers = () => {
         return string.charAt(0).toUpperCase() + string.slice(1);
     });
 
+    Handlebars.registerHelper('isIdIn', function (selected, value) {
+        if (!Array.isArray(selected)) return false;
+        return selected.some(item => {
+            if (item && typeof item === 'object') {
+                return item.id === value || item.value === value;
+            }
+            return item === value;
+        });
+    });
+
     Handlebars.registerHelper("jsonParse", function(jsonString) {
         try {
             return JSON.parse(jsonString);

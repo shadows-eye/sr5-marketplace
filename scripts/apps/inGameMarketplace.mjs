@@ -72,6 +72,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         };
         this.currentCategoryItems = [];
         this.selectedReviewActorUuid = null;
+        this._expandedGroups = new Set();
     }
 
     /** @override */
@@ -98,6 +99,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 rejectItem: this.#onApproveRejectItem,
                 // DIALOG Changes
                 applyModifier: this.#onApplyModifier, //adds and removes
+                addCustomModifier: this.#onAddCustomModifier,
+                removeCustomModifier: this.#onRemoveCustomModifier,
                 changeTestParameter: this._onChangeTestParameter, //changes what skill or attribute is used
                 //changeCategory: this.onChangeCategory, Is moved to _onRender
                 updateRating: this.#onUpdateRating,
@@ -121,6 +124,15 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             return await this.itemData.fetchGlobalItems();
         }
         return await this.itemData.getShopItems(this.selectedSource);
+    }
+
+    /** @override */
+    render(options) {
+        const cart = this.element?.querySelector(".shopping-cart-container");
+        if (cart) {
+            this._cartScrollTop = cart.scrollTop;
+        }
+        return super.render(options);
     }
 
     /** @override */
@@ -164,6 +176,26 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                     // We manually call the handler, passing the correct `this` context.
                     this._onChangeTestParameter(event, select);
                 });
+            }
+
+            // Bind toggle-checkbox changes to preserve collapsible state
+            const checkboxes = this.element.querySelectorAll(".toggle-checkbox");
+            checkboxes.forEach(cb => {
+                cb.addEventListener("change", () => {
+                    if (cb.checked) {
+                        this._expandedGroups.add(cb.id);
+                    } else {
+                        this._expandedGroups.delete(cb.id);
+                    }
+                });
+            });
+        }
+
+        // Restore shopping cart scroll position
+        if (this._cartScrollTop !== undefined) {
+            const cart = this.element.querySelector(".shopping-cart-container");
+            if (cart) {
+                cart.scrollTop = this._cartScrollTop;
             }
         }
     }
@@ -389,6 +421,15 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                     // Merge the results directly INTO the 'activeTestState' object.
                     if (dialogContext) {
                         foundry.utils.mergeObject(partialContext.activeTestState, dialogContext);
+                        
+                        // Map collapsible group states
+                        if (partialContext.activeTestState.modifierGroups) {
+                            partialContext.activeTestState.modifierGroups.forEach((group, index) => {
+                                const id = `toggle-mod-group-${index}`;
+                                group.isExpanded = this._expandedGroups.has(id);
+                            });
+                        }
+                        partialContext.activeTestState.customGroupExpanded = this._expandedGroups.has("toggle-mod-group-custom");
                     }
                 }
                 // --- END NEW FLAG-BASED WORKFLOW ---
@@ -901,6 +942,72 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         // 6. Re-render the UI to reflect the change.
         this.render();
     }
+
+    static async #onAddCustomModifier(event, target) {
+        if (!this.activeTestState) return;
+
+        const labelInput = this.element.querySelector(".custom-mod-label");
+        const valueInput = this.element.querySelector(".custom-mod-value");
+        if (!labelInput || !valueInput) return;
+
+        const label = labelInput.value.trim();
+        const rawValue = valueInput.value.trim();
+
+        if (!label) {
+            ui.notifications.warn("Please enter a label for the modifier.");
+            return;
+        }
+
+        const parseModifierValue = (val) => {
+            if (typeof val === "number") return val;
+            if (typeof val === "string") {
+                const clean = val.replace(/[()]/g, "").trim();
+                const match = clean.match(/^([+-]?\d+)$/);
+                return match ? parseInt(match[1], 10) : null;
+            }
+            return null;
+        };
+
+        const value = parseModifierValue(rawValue);
+        if (value === null || isNaN(value)) {
+            ui.notifications.warn("Please enter a valid value (e.g., +2 or -2).");
+            return;
+        }
+
+        // Add to applied modifiers
+        const currentModifiers = this.activeTestState.appliedModifiers ?? [];
+        
+        // Avoid duplicate labels
+        if (currentModifiers.some(m => m.label === label)) {
+            ui.notifications.warn(`A modifier with label "${label}" already exists.`);
+            return;
+        }
+
+        const newModifier = {
+            label,
+            value
+        };
+
+        const newModifiers = [...currentModifiers, newModifier];
+        this.activeTestState.appliedModifiers = newModifiers;
+
+        await AppTestFlagService.updateTest(this.activeTestState.id, { appliedModifiers: newModifiers });
+        this.render();
+    }
+
+    static async #onRemoveCustomModifier(event, target) {
+        if (!this.activeTestState) return;
+
+        const label = target.dataset.label;
+        const currentModifiers = this.activeTestState.appliedModifiers ?? [];
+        const newModifiers = currentModifiers.filter(m => m.label !== label);
+
+        this.activeTestState.appliedModifiers = newModifiers;
+
+        await AppTestFlagService.updateTest(this.activeTestState.id, { appliedModifiers: newModifiers });
+        this.render();
+    }
+
 
     /**
      * @summary Handles changes to the skill or attribute dropdowns.

@@ -52,9 +52,36 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
             context.selection_attribute_options = this._getAttributeOptions();
             context.selection_limit_options = this._getLimitOptions();
             // --- END Multiselect ---
-            context.effectApplyToOptions = game.sr5marketplace.api.system.effectApplyTo_l;
-            context.changeModes = Object.entries(CONST.ACTIVE_EFFECT_MODES).map(([key, value]) => ({
-                value: value, label: `EFFECT.MODE_${key}`
+
+            // Tooltip strings containing all available options
+            context.testsOptionsListString = context.selection_test_options.map(o => o.label).join(", ");
+            context.categoriesOptionsListString = context.selection_category_options.map(o => o.label).join(", ");
+            context.skillsOptionsListString = context.selection_skill_options.map(o => o.label).join(", ");
+            context.attributesOptionsListString = context.selection_attribute_options.map(o => o.label).join(", ");
+            context.limitsOptionsListString = context.selection_limit_options.map(o => o.label).join(", ");
+
+            // Property keys list for Attribute / Eigenschaft field tooltip
+            const propertyKeys = new Set();
+            if (context.isActorMode) {
+                for (const group of Object.values(characterActorKeys)) {
+                    for (const k of group) propertyKeys.add(k.label);
+                }
+            } else if (context.isTestMode) {
+                for (const group of Object.values(mappableKeys.rolls)) {
+                    for (const k of group) propertyKeys.add(k.label);
+                }
+            } else if (context.isModifierMode) {
+                for (const group of Object.values(mappableKeys.modifiers)) {
+                    for (const k of group) propertyKeys.add(k.label);
+                }
+            }
+            context.attributeKeysOptionsListString = Array.from(propertyKeys).sort((a, b) => a.localeCompare(b)).join(", ");
+
+            const changeTypes = CONST.ACTIVE_EFFECT_CHANGE_TYPES || CONST.ACTIVE_EFFECT_MODES;
+            context.changeModes = Object.entries(changeTypes).map(([key, value]) => ({
+                value: value,
+                label: `EFFECT.MODE_${key.toUpperCase()}`,
+                mode: key.toLowerCase()
             }));
 
         }
@@ -176,7 +203,10 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
                     ? `${baseItemLabel}: ${item.name}` 
                     : `${slotLabel} (${Object.keys(builderState.changes).find(k => builderState.changes[k] === item)}): ${item.name}`,
                 sourceUuid: item.uuid,
-                effects: finalEffects
+                effects: finalEffects,
+                isBaseItem: (item === builderState.baseItem),
+                itemName: item.name,
+                itemImg: item.img
             });
         }
         return groups;

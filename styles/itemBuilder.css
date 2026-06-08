@@ -407,6 +407,7 @@ padding-top: 9em;
   min-height: 100px;
   border: none;
   background: transparent;
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), filter 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .itemBuilder .mod-slot::before {
     content: "";
@@ -431,11 +432,26 @@ padding-top: 9em;
   outline: 2px dashed #00bfff; /* Deep sky blue */
 }
 
-/* MODIFIED: The hover effect now only adds the box-shadow for emphasis */
-.itemBuilder.dragging-mod .mod-slot.valid-drop,
-.itemBuilder.dragging-mod .mod-slot.invalid-drop,
+/* Hover highlights for active drop targets (using drop-shadow on the element/SVG) */
+.itemBuilder.dragging-mod .mod-slot.valid-drop::before {
+    background-image: url("data:image/svg+xml,%3Csvg id='b' data-name='Layer 2' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 116.29 103.99'%3E%3Cdefs%3E%3Cstyle%3E .s %7B fill: %23cecece; %7D .t %7B fill: %234CAF50; %7D .u %7B fill: %235d142b; %7D %3C/style%3E%3C/defs%3E%3Cg id='c' data-name='Frame_Green'%3E%3Cg id='d' data-name='Frame'%3E%3Cg id='e' data-name='Whites'%3E%3Cpolygon id='f' data-name='White' class='s' points='113.83 99.54 113.09 99.21 101.09 103.52 21.61 103.52 21.61 103.99 101.42 103.99 101.42 103.99 113.83 99.54'/%3E%3Crect id='g' data-name='White' class='u' x='37.17' y='95.86' width='78.38' height='.47'/%3E%3Crect id='h' data-name='White' class='s' x='-33.15' y='56.26' width='76.19' height='.47' transform='translate(61.45 51.55) rotate(90)'/%3E%3Cpolygon id='i' data-name='White' class='s' points='2.47 4.51 3.2 4.84 15.2 .53 94.69 .53 94.69 .06 14.87 .06 14.87 .06 2.47 4.51'/%3E%3Crect id='j' data-name='White' class='s' x='73.34' y='47.13' width='76' height='.47' transform='translate(63.97 158.71) rotate(-90)'/%3E%3C/g%3E%3Cg id='k' data-name='Colors'%3E%3Crect id='l' data-name='Green' class='t' x='-44.32' y='51.73' width='91.11' height='2.48' transform='translate(54.21 51.73) rotate(90)'/%3E%3Crect id='m' data-name='Green' class='t' x='-2.55' y='100.97' width='5.58' height='.47' transform='translate(101.44 100.97) rotate(90)'/%3E%3Cpolygon id='n' data-name='Red' class='t' points='2.48 4.03 2.48 5.51 81.6 5.51 81.6 5.49 81.6 5.51 95.47 1.54 112.85 1.54 112.85 .06 94.69 .06 94.69 .22 81.4 4.03 2.48 4.03'/%3E%3Crect id='o' data-name='Green' class='t' x='70.11' y='50.15' width='90.88' height='1.48' transform='translate(64.66 166.44) rotate(-90)'/%3E%3Crect id='p' data-name='Green' class='t' x='113.27' y='2.55' width='5.56' height='.47' transform='translate(113.27 118.84) rotate(-90)'/%3E%3Cpolygon id='q' data-name='Red' class='t' points='113.81 100.02 113.81 98.54 34.69 98.54 34.69 98.56 34.69 98.54 20.82 102.51 3.44 102.51 3.44 103.99 21.61 103.99 21.61 103.83 34.9 100.02 113.81 100.02'/%3E%3Crect id='r' data-name='Green' class='t' y='7.41' width='78.38' height='.47'/%3E%3C/g%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.itemBuilder.dragging-mod .mod-slot.valid-drop {
+    filter: drop-shadow(0 0 6px rgba(76, 175, 80, 0.85));
+}
+
+.itemBuilder.dragging-mod .mod-slot.invalid-drop {
+    filter: drop-shadow(0 0 6px rgba(220, 53, 69, 0.85));
+}
+
 .itemBuilder.dragging-mod .mod-slot.override-drop {
-  box-shadow: 0 0 7px currentColor; /* Uses the color from the outline */
+    filter: drop-shadow(0 0 6px rgba(0, 191, 255, 0.85));
+}
+
+/* Fade all non-hovered slots when one slot is hovered during a drag operation */
+.itemBuilder.dragging-mod:has(.mod-slot.drag-hover) .mod-slot:not(.drag-hover) {
+    opacity: 0.45;
 }
 
 /* --- Content inside slots --- */
@@ -527,6 +543,166 @@ padding-top: 9em;
 /* ================================================================== */
 
 /* --- General Layout --- */
+.itemBuilder .effects-header {
+    background: linear-gradient(90deg, var(--color-red-darkest, #5d142b) 0%, rgba(0, 0, 0, 0.85) 100%);
+    border-bottom: 2px solid var(--border-color-highlight, #5d142b);
+    padding: 6px 12px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+.itemBuilder .effects-header h2 {
+    margin: 0;
+    color: var(--text-color-primary, #fff);
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    border: none;
+}
+.itemBuilder .effects-header p {
+    margin: 2px 0 0 0;
+    font-size: 11px;
+    color: var(--text-color-secondary, #cecece);
+}
+
+.game-effects-dashboard {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+.dashboard-column {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 180px;
+}
+.dashboard-item-wrapper {
+    position: relative;
+}
+.dashboard-base-item {
+    display: flex;
+    align-items: center;
+    background: linear-gradient(90deg, rgba(93, 20, 43, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%);
+    border: 1px solid var(--color-red-darkest, #5d142b);
+    border-radius: 6px;
+    padding: 4px 10px;
+    gap: 8px;
+    height: 34px;
+}
+.dashboard-item-img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    border: none;
+}
+.dashboard-item-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-color-primary, #fff);
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.dashboard-add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    background: var(--color-red-darkest, #5d142b);
+    color: var(--color-white, #fff) !important;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.dashboard-add-btn:hover {
+    background: var(--color-red-bright, #ff3b30);
+}
+.dashboard-mod-badge {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px dashed var(--border-color-medium, #434345);
+    border-radius: 6px;
+    padding: 4px 10px;
+    gap: 8px;
+    height: 34px;
+    cursor: pointer;
+    overflow: hidden;
+}
+.dashboard-mod-badge:hover {
+    border-color: var(--color-red-darkest, #5d142b);
+}
+.mod-add-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(93, 20, 43, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: #fff !important;
+    font-size: 14px;
+}
+.dashboard-mod-badge:hover .mod-add-overlay {
+    opacity: 1;
+}
+.dashboard-effects-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 5px;
+}
+.active-effect-tag {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(93, 20, 43, 0.25);
+    border: 1px solid var(--color-red-darkest, #5d142b);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 11px;
+    color: var(--text-color-primary, #fff);
+    gap: 8px;
+    max-width: 180px;
+    white-space: nowrap;
+}
+.active-effect-tag .effect-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.active-effect-tag .effect-tag-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+.active-effect-tag:hover .effect-tag-actions {
+    opacity: 1;
+}
+.active-effect-tag .effect-tag-actions a {
+    color: var(--text-color-primary, #fff);
+}
+.active-effect-tag .effect-tag-actions a:hover {
+    color: var(--color-red-bright, #ff3b30);
+}
+.active-effect-tag .innate-effect {
+    color: var(--color-grey-medium-light, #7a797a);
+}
+
 .itemBuilder .effect-creator-container {
     border-top: 2px solid var(--border-color-highlight);
     margin-top: 0.5em;
@@ -600,8 +776,31 @@ padding-top: 9em;
     gap: 4px;
 }
 
-.itemBuilder .key-btn {
-    flex-basis: content;
+.itemBuilder .key-btn,
+.itemBuilder .key-buttons button,
+.itemBuilder .derived-value-selector button {
+    text-align: center;
+    padding: 2px 6px;
+    font-size: 11px;
+    height: 22px;
+    width: 115px;
+    line-height: 1.2;
+    background: var(--collapsible-content-bg);
+    border: 1px solid var(--border-color-dark);
+    color: var(--text-color-primary);
+    cursor: pointer;
+    border-radius: 3px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.itemBuilder .key-btn:hover,
+.itemBuilder .key-buttons button:hover,
+.itemBuilder .derived-value-selector button:hover {
+    border-color: var(--border-color-highlight);
+    background: var(--bg-dark-section-hover);
 }
 
 /* Value Input Group */
@@ -644,25 +843,160 @@ padding-top: 9em;
 }
 
 .itemBuilder .effect-creator-steps{
-  height: 33em;
-  overflow-x: auto;
+  max-height: 33em;
+  height: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-/* --- Main Creator Layout --- */
-.effect-creator-grid {
+/* --- Main Creator 3-Column Layout --- */
+.effect-creator-layout {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    grid-template-columns: 540px 1fr 220px;
+    gap: 20px;
     align-items: start;
-    margin-right: 3px;
+    width: 100%;
 }
 
-.effect-creator-grid .form-group.full-width {
-    grid-column: 1 / -1; /* Make an element span all 3 columns */
+.creator-column.left-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
 }
 
-.key-selector-container.full-width {
-    grid-column: 1 / -1;
+.left-fields-subcolumns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    width: 100%;
+}
+
+.left-fields-subcolumns .subcolumn {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    min-width: 0;
+}
+
+.subcolumn-header-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.creator-column.left-fields .form-group input,
+.creator-column.left-fields .multi-select-container,
+.creator-column.left-fields .button-group.applyTo {
+    max-width: 260px;
+}
+
+.creator-column.middle-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    align-self: stretch;
+}
+
+.creator-column.right-actions {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 100%;
+    align-self: stretch;
+    padding-bottom: 2px;
+}
+
+.keys-scroll-area {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+    min-height: 0;
+    max-height: 20em;
+}
+
+.selected-key-details-panel {
+    flex-shrink: 0;
+    border-top: 1px solid var(--border-color-medium);
+    padding-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.creator-actions-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.creator-actions-row button {
+    height: 26px;
+    padding: 3px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.name-icon-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.name-icon-row .form-group:first-child {
+    flex-grow: 1;
+    margin-bottom: 0;
+}
+
+.name-icon-row .form-group:last-child {
+    flex-shrink: 0;
+    margin-bottom: 0;
+}
+
+.mode-value-row {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.mode-value-row .mode-field {
+    flex-grow: 1;
+    margin-bottom: 0;
+}
+
+.mode-value-row .value-field {
+    flex-shrink: 0;
+    margin-bottom: 0;
+    width: 140px;
+}
+
+.itemBuilder .save-button {
+    background: var(--color-green-darkest, #015635) !important;
+    color: var(--color-white, #fff) !important;
+    border: 1px solid var(--color-green-dark, #028a4f) !important;
+    text-shadow: none !important;
+}
+
+.itemBuilder .save-button:hover:not(:disabled) {
+    background: var(--color-green-dark, #028a4f) !important;
+    border-color: var(--color-green-light, #00ff87) !important;
+}
+
+.itemBuilder .save-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--collapsible-content-bg) !important;
+    border-color: var(--border-color-dark) !important;
+    color: var(--text-color-primary) !important;
 }
 
 /* --- Collapsible Key Groups --- */
@@ -681,7 +1015,7 @@ padding-top: 9em;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
-    padding: 6px 8px;
+    padding: 3px 6px;
     background: var(--collapsible-content-bg);
 }
 .key-group.collapsible .toggle-label:hover {
@@ -691,6 +1025,7 @@ padding-top: 9em;
 .key-group.collapsible .toggle-label h5 {
     margin: 0;
     border: none;
+    font-size: 11px;
 }
 
 .key-group.collapsible .expand-icon {
@@ -703,9 +1038,10 @@ padding-top: 9em;
 }
 
 .key-group.collapsible .toggle-checkbox:checked + .toggle-label + .toggle-content {
-    display: grid; /* This is your requested grid for the buttons */
-    gap: 1em;
-    padding: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px;
     background: var(--color-black-transparent-20);
 }
 
@@ -720,11 +1056,17 @@ padding-top: 9em;
     gap: 6px;
 }
 
-.button-group.mode-selector,
 .button-group.applyTo {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 1em;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+}
+
+.button-group.mode-selector {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    max-width: 280px;
 }
 .button-group.typeSelector {
     display: grid;
@@ -734,8 +1076,24 @@ padding-top: 9em;
     padding-top: 0.5em;
 }
 
-.key-btn {
-    text-align: center;
+.itemBuilder .button-group button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--collapsible-content-bg);
+    border: 1px solid var(--border-color-dark);
+    color: var(--text-color-primary);
+    cursor: pointer;
+    padding: 3px 6px;
+    height: 24px;
+    font-size: 12px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.itemBuilder .button-group button:hover {
+    border-color: var(--border-color-highlight);
+    background: var(--bg-dark-section-hover);
 }
 /* Style for any selected or active button in the effect creator */
 .itemBuilder .key-btn.selected,

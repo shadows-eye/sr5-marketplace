@@ -305,6 +305,10 @@
                     "name": "Chat Message: Approvals",
                     "hint": "Post a chat message when a purchase is approved."
                 },
+                "SendToSmartphone": {
+                    "name": "Send Messages to Smartphone Widget",
+                    "hint": "Route order confirmation and rejection messages directly to the player's smartphone messages app instead of posting them to the chat log."
+                },
                 "ResetItemLoad": {
                     "name": "Reset Item Enhancement Load",
                     "hint": "This will allow the karma values and cost/availability of world and compendium items to get their flags reinitialized. Setting this setting to true will undo any changes you made to Karma, cost, or Availability of the items."
@@ -460,9 +464,11 @@
             },
             "OrderReview": {
                 "Title": "Order Review",
+                "Buyer": "Buyer",
                 "YourItems": "Your Items",
                 "OrderReviewItems": "Items List for the Review",
                 "YourOrderHasArrived": "Your order has arrived!",
+                "ItemsAddedAndArrived": "Items added and have arrived.",
                 "Approved": "approved",
                 "Rejected": "rejected",
                 "AllApproved": "all approved",
@@ -540,6 +546,31 @@
                 "ComplexForms": "Complex Forms"
             },
             "Modifiers": {
+                "Custom": {
+                    "Title": "Custom Modifiers"
+                },
+                "Labels": {
+                    "Friendly": "Friendly",
+                    "Neutral": "Neutral",
+                    "Mistrustful": "Mistrustful",
+                    "Biased": "Biased",
+                    "Averse": "Averse",
+                    "Hostile": "Hostile",
+                    "Advantageous": "Advantageous",
+                    "Insignificant": "Insignificant",
+                    "Annoying": "Annoying",
+                    "Dangerous": "Dangerous",
+                    "Catastrophic": "Catastrophic",
+                    "Insufficient Info": "Insufficient Info",
+                    "Leverage": "Leverage",
+                    "Improperly Dressed": "Improperly Dressed",
+                    "Nervous": "Nervous",
+                    "Physically Imposing": "Physically Imposing",
+                    "Outnumbered": "Outnumbered",
+                    "Has Weapon/Magic": "Has Weapon/Magic",
+                    "Plausible Evidence": "Plausible Evidence",
+                    "Target Distracted": "Target Distracted"
+                },
                 "General": {
                     "title": "General Social Modifiers",
                     "npcAttitudeFriendly": "NPC has a friendly attitude",
@@ -632,6 +663,13 @@
                 "EffectIconLabel": "Icon",
                 "SelectIconTooltip": "Select an icon for this effect",
                 "ApplyToLabel": "Apply To",
+                "ApplyTo": {
+                    "actor": "Actor",
+                    "targeted_actor": "Targeted Actor",
+                    "test_all": "All Tests",
+                    "test_item": "Item Tests",
+                    "modifier": "Modifier"
+                },
                 "TestFilterLabel": "Filter by Test",
                 "SelectTestsPlaceholder": "Any Test",
                 "CategoryFilterLabel": "Filter by Category",
@@ -672,6 +710,7 @@
             "ReviewPurchaseRequests": "Review Purchase Requests",
             "OpenMarketplace": "Open Marketplace",
             "OpenShoppingCart": "Open Shopping Cart",
+            "OpenItemBuilder": "Open Item Builder",
             "ItemFound": "1 item found",
             "ItemsFound": "{count} items found",
             "NoMatchingItemsFound": "No matching items found"

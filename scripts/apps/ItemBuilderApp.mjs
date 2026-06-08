@@ -35,20 +35,12 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.tabGroups = { main: "builder" }; // Default to the 'builder' tab
 
         // --- Item & Category Selection State ---
-        this.selectedKey = Object.keys(this.itemData.itemsByType ?? {}).find(k => this.itemData.itemsByType[k].items.length > 0) || null;
+        this.selectedKey = null;
+        this.itemSearchQuery = "";
+        this.itemSearchTags = [];
+        this.modSearchQuery = "";
+        this.modSearchTags = [];
 
-        // Find a default item category to display on first load
-        const itemsByType = this.itemData.itemsByType ?? {};
-        let defaultKey = null;
-        if (itemsByType.rangedWeapons && itemsByType.rangedWeapons.items.length > 0) {
-            defaultKey = "rangedWeapons";
-        } else {
-            const firstAvailableCategory = Object.entries(itemsByType).find(([, data]) => data.items.length > 0);
-            if (firstAvailableCategory) {
-                defaultKey = firstAvailableCategory[0];
-            }
-        }
-        this.selectedKey = defaultKey;
         this.hoverTimeout = null; 
         // To hold a reference to the active tooltip application
         this.tooltipApp = null;
@@ -131,7 +123,6 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.draggedModData = { mountPoint: data.mountPoint };
         event.dataTransfer.setData("text/plain", JSON.stringify(data));
 
-        const override = game.settings.get('sr5-marketplace', 'itemBuilder.ignoreMountRestrictions');
         const allSlots = this.element.querySelectorAll(".mod-slot[data-slot-id]");
 
         // 1. Determine Drag Type (Mod or Item)
@@ -147,11 +138,6 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
                 if (isBottomSlot) {
                     slot.classList.add("initial-invalid"); // Mods can't go in bottom slots
-                    return;
-                }
-
-                if (override) {
-                    slot.classList.add("initial-override");
                     return;
                 }
                 
@@ -185,6 +171,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      */
     _onDragEnter(event) {
         const slot = event.currentTarget;
+        slot.classList.add("drag-hover");
         if (slot.classList.contains("initial-override")) {
             slot.classList.add("override-drop");
         } else if (slot.classList.contains("initial-valid")) {
@@ -199,7 +186,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      * Called when a dragged element leaves a drop target. Now only removes the hover effect.
      */
     _onDragLeave(event) {
-        event.currentTarget.classList.remove("valid-drop", "invalid-drop", "override-drop");
+        event.currentTarget.classList.remove("valid-drop", "invalid-drop", "override-drop", "drag-hover");
     }
 
     /**
@@ -214,7 +201,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         // Clean up ALL drag-related classes from ALL slots
         this.element.querySelectorAll(".mod-slot[data-slot-id]").forEach(s => {
             s.classList.remove(
-                "valid-drop", "invalid-drop", "override-drop",
+                "valid-drop", "invalid-drop", "override-drop", "drag-hover",
                 "initial-valid", "initial-invalid", "initial-override"
             );
         });
@@ -227,58 +214,53 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     async _onDrop(event) {
         const data = JSON.parse(event.dataTransfer.getData("text/plain"));
         const slot = event.currentTarget;
-        const override = game.settings.get('sr5-marketplace', 'itemBuilder.ignoreMountRestrictions');
         const slotId = slot.dataset.slotId;
-        const targetMountPoint = slot.dataset.mountPoint;
-        const draggedMountPoint = data.mountPoint || "none";
+        const isBottomSlot = !!slot.closest(".bottom-slots");
 
-        if (override || !targetMountPoint || targetMountPoint === draggedMountPoint) {
-            const item = await fromUuid(data.uuid);
-            if (!item) return;
+        const item = await fromUuid(data.uuid);
+        if (!item) return;
 
-            // --- THIS IS THE FIX ---
-            // Create the complete data object from the fetched item.
-            const droppedItemData = {
-                uuid: item.uuid,
-                name: item.name,
-                img: item.img,
-                type: item.type,
-                system: item.system,
-                effects: item.effects.map(e => e.toObject(false))
-            };
+        // Create the complete data object from the fetched item.
+        const droppedItemData = {
+            uuid: item.uuid,
+            name: item.name,
+            img: item.img,
+            type: item.type,
+            system: item.system,
+            effects: item.effects.map(e => e.toObject(false))
+        };
 
-            // 2. Handle drop based on the drag type set in _onDragStart
-            switch (this.draggedItemType) {
-                case "mod": {
-                    const override = game.settings.get('sr5-marketplace', 'itemBuilder.ignoreMountRestrictions');
-                    const targetMountPoint = slot.dataset.mountPoint;
-                    const draggedMountPoint = this.draggedModData?.mountPoint || "none";
+        // Normalize mount_point in dropped item data
+        if (droppedItemData.system && droppedItemData.system.mod_weapon?.mount_point) {
+            droppedItemData.system.mount_point = droppedItemData.system.mod_weapon.mount_point;
+        }
 
-                    if (override || !targetMountPoint || targetMountPoint === draggedMountPoint) {
-                        await BuilderStateService.addChange(slotId, droppedItemData);
-                        this.render();
-                    } else {
-                        ui.notifications.warn("This modification cannot be placed in that slot.");
-                    }
-                    break;
-                }
-
-                case "item": {
-                    const isBottomSlot = !!slot.closest(".bottom-slots");
-                    if (isBottomSlot) {
-                        await BuilderStateService.addChange(slotId, droppedItemData);
-                        this.render();
-                    } else {
-                        // This should be impossible if _onDragStart is correct, but good to have
-                        ui.notifications.error("Items can only be placed in the bottom slots.");
-                    }
-                    break;
-                }
-
-                default:
-                    console.warn("Marketplace Builder | Unknown drag type ended.");
-                    break;
+        if (this.draggedItemType === "mod") {
+            if (isBottomSlot) {
+                ui.notifications.error("Modifications can only be placed in the top slots.");
+                return;
             }
+
+            const targetMountPoint = slot.dataset.mountPoint; // e.g. "barrel", "under", "top"
+            const draggedMountPoint = item.system.mod_weapon?.mount_point || item.system.mount_point || data.mountPoint || "none";
+
+            // If it's a weapon, validate mount point
+            if (targetMountPoint && targetMountPoint !== draggedMountPoint) {
+                ui.notifications.warn(`This modification requires a "${draggedMountPoint}" mount point.`);
+                return;
+            }
+
+            await BuilderStateService.addChange(slotId, droppedItemData);
+            this.render();
+        } 
+        else if (this.draggedItemType === "item") {
+            if (!isBottomSlot) {
+                ui.notifications.error("Items can only be placed in the bottom slots.");
+                return;
+            }
+
+            await BuilderStateService.addChange(slotId, droppedItemData);
+            this.render();
         }
     }
 
@@ -295,19 +277,43 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         // --- Logic for the "Builder" Tab ---
         if (this.tabGroups.main === "builder") {
-            // Initialize Search Services & Category Selector
-            this.itemSearchService = new itemSearchService(this.element);
-            this.itemSearchService.initialize({
-                searchBox: 'input[name="itemSearch"]',
-                itemsGrid: '.item-selector-section .item-content-grid',
-                nameSelector: ".item-name"
-            });
-            this.modSearchService = new itemSearchService(this.element);
-            this.modSearchService.initialize({
-                searchBox: 'input[name="modSearch"]',
-                itemsGrid: '.mod-selector-section .item-content-grid',
-                nameSelector: ".item-name"
-            });
+            // Initialize Search Services scoped to their sections
+            const itemSection = this.element.querySelector(".item-selector-section");
+            if (itemSection) {
+                this.itemSearchService = new itemSearchService(itemSection, (tags, query) => {
+                    this.itemSearchQuery = query;
+                    this.itemSearchTags = tags;
+                    this._filterItemsDOM('.item-selector-section .item-content-grid', tags, query);
+                });
+                this.itemSearchService.initialize();
+
+                // If there are existing tags/query from a previous render, re-apply them to DOM
+                if (this.itemSearchTags.length > 0 || this.itemSearchQuery) {
+                    this.itemSearchService.activeFilters = [...this.itemSearchTags];
+                    const sBox = itemSection.querySelector("#search-box");
+                    if (sBox) sBox.value = this.itemSearchQuery;
+                    this.itemSearchService.applyFilters();
+                }
+            }
+
+            const modSection = this.element.querySelector(".mod-selector-section");
+            if (modSection) {
+                this.modSearchService = new itemSearchService(modSection, (tags, query) => {
+                    this.modSearchQuery = query;
+                    this.modSearchTags = tags;
+                    this._filterItemsDOM('.mod-selector-section .item-content-grid', tags, query);
+                });
+                this.modSearchService.initialize();
+
+                // If there are existing tags/query from a previous render, re-apply them to DOM
+                if (this.modSearchTags.length > 0 || this.modSearchQuery) {
+                    this.modSearchService.activeFilters = [...this.modSearchTags];
+                    const sBox = modSection.querySelector("#search-box");
+                    if (sBox) sBox.value = this.modSearchQuery;
+                    this.modSearchService.applyFilters();
+                }
+            }
+
             const categorySelector = this.element.querySelector("#item-type-selector");
             if (categorySelector) {
                 categorySelector.addEventListener("change", this.onChangeCategory.bind(this));
@@ -326,6 +332,49 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             this.itemSearchService = null;
             this.modSearchService = null;
         }
+    }
+
+    /**
+     * Instantly filters list elements in the DOM based on tags and live query.
+     * @param {string} containerSelector The selector for the grid container.
+     * @param {Array<string>} tags Active filter tags.
+     * @param {string} query The live search term.
+     * @private
+     */
+    _filterItemsDOM(containerSelector, tags, query) {
+        const container = this.element.querySelector(containerSelector);
+        if (!container) return;
+
+        const cards = container.querySelectorAll(".item-card");
+        const queryTerm = query.trim().toLowerCase();
+        const tagTerms = tags.map(t => t.trim().toLowerCase());
+
+        cards.forEach(card => {
+            const nameEl = card.querySelector(".item-name");
+            const name = nameEl ? nameEl.textContent.trim().toLowerCase() : "";
+            const matchesQuery = !queryTerm || name.includes(queryTerm);
+            const matchesTags = tagTerms.every(tag => name.includes(tag));
+
+            if (matchesQuery && matchesTags) {
+                card.style.display = "";
+            } else {
+                card.style.display = "none";
+            }
+        });
+
+        // Toggle category headers (<h4>)
+        const headers = container.querySelectorAll(".category-header");
+        headers.forEach(header => {
+            let next = header.nextElementSibling;
+            let anyVisible = false;
+            while (next && !next.classList.contains("category-header")) {
+                if (next.classList.contains("item-card") && next.style.display !== "none") {
+                    anyVisible = true;
+                }
+                next = next.nextElementSibling;
+            }
+            header.style.display = anyVisible ? "" : "none";
+        });
     }
 
     /** @override */
@@ -363,19 +412,43 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 partialContext.displayItem = displayItem;
                 partialContext.isEditingBaseItem = builderData.isEditingBaseItem;
 
-                const baseItemsByType = this.itemData.baseItemsByType ?? {};
-                const modsByType = this.itemData.modificationsByType ?? {};
+                const baseItemsByType = await this.itemData.fetchGlobalItems('base') || {};
+                const modsByType = await this.itemData.fetchGlobalItems('modifications') || {};
 
                 // We now use the 'allModifications' key as the single, reliable source for all mods.
-                const allMods = modsByType.allModifications?.items || [];
+                let allMods = modsByType.allModifications?.items || [];
 
                 // --- Item Selector Context ---
                 partialContext.itemsByType = baseItemsByType;
                 if (!this.selectedKey || !baseItemsByType[this.selectedKey]) {
-                    this.selectedKey = Object.keys(baseItemsByType).find(k => baseItemsByType[k].items.length > 0) || null;
+                    if (baseItemsByType.rangedWeapons && baseItemsByType.rangedWeapons.items.length > 0) {
+                        this.selectedKey = "rangedWeapons";
+                    } else {
+                        this.selectedKey = Object.keys(baseItemsByType).find(k => baseItemsByType[k].items.length > 0) || null;
+                    }
                 }
                 partialContext.selectedKey = this.selectedKey;
-                partialContext.selectedItems = this.selectedKey ? (baseItemsByType[this.selectedKey]?.items || []) : [];
+                
+                let selectedItems = this.selectedKey ? (baseItemsByType[this.selectedKey]?.items || []) : [];
+
+                // Filter functions using tags and queries
+                const filterBySearch = (items, tags = [], query = "") => {
+                    const queryTerm = query.trim().toLowerCase();
+                    const tagTerms = tags.map(t => t.trim().toLowerCase());
+                    if (!queryTerm && tagTerms.length === 0) return items;
+                    return items.filter(item => {
+                        const name = (item.name || "").trim().toLowerCase();
+                        const matchesQuery = !queryTerm || name.includes(queryTerm);
+                        const matchesTags = tagTerms.every(tag => name.includes(tag));
+                        return matchesQuery && matchesTags;
+                    });
+                };
+
+                // Apply search filters
+                selectedItems = filterBySearch(selectedItems, this.itemSearchTags, this.itemSearchQuery);
+                allMods = filterBySearch(allMods, this.modSearchTags, this.modSearchQuery);
+
+                partialContext.selectedItems = selectedItems;
 
                 // --- Logic for when a Base Item IS Selected ---
                 if (builderData.baseItem) {
@@ -681,8 +754,14 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         // --- 4. Finalize the new item data ---
 
-        // A. Set all merged effects
-        baseItemData.effects = allEffects;
+        // A. Set all merged effects and normalize changes to arrays
+        baseItemData.effects = allEffects.map(effect => {
+            const cleanEffect = { ...effect };
+            if (cleanEffect.changes) {
+                cleanEffect.changes = BuilderStateService._changesToArray(cleanEffect.changes);
+            }
+            return cleanEffect;
+        });
 
         // B. Update name
         if (descriptionModList.length > 0) {
@@ -707,9 +786,17 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             linkedItems: linkedItemsFlag 
         };
         
-        // --- 5. Log the final single item payload ---
-        console.log("Marketplace Builder | Payload for new item (log only):", baseItemData);
-        //ui.notifications.info("New item payload logged to console (F12).");
+        // --- 5. Physically create the Item document in the World directory ---
+        console.log("Marketplace Builder | Creating new item in World:", baseItemData);
+        try {
+            const createdItem = await Item.create(baseItemData);
+            if (createdItem) {
+                ui.notifications.info(`Item "${createdItem.name}" was successfully created in the World directory.`);
+            }
+        } catch (err) {
+            console.error("Marketplace Builder | Failed to create item in world:", err);
+            ui.notifications.error("Failed to create the item in the World directory.");
+        }
     }
 
     /**

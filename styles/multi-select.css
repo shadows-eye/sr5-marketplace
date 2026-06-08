@@ -2,6 +2,61 @@
 /* STYLING FOR THE REUSABLE MULTI-SELECT "TAGIFY" COMPONENT           */
 /* ================================================================== */
 
+:root {
+  --tag-input-border: #444;
+  --tag-background-color: var(--color-red-deep, #5d142b);
+  --tag-text-color: #fff;
+  --tag-background-dropdown: #18151e;
+  --dropdown-item-border: var(--border-color-dark, #2b2b2b);
+  --dropdown-item-hover-bg: var(--bg-dark-section-hover, #3d3d3d);
+}
+
+/* Theme Overrides for Multi-Select */
+.theme-light {
+  --tag-input-border: var(--border-color-medium, #cbd5e1);
+  --tag-background-color: var(--color-red-deep, #5d142b);
+  --tag-text-color: #fff;
+  --tag-background-dropdown: #f8fafc;
+  --dropdown-item-border: var(--border-color-medium, #e2e8f0);
+  --dropdown-item-hover-bg: #e2e8f0;
+}
+
+.theme-dark {
+  --tag-input-border: var(--border-color-medium, #444);
+  --tag-background-color: var(--color-red-deep, #5d142b);
+  --tag-text-color: #fff;
+  --tag-background-dropdown: #1e1b24;
+  --dropdown-item-border: var(--border-color-dark, #2b2b2b);
+  --dropdown-item-hover-bg: var(--bg-dark-section-hover, #3d3d3d);
+}
+
+.theme-neon {
+  --tag-input-border: #00d2ff;
+  --tag-background-color: rgba(0, 210, 255, 0.2);
+  --tag-text-color: #00f0ff;
+  --tag-background-dropdown: #0b1017;
+  --dropdown-item-border: #1e293b;
+  --dropdown-item-hover-bg: rgba(0, 210, 255, 0.15);
+}
+
+.theme-neon-light {
+  --tag-input-border: #0284c7;
+  --tag-background-color: rgba(2, 132, 199, 0.1);
+  --tag-text-color: #0284c7;
+  --tag-background-dropdown: #ffffff;
+  --dropdown-item-border: #e2e8f0;
+  --dropdown-item-hover-bg: #f0f9ff;
+}
+
+.theme-silicon {
+  --tag-input-border: #d2d2d7;
+  --tag-background-color: #e5e5e7;
+  --tag-text-color: #1d1d1f;
+  --tag-background-dropdown: #ffffff;
+  --dropdown-item-border: #e5e5e7;
+  --dropdown-item-hover-bg: #f5f5f7;
+}
+
 /* --- 1. Main Container --- */
 /* Establishes a positioning context for the dropdown. */
 .multi-select-container {
@@ -18,7 +73,7 @@
   padding: 5px;
   border: 1px solid var(--tag-input-border);
   border-radius: 3px;
-  background: var(--collapsible-content-bg); /* A slightly transparent background for the input area */
+  background: var(--place-collapsible-content-bg, rgba(0, 0, 0, 0.3));
   min-height: 32px;
   cursor: text;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -41,7 +96,7 @@
   border-radius: 3px;
   font-size: 12px;
   line-height: 1;
-  white-space: nowrap; /* Prevents long tags from wrapping */
+  white-space: nowrap;
 }
 
 /* The 'x' button inside a tag. */
@@ -57,38 +112,30 @@
 
 /* --- 4. The Hidden Text Input Field --- */
 .multi-select__input {
-  flex-grow: 1; /* Takes up remaining space */
+  flex-grow: 1;
   border: none;
   outline: none;
   background: transparent;
   padding: 2px;
   color: var(--text-color-primary);
-  min-width: 120px; /* Ensures there's always space to click */
+  min-width: 120px;
 }
 
 /* --- 5. The Dropdown List of Options --- */
 .dropdown-content {
-  /* Hidden by default. The JS will add the '.show' class. */
   display: none; 
-  
-  /* --- THIS PART HANDLES THE LAYERING --- */
-  position: absolute; /* Takes the element out of the normal document flow. */
-  z-index: 1000;      /* Lifts it onto a high layer, in front of other content. */
-  
-  /* --- THIS PART HANDLES THE POSITIONING & APPEARANCE --- */
-  top: 100%; /* Positioned directly below the input */
+  position: absolute;
+  z-index: 1000;
+  top: 100%;
   left: 0;
   right: 0;
-  
-  /* UPDATED: Using a solid background variable for better readability */
   background: var(--tag-background-dropdown);
-  
   border: 1px solid var(--border-color-highlight);
   border-top: none;
   border-radius: 0 0 3px 3px;
   max-height: 200px;
   overflow-y: auto;
-  box-shadow: 0 3px 5px rgba(0,0,0,0.2); /* Add a subtle shadow for depth */
+  box-shadow: 0 3px 10px rgba(0,0,0,0.5);
 }
 
 /* The class our JavaScript will toggle to show the dropdown. */
@@ -100,12 +147,12 @@
 .dropdown-item {
   padding: 8px 10px;
   cursor: pointer;
-  border-bottom: 1px solid var(--border-color-dark);
+  border-bottom: 1px solid var(--dropdown-item-border);
   color: var(--text-color-primary);
 }
 .dropdown-item:last-child {
   border-bottom: none;
 }
 .dropdown-item:hover {
-  background: var(--bg-dark-section-hover);
+  background: var(--dropdown-item-hover-bg);
 }

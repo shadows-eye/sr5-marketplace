@@ -81,7 +81,9 @@ const initializeTemplates = () => {
         "modules/sr5-marketplace/templates/apps/marketshouter/marketshouter.html",
         "modules/sr5-marketplace/templates/chat/chatMessageRequest.html",
         "modules/sr5-marketplace/templates/chat/orderConfirmation.html",
-        "modules/sr5-marketplace/templates/chat/orderRejection.html"
+        "modules/sr5-marketplace/templates/chat/orderConfirmationPhone.html",
+        "modules/sr5-marketplace/templates/chat/orderRejection.html",
+        "modules/sr5-marketplace/templates/chat/orderRejectionPhone.html"
     ]);
 };
 
@@ -186,6 +188,17 @@ const initializeSettings = () => {
         config: true,
         type: Boolean,
         default: true,
+        restricted: true,
+    });
+
+    const isSmartphoneActive = !!game.modules.get('smartphone-widget')?.active;
+    game.settings.register("sr5-marketplace", "sendToSmartphone", {
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.SendToSmartphone.name"),
+        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.SendToSmartphone.hint"),
+        scope: "world",
+        config: isSmartphoneActive,
+        type: Boolean,
+        default: false,
         restricted: true,
     });
 
@@ -637,6 +650,13 @@ Hooks.on("ready", async () => {
     console.log("SR5 Marketplace | Module is ready!");
     injectThemeChoices();
 
+    try {
+        await game.sr5marketplace.api.system.init();
+        console.log("SR5 Marketplace | System API bridge successfully initialized.");
+    } catch (err) {
+        console.error("SR5 Marketplace | Failed to initialize System API bridge:", err);
+    }
+
     // --- REMOVED: await game.sr5marketplace.api.itemData.initialize(); ---
     game.sr5marketplace.api.itemData.buildIndex().then(() => {
         console.log("SR5 Marketplace | Item index successfully cached in memory.");
@@ -1071,3 +1091,37 @@ async function handleGMContinueExtendedTest({ userId, dialogId, actorUuid, rollC
         console.error("SR5 Marketplace | GM failed to continue extended test:", e);
     }
 }
+
+// Suppress public ChatMessage creation when smartphone widget routing is active
+Hooks.on("preCreateChatMessage", (message, data, options, userId) => {
+    try {
+        const sendToSmartphone = game.settings.get("sr5-marketplace", "sendToSmartphone");
+        if (sendToSmartphone) {
+            const flags = message.flags || {};
+            const isSmartphoneMsg = flags["smartphone-widget"]?.isSmartphoneMessage;
+            if (isSmartphoneMsg) {
+                const content = message.content || "";
+                if (content.includes("order-confirmation") || content.includes("order-rejection") || content.includes("sr5-marketplace")) {
+                    console.log("SR5 Marketplace | Suppressing ChatMessage for smartphone-widget message:", message.id || message._id);
+                    return false;
+                }
+            }
+        }
+    } catch (e) {
+        console.error("SR5 Marketplace | Error in preCreateChatMessage hook:", e);
+    }
+});
+
+// Debug hook to inspect all created chat messages and identify their source
+Hooks.on("createChatMessage", (message, options, userId) => {
+    if (game.user.isGM) {
+        console.log("SR5 Marketplace Debug | ChatMessage Created:", {
+            id: message.id,
+            speaker: message.speaker,
+            whisper: message.whisper,
+            alias: message.alias,
+            content: message.content,
+            flags: message.flags
+        });
+    }
+});

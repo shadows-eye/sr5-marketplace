@@ -52,8 +52,8 @@
                             <span>{{part.label}} {{part.value}}</span>{{#unless @last}} + {{/unless}}
                         {{/each}}
                     </div>
-                    <div class="pool-total">
-                        = <strong>{{activeTestState.totalDicePool}}</strong> {{localize "SR5.Dice"}}
+                    <div class="pool-total" title="{{activeTestState.poolFormula}}">
+                        = <strong title="{{activeTestState.poolFormula}}">{{activeTestState.totalDicePool}}</strong> {{localize "SR5.Dice"}}
                     </div>
                 </div>
                 <hr>
@@ -63,7 +63,7 @@
                     {{#each activeTestState.modifierGroups as |group index|}}
                         <div class="modifier-group collapsible">
                             {{!-- The hidden checkbox that powers the toggle --}}
-                            <input type="checkbox" id="toggle-mod-group-{{index}}" class="toggle-checkbox" checked>
+                            <input type="checkbox" id="toggle-mod-group-{{index}}" class="toggle-checkbox" {{#if group.isExpanded}}checked{{/if}}>
 
                             {{!-- The clickable header. The 'for' attribute links it to the checkbox. --}}
                             <label for="toggle-mod-group-{{index}}" class="place-collapsible-header">{{localize group.title}}</label>
@@ -84,6 +84,31 @@
                             </div>
                         </div>
                     {{/each}}
+
+                    {{!-- Custom Modifiers --}}
+                    <div class="modifier-group collapsible">
+                        <input type="checkbox" id="toggle-mod-group-custom" class="toggle-checkbox" {{#if activeTestState.customGroupExpanded}}checked{{/if}}>
+                        <label for="toggle-mod-group-custom" class="place-collapsible-header">{{localize "SR5Marketplace.Marketplace.Modifiers.Custom.Title"}}</label>
+                        <div class="place-collapsible-content">
+                            <div class="custom-modifiers-list animate-fade-in" style="margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px;">
+                                {{#each activeTestState.customAppliedModifiers}}
+                                    <div class="custom-modifier-item" style="display: flex; justify-content: space-between; align-items: center; background: var(--color-black-transparent-20); padding: 6px 10px; border-radius: 4px;">
+                                        <span>{{this.label}} ({{#if (gt this.value 0)}}+{{/if}}{{this.value}})</span>
+                                        <button type="button" class="remove-modifier-btn text-[var(--color-red-bright)] hover:brightness-150 transition-all cursor-pointer bg-transparent border-none p-0 shadow-none outline-none flex items-center justify-center" data-action="removeCustomModifier" data-label="{{this.label}}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                {{/each}}
+                            </div>
+                            <div class="custom-modifier-inputs" style="display: flex; gap: 8px; align-items: center;">
+                                <input type="text" class="custom-mod-label" placeholder="Label (e.g. Rush Order)" style="flex: 2; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--color-black-transparent-20); background: var(--Form-background-group); color: var(--text-color-primary);" />
+                                <input type="text" class="custom-mod-value" placeholder="Value (+2 / -2)" style="flex: 1; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--color-black-transparent-20); background: var(--Form-background-group); color: var(--text-color-primary); text-align: center;" />
+                                <button type="button" class="add-custom-modifier-btn" data-action="addCustomModifier" style="padding: 4px 12px; background: var(--color-green-button); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9em; display: flex; align-items: center; gap: 4px;">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <hr>
 
