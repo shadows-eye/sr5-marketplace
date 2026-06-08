@@ -81,6 +81,44 @@ export class SystemDataMapperService {
     }
 
     /**
+     * Recursively walks a schema fields object to find all valid data paths.
+     * @param {object} fields The schema fields object to walk.
+     * @param {string} path The current path prefix.
+     * @param {Array<object>} results The array to push results into.
+     * @param {object} localizedMap A map of keys to their localized labels.
+     * @private
+     */
+    static _walkSchema(fields, path, results, localizedMap = {}) {
+        for (const [key, field] of Object.entries(fields)) {
+            if (key.startsWith("_") || key === "flags") continue;
+            const newPath = path ? `${path}.${key}` : key;
+            const label = localizedMap[key] || this.#createFallbackLabel(key);
+
+            if (field && typeof field === 'object') {
+                if (field.fields) {
+                    if ("value" in field.fields) {
+                        results.push({ label: label, path: `${newPath}.value` });
+                    } else {
+                        this._walkSchema(field.fields, newPath, results, localizedMap);
+                    }
+                } else if (field.model) {
+                    const subModel = field.model;
+                    const subSchema = subModel.schema?.fields || subModel._schema?.fields || subModel._shema?.fields;
+                    if (subSchema) {
+                        if ("value" in subSchema) {
+                            results.push({ label: label, path: `${newPath}.value` });
+                        } else {
+                            this._walkSchema(subSchema, newPath, results, localizedMap);
+                        }
+                    }
+                } else {
+                    results.push({ label: label, path: newPath });
+                }
+            }
+        }
+    }
+
+    /**
      * Gets a structured object of all mappable keys.
      * @returns {{actors: object, items: object, rolls: object, modifiers: object}}
      */
@@ -93,66 +131,131 @@ export class SystemDataMapperService {
         for (const type in systemApi.documentTypes.Actor) {
             if (type === "base" || type.includes("sr5-marketplace")) continue;
             try {
-                const model = new CONFIG.Actor.documentClass({ name: "temp-mapper", type: type }, { temporary: true });
-                if (!model?.system) continue;
-                
+                const actorModelClass = CONFIG.Actor.dataModels?.[type] || CONFIG.Actor.dataModels;
+                const schema = actorModelClass?._schema || actorModelClass?.schema || actorModelClass?._shema;
+                const fields = schema?.fields;
+
                 const typeResults = {};
 
-                for (const groupKey in model.system) {
-                    if (this.#EXCLUDED_GROUPS.has(groupKey)) continue;
-                    const groupData = model.system[groupKey];
-                    if (typeof groupData !== 'object' || groupData === null) continue;
-
-                    const groupLabel = this.#createGroupLabel(groupKey);
-                    const localMap = systemApi.getLocalizationMapForKey(groupKey);
-                    let results = [];
-
-                    this._walkObject(groupData, `system.${groupKey}`, results, localMap);
-                    
-                    if (results.length > 0) {
-                        // Post-filter for skills to ensure we only get relevant paths
-                        if (groupKey === 'skills') {
-                            results = results.filter(r => r.path.includes('.active.') || r.path.includes('.knowledge.') || r.path.includes('.language.'));
-                        }
-
-                        // Augment armor to ensure '.mod' is always included if it exists
-                        if (groupKey === 'armor' && model.system.armor.mod !== undefined) {
-                            const modPath = 'system.armor.mod';
-                            if (!results.some(r => r.path === modPath)) {
-                                results.push({ label: game.i18n.localize('SR5.Armor.FIELDS.armor.mod.label'), path: modPath });
+                if (fields) {
+                    for (const groupKey in fields) {
+                        if (this.#EXCLUDED_GROUPS.has(groupKey)) continue;
+                        const groupField = fields[groupKey];
+                        
+                        let subFields = null;
+                        if (groupField && typeof groupField === 'object') {
+                            if (groupField.fields) {
+                                subFields = groupField.fields;
+                            } else if (groupField.model) {
+                                subFields = groupField.model.schema?.fields || groupField.model._schema?.fields || groupField.model._shema?.fields;
                             }
                         }
+
+                        if (!subFields) continue;
+
+                        const groupLabel = this.#createGroupLabel(groupKey);
+                        const localMap = systemApi.getLocalizationMapForKey(groupKey);
+                        let results = [];
+
+                        this._walkSchema(subFields, `system.${groupKey}`, results, localMap);
                         
                         if (results.length > 0) {
-                           typeResults[groupLabel] = results;
+                            // Post-filter for skills to ensure we only get relevant paths
+                            if (groupKey === 'skills') {
+                                results = results.filter(r => r.path.includes('.active.') || r.path.includes('.knowledge.') || r.path.includes('.language.'));
+                            }
+
+                            // Augment armor to ensure '.mod' is always included if it exists
+                            if (groupKey === 'armor' && subFields.mod !== undefined) {
+                                const modPath = 'system.armor.mod';
+                                if (!results.some(r => r.path === modPath)) {
+                                    results.push({ label: game.i18n.localize('SR5.Armor.FIELDS.armor.mod.label'), path: modPath });
+                                }
+                            }
+                            
+                            if (results.length > 0) {
+                               typeResults[groupLabel] = results;
+                            }
                         }
                     }
-                }
 
-                // Manually build and localize the Condition Tracks group
-                const tracksGroupName = game.i18n.localize("SR5.ConditionMonitor") || "Condition Monitor";
-                const tracks = [];
-                if (model.system.physical_track) tracks.push({ label: game.i18n.localize("SR5.DmgTypePhysical"), path: "system.physical_track.value" });
-                if (model.system.stun_track) tracks.push({ label: game.i18n.localize("SR5.DmgTypeStun"), path: "system.stun_track.value" });
-                if (model.system.matrix_track) tracks.push({ label: game.i18n.localize("SR5.DmgTypeMatrix"), path: "system.matrix_track.value" });
-                
-                if (tracks.length > 0) {
-                    typeResults[tracksGroupName] = tracks;
+                    // Manually build and localize the Condition Tracks group
+                    const tracksGroupName = game.i18n.localize("SR5.ConditionMonitor") || "Condition Monitor";
+                    const tracks = [];
+                    if (fields.physical_track) tracks.push({ label: game.i18n.localize("SR5.DmgTypePhysical"), path: "system.physical_track.value" });
+                    if (fields.stun_track) tracks.push({ label: game.i18n.localize("SR5.DmgTypeStun"), path: "system.stun_track.value" });
+                    if (fields.matrix_track) tracks.push({ label: game.i18n.localize("SR5.DmgTypeMatrix"), path: "system.matrix_track.value" });
+                    
+                    if (tracks.length > 0) {
+                        typeResults[tracksGroupName] = tracks;
+                    }
+                } else {
+                    // Fallback to temporary instance method
+                    const model = new CONFIG.Actor.documentClass({ name: "temp-mapper", type: type }, { temporary: true });
+                    if (model?.system) {
+                        for (const groupKey in model.system) {
+                            if (this.#EXCLUDED_GROUPS.has(groupKey)) continue;
+                            const groupData = model.system[groupKey];
+                            if (typeof groupData !== 'object' || groupData === null) continue;
+
+                            const groupLabel = this.#createGroupLabel(groupKey);
+                            const localMap = systemApi.getLocalizationMapForKey(groupKey);
+                            let results = [];
+
+                            this._walkObject(groupData, `system.${groupKey}`, results, localMap);
+                            
+                            if (results.length > 0) {
+                                if (groupKey === 'skills') {
+                                    results = results.filter(r => r.path.includes('.active.') || r.path.includes('.knowledge.') || r.path.includes('.language.'));
+                                }
+                                if (groupKey === 'armor' && model.system.armor.mod !== undefined) {
+                                    const modPath = 'system.armor.mod';
+                                    if (!results.some(r => r.path === modPath)) {
+                                        results.push({ label: game.i18n.localize('SR5.Armor.FIELDS.armor.mod.label'), path: modPath });
+                                    }
+                                }
+                                if (results.length > 0) {
+                                   typeResults[groupLabel] = results;
+                                }
+                            }
+                        }
+
+                        const tracksGroupName = game.i18n.localize("SR5.ConditionMonitor") || "Condition Monitor";
+                        const tracks = [];
+                        if (model.system.physical_track) tracks.push({ label: game.i18n.localize("SR5.DmgTypePhysical"), path: "system.physical_track.value" });
+                        if (model.system.stun_track) tracks.push({ label: game.i18n.localize("SR5.DmgTypeStun"), path: "system.stun_track.value" });
+                        if (model.system.matrix_track) tracks.push({ label: game.i18n.localize("SR5.DmgTypeMatrix"), path: "system.matrix_track.value" });
+                        if (tracks.length > 0) {
+                            typeResults[tracksGroupName] = tracks;
+                        }
+                    }
                 }
 
                 if (Object.keys(typeResults).length > 0) allActorKeys[type] = typeResults;
             } catch (e) { console.warn(`Could not map Actor type "${type}".`, e); }
         }
 
-        // --- ITEMS, ROLLS, MODIFIERS (Unchanged) ---
+        // --- ITEMS ---
         const allItemKeys = {};
+        const itemConfig = CONFIG.Item || CONFIG.Items;
         for (const type in systemApi.documentTypes.Item) {
             if (type === "base" || type.includes("sr5-marketplace")) continue;
             try {
-                const model = new CONFIG.Item.documentClass({ name: "temp-mapper", type: type }, { temporary: true });
-                if (!model?.system) continue;
+                const itemModelClass = itemConfig?.dataModels?.[type];
+                const schema = itemModelClass?._schema || itemModelClass?.schema || itemModelClass?._shema;
+                const fields = schema?.fields;
+
                 const groupResults = [];
-                SystemDataMapperService._walkObject(model.system, "system", groupResults, {});
+
+                if (fields) {
+                    this._walkSchema(fields, "system", groupResults, {});
+                } else {
+                    const model = new CONFIG.Item.documentClass({ name: "temp-mapper", type: type }, { temporary: true });
+                    if (model?.system) {
+                        SystemDataMapperService._walkObject(model.system, "system", groupResults, {});
+                    }
+                }
+
                 if (groupResults.length > 0) allItemKeys[type] = groupResults;
             } catch (e) { console.warn(`Could not map Item type "${type}".`, e); }
         }

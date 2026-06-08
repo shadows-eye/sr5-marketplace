@@ -31,7 +31,7 @@ export class DefaultEffect {
             changes: {
                 "0": {
                     key: null,
-                    mode: CONST.ACTIVE_EFFECT_MODES.ADD, // A sensible default mode
+                    mode: CONST.ACTIVE_EFFECT_CHANGE_TYPES?.ADD || CONST.ACTIVE_EFFECT_MODES?.ADD || "ADD", // A sensible default mode
                     value: "" // The crucial addition of an empty value
                 }
             },

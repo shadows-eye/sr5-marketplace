@@ -407,6 +407,7 @@ padding-top: 9em;
   min-height: 100px;
   border: none;
   background: transparent;
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), filter 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .itemBuilder .mod-slot::before {
     content: "";
@@ -431,11 +432,26 @@ padding-top: 9em;
   outline: 2px dashed #00bfff; /* Deep sky blue */
 }
 
-/* MODIFIED: The hover effect now only adds the box-shadow for emphasis */
-.itemBuilder.dragging-mod .mod-slot.valid-drop,
-.itemBuilder.dragging-mod .mod-slot.invalid-drop,
+/* Hover highlights for active drop targets (using drop-shadow on the element/SVG) */
+.itemBuilder.dragging-mod .mod-slot.valid-drop::before {
+    background-image: url("data:image/svg+xml,%3Csvg id='b' data-name='Layer 2' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 116.29 103.99'%3E%3Cdefs%3E%3Cstyle%3E .s %7B fill: %23cecece; %7D .t %7B fill: %234CAF50; %7D .u %7B fill: %235d142b; %7D %3C/style%3E%3C/defs%3E%3Cg id='c' data-name='Frame_Green'%3E%3Cg id='d' data-name='Frame'%3E%3Cg id='e' data-name='Whites'%3E%3Cpolygon id='f' data-name='White' class='s' points='113.83 99.54 113.09 99.21 101.09 103.52 21.61 103.52 21.61 103.99 101.42 103.99 101.42 103.99 113.83 99.54'/%3E%3Crect id='g' data-name='White' class='u' x='37.17' y='95.86' width='78.38' height='.47'/%3E%3Crect id='h' data-name='White' class='s' x='-33.15' y='56.26' width='76.19' height='.47' transform='translate(61.45 51.55) rotate(90)'/%3E%3Cpolygon id='i' data-name='White' class='s' points='2.47 4.51 3.2 4.84 15.2 .53 94.69 .53 94.69 .06 14.87 .06 14.87 .06 2.47 4.51'/%3E%3Crect id='j' data-name='White' class='s' x='73.34' y='47.13' width='76' height='.47' transform='translate(63.97 158.71) rotate(-90)'/%3E%3C/g%3E%3Cg id='k' data-name='Colors'%3E%3Crect id='l' data-name='Green' class='t' x='-44.32' y='51.73' width='91.11' height='2.48' transform='translate(54.21 51.73) rotate(90)'/%3E%3Crect id='m' data-name='Green' class='t' x='-2.55' y='100.97' width='5.58' height='.47' transform='translate(101.44 100.97) rotate(90)'/%3E%3Cpolygon id='n' data-name='Red' class='t' points='2.48 4.03 2.48 5.51 81.6 5.51 81.6 5.49 81.6 5.51 95.47 1.54 112.85 1.54 112.85 .06 94.69 .06 94.69 .22 81.4 4.03 2.48 4.03'/%3E%3Crect id='o' data-name='Green' class='t' x='70.11' y='50.15' width='90.88' height='1.48' transform='translate(64.66 166.44) rotate(-90)'/%3E%3Crect id='p' data-name='Green' class='t' x='113.27' y='2.55' width='5.56' height='.47' transform='translate(113.27 118.84) rotate(-90)'/%3E%3Cpolygon id='q' data-name='Red' class='t' points='113.81 100.02 113.81 98.54 34.69 98.54 34.69 98.56 34.69 98.54 20.82 102.51 3.44 102.51 3.44 103.99 21.61 103.99 21.61 103.83 34.9 100.02 113.81 100.02'/%3E%3Crect id='r' data-name='Green' class='t' y='7.41' width='78.38' height='.47'/%3E%3C/g%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.itemBuilder.dragging-mod .mod-slot.valid-drop {
+    filter: drop-shadow(0 0 6px rgba(76, 175, 80, 0.85));
+}
+
+.itemBuilder.dragging-mod .mod-slot.invalid-drop {
+    filter: drop-shadow(0 0 6px rgba(220, 53, 69, 0.85));
+}
+
 .itemBuilder.dragging-mod .mod-slot.override-drop {
-  box-shadow: 0 0 7px currentColor; /* Uses the color from the outline */
+    filter: drop-shadow(0 0 6px rgba(0, 191, 255, 0.85));
+}
+
+/* Fade all non-hovered slots when one slot is hovered during a drag operation */
+.itemBuilder.dragging-mod:has(.mod-slot.drag-hover) .mod-slot:not(.drag-hover) {
+    opacity: 0.45;
 }
 
 /* --- Content inside slots --- */

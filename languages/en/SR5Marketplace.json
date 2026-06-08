@@ -478,6 +478,13 @@
             "EffectIconLabel": "Icon",
             "SelectIconTooltip": "Select an icon for this effect",
             "ApplyToLabel": "Apply To",
+            "ApplyTo": {
+                "actor": "Actor",
+                "targeted_actor": "Targeted Actor",
+                "test_all": "All Tests",
+                "test_item": "Item Tests",
+                "modifier": "Modifier"
+            },
             "TestFilterLabel": "Filter by Test",
             "SelectTestsPlaceholder": "Any Test",
             "CategoryFilterLabel": "Filter by Category",
@@ -518,6 +525,7 @@
         "ReviewPurchaseRequests": "Review Purchase Requests",
         "OpenMarketplace": "Open Marketplace",
         "OpenShoppingCart": "Open Shopping Cart",
+        "OpenItemBuilder": "Open Item Builder",
         "ItemFound": "1 item found",
         "ItemsFound": "{count} items found",
         "NoMatchingItemsFound": "No matching items found"

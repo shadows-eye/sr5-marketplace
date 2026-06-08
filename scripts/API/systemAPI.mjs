@@ -78,7 +78,10 @@ export class SR5SystemAPI {
         // 1. Capture the live objects
         this.config = CONFIG.SR5;
         this.ActionFlow = game.shadowrun5e?.ActionFlow;
-        this.documentTypes = game.system.documentTypes;
+        this.documentTypes = game.system.documentTypes || {
+            Actor: CONFIG.Actor.documentTypes.reduce((acc, type) => { acc[type] = {}; return acc; }, {}),
+            Item: CONFIG.Item.documentTypes.reduce((acc, type) => { acc[type] = {}; return acc; }, {})
+        };
         
         const tests = game.shadowrun5e?.tests;
         if (tests) {

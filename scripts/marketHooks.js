@@ -637,6 +637,13 @@ Hooks.on("ready", async () => {
     console.log("SR5 Marketplace | Module is ready!");
     injectThemeChoices();
 
+    try {
+        await game.sr5marketplace.api.system.init();
+        console.log("SR5 Marketplace | System API bridge successfully initialized.");
+    } catch (err) {
+        console.error("SR5 Marketplace | Failed to initialize System API bridge:", err);
+    }
+
     // --- REMOVED: await game.sr5marketplace.api.itemData.initialize(); ---
     game.sr5marketplace.api.itemData.buildIndex().then(() => {
         console.log("SR5 Marketplace | Item index successfully cached in memory.");

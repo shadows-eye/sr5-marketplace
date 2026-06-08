@@ -479,6 +479,13 @@
             "EffectIconLabel": "Symbol",
             "SelectIconTooltip": "Wähle ein Symbol für diesen Effekt",
             "ApplyToLabel": "Anwenden auf",
+            "ApplyTo": {
+                "actor": "Charakter",
+                "targeted_actor": "Ziel-Charakter",
+                "test_all": "Alle Proben",
+                "test_item": "Artikel-Proben",
+                "modifier": "Modifikator"
+            },
             "TestFilterLabel": "Nach Probe filtern",
             "SelectTestsPlaceholder": "Jede Probe",
             "CategoryFilterLabel": "Nach Kategorie filtern",
@@ -519,6 +526,7 @@
         "ReviewPurchaseRequests": "Kaufanfragen überprüfen",
         "OpenMarketplace": "Marktplatz öffnen",
         "OpenShoppingCart": "Einkaufswagen öffnen",
+        "OpenItemBuilder": "Item-Builder öffnen",
         "ItemFound": "1 Gegenstand gefunden",
         "ItemsFound": "{count} Gegenstände gefunden",
         "NoMatchingItemsFound": "Keine passenden Gegenstände gefunden"
