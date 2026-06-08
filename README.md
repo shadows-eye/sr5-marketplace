@@ -15,7 +15,7 @@
 ## Overview
 
 The Shadowrun 5e Marketplace is a module for Foundry Virtual Tabletop (Foundry VTT) that brings an immersive marketplace experience to your Shadowrun 5th Edition games. It allows players and game masters (GMs) to manage in-game purchases seamlessly, integrating item browsing, purchasing, and inventory management directly into the game interface.
-![image](<img width="909" height="803" alt="image" src="https://github.com/user-attachments/assets/cae5fec8-96e4-4b38-a897-8cd4dc0cc19f" />)
+![image](https://github.com/user-attachments/assets/cae5fec8-96e4-4b38-a897-8cd4dc0cc19f)
 
 
 ## Features
