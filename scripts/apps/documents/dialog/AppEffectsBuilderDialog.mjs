@@ -79,7 +79,9 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
 
             const changeTypes = CONST.ACTIVE_EFFECT_CHANGE_TYPES || CONST.ACTIVE_EFFECT_MODES;
             context.changeModes = Object.entries(changeTypes).map(([key, value]) => ({
-                value: value, label: `EFFECT.MODE_${key}`
+                value: value,
+                label: `EFFECT.MODE_${key.toUpperCase()}`,
+                mode: key.toLowerCase()
             }));
 
         }
@@ -201,7 +203,10 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
                     ? `${baseItemLabel}: ${item.name}` 
                     : `${slotLabel} (${Object.keys(builderState.changes).find(k => builderState.changes[k] === item)}): ${item.name}`,
                 sourceUuid: item.uuid,
-                effects: finalEffects
+                effects: finalEffects,
+                isBaseItem: (item === builderState.baseItem),
+                itemName: item.name,
+                itemImg: item.img
             });
         }
         return groups;
