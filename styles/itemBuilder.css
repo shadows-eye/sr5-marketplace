@@ -543,6 +543,166 @@ padding-top: 9em;
 /* ================================================================== */
 
 /* --- General Layout --- */
+.itemBuilder .effects-header {
+    background: linear-gradient(90deg, var(--color-red-darkest, #5d142b) 0%, rgba(0, 0, 0, 0.85) 100%);
+    border-bottom: 2px solid var(--border-color-highlight, #5d142b);
+    padding: 6px 12px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+.itemBuilder .effects-header h2 {
+    margin: 0;
+    color: var(--text-color-primary, #fff);
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    border: none;
+}
+.itemBuilder .effects-header p {
+    margin: 2px 0 0 0;
+    font-size: 11px;
+    color: var(--text-color-secondary, #cecece);
+}
+
+.game-effects-dashboard {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+.dashboard-column {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 180px;
+}
+.dashboard-item-wrapper {
+    position: relative;
+}
+.dashboard-base-item {
+    display: flex;
+    align-items: center;
+    background: linear-gradient(90deg, rgba(93, 20, 43, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%);
+    border: 1px solid var(--color-red-darkest, #5d142b);
+    border-radius: 6px;
+    padding: 4px 10px;
+    gap: 8px;
+    height: 34px;
+}
+.dashboard-item-img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    border: none;
+}
+.dashboard-item-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-color-primary, #fff);
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.dashboard-add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    background: var(--color-red-darkest, #5d142b);
+    color: var(--color-white, #fff) !important;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.dashboard-add-btn:hover {
+    background: var(--color-red-bright, #ff3b30);
+}
+.dashboard-mod-badge {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px dashed var(--border-color-medium, #434345);
+    border-radius: 6px;
+    padding: 4px 10px;
+    gap: 8px;
+    height: 34px;
+    cursor: pointer;
+    overflow: hidden;
+}
+.dashboard-mod-badge:hover {
+    border-color: var(--color-red-darkest, #5d142b);
+}
+.mod-add-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(93, 20, 43, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: #fff !important;
+    font-size: 14px;
+}
+.dashboard-mod-badge:hover .mod-add-overlay {
+    opacity: 1;
+}
+.dashboard-effects-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 5px;
+}
+.active-effect-tag {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(93, 20, 43, 0.25);
+    border: 1px solid var(--color-red-darkest, #5d142b);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 11px;
+    color: var(--text-color-primary, #fff);
+    gap: 8px;
+    max-width: 180px;
+    white-space: nowrap;
+}
+.active-effect-tag .effect-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.active-effect-tag .effect-tag-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+.active-effect-tag:hover .effect-tag-actions {
+    opacity: 1;
+}
+.active-effect-tag .effect-tag-actions a {
+    color: var(--text-color-primary, #fff);
+}
+.active-effect-tag .effect-tag-actions a:hover {
+    color: var(--color-red-bright, #ff3b30);
+}
+.active-effect-tag .innate-effect {
+    color: var(--color-grey-medium-light, #7a797a);
+}
+
 .itemBuilder .effect-creator-container {
     border-top: 2px solid var(--border-color-highlight);
     margin-top: 0.5em;
@@ -616,8 +776,31 @@ padding-top: 9em;
     gap: 4px;
 }
 
-.itemBuilder .key-btn {
-    flex-basis: content;
+.itemBuilder .key-btn,
+.itemBuilder .key-buttons button,
+.itemBuilder .derived-value-selector button {
+    text-align: center;
+    padding: 2px 6px;
+    font-size: 11px;
+    height: 22px;
+    width: 115px;
+    line-height: 1.2;
+    background: var(--collapsible-content-bg);
+    border: 1px solid var(--border-color-dark);
+    color: var(--text-color-primary);
+    cursor: pointer;
+    border-radius: 3px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.itemBuilder .key-btn:hover,
+.itemBuilder .key-buttons button:hover,
+.itemBuilder .derived-value-selector button:hover {
+    border-color: var(--border-color-highlight);
+    background: var(--bg-dark-section-hover);
 }
 
 /* Value Input Group */
@@ -660,25 +843,160 @@ padding-top: 9em;
 }
 
 .itemBuilder .effect-creator-steps{
-  height: 33em;
-  overflow-x: auto;
+  max-height: 33em;
+  height: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-/* --- Main Creator Layout --- */
-.effect-creator-grid {
+/* --- Main Creator 3-Column Layout --- */
+.effect-creator-layout {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    grid-template-columns: 540px 1fr 220px;
+    gap: 20px;
     align-items: start;
-    margin-right: 3px;
+    width: 100%;
 }
 
-.effect-creator-grid .form-group.full-width {
-    grid-column: 1 / -1; /* Make an element span all 3 columns */
+.creator-column.left-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
 }
 
-.key-selector-container.full-width {
-    grid-column: 1 / -1;
+.left-fields-subcolumns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    width: 100%;
+}
+
+.left-fields-subcolumns .subcolumn {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    min-width: 0;
+}
+
+.subcolumn-header-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.creator-column.left-fields .form-group input,
+.creator-column.left-fields .multi-select-container,
+.creator-column.left-fields .button-group.applyTo {
+    max-width: 260px;
+}
+
+.creator-column.middle-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    align-self: stretch;
+}
+
+.creator-column.right-actions {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 100%;
+    align-self: stretch;
+    padding-bottom: 2px;
+}
+
+.keys-scroll-area {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+    min-height: 0;
+    max-height: 20em;
+}
+
+.selected-key-details-panel {
+    flex-shrink: 0;
+    border-top: 1px solid var(--border-color-medium);
+    padding-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.creator-actions-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.creator-actions-row button {
+    height: 26px;
+    padding: 3px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.name-icon-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.name-icon-row .form-group:first-child {
+    flex-grow: 1;
+    margin-bottom: 0;
+}
+
+.name-icon-row .form-group:last-child {
+    flex-shrink: 0;
+    margin-bottom: 0;
+}
+
+.mode-value-row {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.mode-value-row .mode-field {
+    flex-grow: 1;
+    margin-bottom: 0;
+}
+
+.mode-value-row .value-field {
+    flex-shrink: 0;
+    margin-bottom: 0;
+    width: 140px;
+}
+
+.itemBuilder .save-button {
+    background: var(--color-green-darkest, #015635) !important;
+    color: var(--color-white, #fff) !important;
+    border: 1px solid var(--color-green-dark, #028a4f) !important;
+    text-shadow: none !important;
+}
+
+.itemBuilder .save-button:hover:not(:disabled) {
+    background: var(--color-green-dark, #028a4f) !important;
+    border-color: var(--color-green-light, #00ff87) !important;
+}
+
+.itemBuilder .save-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--collapsible-content-bg) !important;
+    border-color: var(--border-color-dark) !important;
+    color: var(--text-color-primary) !important;
 }
 
 /* --- Collapsible Key Groups --- */
@@ -697,7 +1015,7 @@ padding-top: 9em;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
-    padding: 6px 8px;
+    padding: 3px 6px;
     background: var(--collapsible-content-bg);
 }
 .key-group.collapsible .toggle-label:hover {
@@ -707,6 +1025,7 @@ padding-top: 9em;
 .key-group.collapsible .toggle-label h5 {
     margin: 0;
     border: none;
+    font-size: 11px;
 }
 
 .key-group.collapsible .expand-icon {
@@ -719,9 +1038,10 @@ padding-top: 9em;
 }
 
 .key-group.collapsible .toggle-checkbox:checked + .toggle-label + .toggle-content {
-    display: grid; /* This is your requested grid for the buttons */
-    gap: 1em;
-    padding: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px;
     background: var(--color-black-transparent-20);
 }
 
@@ -736,11 +1056,17 @@ padding-top: 9em;
     gap: 6px;
 }
 
-.button-group.mode-selector,
 .button-group.applyTo {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 1em;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+}
+
+.button-group.mode-selector {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    max-width: 280px;
 }
 .button-group.typeSelector {
     display: grid;
@@ -750,8 +1076,24 @@ padding-top: 9em;
     padding-top: 0.5em;
 }
 
-.key-btn {
-    text-align: center;
+.itemBuilder .button-group button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--collapsible-content-bg);
+    border: 1px solid var(--border-color-dark);
+    color: var(--text-color-primary);
+    cursor: pointer;
+    padding: 3px 6px;
+    height: 24px;
+    font-size: 12px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.itemBuilder .button-group button:hover {
+    border-color: var(--border-color-highlight);
+    background: var(--bg-dark-section-hover);
 }
 /* Style for any selected or active button in the effect creator */
 .itemBuilder .key-btn.selected,
