@@ -75,7 +75,9 @@ export class AppDialogBuilder {
 
         if (Array.isArray(appliedModifiers)) {
             appliedModifiers.forEach(mod => {
-                dicePoolBreakdown.push({ label: mod.label, value: mod.value });
+                const labelLocKey = `SR5Marketplace.Marketplace.Modifiers.Labels.${mod.label}`;
+                const displayLabel = game.i18n.has(labelLocKey) ? game.i18n.localize(labelLocKey) : mod.label;
+                dicePoolBreakdown.push({ label: displayLabel, value: mod.value });
                 totalDicePool += mod.value;
             });
         }
@@ -96,13 +98,28 @@ export class AppDialogBuilder {
         // situational modifiers that should be displayed in the UI.
         const modifierGroups = DialogTestModifierService.getModifiersForTest({ skill });
 
+        const formulaParts = dicePoolBreakdown.map(part => `${part.label} (${part.value >= 0 ? '+' : ''}${part.value})`);
+        const poolFormula = `${formulaParts.join(" + ")} = ${totalDicePool}`;
+
+        const standardLabels = new Set([
+            "Friendly", "Neutral", "Mistrustful", "Biased", "Averse", "Hostile",
+            "Advantageous", "Insignificant", "Annoying", "Dangerous", "Catastrophic",
+            "Insufficient Info", "Leverage",
+            "Improperly Dressed", "Nervous",
+            "Physically Imposing", "Outnumbered", "Has Weapon/Magic",
+            "Plausible Evidence", "Target Distracted"
+        ]);
+        const customAppliedModifiers = (appliedModifiers ?? []).filter(mod => !standardLabels.has(mod.label));
+
         return {
             actor,
             availabilityStr,
             modifierGroups, // The modifier groups are now guaranteed to be included
             dicePoolBreakdown,
             totalDicePool,
-            connectionUsed: connectionUsed
+            connectionUsed: connectionUsed,
+            poolFormula,
+            customAppliedModifiers
         };
     }
 

@@ -361,6 +361,31 @@
             "ComplexForms": "Complex Forms"
         },
         "Modifiers": {
+            "Custom": {
+                "Title": "Custom Modifiers"
+            },
+            "Labels": {
+                "Friendly": "Friendly",
+                "Neutral": "Neutral",
+                "Mistrustful": "Mistrustful",
+                "Biased": "Biased",
+                "Averse": "Averse",
+                "Hostile": "Hostile",
+                "Advantageous": "Advantageous",
+                "Insignificant": "Insignificant",
+                "Annoying": "Annoying",
+                "Dangerous": "Dangerous",
+                "Catastrophic": "Catastrophic",
+                "Insufficient Info": "Insufficient Info",
+                "Leverage": "Leverage",
+                "Improperly Dressed": "Improperly Dressed",
+                "Nervous": "Nervous",
+                "Physically Imposing": "Physically Imposing",
+                "Outnumbered": "Outnumbered",
+                "Has Weapon/Magic": "Has Weapon/Magic",
+                "Plausible Evidence": "Plausible Evidence",
+                "Target Distracted": "Target Distracted"
+            },
             "General": {
                 "title": "General Social Modifiers",
                 "npcAttitudeFriendly": "NPC has a friendly attitude",
