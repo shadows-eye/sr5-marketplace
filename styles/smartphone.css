@@ -1,0 +1,306 @@
+/* ========================================================
+   Smartphone Widget Message Card Styling
+   ======================================================== */
+
+.sr5-marketplace-phone-card {
+    font-family: 'Outfit', 'Inter', 'Roboto', sans-serif;
+    background: linear-gradient(135deg, rgba(20, 60, 110, 0.9) 0%, rgba(10, 80, 50, 0.9) 100%);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    border-radius: 12px;
+    padding: 0.75rem;
+    margin: 0.25rem 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35), inset 0 0 10px rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+    max-width: 100%;
+    box-sizing: border-box;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sr5-marketplace-phone-card:hover {
+    border-color: rgba(56, 189, 248, 0.85);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), 0 0 10px rgba(56, 189, 248, 0.3);
+}
+
+.sr5-marketplace-phone-card.rejection-card {
+    border-color: rgba(239, 68, 68, 0.4);
+    background: linear-gradient(135deg, rgba(90, 20, 20, 0.9) 0%, rgba(130, 15, 45, 0.9) 100%);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35), inset 0 0 10px rgba(255, 255, 255, 0.05);
+}
+
+.sr5-marketplace-phone-card.rejection-card:hover {
+    border-color: rgba(239, 68, 68, 0.85);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+.sr5-marketplace-phone-card .phone-card-header {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 0;
+    margin-bottom: 0.5rem;
+    border-bottom: none;
+}
+
+.sr5-marketplace-phone-card.rejection-card .phone-card-header {
+    border-bottom: none;
+}
+
+.sr5-marketplace-phone-card .market.phone-card-title {
+    width: 100%;
+    color: var(--color-yellow-base) !important;
+    background: #ffffff29 !important;
+    border: 1px solid #ffffff40;
+    border-radius: 8px;
+    justify-content: center;
+    align-items: center;
+    /* padding: 6px 12px 6px 36px !important; */
+    font-size: .68rem !important;
+    font-weight: 700;
+    display: flex;
+    box-shadow: inset 0 1px 1px #ffffff40, 0 2px 8px #0000004d !important;
+}
+
+.sr5-marketplace-phone-card.rejection-card .phone-card-title {
+    color: #ff8585;
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 95, 86, 0.3);
+}
+
+.sr5-marketplace-phone-card .phone-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.sr5-marketplace-phone-card .phone-card-section {
+    font-size: 0.85rem;
+    line-height: 1.35;
+}
+
+.sr5-marketplace-phone-card .actor-link-section {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.3rem 0.5rem;
+    border-radius: 6px;
+    border-left: 2px solid var(--color-yellow-base);
+}
+
+.sr5-marketplace-phone-card.rejection-card .actor-link-section {
+    border-left-color: #ff5f56;
+}
+
+.sr5-marketplace-phone-card .phone-items-list {
+    margin: 0.35rem 0;
+    padding: 0;
+    list-style: none;
+    list-style-type: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    align-items: center;
+    width: 100%;
+}
+
+.sr5-marketplace-phone-card .phone-items-list li {
+    list-style-type: none;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: block;
+    text-align: center;
+    width: 100%;
+}
+
+.sr5-marketplace-phone-card .phone-items-list li a.content-link {
+    background: transparent;
+    border: none;
+    padding: 0;
+    box-shadow: none;
+    font-size: 0.82rem;
+    color: var(--color-yellow-light);
+    text-decoration: underline;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.sr5-marketplace-phone-card.rejection-card .phone-items-list li a.content-link {
+    color: #ffbebe;
+}
+
+.sr5-marketplace-phone-card .phone-items-list li a.content-link:hover {
+    color: var(--color-yellow-base);
+    text-decoration: none;
+}
+
+.sr5-marketplace-phone-card .metrics-section {
+    background: #00000026;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 12px 6px;
+    margin: 0.02rem 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+}
+
+.sr5-marketplace-phone-card .metric-value.cost-nuyen {
+    color: #38bdf8;
+    background: #38bdf826;
+    border: 1px solid #38bdf859;
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-weight: 700;
+    box-shadow: inset 0 1px 1px #38bdf833, 0 2px 5px #0003;
+    width: 100%;
+}
+
+.sr5-marketplace-phone-card .metric-value.cost-karma {
+    background: rgba(234, 179, 8, 0.15);
+    border: 1px solid rgba(234, 179, 8, 0.35);
+    color: #facc15;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 8px;
+    box-shadow: inset 0 1px 1px rgba(234, 179, 8, 0.2), 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.sr5-marketplace-phone-card .status-section {
+    font-style: italic;
+    color: #e2e8f0;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px 12px;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0.35rem 0;
+}
+
+.sr5-marketplace-phone-card.rejection-card .status-section {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+}
+
+.sr5-marketplace-phone-card .status-msg-line {
+    margin: 0;
+    line-height: 1.4;
+}
+
+.sr5-marketplace-phone-card .phone-card-footer {
+    box-sizing: border-box;
+    margin-top: .35rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+/* ========================================================
+   Glossy Overrides & Text Wrapping for Smartphone Widget Messages
+   ======================================================== */
+
+.sr5-marketplace-phone-card,
+.sr5-marketplace-phone-card * {
+    max-width: 100%;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+.sr5-marketplace-phone-card span {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 3px 8px;
+    color: #e2e8f0;
+    backdrop-filter: blur(4px);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 2px 5px rgba(0, 0, 0, 0.2);
+    display: inline-block;
+}
+
+.sr5-marketplace-phone-card .phone-card-title {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: var(--color-yellow-base);
+    font-weight: 700;
+    padding: 6px 12px;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25), 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.sr5-marketplace-phone-card.rejection-card .phone-card-title {
+    color: #ff8585;
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 95, 86, 0.3);
+}
+
+.sr5-marketplace-phone-card .metric-value {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: rgba(56, 189, 248, 0.3);
+    color: #38bdf8;
+    font-weight: 700;
+    box-shadow: inset 0 1px 1px rgba(56, 189, 248, 0.2), 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.sr5-marketplace-phone-card.rejection-card .metric-value {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+}
+
+/* ========================================================
+   Buyer Avatar Header Placement
+   ======================================================== */
+
+.sr5-marketplace-phone-card a.buyer-avatar-link {
+    position: absolute;
+    left: -6px;
+    top: 20%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 50%;
+    height: 28px;
+    width: 28px;
+    z-index: 10;
+}
+
+.sr5-marketplace-phone-card .buyer-avatar {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    min-height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.sr5-marketplace-phone-card a.buyer-avatar-link:hover .buyer-avatar {
+    transform: scale(1.15);
+    border-color: #38bdf8;
+}
+
+.sr5-marketplace-phone-card .phone-card-footer span {
+    width: 100%;
+    display: block;
+    text-align: center;
+    box-sizing: border-box;
+    padding: 5px 12px;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}

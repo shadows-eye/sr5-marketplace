@@ -126,6 +126,10 @@
                 "name": "Chat-Nachricht: Genehmigungen",
                 "hint": "Postet eine Chat-Nachricht, wenn ein Kauf genehmigt wurde."
             },
+            "SendToSmartphone": {
+                "name": "Nachrichten an Smartphone-Widget senden",
+                "hint": "Bestätigungs- und Ablehnungsnachrichten direkt an die Nachrichten-App auf dem Smartphone des Spielers senden, anstatt sie im Chat-Protokoll zu posten."
+            },
             "ResetItemLoad": {
                 "name": "Item Verbesserung landen zurücksetzen",
                 "hint": "Dies ermöglicht es die Karma Werte und den Kosten und Verfügbarkeiten von Welt- und Kompendiumsartikeln, ihre Flags für Karma neu zu initialisieren. Wenn Sie diese Einstellung auf true setzen, werden alle Änderungen, die Sie an Karma, Kosten oder Verfügbarkeit der Items vorgenommen haben, rückgängig gemacht."
@@ -281,9 +285,11 @@
         },
         "OrderReview": {
             "Title": "Order Überprüfung",
+            "Buyer": "Käufer",
             "YourItems": "Deine Artikel",
             "OrderReviewItems": "Artikel Liste für die Überprüfung",
             "YourOrderHasArrived": "Deine Bestellung ist angekommen!",
+            "ItemsAddedAndArrived": "Artikel hinzugefügt und angekommen.",
             "Approved": "genehmigt",
             "Rejected": "abgelehnt",
             "AllApproved": "alle genehmigt",
