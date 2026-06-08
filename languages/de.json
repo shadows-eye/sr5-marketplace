@@ -541,6 +541,31 @@
                 "ComplexForms": "Komplexe Formen"
             },
             "Modifiers": {
+                "Custom": {
+                    "Title": "Eigene Modifikatoren"
+                },
+                "Labels": {
+                    "Friendly": "Freundlich",
+                    "Neutral": "Neutral",
+                    "Mistrustful": "Misstrauisch",
+                    "Biased": "Voreingenommen",
+                    "Averse": "Abgeneigt",
+                    "Hostile": "Feindselig",
+                    "Advantageous": "Vorteilhaft",
+                    "Insignificant": "Bedeutungslos",
+                    "Annoying": "Lästig",
+                    "Dangerous": "Gefährlich",
+                    "Catastrophic": "Katastrophal",
+                    "Insufficient Info": "Unzureichende Infos",
+                    "Leverage": "Druckmittel",
+                    "Improperly Dressed": "Unpassend gekleidet",
+                    "Nervous": "Nervös",
+                    "Physically Imposing": "Körperlich imposant",
+                    "Outnumbered": "Unterzahl",
+                    "Has Weapon/Magic": "Sichtbare Waffen/Magie",
+                    "Plausible Evidence": "Glaubwürdige Beweise",
+                    "Target Distracted": "Ziel abgelenkt"
+                },
                 "General": {
                     "title": "Allgemeine Soziale Modifikatoren",
                     "npcAttitudeFriendly": "NSC hat eine freundliche Haltung",

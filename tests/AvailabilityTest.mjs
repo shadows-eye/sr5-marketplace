@@ -184,6 +184,24 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
         console.log("AvailabilityTest prepareBaseValues | attribute value is:", attribute?.value);
 
         const modifiers = this.data.action.modifiers || [];
+        const parseModifierValue = (val) => {
+            if (typeof val === "number") return val;
+            if (typeof val === "string") {
+                const clean = val.replace(/[()]/g, "").trim();
+                const match = clean.match(/^([+-]?\d+)$/);
+                return match ? parseInt(match[1], 10) : 0;
+            }
+            return 0;
+        };
+        const parsedModifiers = modifiers.map(mod => {
+            const labelLocKey = `SR5Marketplace.Marketplace.Modifiers.Labels.${mod.label}`;
+            const displayLabel = game.i18n.has(labelLocKey) ? game.i18n.localize(labelLocKey) : (mod.label || "Modifier");
+            return {
+                label: displayLabel,
+                value: parseModifierValue(mod.value)
+            };
+        });
+
         const parsed = this.constructor.parseAvailability(this.data.availabilityStr);
 
         if (!skill || !attribute) {
@@ -214,7 +232,7 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
                 // Build full dice pool: Skill + Attribute + Modifiers + Contact Stats
                 pool.addPart(skillLabel, skill.value);
                 pool.addPart(attributeLabel, attribute.value);
-                modifiers.forEach(mod => pool.addPart(mod.label, mod.value));
+                parsedModifiers.forEach(mod => pool.addPart(mod.label, mod.value));
                 if (this.contactItem) {
                     pool.addPart(game.i18n.localize("SR5.Connection"), this.contactItem.system.connection);
                     pool.addPart(game.i18n.localize("SR5.Loyalty"), this.contactItem.system.loyalty);
@@ -231,7 +249,7 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
                 // Build opposed dice pool: Skill + Attribute + Modifiers + Connection ONLY
                 pool.addPart(skillLabel, skill.value);
                 pool.addPart(attributeLabel, attribute.value);
-                modifiers.forEach(mod => pool.addPart(mod.label, mod.value));
+                parsedModifiers.forEach(mod => pool.addPart(mod.label, mod.value));
                 if (this.contactItem) {
                     pool.addPart(game.i18n.localize("SR5.Connection"), this.contactItem.system.connection);
                 }
@@ -484,6 +502,42 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
 
     get _dialogTemplate() {
         return "modules/sr5-marketplace/templates/documents/tests/availabilitySimple-test-dialog.html";
+    }
+
+    _testDialogListeners() {
+        return [
+            {
+                query: '.add-modifier-row-btn',
+                on: 'click',
+                callback: function(event, dialog) {
+                    event.preventDefault();
+                    dialog.applyFormData();
+                    const mods = this.data.action.modifiers || [];
+                    mods.push({ label: "", value: "" });
+                    this.data.action.modifiers = mods;
+                    this.prepareBaseValues();
+                    this.calculateBaseValues();
+                    dialog.render();
+                }
+            },
+            {
+                query: '.remove-modifier-row-btn',
+                on: 'click',
+                callback: function(event, dialog) {
+                    event.preventDefault();
+                    dialog.applyFormData();
+                    const index = parseInt(event.currentTarget.dataset.index, 10);
+                    const mods = this.data.action.modifiers || [];
+                    if (!isNaN(index) && index >= 0 && index < mods.length) {
+                        mods.splice(index, 1);
+                    }
+                    this.data.action.modifiers = mods;
+                    this.prepareBaseValues();
+                    this.calculateBaseValues();
+                    dialog.render();
+                }
+            }
+        ];
     }
 
     static get label() {
