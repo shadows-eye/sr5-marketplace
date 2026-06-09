@@ -41,7 +41,6 @@ export class AppTestFlagService {
                 id: dialogId,
                 testType: rule,
                 status: 'initial',
-                ...initialData,
                 result: null,
                 rolls: null,
                 resistResult: null,
@@ -49,7 +48,8 @@ export class AppTestFlagService {
                 resolved: false,
                 skill: 'negotiation', //Default Value
                 attribute: 'charisma', //Default Value
-                appliedModifiers: [] // Empty array
+                appliedModifiers: [], // Empty array
+                ...initialData
             }
         };
 

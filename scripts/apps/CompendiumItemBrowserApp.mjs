@@ -43,7 +43,7 @@ export class CompendiumItemBrowserApp extends HandlebarsApplicationMixin(Applica
                 resizable: true,
                 minimizable: true
             }
-        });
+        }, { inplace: false });
     }
 
     /** @override */

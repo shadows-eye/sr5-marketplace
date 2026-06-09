@@ -7,11 +7,11 @@ import { DeliveryTimeService } from '../services/DeliveryTimeService.mjs';
 import { DialogTestModifierService as DialogModifierService } from '../apps/documents/dialog/DialogModifierService.mjs'; // Builder for Dialog For inline-Dialog in Apps
 import { AppTestFlagService } from '../services/AppTestFlagService.mjs';
 import{ MODULE_ID } from '../lib/constants.mjs';
+import { ActorSelectionService } from '../services/ActorSelectionService.mjs';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 const FLAG_SCOPE = MODULE_ID // "sr5-marketplace"
-const FLAG_KEY_SELECTED_ACTOR = "selectedActorUuid";
 
 export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2) {
     constructor(options = {}) {
@@ -30,7 +30,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         super(options);
         this.testType = null;
         this.activeDialogId = null;
-        this.activeTestState = this.activeDialogId ? testStates[this.activeDialogId] : null;
+        this.activeTestState = null;
         //this.itemData = new ItemDataServices();
         this.skill = null;
         this.attribute = null;
@@ -110,9 +110,10 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 runAvailabilityTest: this.#onRunAvailabilityTest,
                 showAvailabilityDialog: this.#onShowAvailabilityDialog,
                 selectContact: this.#onSelectContact,
-                changeReviewActor: this.#onChangeReviewActor
+                changeReviewActor: this.#onChangeReviewActor,
+                changeAvailabilityTestRule: this.#onChangeAvailabilityTestRule
             }
-        });
+        }, { inplace: false });
     }
     
     /**
@@ -219,12 +220,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     async _prepareContext(options = {}) {
         const AppUserId = await game.user.id;
         //console.log(AppUserId);
-        const selectedActorUuid = game.user.getFlag(FLAG_SCOPE, FLAG_KEY_SELECTED_ACTOR);
-        let actorForDisplay = selectedActorUuid ? await fromUuid(selectedActorUuid) : null;
-        if (!actorForDisplay) {
-            actorForDisplay = game.user.character || canvas.tokens.controlled[0]?.actor || null;
-        }
-        this.purchasingActor = actorForDisplay;
+        this.purchasingActor = await ActorSelectionService.getSelectedActor();
 
         // Dynamically re-evaluate shop region context if no explicit shop context was set
         if (!this.shopActorUuid && this.purchasingActor && canvas.ready) {
@@ -265,7 +261,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         //Initial Dialog States
         const testStates = await AppTestFlagService.readState(AppUserId);
         console.log(testStates);
-        const unresolvedTest = Object.values(testStates).find(t => !t.resolved);
+        const unresolvedTest = Object.values(testStates).find(t => !t.resolved && t.testType !== "BuildTest");
         this.activeDialogId = unresolvedTest?.id || null;
         console.log(this.activeDialogId);
         // Use the variable we just defined, not a separate one
@@ -306,7 +302,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         }
     
     let tabContent;
-    let partialContext = { basket, isGM: game.user.isGM, purchasingActor: purchasingActorData, activeTestState };
+    const availabilityTestRule = game.settings.get("sr5-marketplace", "availabilityTestRule");
+    let partialContext = { basket, isGM: game.user.isGM, purchasingActor: purchasingActorData, activeTestState, availabilityTestRule };
     const render = foundry.applications.handlebars.renderTemplate;
 
     switch (this.tabGroups.main) {
@@ -333,7 +330,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
                     // 3. Resolve shop connection and employee contact items if active
                     if (basket.shopActorUuid) {
-                        const shopActor = await fromUuid(basket.shopActorUuid);
+                        const shopDoc = await fromUuid(basket.shopActorUuid);
+                        const shopActor = shopDoc instanceof Actor ? shopDoc : shopDoc?.actor || null;
                         if (shopActor) {
                             // Shop's own connection contact
                             if (shopActor.system.shop?.connection) {
@@ -364,7 +362,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                             // Shop's serving employee contact
                             const servingEmployeeUuid = shopActor.system.shop?.servingEmployee;
                             if (servingEmployeeUuid) {
-                                const employeeActor = await fromUuid(servingEmployeeUuid);
+                                const employeeDoc = await fromUuid(servingEmployeeUuid);
+                                const employeeActor = employeeDoc instanceof Actor ? employeeDoc : employeeDoc?.actor || null;
                                 if (employeeActor) {
                                     let employeeContactItem = null;
                                     
@@ -420,7 +419,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                     // --- THIS IS THE FIX (Part 2) ---
                     // Merge the results directly INTO the 'activeTestState' object.
                     if (dialogContext) {
-                        foundry.utils.mergeObject(partialContext.activeTestState, dialogContext);
+                        Object.assign(partialContext.activeTestState, dialogContext);
                         
                         // Map collapsible group states
                         if (partialContext.activeTestState.modifierGroups) {
@@ -581,7 +580,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         }
 
         // --- Determine Top-Left Display Image ---
-        let displayImg = actorForDisplay?.img;
+        let displayImg = this.purchasingActor?.img;
         if (this.tabGroups.main === "orderReview" && partialContext.activeGroup) {
             displayImg = partialContext.activeGroup.img;
         } else if (!displayImg || displayImg === "icons/svg/mystery-man.svg" || displayImg === "/icons/svg/mystery-man.svg") {
@@ -636,14 +635,14 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     }
 
     static async #onSelectActor(event, target) {
-        await game.user.setFlag(FLAG_SCOPE, FLAG_KEY_SELECTED_ACTOR, target.dataset.actorUuid);
+        await ActorSelectionService.setSelectedActor(target.dataset.actorUuid);
         target.closest(".marketplace-user-actor")?.classList.remove("expanded");
         this.render();
     }
 
     static async #onClearActor(event, target) {
         event.stopPropagation();
-        await game.user.unsetFlag(FLAG_SCOPE, FLAG_KEY_SELECTED_ACTOR);
+        await ActorSelectionService.clearSelectedActor();
         this.render();
     }
 
@@ -716,7 +715,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             await game.sr5marketplace.api.marketplace.submitForReview(game.user.id);
         } else {
             const basket = await this.basketService.getBasket();
-            const actor = await fromUuid(basket.createdForActor);
+            const doc = await fromUuid(basket.createdForActor);
+            const actor = doc instanceof Actor ? doc : doc?.actor || null;
             if (actor) {
                 await game.sr5marketplace.api.marketplace.directPurchase(actor, basket);
                 await this.basketService.clearBasket();
@@ -727,6 +727,20 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     
     static async #onCancelRequest(event, target) {
         await this.basketService.clearBasket();
+        await AppTestFlagService.deleteState(game.user.id);
+        this.activeTestState = null;
+        this.activeDialogId = null;
+
+        const buildTestApp = Object.values(ui.windows).find(w => w.constructor.name === "BuildTestApp");
+        if (buildTestApp) {
+            buildTestApp.close();
+        }
+
+        const builderApp = Object.values(ui.windows).find(w => w.constructor.name === "ItemBuilderApp");
+        if (builderApp) {
+            builderApp.render();
+        }
+
         this.render();
     }
     
@@ -1090,13 +1104,13 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const pool = Math.max(parsedAvail.rating, 1);
 
         // Construct the 'data' object for the AvailabilityResistTest using system schema creators.
-        const poolField = game.shadowrun5e.data.createData('value_field', { base: 0 });
+        const poolField = game.shadowrun5e.data.createData('value_field', { base: 0, override: null });
         poolField.mod = [
             { name: game.i18n.localize("SR5.Labels.Availability"), value: pool }
         ];
 
-        const thresholdField = game.shadowrun5e.data.createData('value_field', { base: threshold });
-        const limitField = game.shadowrun5e.data.createData('value_field', { base: 0 });
+        const thresholdField = game.shadowrun5e.data.createData('value_field', { base: threshold, override: null });
+        const limitField = game.shadowrun5e.data.createData('value_field', { base: 0, override: null });
         const actionField = game.shadowrun5e.data.createData('action_roll');
         actionField.categories = ["social"];
 
@@ -1181,6 +1195,25 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
      * @param {string} updatePayload.type - The type of test, set to 'AvailabilityTest'.
      * @param {string} userId - The ID of the current user.
      */
+    static async #onChangeAvailabilityTestRule(event, target) {
+        const value = target.value;
+        if (game.user.isGM) {
+            await game.settings.set("sr5-marketplace", "availabilityTestRule", value);
+            game.socket.emit("module.sr5-marketplace", { type: "setting_updated", key: "availabilityTestRule", value: value });
+            for (const app of foundry.applications.instances.values()) {
+                if (app.constructor.name === "inGameMarketplace" || app.constructor.name === "ItemBuilderApp" || app.constructor.name === "BuildTestApp") {
+                    app.render();
+                }
+            }
+        } else {
+            game.socket.emit("module.sr5-marketplace", {
+                type: "update_setting",
+                key: "availabilityTestRule",
+                value: value
+            });
+        }
+    }
+
     static async #onRunAvailabilityTest(event, target) {
         if (!this.activeTestState) return;
 
@@ -1192,7 +1225,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 actorForTestUuid = contactItem.system.linkedActor;
             }
         }
-        const actor = await fromUuid(actorForTestUuid);
+        const doc = await fromUuid(actorForTestUuid);
+        const actor = doc instanceof Actor ? doc : doc?.actor || null;
         if (!actor) return;
 
         // The 'opposed' key is removed. The AvailabilityTest class handles this internally now.
@@ -1277,7 +1311,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         console.log("%c--- Action: Continue Extended Test ---", "color: orange; font-weight: bold;");
 
         try {
-            const actor = await fromUuid(this.activeTestState.actorUuid);
+            const doc = await fromUuid(this.activeTestState.actorUuid);
+            const actor = doc instanceof Actor ? doc : doc?.actor || null;
             if (!actor) return;
 
             const rollCount = (this.activeTestState.rollCount || 0) + 1;

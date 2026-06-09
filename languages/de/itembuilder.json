@@ -1,0 +1,118 @@
+{
+    "Title": "Artikel bauen",
+    "SelectAsBase": "Als Basisartikel auswählen",
+    "AddToBuilder": "Zum Builder hinzufügen",
+    "SearchAllMods": "Alle Modifikationen durchsuchen...",
+    "SelectImage": "Bild auswählen",
+    "DoneEditing": "Bearbeitung beendet",
+    "EditBaseItem": "Basisartikel bearbeiten",
+    "AddToCart": "In den Warenkorb",
+    "nav": {
+        "builder": "Builder",
+        "effects": "Effekte",
+        "dialog": "Dialog",
+        "vehicle": "Fahrzeug/Drohne"
+    },
+    "Items": {
+        "Header": "Basisartikel",
+        "baseItemPlaceholder": {
+            "title": "Wähle ein Basisartikel",
+            "description": "Wähle ein Artikel aus der linken Liste, um es zu bauen."
+        }
+    },
+    "Modifications": {
+        "Header": "Verfügbare Modifikationen"
+    },
+    "Effects": {
+        "ManageEffects": "Effekte verwalten",
+        "ManageEffectsHint": "Aktive Effekte des Basisartikels und seiner Modifikationen ansehen, erstellen und bearbeiten.",
+        "AddEffect": "Effekt hinzufügen",
+        "InnateLockedHint": "Dies ist ein angeborener Effekt des Artikels und kann nicht gelöscht, aber überschrieben werden.",
+        "EditEffectHeader": "Effekt bearbeiten",
+        "CreateEffectHeader": "Neuen Effekt erstellen",
+        "EffectNameLabel": "Effektname",
+        "EffectNamePlaceholder": "z.B., Smartlink-Bonus",
+        "EffectIconLabel": "Symbol",
+        "SelectIconTooltip": "Wähle ein Symbol für diesen Effekt",
+        "ApplyToLabel": "Anwenden auf",
+        "ApplyTo": {
+            "actor": "Charakter",
+            "targeted_actor": "Ziel-Charakter",
+            "test_all": "Alle Proben",
+            "test_item": "Artikel-Proben",
+            "modifier": "Modifikator"
+        },
+        "TestFilterLabel": "Nach Probe filtern",
+        "SelectTestsPlaceholder": "Jede Probe",
+        "CategoryFilterLabel": "Nach Kategorie filtern",
+        "SelectCategoriesPlaceholder": "Jede Kategorie",
+        "SkillFilterLabel": "Nach Fertigkeit filtern",
+        "SelectSkillsPlaceholder": "Jede Fertigkeit",
+        "AttributeFilterLabel": "Nach Attribut filtern",
+        "SelectAttributesPlaceholder": "Jedes Attribut",
+        "LimitFilterLabel": "Nach Limit filtern",
+        "SelectLimitsPlaceholder": "Jedes Limit",
+        "AttributeKeyLabel": "Attribut / Eigenschaft",
+        "AttributeKeyPlaceholder": "Wähle eine Eigenschaft aus den Gruppen unten aus.",
+        "ChangeModeLabel": "Änderungsmodus",
+        "EffectValueLabel": "Wert",
+        "SelectDerivedValueTooltip": "Wähle eine Eigenschaft vom Basisartikel, um diesen Wert abzuleiten.",
+        "SelectDerivedValueLabel": "Wähle eine Eigenschaft vom Basisartikel",
+        "CustomEffect": "Eigener Effekt"
+    },
+    "SearchPlaceholder": "Suchen...",
+    "ClearEntireBuild": "Gesamten Entwurf löschen",
+    "RemoveMod": "Modifikation entfernen",
+    "ItemBuild": "Gegenstandsentwurf",
+    "ActiveEffects": "Aktive Effekte",
+    "SelectAnItem": "Wähle einen Gegenstand",
+    "BuildQueueEmpty": "Deine Bauschlange ist leer.",
+    "BuildQueueEmptyDesc": "Benutze den 'Builder'-Tab, um einen Gegenstand zu entwerfen, und klicke dann auf 'Zur Warteschlange hinzufügen', um ihn hierher zu senden.",
+    "BaseItemType": "Basis-Gegenstandstyp",
+    "BuildTest": "Bau-Probe",
+    "CreateAllItems": "Alle Gegenstände erstellen",
+    "SubmitAllToGM": "Alle an GM senden",
+    "ClearEntireQueue": "Ganze Warteschlange leeren",
+    "BuildTestTitle": "Bauen & Modifizieren Probe",
+    "SelectSkill": "Aktive Fertigkeit wählen",
+    "WorkingConditions": "Arbeitsbedingungen",
+    "ToolsParts": "Werkzeuge & Teile",
+    "PlansInstructions": "Pläne & Anleitungen",
+    "LogicMemoryPenalty": "Logik-Gedächtnis-Abzug",
+    "LogicMemoryPenaltyCheckbox": "Aktivieren, wenn Logik 1-4 ist und eine Gedächtnisprobe erforderlich ist",
+    "MentalLimitApplied": "Das geistige Limit wird auf diese Probe angewendet.",
+    "CriticalGlitchPartsDestroyed": "Kritischer Patzer! Die Teile wurden zerstört und die Bauschlange wurde geleert.",
+    "SuccessBuildCreated": "Bau erfolgreich! {name} im Inventar erstellt.",
+    "WorkingConditionsOptions": {
+        "excellent": "Hervorragend (+1)",
+        "average": "Normal (0)",
+        "distracted": "Ablenkung (-1)",
+        "moderate": "Mäßig (-2)",
+        "poor": "Schlecht (-3)",
+        "terrible": "Furchtbar (-4)"
+    },
+    "ToolsPartsOptions": {
+        "excellent": "Hervorragend (+1)",
+        "average": "Normal (0)",
+        "inadequate": "Unpassend (-2)",
+        "unavailable": "Nicht verfügbar (-4)"
+    },
+    "PlansInstructionsOptions": {
+        "none": "Keine (0)",
+        "available": "Verfügbar (+1)",
+        "arEnhanced": "AR-verbessert (+2)"
+    },
+    "Vehicle": {
+        "Handling": "Handling",
+        "Speed": "Geschwindigkeit",
+        "Acceleration": "Beschleunigung",
+        "Body": "Rumpf",
+        "Armor": "Panzerung",
+        "Pilot": "Pilot",
+        "Sensor": "Sensor",
+        "Seats": "Sitze",
+        "Availability": "Verf.",
+        "Cost": "Kosten",
+        "Description": "Beschreibung"
+    }
+}

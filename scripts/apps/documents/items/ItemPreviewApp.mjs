@@ -1,4 +1,5 @@
 import { BasketService } from "../../../services/basketService.mjs";
+import { ActorSelectionService } from "../../../services/ActorSelectionService.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -25,7 +26,7 @@ export class ItemPreviewApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 addToCart: this.#onAddToCart,
                 addToItemBuilder: this.#onAddToItemBuilder
             }
-        });
+        }, { inplace: false });
     }
 
     /** @override */
@@ -45,8 +46,7 @@ export class ItemPreviewApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const itemData = item.toObject(false);
         itemData.uuid = item.uuid;
 
-        const selectedActorUuid = game.user.getFlag("sr5-marketplace", "selectedActorUuid");
-        this.purchasingActor = selectedActorUuid ? await fromUuid(selectedActorUuid) : (game.user.character || null);
+        this.purchasingActor = await ActorSelectionService.getSelectedActor();
 
         //options.window.title = itemData.name;
 
@@ -57,6 +57,31 @@ export class ItemPreviewApp extends HandlebarsApplicationMixin(ApplicationV2) {
             item: itemData,
             purchasingActor: this.purchasingActor
         };
+    }
+
+    /** @override */
+    _onRender(context, options) {
+        super._onRender(context, options);
+
+        // Calculate auto-scroll properties if this is a tooltip preview
+        if (this.element.classList.contains("item-preview-tooltip")) {
+            setTimeout(() => {
+                const desc = this.element.querySelector(".description");
+                const content = this.element.querySelector(".editor-content");
+                if (desc && content) {
+                    const descHeight = desc.clientHeight;
+                    const contentHeight = content.scrollHeight;
+                    if (contentHeight > descHeight) {
+                        const scrollDist = -(contentHeight - descHeight + 15);
+                        content.style.setProperty("--scroll-dist", `${scrollDist}px`);
+                        content.classList.add("auto-scroll");
+                    } else {
+                        content.style.setProperty("--scroll-dist", "0px");
+                        content.classList.remove("auto-scroll");
+                    }
+                }
+            }, 100);
+        }
     }
 
     // --- ACTION HANDLERS ---

@@ -76,7 +76,7 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
                 resizable: true,
                 minimizable: true
             }
-        });
+        }, { inplace: false });
     }
 
     /**

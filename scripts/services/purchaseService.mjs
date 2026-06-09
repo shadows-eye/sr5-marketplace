@@ -51,7 +51,8 @@ export class PurchaseService {
             const basketState = user.getFlag(MODULE_ID, FLAGKEY_Basket);
             if (basketState?.orderReviewItems?.length > 0) {
                 for (const request of basketState.orderReviewItems) {
-                    const actor = request.createdForActor ? await fromUuid(request.createdForActor) : null;
+                    const doc = request.createdForActor ? await fromUuid(request.createdForActor) : null;
+                    const actor = doc instanceof Actor ? doc : doc?.actor || null;
                     allPendingRequests.push({ 
                         user: user.toJSON(), 
                         basket: request, 
@@ -135,7 +136,8 @@ export class PurchaseService {
                 };
 
                 const html = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/chat/chatMessageRequest.html", chatData);
-                const actor = newRequest.createdForActor ? await fromUuid(newRequest.createdForActor) : null;
+                const doc = newRequest.createdForActor ? await fromUuid(newRequest.createdForActor) : null;
+                const actor = doc instanceof Actor ? doc : doc?.actor || null;
                 const speaker = actor ? ChatMessage.getSpeaker({ actor }) : {};
                 await ChatMessage.create({
                     speaker: speaker,
@@ -192,7 +194,8 @@ export class PurchaseService {
 
             if (itemToReject && game.settings.get("sr5-marketplace", "chatRejectionEnabled")) {
                 try {
-                    const actor = request.createdForActor ? await fromUuid(request.createdForActor) : null;
+                    const doc = request.createdForActor ? await fromUuid(request.createdForActor) : null;
+                    const actor = doc instanceof Actor ? doc : doc?.actor || null;
                     const useSmartphone = !!(game.modules.get("smartphone-widget")?.active && game.settings.get("sr5-marketplace", "sendToSmartphone"));
                     
                     const templatePath = useSmartphone && actor
@@ -211,9 +214,11 @@ export class PurchaseService {
                             let senderAlias = "Marketplace";
                             let senderPhoneId = undefined;
                             if (request.shopActorUuid) {
-                                const shopActor = await fromUuid(request.shopActorUuid);
+                                const shopDoc = await fromUuid(request.shopActorUuid);
+                                const shopActor = shopDoc instanceof Actor ? shopDoc : shopDoc?.actor || null;
                                 const servingEmployeeUuid = shopActor?.system?.shop?.servingEmployee;
-                                const employeeActor = servingEmployeeUuid ? await fromUuid(servingEmployeeUuid) : null;
+                                const employeeDoc = servingEmployeeUuid ? await fromUuid(servingEmployeeUuid) : null;
+                                const employeeActor = employeeDoc instanceof Actor ? employeeDoc : employeeDoc?.actor || null;
                                 if (employeeActor) {
                                     senderAlias = employeeActor.name;
                                     const employeePhone = await phoneApi?.getPhoneForActor(employeeActor.id);
@@ -262,7 +267,8 @@ export class PurchaseService {
                         uuid: i.itemUuid
                     }));
                     if (rejectedItems.length > 0) {
-                        const actor = request.createdForActor ? await fromUuid(request.createdForActor) : null;
+                        const doc = request.createdForActor ? await fromUuid(request.createdForActor) : null;
+                        const actor = doc instanceof Actor ? doc : doc?.actor || null;
                         const useSmartphone = !!(game.modules.get("smartphone-widget")?.active && game.settings.get("sr5-marketplace", "sendToSmartphone"));
                         
                         const templatePath = useSmartphone && actor
@@ -281,9 +287,11 @@ export class PurchaseService {
                                 let senderAlias = "Marketplace";
                                 let senderPhoneId = undefined;
                                 if (request.shopActorUuid) {
-                                    const shopActor = await fromUuid(request.shopActorUuid);
+                                    const shopDoc = await fromUuid(request.shopActorUuid);
+                                    const shopActor = shopDoc instanceof Actor ? shopDoc : shopDoc?.actor || null;
                                     const servingEmployeeUuid = shopActor?.system?.shop?.servingEmployee;
-                                    const employeeActor = servingEmployeeUuid ? await fromUuid(servingEmployeeUuid) : null;
+                                    const employeeDoc = servingEmployeeUuid ? await fromUuid(servingEmployeeUuid) : null;
+                                    const employeeActor = employeeDoc instanceof Actor ? employeeDoc : employeeDoc?.actor || null;
                                     if (employeeActor) {
                                         senderAlias = employeeActor.name;
                                         const employeePhone = await phoneApi?.getPhoneForActor(employeeActor.id);
@@ -321,7 +329,8 @@ export class PurchaseService {
         if (requestIndex === -1) return;
         
         const requestToProcess = basket.orderReviewItems[requestIndex];
-        const actor = await fromUuid(requestToProcess.createdForActor);
+        const doc = await fromUuid(requestToProcess.createdForActor);
+        const actor = doc instanceof Actor ? doc : doc?.actor || null;
 
         // --- REFACTOR ---
         // Call directPurchase with the actor and the request data.
@@ -331,6 +340,24 @@ export class PurchaseService {
             basket.orderReviewItems.splice(requestIndex, 1);
             await basketService.saveBasket(basket, userId);
             game.socket.emit("module.sr5-marketplace", { type: "request_resolved", userId });
+        }
+    }
+
+    static async _createVehicleActor(actorData, userId) {
+        if (game.user.isGM) {
+            const data = foundry.utils.deepClone(actorData);
+            data.ownership = data.ownership || {};
+            data.ownership[userId] = CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER;
+            const newActor = await Actor.create(data);
+            if (newActor) {
+                console.log(`SR5 Marketplace | GM created actor: ${newActor.name} for user ${userId}`);
+            }
+        } else {
+            game.socket.emit(`module.sr5-marketplace`, {
+                action: "create_actor",
+                actorData: actorData,
+                userId: userId
+            });
         }
     }
 
@@ -354,7 +381,8 @@ export class PurchaseService {
         if (!basketItems || basketItems.length === 0) return false;
         
         if (!actor) {
-            actor = await fromUuid(basket.createdForActor);
+            const doc = await fromUuid(basket.createdForActor);
+            actor = doc instanceof Actor ? doc : doc?.actor || null;
         }
         if (!actor) {
             ui.notifications.error("Could not find the actor associated with this purchase.");
@@ -377,20 +405,35 @@ export class PurchaseService {
         await actor.update({ "system.nuyen": currentNuyen - basket.totalCost, "system.karma.value": currentKarma - basket.totalKarma });
 
         const itemsToCreate = [];
+        const userId = game.user.id;
         for (const basketItem of basketItems) {
-            const sourceItem = await fromUuid(basketItem.itemUuid);
-            if (sourceItem) {
-                const itemData = sourceItem.toObject();
-                itemData.system.quantity = basketItem.buyQuantity * (itemData.system.quantity || 1);
-
-                // --- FIX: Only set technology properties if the technology object exists. ---
-                // This prevents errors for items like qualities, spells, and actions.
-                if ( "technology" in itemData.system ) {
-                    itemData.system.technology.rating = basketItem.selectedRating;
-                    itemData.system.technology.cost = basketItem.cost;
+            if (basketItem.isCustomBuild) {
+                const buildData = basketItem.customData;
+                if (buildData.type === "vehicle") {
+                    await this._createVehicleActor(buildData, userId);
+                } else {
+                    itemsToCreate.push(buildData);
                 }
-                
-                itemsToCreate.push(itemData);
+            } else {
+                const sourceItem = await fromUuid(basketItem.itemUuid);
+                if (sourceItem) {
+                    if (sourceItem.type === "vehicle") {
+                        const actorData = sourceItem.toObject();
+                        await this._createVehicleActor(actorData, userId);
+                    } else {
+                        const itemData = sourceItem.toObject();
+                        itemData.system.quantity = basketItem.buyQuantity * (itemData.system.quantity || 1);
+
+                        // --- FIX: Only set technology properties if the technology object exists. ---
+                        // This prevents errors for items like qualities, spells, and actions.
+                        if ( "technology" in itemData.system ) {
+                            itemData.system.technology.rating = basketItem.selectedRating;
+                            itemData.system.technology.cost = basketItem.cost;
+                        }
+                        
+                        itemsToCreate.push(itemData);
+                    }
+                }
             }
         }
         // --- DEBUG LOG: Inspect the data being passed to the creation method ---
@@ -452,9 +495,11 @@ export class PurchaseService {
                         let senderAlias = "Marketplace";
                         let senderPhoneId = undefined;
                         if (basket?.shopActorUuid) {
-                            const shopActor = await fromUuid(basket.shopActorUuid);
+                            const shopDoc = await fromUuid(basket.shopActorUuid);
+                            const shopActor = shopDoc instanceof Actor ? shopDoc : shopDoc?.actor || null;
                             const servingEmployeeUuid = shopActor?.system?.shop?.servingEmployee;
-                            const employeeActor = servingEmployeeUuid ? await fromUuid(servingEmployeeUuid) : null;
+                            const employeeDoc = servingEmployeeUuid ? await fromUuid(servingEmployeeUuid) : null;
+                            const employeeActor = employeeDoc instanceof Actor ? employeeDoc : employeeDoc?.actor || null;
                             if (employeeActor) {
                                 senderAlias = employeeActor.name;
                                 const employeePhone = await phoneApi?.getPhoneForActor(employeeActor.id);

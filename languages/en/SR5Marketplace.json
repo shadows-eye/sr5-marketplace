@@ -91,7 +91,8 @@
         "DeselectAll": "Deselect All",
         "CostOrKarma": "Cost / Karma",
         "Nuyen": "Nuyen",
-        "CopyDocumentUuid": "Copy Document UUID"
+        "CopyDocumentUuid": "Copy Document UUID",
+        "DescriptionPlaceholder": "No description available."
     },
     "Marketplace": {
         "Title": "Marketplace Purchase Screen",
@@ -449,80 +450,7 @@
         },
         "NoContacts": "Has no Contacts"
     },
-    "ItemBuilder": {
-        "Title": "Build Item",
-        "SelectAsBase": "Select as Base Item",
-        "AddToBuilder": "Add to Builder",
-        "SearchAllMods": "Search all modifications...",
-        "SelectImage": "Select Image",
-        "DoneEditing": "Done Editing",
-        "EditBaseItem": "Edit Base Item",
-        "nav": {
-            "builder": "Builder",
-            "effects": "Effects",
-            "dialog": "Dialog"
-        },
-        "Items": {
-            "Header": "Base Items",
-            "baseItemPlaceholder": {
-                "title": "Select a Base Item",
-                "description": "Choose an item from the list on the left to begin building."
-            }
-        },
-        "Modifications": {
-            "Header": "Available Modifications"
-        },
-        "Effects": {
-            "ManageEffects": "Manage Effects",
-            "ManageEffectsHint": "View, create, and edit the active effects applied by the base item and its modifications.",
-            "AddEffect": "Add Effect",
-            "InnateLockedHint": "This is an innate effect of the item and cannot be deleted, but it can be overridden.",
-            "EditEffectHeader": "Edit Effect",
-            "CreateEffectHeader": "Create New Effect",
-            "EffectNameLabel": "Effect Name",
-            "EffectNamePlaceholder": "e.g., Smartlink Bonus",
-            "EffectIconLabel": "Icon",
-            "SelectIconTooltip": "Select an icon for this effect",
-            "ApplyToLabel": "Apply To",
-            "ApplyTo": {
-                "actor": "Actor",
-                "targeted_actor": "Targeted Actor",
-                "test_all": "All Tests",
-                "test_item": "Item Tests",
-                "modifier": "Modifier"
-            },
-            "TestFilterLabel": "Filter by Test",
-            "SelectTestsPlaceholder": "Any Test",
-            "CategoryFilterLabel": "Filter by Category",
-            "SelectCategoriesPlaceholder": "Any Category",
-            "SkillFilterLabel": "Filter by Skill",
-            "SelectSkillsPlaceholder": "Any Skill",
-            "AttributeFilterLabel": "Filter by Attribute",
-            "SelectAttributesPlaceholder": "Any Attribute",
-            "LimitFilterLabel": "Filter by Limit",
-            "SelectLimitsPlaceholder": "Any Limit",
-            "AttributeKeyLabel": "Attribute / Property Key",
-            "AttributeKeyPlaceholder": "Select a property to modify from the groups below.",
-            "ChangeModeLabel": "Change Mode",
-            "EffectValueLabel": "Value",
-            "SelectDerivedValueTooltip": "Select a property from the base item to derive this value from.",
-            "SelectDerivedValueLabel": "Select a property from the Base Item",
-            "CustomEffect": "Custom Effect"
-        },
-        "SearchPlaceholder": "Search items...",
-        "ClearEntireBuild": "Clear entire build",
-        "RemoveMod": "Remove Mod",
-        "ItemBuild": "Item Build",
-        "ActiveEffects": "Active Effects",
-        "SelectAnItem": "Select an Item",
-        "BuildQueueEmpty": "Your build queue is empty.",
-        "BuildQueueEmptyDesc": "Use the 'Builder' tab to design an item, then click 'Add to Queue' to send it here.",
-        "BaseItemType": "Base Item Type",
-        "BuildTest": "Build Test",
-        "CreateAllItems": "Create All Items",
-        "SubmitAllToGM": "Submit All to GM",
-        "ClearEntireQueue": "Clear Entire Queue"
-    },
+
     "Marketshouter": {
         "SearchingInShop": "Searching in: {name}",
         "SearchShop": "Search {name}...",

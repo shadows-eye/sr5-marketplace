@@ -30,16 +30,17 @@ h1.sr5-marketplace-sr5Type-header {
     border-bottom: none
 
 }
-.ItemPreviewApp .sr5marketplaceGrid.item-header {
+.ItemPreviewApp .item-header {
     display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 0.1rem;
+    grid-template-columns: 80px 1fr;
+    gap: 1rem;
+    align-items: center;
 }
-.ItemPreviewApp .sr5marketplace.item-image img{
+.ItemPreviewApp .item-image img {
     width: 80px;
     height: 80px;
+    object-fit: contain;
 }
-
 
 .ItemPreviewApp .display {
   display: flex;
@@ -59,27 +60,108 @@ h1.sr5-marketplace-sr5Type-header {
 .sr5-marketplace-yen.preview{
   margin-left: 0.2em;
 }
-/* --- Tooltip --- */
 
-/*
-  This class is applied to our frameless ItemPreviewApp instance.
-*/
-.item-preview-tooltip {
-  /* This is the key to the positioning you want */
-  transform: translateY(calc(-100% - 5px));
-  transition: transform 0.1s ease-out; /* Optional: Smooth appearance */
+/* --- Layout and Scroll Styles --- */
 
-  /* Standard tooltip styling */
-  z-index: 100;
+.ItemPreviewApp .wholesheet {
+    display: flex;
+    flex-direction: column;
+    height: 100% !important;
+    overflow: hidden;
 }
 
-/* The form inside the app needs a background color to be visible.
-  Let's use Foundry's variables so it adapts to light/dark mode.
-*/
+.ItemPreviewApp .sheetbody {
+    flex-grow: 1;
+    overflow: hidden;
+    margin-top: 1rem;
+}
 
+.ItemPreviewApp .sheetbody .tab {
+    height: 100%;
+}
 
-/* Hide the footer with "Add to Cart" buttons, as it's not needed for a tooltip.
-*/
+.ItemPreviewApp .sheetbody .flexrow {
+    height: 100%;
+    gap: 1rem;
+}
+
+.ItemPreviewApp .technology {
+    height: 100%;
+    overflow-y: auto;
+    min-width: 210px;
+    padding-right: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.ItemPreviewApp .technology .flexrow {
+    height: auto;
+    align-items: center;
+}
+
+.ItemPreviewApp .description {
+    flex-grow: 1;
+    height: 100%;
+    overflow-y: auto;
+    padding-left: 1rem;
+    border-left: 1px solid var(--color-border-dark, rgba(0, 0, 0, 0.15));
+}
+
+.ItemPreviewApp .no-desc {
+    font-style: italic;
+    color: var(--color-text-muted, rgba(0, 0, 0, 0.5));
+}
+
+/* --- Tooltip specific styles and animations --- */
+
+.item-preview-tooltip {
+  z-index: 100;
+  
+  /* Fade-in transitions */
+  opacity: 0;
+  animation: tooltip-fade-in 0.25s ease-out forwards;
+}
+
+@keyframes tooltip-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Hide all scrollbars in tooltip mode */
+.item-preview-tooltip * {
+    scrollbar-width: none !important;
+}
+.item-preview-tooltip *::-webkit-scrollbar {
+    display: none !important;
+}
+
+.item-preview-tooltip .technology,
+.item-preview-tooltip .description {
+    overflow: hidden !important;
+}
+
+/* Apply gradient mask to description for clean fade at boundaries */
+.item-preview-tooltip .description {
+    position: relative;
+    mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
+}
+
+/* Keyframes for text auto-scrolling */
+@keyframes tooltip-scroll-text {
+    0%, 15% {
+        transform: translateY(0);
+    }
+    85%, 100% {
+        transform: translateY(var(--scroll-dist, 0px));
+    }
+}
+
+.item-preview-tooltip .description .editor-content.auto-scroll {
+    animation: tooltip-scroll-text 16s linear infinite alternate;
+}
+
 .item-preview-tooltip .preview-footer {
   display: none;
 }

@@ -91,7 +91,8 @@
         "DeselectAll": "Auswahl aufheben",
         "CostOrKarma": "Kosten / Karma",
         "Nuyen": "Nuyen",
-        "CopyDocumentUuid": "Dokumenten-UUID kopieren"
+        "CopyDocumentUuid": "Dokumenten-UUID kopieren",
+        "DescriptionPlaceholder": "Keine Beschreibung verfügbar."
     },
     "Marketplace": {
         "Title": "Marktplatz Fenster",
@@ -450,80 +451,7 @@
         },
         "NoContacts": "Hat keine Kontakte"
     },
-    "ItemBuilder": {
-        "Title": "Artikel bauen",
-        "SelectAsBase": "Als Basisartikel auswählen",
-        "AddToBuilder": "Zum Builder hinzufügen",
-        "SearchAllMods": "Alle Modifikationen durchsuchen...",
-        "SelectImage": "Bild auswählen",
-        "DoneEditing": "Bearbeitung beendet",
-        "EditBaseItem": "Basisartikel bearbeiten",
-        "nav": {
-            "builder": "Builder",
-            "effects": "Effekte",
-            "dialog": "Dialog"
-        },
-        "Items": {
-            "Header": "Basisartikel",
-            "baseItemPlaceholder": {
-                "title": "Wähle ein Basisartikel",
-                "description": "Wähle ein Artikel aus der linken Liste, um es zu bauen."
-            }
-        },
-        "Modifications": {
-            "Header": "Verfügbare Modifikationen"
-        },
-        "Effects": {
-            "ManageEffects": "Effekte verwalten",
-            "ManageEffectsHint": "Aktive Effekte des Basisartikels und seiner Modifikationen ansehen, erstellen und bearbeiten.",
-            "AddEffect": "Effekt hinzufügen",
-            "InnateLockedHint": "Dies ist ein angeborener Effekt des Artikels und kann nicht gelöscht, aber überschrieben werden.",
-            "EditEffectHeader": "Effekt bearbeiten",
-            "CreateEffectHeader": "Neuen Effekt erstellen",
-            "EffectNameLabel": "Effektname",
-            "EffectNamePlaceholder": "z.B., Smartlink-Bonus",
-            "EffectIconLabel": "Symbol",
-            "SelectIconTooltip": "Wähle ein Symbol für diesen Effekt",
-            "ApplyToLabel": "Anwenden auf",
-            "ApplyTo": {
-                "actor": "Charakter",
-                "targeted_actor": "Ziel-Charakter",
-                "test_all": "Alle Proben",
-                "test_item": "Artikel-Proben",
-                "modifier": "Modifikator"
-            },
-            "TestFilterLabel": "Nach Probe filtern",
-            "SelectTestsPlaceholder": "Jede Probe",
-            "CategoryFilterLabel": "Nach Kategorie filtern",
-            "SelectCategoriesPlaceholder": "Jede Kategorie",
-            "SkillFilterLabel": "Nach Fertigkeit filtern",
-            "SelectSkillsPlaceholder": "Jede Fertigkeit",
-            "AttributeFilterLabel": "Nach Attribut filtern",
-            "SelectAttributesPlaceholder": "Jedes Attribut",
-            "LimitFilterLabel": "Nach Limit filtern",
-            "SelectLimitsPlaceholder": "Jedes Limit",
-            "AttributeKeyLabel": "Attribut / Eigenschaft",
-            "AttributeKeyPlaceholder": "Wähle eine Eigenschaft aus den Gruppen unten aus.",
-            "ChangeModeLabel": "Änderungsmodus",
-            "EffectValueLabel": "Wert",
-            "SelectDerivedValueTooltip": "Wähle eine Eigenschaft vom Basisartikel, um diesen Wert abzuleiten.",
-            "SelectDerivedValueLabel": "Wähle eine Eigenschaft vom Basisartikel",
-            "CustomEffect": "Eigener Effekt"
-        },
-        "SearchPlaceholder": "Suchen...",
-        "ClearEntireBuild": "Gesamten Entwurf löschen",
-        "RemoveMod": "Modifikation entfernen",
-        "ItemBuild": "Gegenstandsentwurf",
-        "ActiveEffects": "Aktive Effekte",
-        "SelectAnItem": "Wähle einen Gegenstand",
-        "BuildQueueEmpty": "Deine Bauschlange ist leer.",
-        "BuildQueueEmptyDesc": "Benutze den 'Builder'-Tab, um einen Gegenstand zu entwerfen, und klicke dann auf 'Zur Warteschlange hinzufügen', um ihn hierher zu senden.",
-        "BaseItemType": "Basis-Gegenstandstyp",
-        "BuildTest": "Bau-Probe",
-        "CreateAllItems": "Alle Gegenstände erstellen",
-        "SubmitAllToGM": "Alle an GM senden",
-        "ClearEntireQueue": "Ganze Warteschlange leeren"
-    },
+
     "Marketshouter": {
         "SearchingInShop": "Suche in: {name}",
         "SearchShop": "Durchsuche {name}...",

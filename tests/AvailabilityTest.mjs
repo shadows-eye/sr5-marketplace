@@ -137,13 +137,21 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
         data.action.modifiers = data.action.modifiers || 0;
         data.action.availabilityStr = data.action.availabilityStr || options?.availability || data.availabilityStr || "";
         data.availabilityStr = data.action.availabilityStr;
-        data.selectedSkill = data.action.skill || 'negotiation';
+        data.selectedSkill = data.selectedSkill || data.action.skill || 'negotiation';
         data.selectedAttribute = data.action.attribute || 'charisma';
         data.dialogId = data.action.dialogId;
         data.connectionUuid = data.action.connectionUuid;
         data.maxNegotiation = data.action.maxNegotiation || data.maxNegotiation || 0;
         data.entryId = data.action.entryId || data.entryId || options?.entryId || "";
         data.failPenalty = data.action.failPenalty || data.failPenalty || 0;
+
+        if (!data.manualHits || typeof data.manualHits.value === 'undefined') {
+            data.manualHits = game.shadowrun5e.data.createData('value_field', { base: 0, override: { value: null, label: "SR5.ManualOverride" } });
+        }
+        if (!data.manualGlitches || typeof data.manualGlitches.value === 'undefined') {
+            data.manualGlitches = game.shadowrun5e.data.createData('value_field', { base: 0, override: { value: null, label: "SR5.ManualOverride" } });
+        }
+
         return data;
     }
 
@@ -155,6 +163,31 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
     }
 
     prepareBaseValues() {
+        for (const field of ['pool', 'limit', 'threshold', 'manualHits', 'manualGlitches']) {
+            let val = this.data[field];
+            const currentBase = (field === 'threshold') 
+                ? (this.data.thresholdBase || (val && typeof val === 'object' ? val.base : null) || 0)
+                : (val && typeof val === 'object' ? val.base : 0);
+
+            if (typeof val === 'number' || (typeof val === 'string' && val.trim() !== '')) {
+                const num = Number(val);
+                if (!isNaN(num)) {
+                    this.data[field] = game.shadowrun5e.data.createData('value_field', {
+                        base: currentBase,
+                        override: { value: num, label: "SR5.ManualOverride" }
+                    });
+                } else {
+                    this.data[field] = game.shadowrun5e.data.createData('value_field', { base: currentBase, override: { value: null, label: "SR5.ManualOverride" } });
+                }
+            } else if (!val || val === null || typeof val.value === 'undefined') {
+                this.data[field] = game.shadowrun5e.data.createData('value_field', { base: currentBase, override: { value: null, label: "SR5.ManualOverride" } });
+            } else if (val && typeof val === 'object' && val.override) {
+                if (val.override.value === undefined || val.override.value === null || val.override.value === "") {
+                    val.override.value = null;
+                }
+            }
+        }
+
         super.prepareBaseValues();
         if (!this.actor) return;
 
@@ -173,17 +206,96 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
             skill = { value: this.data.maxNegotiation || 0 };
             console.log("AvailabilityTest prepareBaseValues | Matched shop actor + negotiation. skill.value is:", skill.value);
         } else {
-            const skillItem = this.actor.items.find(i => i.type === "skill" && (i.system.key === skillId || i.name.toLowerCase() === skillId.toLowerCase()));
-            skill = skillItem 
-                ? { value: skillItem.system.rating?.value ?? skillItem.system.value ?? 0 } 
-                : this.actor.system.skills?.active?.[skillId];
+            const SKILL_NAME_MAPPINGS = {
+                armorer: ["armorer", "armourer", "waffenbau"],
+                automotivemechanic: ["automotivemechanic", "fahrzeugmechanik"],
+                aeronauticsmechanic: ["aeronauticsmechanic", "luftfahrtmechanik"],
+                nauticalmechanic: ["nauticalmechanic", "seefahrtmechanik", "schiffsmechanik"],
+                industrialmechanic: ["industrialmechanic", "industriemechanik"],
+                negotiation: ["negotiation", "verhandeln"]
+            };
+
+            const normK = skillId.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const matchNames = SKILL_NAME_MAPPINGS[normK] || [normK];
+
+            let skillItem = this.actor.items.find(i => {
+                if (i.type !== "skill") return false;
+
+                const normKey = i.system.key?.toLowerCase()?.replace(/[^a-z0-9]/g, '');
+                if (normKey && matchNames.includes(normKey)) return true;
+
+                const normName = i.name?.toLowerCase()?.replace(/[^a-z0-9]/g, '');
+                if (normName && matchNames.includes(normName)) return true;
+
+                return false;
+            });
+
+            // Generate possible cased keys for legacy active skills fallback
+            const possibleKeys = [
+                skillId,
+                skillId.toLowerCase(),
+                skillId.charAt(0).toLowerCase() + skillId.slice(1)
+            ];
+
+            let ref;
+            for (const k of possibleKeys) {
+                if (this.actor.system.skills?.active?.[k] !== undefined) {
+                    ref = this.actor.system.skills.active[k];
+                    break;
+                }
+            }
+
+            // If not found by direct key, try normalized snake_case key matching in active skills
+            if (!ref && this.actor.system.skills?.active) {
+                for (const [key, value] of Object.entries(this.actor.system.skills.active)) {
+                    const normKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    if (matchNames.includes(normKey)) {
+                        ref = value;
+                        break;
+                    }
+                }
+            }
+
+            if (ref && !skillItem) {
+                let refId = typeof ref === "string" ? ref : (ref.uuid || ref.value || ref.base);
+                if (typeof refId === "string") {
+                    if (refId.startsWith("Item.")) {
+                        refId = refId.substring(5);
+                    }
+                    skillItem = this.actor.items.get(refId) || this.actor.items.find(i => i.id === refId || i.uuid === refId);
+                }
+            }
+
+            let skillValue = 0;
+            if (ref !== undefined && ref !== null) {
+                if (typeof ref === "number") {
+                    skillValue = ref;
+                } else if (typeof ref === "object") {
+                    skillValue = ref.value ?? ref.base ?? ref.rating ?? 0;
+                }
+            } else if (skillItem) {
+                skillValue = skillItem.system.skill?.rating ?? 
+                             skillItem.system.skill?.value ?? 
+                             skillItem.system.rating?.value ?? 
+                             skillItem.system.value ?? 
+                             skillItem.system.rating ?? 
+                             0;
+            }
+            skill = { value: skillValue };
             console.log("AvailabilityTest prepareBaseValues | Fallback skill.value is:", skill?.value);
         }
 
         const attribute = this.actor.system.attributes[attributeId];
         console.log("AvailabilityTest prepareBaseValues | attribute value is:", attribute?.value);
 
-        const modifiers = this.data.action.modifiers || [];
+        let modifiers = [];
+        if (Array.isArray(this.data.action.modifiers)) {
+            modifiers = this.data.action.modifiers;
+        } else if (typeof this.data.action.modifiers === "number" && this.data.action.modifiers !== 0) {
+            const label = game.i18n.localize("SR5.Labels.Action.Modifiers") || "Modifiers";
+            pool.addPart(label, this.data.action.modifiers);
+        }
+
         const parseModifierValue = (val) => {
             if (typeof val === "number") return val;
             if (typeof val === "string") {
@@ -259,14 +371,18 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
         // 5. Finalize the dice pool
         this.data.pool.base = 0;
 
-        // Populate changes so ModifiableValue.calcTotal (used by the core system) works seamlessly
+        // Populate changes so ModifiableValue.calcTotal (used by the core system) works seamlessly - preserve manual pool overrides
+        const manualOverrideChange = this.data.pool.changes?.find(c => c.name === 'SR5.ManualOverride');
         this.data.pool.changes = this.data.pool.mod.map(m => ({
             name: m.name,
             value: m.value,
             enabled: true,
-            mode: typeof CONST !== 'undefined' ? (CONST.ACTIVE_EFFECT_MODES?.ADD ?? 2) : 2,
+            mode: typeof CONST !== 'undefined' ? (CONST.ACTIVE_EFFECT_CHANGE_TYPES?.ADD || CONST.ACTIVE_EFFECT_MODES?.ADD || 2) : 2,
             priority: 0
         }));
+        if (manualOverrideChange) {
+            this.data.pool.changes.push(manualOverrideChange);
+        }
 
         this.data.pool.value = this.constructor.calcTotal(this.data.pool);
         console.log("AvailabilityTest prepareBaseValues | Finalized pool.value:", this.data.pool.value);
@@ -280,6 +396,24 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
             this.data.pool.value = this.constructor.calcTotal(this.data.pool);
         }
     }
+
+    /** @override */
+    calculateHits() {
+        const hits = super.calculateHits();
+        if (this.data.manualHits && this.data.manualHits.override && this.data.manualHits.override.value !== null && this.data.manualHits.override.value !== undefined) {
+            hits.value = this.data.manualHits.override.value;
+        }
+        return hits;
+    }
+
+    /** @override */
+    calculateGlitches() {
+        const glitches = super.calculateGlitches();
+        if (this.data.manualGlitches && this.data.manualGlitches.override && this.data.manualGlitches.override.value !== null && this.data.manualGlitches.override.value !== undefined) {
+            glitches.value = this.data.manualGlitches.override.value;
+        }
+        return glitches;
+    }
     /**
      * @override
      * @description Defines success based on the active test rule. This is the key to making
@@ -290,7 +424,7 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
 
         // For an extended test, "success" means the CUMULATIVE hits have met the threshold.
         if (rule === "extended") {
-            return this.extendedHits().value >= this.threshold.value;
+            return this.extendedHits.value >= this.threshold.value;
         }
 
         // For all other tests (simple, opposed), we use the default system behavior.
@@ -323,7 +457,7 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
         let hitsToUse;
 
         if (rule === "extended") {
-            hitsToUse = this.extendedHits();
+            hitsToUse = this.extendedHits;
         } else {
             hitsToUse = this.hits;
         }
@@ -331,7 +465,8 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
         const base = this.hasThreshold ? Math.max(hitsToUse.value - this.threshold.value, 0) : hitsToUse.value;
         const netHits = game.shadowrun5e.data.createData('value_field', {
             label: "SR5.NetHits",
-            base
+            base,
+            override: null
         });
         
         // --- THIS IS THE FIX ---
@@ -352,7 +487,7 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
      */
     static calcTotal(value, options = {}) {
         // If there's an override, it takes precedence.
-        if (value.override) {
+        if (value.override && value.override.value !== undefined && value.override.value !== null) {
             let total = value.override.value;
             if (options.min !== undefined) total = Math.max(total, options.min);
             if (options.max !== undefined) total = Math.min(total, options.max);
@@ -569,7 +704,8 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
      * @returns {Promise<AvailabilityTest>} The executed test instance, containing the results.
      */
     static async run(actorRef, testParams = {}, options = {}) {
-        const actor = typeof actorRef === "string" ? await fromUuid(actorRef) : actorRef;
+        const rawActor = typeof actorRef === "string" ? await fromUuid(actorRef) : actorRef;
+        const actor = rawActor instanceof Actor ? rawActor : rawActor?.actor || null;
         if (!actor) throw new Error("AvailabilityTest: actor not found");
 
         let data = {};
@@ -612,7 +748,8 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
      * @returns {Promise<object|null>} The JSON result of the executed test, or null on failure.
      */
     static async runForApp(actorUuid, testParams = {}) {
-        const actor = await fromUuid(actorUuid);
+        const doc = await fromUuid(actorUuid);
+        const actor = doc instanceof Actor ? doc : doc?.actor || null;
         if (!actor) {
             console.error("AvailabilityTest.runForApp | Actor not found.");
             return null;

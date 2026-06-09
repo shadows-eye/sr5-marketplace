@@ -6,6 +6,7 @@
  */
 import { AvailabilityTest } from "../tests/AvailabilityTest.mjs";
 import { AvailabilityResist } from "../tests/AvailabilityResist.mjs";
+import { BuildTest } from "../tests/BuildTest.mjs";
 
 
 export class TestRegistrationError extends Error {}
@@ -40,6 +41,7 @@ export function registerTests() {
         // --- FIX: Pass the exact string names so Vite can't break them ---
         registerTest(AvailabilityTest, "AvailabilityTest");
         registerTest(AvailabilityResist, "AvailabilityResist"); 
+        registerTest(BuildTest, "BuildTest"); 
         
     } catch (error) {
         ui.notifications.error(

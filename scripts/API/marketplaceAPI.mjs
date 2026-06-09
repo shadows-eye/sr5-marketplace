@@ -5,6 +5,7 @@ import { inGameMarketplace } from "../apps/inGameMarketplace.mjs";
 import { BasketService } from "../services/basketService.mjs";
 import { PurchaseService } from "../services/purchaseService.mjs";
 import { MODULE_ID, SELECTED_ACTOR } from "../lib/constants.mjs";
+import { ActorSelectionService } from "../services/ActorSelectionService.mjs";
 
 /**
  * Internal class holding all Marketplace-specific API functions.
@@ -47,7 +48,7 @@ class inGameMarketplaceAPI {
     async open(options = {}) {
         const { actorUuid, itemUuid } = options;
         if (actorUuid) {
-            await game.user.setFlag(MODULE_ID, SELECTED_ACTOR, actorUuid);
+            await ActorSelectionService.setSelectedActor(actorUuid);
         }
         if (itemUuid && actorUuid) {
             await this.addItemToBasket(itemUuid, actorUuid);
@@ -79,7 +80,7 @@ class inGameMarketplaceAPI {
      */
     async setActor(actorUuid) {
         if (!actorUuid) return;
-        await game.user.setFlag(MODULE_ID, SELECTED_ACTOR, actorUuid);
+        await ActorSelectionService.setSelectedActor(actorUuid);
         
         const marketplace = foundry.applications.instances.get("inGameMarketplace");
         if (marketplace) {
@@ -92,7 +93,7 @@ class inGameMarketplaceAPI {
      * @returns {Promise<void>}
      */
     async clearActor() {
-        await game.user.unsetFlag(MODULE_ID, SELECTED_ACTOR);
+        await ActorSelectionService.clearSelectedActor();
         
         const marketplace = foundry.applications.instances.get("inGameMarketplace");
         if (marketplace) {

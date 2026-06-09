@@ -46,6 +46,7 @@ import { ShopActorSheet } from "../sheets/ShopActorSheet.mjs";
 // --- 4. API IMPORTS ---
 import { MarketplaceAPI, SR5SystemAPI } from './API/_module.mjs';
 import { ItemBuilderApp } from "./apps/ItemBuilderApp.mjs";
+import { BuildTestApp } from "./apps/BuildTestApp.mjs";
 import { SR5CreateActorApp } from "./apps/SR5CreateActorApp.mjs";
 import { AppDialogBuilder } from "./apps/documents/dialog/AppDialogBuilder.mjs";
 import { AppTestFlagService } from "./services/AppTestFlagService.mjs";
@@ -76,7 +77,9 @@ const initializeTemplates = () => {
         "modules/sr5-marketplace/templates/documents/items/itemPreviewApp/item-preview.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/Builder.html",
+        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/BuildTestDialog.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/ItemDetails.html",
+        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/vehicleDetails.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/multi-select.html",
         "modules/sr5-marketplace/templates/apps/marketshouter/marketshouter.html",
         "modules/sr5-marketplace/templates/chat/chatMessageRequest.html",
@@ -674,11 +677,31 @@ Hooks.on("ready", async () => {
                 await handleGMRunAvailabilityTest(data);
             } else if (data.type === "continue_extended_test") {
                 await handleGMContinueExtendedTest(data);
+            } else if (data.type === "run_build_test") {
+                await handleGMRunBuildTest(data);
+            } else if (data.type === "continue_build_test") {
+                await handleGMContinueBuildTest(data);
+            } else if (data.type === "update_setting") {
+                await game.settings.set("sr5-marketplace", data.key, data.value);
+                game.socket.emit("module.sr5-marketplace", { type: "setting_updated", key: data.key, value: data.value });
+                for (const app of foundry.applications.instances.values()) {
+                    if (app.constructor.name === "inGameMarketplace" || app.constructor.name === "ItemBuilderApp" || app.constructor.name === "BuildTestApp") {
+                        app.render();
+                    }
+                }
+            } else if (data.action === "create_actor") {
+                const actorData = foundry.utils.deepClone(data.actorData);
+                actorData.ownership = actorData.ownership || {};
+                actorData.ownership[data.userId] = CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER;
+                const newActor = await Actor.create(actorData);
+                if (newActor) {
+                    console.log(`SR5 Marketplace | GM created actor: ${newActor.name} for user ${data.userId}`);
+                }
             }
         }
-        if (data.type === "request_resolved" || data.type === "new_request") {
+        if (data.type === "request_resolved" || data.type === "new_request" || data.type === "setting_updated") {
             for (const app of foundry.applications.instances.values()) {
-                if (app.constructor.name === "inGameMarketplace") {
+                if (app.constructor.name === "inGameMarketplace" || app.constructor.name === "ItemBuilderApp" || app.constructor.name === "BuildTestApp") {
                     app.render();
                 }
             }
@@ -997,7 +1020,8 @@ Hooks.on("deleteItem", async (item, options, userId) => {
 
 async function handleGMRunAvailabilityTest({ userId, dialogId, actorUuid, data }) {
     try {
-        const actor = await fromUuid(actorUuid);
+        const doc = await fromUuid(actorUuid);
+        const actor = doc instanceof Actor ? doc : doc?.actor || null;
         if (!actor) return;
 
         const options = { showDialog: false, showMessage: false };
@@ -1040,7 +1064,8 @@ async function handleGMRunAvailabilityTest({ userId, dialogId, actorUuid, data }
 
 async function handleGMContinueExtendedTest({ userId, dialogId, actorUuid, rollCount, newAppliedModifiers }) {
     try {
-        const actor = await fromUuid(actorUuid);
+        const doc = await fromUuid(actorUuid);
+        const actor = doc instanceof Actor ? doc : doc?.actor || null;
         if (!actor) return;
 
         const testStates = await AppTestFlagService.readState(userId);
@@ -1089,6 +1114,126 @@ async function handleGMContinueExtendedTest({ userId, dialogId, actorUuid, rollC
         }
     } catch (e) {
         console.error("SR5 Marketplace | GM failed to continue extended test:", e);
+    }
+}
+
+async function handleGMRunBuildTest({ userId, dialogId, actorUuid, data }) {
+    try {
+        const doc = await fromUuid(actorUuid);
+        const actor = doc instanceof Actor ? doc : doc?.actor || null;
+        if (!actor) return;
+
+        const options = { showDialog: false, showMessage: false };
+        const test = new game.shadowrun5e.tests.BuildTest(data, { actor }, options);
+        await test.execute();
+
+        let finalStatus = 'extended-inprogress';
+        if (test.success || test.pool.value <= 0) {
+            finalStatus = 'resolved';
+        }
+
+        // Check if crit glitched on last roll
+        const roll = test.rolls[test.rolls.length - 1];
+        const dice = roll?.terms?.[0]?.results || roll?.dice?.[0]?.results || [];
+        const hits = dice.filter(d => (d?.result ?? 0) >= 5).length;
+        const ones = dice.filter(d => (d?.result ?? 0) === 1).length;
+        const pool = dice.length;
+        const isGlitch = ones > pool / 2;
+        const isCritGlitch = isGlitch && hits === 0;
+
+        if (isCritGlitch) {
+            finalStatus = 'resolved';
+        }
+
+        await AppTestFlagService.updateTest(dialogId, {
+            result: test.data,
+            rolls: test.rolls,
+            status: finalStatus,
+            type: "BuildTest",
+            rollCount: 1
+        }, userId);
+
+        game.socket.emit("module.sr5-marketplace", { type: "request_resolved", userId });
+
+        // Refresh apps
+        for (const app of foundry.applications.instances.values()) {
+            if (app.constructor.name === "inGameMarketplace" || app.constructor.name === "ItemBuilderApp") {
+                app.render();
+            }
+        }
+    } catch (e) {
+        console.error("SR5 Marketplace | GM failed to execute build test:", e);
+    }
+}
+
+async function handleGMContinueBuildTest({ userId, dialogId, actorUuid, rollCount }) {
+    try {
+        const doc = await fromUuid(actorUuid);
+        const actor = doc instanceof Actor ? doc : doc?.actor || null;
+        if (!actor) return;
+
+        const testStates = await AppTestFlagService.readState(userId);
+        const activeTestState = testStates[dialogId];
+        if (!activeTestState) return;
+
+        const data = {
+            action: {
+                skill: activeTestState.skill,
+                attribute: activeTestState.attribute,
+                modifiers: activeTestState.appliedModifiers,
+                workingConditions: activeTestState.workingConditions,
+                toolsParts: activeTestState.toolsParts,
+                plansInstructions: activeTestState.plansInstructions,
+                logicMemoryPenaltyChecked: activeTestState.logicMemoryPenaltyChecked,
+                threshold: activeTestState.threshold,
+                buildData: activeTestState.buildData,
+                dialogId: dialogId
+            }
+        };
+
+        const previousHits = activeTestState.result.values.extendedHits.value;
+        const options = { showDialog: false, showMessage: false };
+        const test = new game.shadowrun5e.tests.BuildTest(data, { actor }, options);
+        await test.execute();
+
+        test.data.values.extendedHits.value += previousHits;
+        test.data.values.extendedHits.mod.push({ name: "Previous Hits", value: previousHits });
+
+        let finalStatus = 'extended-inprogress';
+        if (test.data.values.extendedHits.value >= test.data.threshold.value || test.pool.value <= 0) {
+            finalStatus = 'resolved';
+        }
+
+        // Check if crit glitched
+        const roll = test.rolls[test.rolls.length - 1];
+        const dice = roll?.terms?.[0]?.results || roll?.dice?.[0]?.results || [];
+        const hits = dice.filter(d => (d?.result ?? 0) >= 5).length;
+        const ones = dice.filter(d => (d?.result ?? 0) === 1).length;
+        const pool = dice.length;
+        const isGlitch = ones > pool / 2;
+        const isCritGlitch = isGlitch && hits === 0;
+
+        if (isCritGlitch) {
+            finalStatus = 'resolved';
+        }
+
+        await AppTestFlagService.updateTest(dialogId, {
+            result: test.data,
+            rolls: test.rolls,
+            status: finalStatus,
+            rollCount: rollCount
+        }, userId);
+
+        game.socket.emit("module.sr5-marketplace", { type: "request_resolved", userId });
+
+        // Refresh apps
+        for (const app of foundry.applications.instances.values()) {
+            if (app.constructor.name === "inGameMarketplace" || app.constructor.name === "ItemBuilderApp") {
+                app.render();
+            }
+        }
+    } catch (e) {
+        console.error("SR5 Marketplace | GM failed to continue build test:", e);
     }
 }
 

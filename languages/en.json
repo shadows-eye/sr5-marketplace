@@ -1,182 +1,4 @@
 {
-    "FIELDS": {
-        "description": {
-            "label": "Description"
-        },
-        "attributes": {
-            "label": "Attributes",
-            "body": {
-                "label": "Body"
-            },
-            "agility": {
-                "label": "Agility"
-            },
-            "reaction": {
-                "label": "Reaction"
-            },
-            "strength": {
-                "label": "Strength"
-            },
-            "willpower": {
-                "label": "Willpower"
-            },
-            "logic": {
-                "label": "Logic"
-            },
-            "intuition": {
-                "label": "Intuition"
-            },
-            "charisma": {
-                "label": "Charisma"
-            },
-            "magic": {
-                "label": "Magic"
-            },
-            "resonance": {
-                "label": "Resonance"
-            },
-            "essence": {
-                "label": "Essence"
-            },
-            "edge": {
-                "label": "Edge"
-            },
-            "initiation": {
-                "label": "Initiation"
-            },
-            "submersion": {
-                "label": "Submersion"
-            }
-        },
-        "Skill": {
-            "AeronauticsMechanic": "Luftfahrtmechanik",
-            "Alchemy": "Alchemie",
-            "AnimalHandling": "Tierführung",
-            "Arcana": "Arkana",
-            "Archery": "Projektilwaffen",
-            "Armorer": "Waffenbau",
-            "Artificing": "Fokusherstellung",
-            "Artisan": "Handwerk",
-            "Assensing": "Askennen",
-            "AstralCombat": "Astralkampf",
-            "Automatics": "Schnellfeuerwaffen",
-            "AutomotiveMechanic": "Fahrzeugmechanik",
-            "Banishing": "Verbannen",
-            "Binding": "Binden",
-            "Biotechnology": "Biotechnologie",
-            "Blades": "Klingenwaffen",
-            "Chemistry": "Chemie",
-            "Clubs": "Knüppel",
-            "Compiling": "Kompilieren",
-            "Computer": "Computer",
-            "Con": "Überreden",
-            "Counterspelling": "Antimagie",
-            "Cybercombat": "Matrixkampf",
-            "Cybertechnology": "Kybernetik",
-            "Decompiling": "Dekompilieren",
-            "Demolitions": "Sprengstoffe",
-            "Disenchanting": "Entzaubern",
-            "Disguise": "Verkleiden",
-            "Diving": "Tauchen",
-            "ElectronicWarfare": "Elektronische Kriegsführung",
-            "EscapeArtist": "Entfesseln",
-            "Etiquette": "Gebräuche",
-            "ExoticMelee": "Exotische Nahkampfwaffe",
-            "ExoticRange": "Exotische Fernkampfwaffe",
-            "FirstAid": "Erste Hilfe",
-            "Flight": "Fliegen",
-            "Forgery": "Fälschen",
-            "FreeFall": "Freifall",
-            "Gunnery": "Geschütze",
-            "Gymnastics": "Akrobatik",
-            "Hacking": "Hacking",
-            "Hardware": "Hardware",
-            "HeavyWeapons": "Schwere Waffen",
-            "Impersonation": "Verkörperung",
-            "IndustrialMechanic": "Industriemechanik",
-            "Instruction": "Unterricht",
-            "Intimidation": "Einschüchtern",
-            "Leadership": "Führung",
-            "Locksmith": "Schlosser",
-            "Longarms": "Gewehre",
-            "Medicine": "Medizin",
-            "NauticalMechanic": "Seefahrtmechanik",
-            "Navigation": "Navigation",
-            "Negotiation": "Verhandlung",
-            "Palming": "Fingerfertigkeit",
-            "Perception": "Wahrnehmung",
-            "Performance": "Vorführung",
-            "PilotAerospace": "Raumfahrzeuge",
-            "PilotAircraft": "Flugzeuge",
-            "PilotExoticVehicle": "Exotisches Fahrzeug",
-            "PilotGroundCraft": "Bodenfahrzeuge",
-            "PilotWalker": "Läufer",
-            "PilotWaterCraft": "Schiffe",
-            "Pistols": "Pistolen",
-            "Registering": "Registrieren",
-            "RitualSpellcasting": "Ritualzauberei",
-            "Running": "Laufen",
-            "Skill": "Fertigkeit",
-            "Skills": "Fertigkeiten",
-            "Sneaking": "Schleichen",
-            "Software": "Software",
-            "Spellcasting": "Spruchzauberei",
-            "Summoning": "Herbeirufen",
-            "Survival": "Survival",
-            "Swimming": "Schwimmen",
-            "Teamwork": {
-                "Glitched": "Glitched",
-                "ParticipantActor": "Choose actor",
-                "RollIt": "Roll it",
-                "TakePart": "Take part"
-            },
-            "ThrowingWeapons": "Wurfwaffen",
-            "Tracking": "Spurenlesen",
-            "UnarmedCombat": "Waffenloser Kampf"
-        },
-        "skills": {
-            "label": "Skills"
-        },
-        "limits": {
-            "label": "Limits",
-            "social": {
-                "label": "Social Limit"
-            },
-            "mental": {
-                "label": "Mental Limit"
-            },
-            "physical": {
-                "label": "Physical Limit"
-            },
-            "astral": {
-                "label": "Astral Limit"
-            }
-        },
-        "track": {
-            "label": "Condition Tracks",
-            "physical": {
-                "label": "Physical"
-            },
-            "stun": {
-                "label": "Stun"
-            }
-        },
-        "movement": {
-            "label": "Movement",
-            "walk": {
-                "label": "Walk"
-            },
-            "run": {
-                "label": "Run"
-            }
-        },
-        "nuyen": {
-            "label": "Nuyen"
-        },
-        "karma": {
-            "label": "Karma"
-        }
-    },
     "SR5Marketplace": {
         "Themes": {
             "Neon": "Cyber Neon (Dark)",
@@ -270,7 +92,8 @@
             "DeselectAll": "Deselect All",
             "CostOrKarma": "Cost / Karma",
             "Nuyen": "Nuyen",
-            "CopyDocumentUuid": "Copy Document UUID"
+            "CopyDocumentUuid": "Copy Document UUID",
+            "DescriptionPlaceholder": "No description available."
         },
         "Marketplace": {
             "Title": "Marketplace Purchase Screen",
@@ -628,80 +451,6 @@
             },
             "NoContacts": "Has no Contacts"
         },
-        "ItemBuilder": {
-            "Title": "Build Item",
-            "SelectAsBase": "Select as Base Item",
-            "AddToBuilder": "Add to Builder",
-            "SearchAllMods": "Search all modifications...",
-            "SelectImage": "Select Image",
-            "DoneEditing": "Done Editing",
-            "EditBaseItem": "Edit Base Item",
-            "nav": {
-                "builder": "Builder",
-                "effects": "Effects",
-                "dialog": "Dialog"
-            },
-            "Items": {
-                "Header": "Base Items",
-                "baseItemPlaceholder": {
-                    "title": "Select a Base Item",
-                    "description": "Choose an item from the list on the left to begin building."
-                }
-            },
-            "Modifications": {
-                "Header": "Available Modifications"
-            },
-            "Effects": {
-                "ManageEffects": "Manage Effects",
-                "ManageEffectsHint": "View, create, and edit the active effects applied by the base item and its modifications.",
-                "AddEffect": "Add Effect",
-                "InnateLockedHint": "This is an innate effect of the item and cannot be deleted, but it can be overridden.",
-                "EditEffectHeader": "Edit Effect",
-                "CreateEffectHeader": "Create New Effect",
-                "EffectNameLabel": "Effect Name",
-                "EffectNamePlaceholder": "e.g., Smartlink Bonus",
-                "EffectIconLabel": "Icon",
-                "SelectIconTooltip": "Select an icon for this effect",
-                "ApplyToLabel": "Apply To",
-                "ApplyTo": {
-                    "actor": "Actor",
-                    "targeted_actor": "Targeted Actor",
-                    "test_all": "All Tests",
-                    "test_item": "Item Tests",
-                    "modifier": "Modifier"
-                },
-                "TestFilterLabel": "Filter by Test",
-                "SelectTestsPlaceholder": "Any Test",
-                "CategoryFilterLabel": "Filter by Category",
-                "SelectCategoriesPlaceholder": "Any Category",
-                "SkillFilterLabel": "Filter by Skill",
-                "SelectSkillsPlaceholder": "Any Skill",
-                "AttributeFilterLabel": "Filter by Attribute",
-                "SelectAttributesPlaceholder": "Any Attribute",
-                "LimitFilterLabel": "Filter by Limit",
-                "SelectLimitsPlaceholder": "Any Limit",
-                "AttributeKeyLabel": "Attribute / Property Key",
-                "AttributeKeyPlaceholder": "Select a property to modify from the groups below.",
-                "ChangeModeLabel": "Change Mode",
-                "EffectValueLabel": "Value",
-                "SelectDerivedValueTooltip": "Select a property from the base item to derive this value from.",
-                "SelectDerivedValueLabel": "Select a property from the Base Item",
-                "CustomEffect": "Custom Effect"
-            },
-            "SearchPlaceholder": "Search items...",
-            "ClearEntireBuild": "Clear entire build",
-            "RemoveMod": "Remove Mod",
-            "ItemBuild": "Item Build",
-            "ActiveEffects": "Active Effects",
-            "SelectAnItem": "Select an Item",
-            "BuildQueueEmpty": "Your build queue is empty.",
-            "BuildQueueEmptyDesc": "Use the 'Builder' tab to design an item, then click 'Add to Queue' to send it here.",
-            "BaseItemType": "Base Item Type",
-            "BuildTest": "Build Test",
-            "CreateAllItems": "Create All Items",
-            "SubmitAllToGM": "Submit All to GM",
-            "ClearEntireQueue": "Clear Entire Queue"
-        },
         "Marketshouter": {
             "SearchingInShop": "Searching in: {name}",
             "SearchShop": "Search {name}...",
@@ -798,6 +547,124 @@
                         "Content": "That concludes the Getting Started tour! You are now ready to run dynamic, lore-friendly marketplace transactions in your Shadowrun 5e games."
                     }
                 }
+            }
+        },
+        "ItemBuilder": {
+            "Title": "Build Item",
+            "SelectAsBase": "Select as Base Item",
+            "AddToBuilder": "Add to Builder",
+            "SearchAllMods": "Search all modifications...",
+            "SelectImage": "Select Image",
+            "DoneEditing": "Done Editing",
+            "EditBaseItem": "Edit Base Item",
+            "AddToCart": "Add to Cart",
+            "nav": {
+                "builder": "Builder",
+                "effects": "Effects",
+                "dialog": "Dialog",
+                "vehicle": "Vehicle/Drone"
+            },
+            "Items": {
+                "Header": "Base Items",
+                "baseItemPlaceholder": {
+                    "title": "Select a Base Item",
+                    "description": "Choose an item from the list on the left to begin building."
+                }
+            },
+            "Modifications": {
+                "Header": "Available Modifications"
+            },
+            "Effects": {
+                "ManageEffects": "Manage Effects",
+                "ManageEffectsHint": "View, create, and edit the active effects applied by the base item and its modifications.",
+                "AddEffect": "Add Effect",
+                "InnateLockedHint": "This is an innate effect of the item and cannot be deleted, but it can be overridden.",
+                "EditEffectHeader": "Edit Effect",
+                "CreateEffectHeader": "Create New Effect",
+                "EffectNameLabel": "Effect Name",
+                "EffectNamePlaceholder": "e.g., Smartlink Bonus",
+                "EffectIconLabel": "Icon",
+                "SelectIconTooltip": "Select an icon for this effect",
+                "ApplyToLabel": "Apply To",
+                "ApplyTo": {
+                    "actor": "Actor",
+                    "targeted_actor": "Targeted Actor",
+                    "test_all": "All Tests",
+                    "test_item": "Item Tests",
+                    "modifier": "Modifier"
+                },
+                "TestFilterLabel": "Filter by Test",
+                "SelectTestsPlaceholder": "Any Test",
+                "CategoryFilterLabel": "Filter by Category",
+                "SelectCategoriesPlaceholder": "Any Category",
+                "SkillFilterLabel": "Filter by Skill",
+                "SelectSkillsPlaceholder": "Any Skill",
+                "AttributeFilterLabel": "Filter by Attribute",
+                "SelectAttributesPlaceholder": "Any Attribute",
+                "LimitFilterLabel": "Filter by Limit",
+                "SelectLimitsPlaceholder": "Any Limit",
+                "AttributeKeyLabel": "Attribute / Property Key",
+                "AttributeKeyPlaceholder": "Select a property to modify from the groups below.",
+                "ChangeModeLabel": "Change Mode",
+                "EffectValueLabel": "Value",
+                "SelectDerivedValueTooltip": "Select a property from the base item to derive this value from.",
+                "SelectDerivedValueLabel": "Select a property from the Base Item",
+                "CustomEffect": "Custom Effect"
+            },
+            "SearchPlaceholder": "Search items...",
+            "ClearEntireBuild": "Clear entire build",
+            "RemoveMod": "Remove Mod",
+            "ItemBuild": "Item Build",
+            "ActiveEffects": "Active Effects",
+            "SelectAnItem": "Select an Item",
+            "BuildQueueEmpty": "Your build queue is empty.",
+            "BuildQueueEmptyDesc": "Use the 'Builder' tab to design an item, then click 'Add to Queue' to send it here.",
+            "BaseItemType": "Base Item Type",
+            "BuildTest": "Build Test",
+            "CreateAllItems": "Create All Items",
+            "SubmitAllToGM": "Submit All to GM",
+            "ClearEntireQueue": "Clear Entire Queue",
+            "BuildTestTitle": "Building & Modification Test",
+            "SelectSkill": "Select Active Skill",
+            "WorkingConditions": "Working Conditions",
+            "ToolsParts": "Tools & Parts",
+            "PlansInstructions": "Plans & Instructions",
+            "LogicMemoryPenalty": "Logic Memory Penalty",
+            "LogicMemoryPenaltyCheckbox": "Check if Logic is 1-4 and memory check is needed",
+            "MentalLimitApplied": "Mental Limit is applied to this test.",
+            "CriticalGlitchPartsDestroyed": "Critical glitch! The parts were destroyed and the builder queue has been cleared.",
+            "SuccessBuildCreated": "Build successful! Created {name} in inventory.",
+            "WorkingConditionsOptions": {
+                "excellent": "Excellent (+1)",
+                "average": "Average (0)",
+                "distracted": "Distracted (-1)",
+                "moderate": "Moderate (-2)",
+                "poor": "Poor (-3)",
+                "terrible": "Terrible (-4)"
+            },
+            "ToolsPartsOptions": {
+                "excellent": "Excellent (+1)",
+                "average": "Average (0)",
+                "inadequate": "Inadequate (-2)",
+                "unavailable": "Unavailable (-4)"
+            },
+            "PlansInstructionsOptions": {
+                "none": "None (0)",
+                "available": "Available (+1)",
+                "arEnhanced": "AR-Enhanced (+2)"
+            },
+            "Vehicle": {
+                "Handling": "Handling",
+                "Speed": "Speed",
+                "Acceleration": "Acceleration",
+                "Body": "Body",
+                "Armor": "Armor",
+                "Pilot": "Pilot",
+                "Sensor": "Sensor",
+                "Seats": "Seats",
+                "Availability": "Avail.",
+                "Cost": "Cost",
+                "Description": "Description"
             }
         }
     },

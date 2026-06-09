@@ -58,6 +58,15 @@ export default class ItemDataServices {
                 }
             }
 
+            // 1b. Fetch custom actors of type "vehicle" from the local World
+            for (const actor of game.actors.contents) {
+                if (actor.type === "vehicle") {
+                    const actorData = actor.toObject(false);
+                    actorData.uuid = actor.uuid;
+                    allItems.push(actorData);
+                }
+            }
+
             // 2. Fetch from all visible Item Compendiums
             const packs = game.packs.filter(p => p.metadata.type === "Item" && p.visible);
             for (const pack of packs) {
@@ -83,6 +92,27 @@ export default class ItemDataServices {
                                 entry.system.mount_point = entry.system.mod_weapon.mount_point;
                             }
                         }
+                        allItems.push(entry);
+                    }
+                }
+            }
+
+            // 2b. Fetch from all visible Actor Compendiums
+            const actorPacks = game.packs.filter(p => p.metadata.type === "Actor" && p.visible);
+            for (const pack of actorPacks) {
+                const index = await pack.getIndex({
+                    fields: [
+                        "system.cost",
+                        "system.availability",
+                        "system.isDrone",
+                        "system.isdrone",
+                        "system.importFlags"
+                    ]
+                });
+
+                for (const entry of index) {
+                    if (entry.type === "vehicle") {
+                        entry.uuid = entry.uuid || `Compendium.${pack.collection}.${entry._id}`;
                         allItems.push(entry);
                     }
                 }
@@ -214,6 +244,14 @@ export default class ItemDataServices {
         echo: { label: "SR5Marketplace.Marketplace.ItemTypes.Echo", items: [] },
         quality: { label: "SR5Marketplace.Marketplace.ItemTypes.Qualitys", items: [] },
         complex_form: { label: "SR5Marketplace.Marketplace.ItemTypes.ComplexForms", items: [] },
+        vehicle: {
+            label: "SR5.Vehicle.Vehicle",
+            items: []
+        },
+        drone: {
+            label: "SR5.Vehicle.Drone",
+            items: []
+        }
     };
     
     /**
@@ -227,6 +265,8 @@ export default class ItemDataServices {
         equipment: "modules/sr5-marketplace/assets/icons/types/equipment.webp",
         spell: "modules/sr5-marketplace/assets/icons/types/spell.webp",
         modification: "modules/sr5-marketplace/assets/icons/types/modification.webp",
+        vehicle: "modules/sr5-marketplace/assets/icons/types/equipment.webp",
+        drone: "modules/sr5-marketplace/assets/icons/types/equipment.webp",
         weapon: {
             lightPistol: "modules/sr5-marketplace/assets/icons/weapons/light_pistol.webp",
             taser: "modules/sr5-marketplace/assets/icons/weapons/taser.webp",
@@ -326,7 +366,11 @@ export default class ItemDataServices {
         const categorized = foundry.utils.deepClone(this.constructor.ITEM_CATEGORIES);
 
         for (const item of items) {
-            const type = item.type;
+            let type = item.type;
+            if (type === "vehicle") {
+                const isDrone = item.system?.isDrone || item.system?.isdrone || false;
+                type = isDrone ? "drone" : "vehicle";
+            }
             const categoryDef = categorized[type];
 
             if (!categoryDef) continue;
@@ -416,6 +460,9 @@ export default class ItemDataServices {
             weaponMods: this._createEnrichedCategory(getNested(categorized, 'modification.subcategories.weapon'), "SR5Marketplace.Marketplace.ItemTypes.WeaponMods"),
             armorMods: this._createEnrichedCategory(getNested(categorized, 'modification.subcategories.armor'), "SR5Marketplace.Marketplace.ItemTypes.ArmorMods"),
             vehicleMods: this._createEnrichedCategory(getNested(categorized, 'modification.subcategories.vehicle'), "SR5Marketplace.Marketplace.ItemTypes.VehicleMods"),
+            vehicles: this._createEnrichedCategory(categorized.vehicle, "SR5.Vehicle.Vehicle"),
+            drones: this._createEnrichedCategory(categorized.drone, "SR5.Vehicle.Drone"),
+            droneMods: this._createEnrichedCategory(getNested(categorized, 'modification.subcategories.drone'), "SR5.Vehicle.Drone")
         };
     }
 
@@ -431,6 +478,7 @@ export default class ItemDataServices {
         delete allItemsTransformed.weaponMods;
         delete allItemsTransformed.armorMods;
         delete allItemsTransformed.vehicleMods;
+        delete allItemsTransformed.droneMods;
         allItemsTransformed.filteredItems.items = allIncludedItems;
         return allItemsTransformed;
     }
@@ -448,6 +496,7 @@ export default class ItemDataServices {
             weaponMods: this._createEnrichedCategory(getNested(categorized, 'modification.subcategories.weapon'), "SR5Marketplace.Marketplace.ItemTypes.WeaponMods"),
             armorMods: this._createEnrichedCategory(getNested(categorized, 'modification.subcategories.armor'), "SR5Marketplace.Marketplace.ItemTypes.ArmorMods"),
             vehicleMods: this._createEnrichedCategory(getNested(categorized, 'modification.subcategories.vehicle'), "SR5Marketplace.Marketplace.ItemTypes.VehicleMods"),
+            droneMods: this._createEnrichedCategory(getNested(categorized, 'modification.subcategories.drone'), "SR5.Vehicle.Drone")
         };
     }
 }
