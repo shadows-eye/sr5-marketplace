@@ -17,7 +17,8 @@
     "dev": "vite",
     "build": "vite build",
     "context": "node helpers/generate-context.cjs",
-    "test:live": "node helpers/test_live_embedded_skill_update.mjs"
+    "test:live": "node helpers/test_live_embedded_skill_update.mjs",
+    "pub": "node --env-file=.env helpers/publish.js"
   },
   "dependencies": {
     "@tailwindcss/container-queries": "^0.1.1"
