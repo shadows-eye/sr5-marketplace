@@ -42,10 +42,7 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
         
         data.selectedSkill = data.selectedSkill || data.action.skill || 'AutomotiveMechanic';
         data.selectedAttribute = 'logic';
-        data.workingConditions = data.workingConditions || 0;
-        data.toolsParts = data.toolsParts || 0;
-        data.plansInstructions = data.plansInstructions || 0;
-        data.logicMemoryPenaltyChecked = data.logicMemoryPenaltyChecked || false;
+
         
         // Default threshold is 12 (RAW average threshold) if not specified
         if (data.threshold?.base === undefined || data.threshold?.base === null) {
@@ -55,27 +52,127 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
         data.thresholdBase = data.threshold.base;
 
         data.buildData = data.buildData || options?.buildData || null;
+
+        if (!data.manualHits || typeof data.manualHits.value === 'undefined') {
+            data.manualHits = game.shadowrun5e.data.createData('value_field', { base: 0, override: { value: null, label: "SR5.ManualOverride" } });
+        }
+        if (!data.manualGlitches || typeof data.manualGlitches.value === 'undefined') {
+            data.manualGlitches = game.shadowrun5e.data.createData('value_field', { base: 0, override: { value: null, label: "SR5.ManualOverride" } });
+        }
         
         return data;
     }
 
     /** @override */
     prepareBaseValues() {
+        for (const field of ['pool', 'limit', 'threshold', 'manualHits', 'manualGlitches']) {
+            let val = this.data[field];
+            const currentBase = (field === 'threshold') 
+                ? (this.data.thresholdBase || (val && typeof val === 'object' ? val.base : null) || 0)
+                : (val && typeof val === 'object' ? val.base : 0);
+
+            if (typeof val === 'number' || (typeof val === 'string' && val.trim() !== '')) {
+                const num = Number(val);
+                if (!isNaN(num)) {
+                    this.data[field] = game.shadowrun5e.data.createData('value_field', {
+                        base: currentBase,
+                        override: { value: num, label: "SR5.ManualOverride" }
+                    });
+                } else {
+                    this.data[field] = game.shadowrun5e.data.createData('value_field', { base: currentBase, override: { value: null, label: "SR5.ManualOverride" } });
+                }
+            } else if (!val || val === null || typeof val.value === 'undefined') {
+                this.data[field] = game.shadowrun5e.data.createData('value_field', { base: currentBase, override: { value: null, label: "SR5.ManualOverride" } });
+            } else if (val && typeof val === 'object' && val.override) {
+                if (val.override.value === undefined || val.override.value === null || val.override.value === "") {
+                    val.override.value = null;
+                }
+            }
+        }
+
         super.prepareBaseValues();
         if (!this.actor) return;
 
         const skillId = this.data.selectedSkill;
         const attributeId = this.data.selectedAttribute;
 
-        // 1. Dynamic skill lookup: item or legacy active skills
-        const skillItem = this.actor.items.find(i => 
-            i.type === "skill" && 
-            (i.system.key?.toLowerCase() === skillId.toLowerCase() || 
-             i.name.toLowerCase() === skillId.toLowerCase())
-        );
-        const skillValue = skillItem 
-            ? (skillItem.system.rating?.value ?? skillItem.system.value ?? 0) 
-            : (this.actor.system.skills?.active?.[skillId]?.value ?? 0);
+        // 1. Dynamic skill lookup: Embedded Item of type skill (new system format) or legacy active skills fallback
+        const SKILL_NAME_MAPPINGS = {
+            armorer: ["armorer", "armourer", "waffenbau"],
+            automotivemechanic: ["automotivemechanic", "fahrzeugmechanik"],
+            aeronauticsmechanic: ["aeronauticsmechanic", "luftfahrtmechanik"],
+            nauticalmechanic: ["nauticalmechanic", "seefahrtmechanik", "schiffsmechanik"],
+            industrialmechanic: ["industrialmechanic", "industriemechanik"],
+            hardware: ["hardware", "hardware"],
+            negotiation: ["negotiation", "verhandeln"]
+        };
+
+        const normK = skillId.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const matchNames = SKILL_NAME_MAPPINGS[normK] || [normK];
+
+        let skillItem = this.actor.items.find(i => {
+            if (i.type !== "skill") return false;
+
+            const normKey = i.system.key?.toLowerCase()?.replace(/[^a-z0-9]/g, '');
+            if (normKey && matchNames.includes(normKey)) return true;
+
+            const normName = i.name?.toLowerCase()?.replace(/[^a-z0-9]/g, '');
+            if (normName && matchNames.includes(normName)) return true;
+
+            return false;
+        });
+
+        // Generate possible cased keys for legacy active skills fallback
+        const possibleKeys = [
+            skillId,
+            skillId.toLowerCase(),
+            skillId.charAt(0).toLowerCase() + skillId.slice(1)
+        ];
+
+        let ref;
+        for (const k of possibleKeys) {
+            if (this.actor.system.skills?.active?.[k] !== undefined) {
+                ref = this.actor.system.skills.active[k];
+                break;
+            }
+        }
+
+        // If not found by direct key, try normalized snake_case key matching in active skills
+        if (!ref && this.actor.system.skills?.active) {
+            for (const [key, value] of Object.entries(this.actor.system.skills.active)) {
+                const normKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (matchNames.includes(normKey)) {
+                    ref = value;
+                    break;
+                }
+            }
+        }
+
+        if (ref && !skillItem) {
+            let refId = typeof ref === "string" ? ref : (ref.uuid || ref.value || ref.base);
+            if (typeof refId === "string") {
+                if (refId.startsWith("Item.")) {
+                    refId = refId.substring(5);
+                }
+                skillItem = this.actor.items.get(refId) || this.actor.items.find(i => i.id === refId || i.uuid === refId);
+            }
+        }
+
+        let skillValue = 0;
+        if (ref !== undefined && ref !== null) {
+            if (typeof ref === "number") {
+                skillValue = ref;
+            } else if (typeof ref === "object") {
+                skillValue = ref.value ?? ref.base ?? ref.rating ?? 0;
+            }
+        } else if (skillItem) {
+            skillValue = skillItem.system.skill?.rating ?? 
+                         skillItem.system.skill?.value ?? 
+                         skillItem.system.rating?.value ?? 
+                         skillItem.system.value ?? 
+                         skillItem.system.rating ?? 
+                         0;
+        }
 
         const attribute = this.actor.system.attributes[attributeId];
         const attributeValue = attribute?.value ?? 0;
@@ -102,7 +199,7 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
         pool.addPart(skillLabel, skillValue);
         pool.addPart(attributeLabel, attributeValue);
 
-        // 3. Add RAW Table Modifiers
+        // Add RAW Table Modifiers (from GM dialog if present)
         const condVal = Number(this.data.workingConditions || 0);
         if (condVal !== 0) {
             const label = game.i18n.localize("SR5Marketplace.ItemBuilder.WorkingConditions");
@@ -128,7 +225,7 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
             pool.addPart(label, penaltyVal);
         }
 
-        // Custom modifier row list
+        // 3. Add Modifiers
         const modifiers = this.data.action.modifiers || [];
         const parseModifierValue = (val) => {
             if (typeof val === "number") return val;
@@ -140,7 +237,8 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
             return 0;
         };
         modifiers.forEach(mod => {
-            pool.addPart(mod.label || "Custom", parseModifierValue(mod.value));
+            const displayLabel = game.i18n.has(mod.label) ? game.i18n.localize(mod.label) : (mod.label || "Custom");
+            pool.addPart(displayLabel, parseModifierValue(mod.value));
         });
 
         // 4. Limit: Mental Limit is applied to build test
@@ -167,6 +265,24 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
         if (this.data?.pool) {
             this.data.pool.value = this.constructor.calcTotal(this.data.pool);
         }
+    }
+
+    /** @override */
+    calculateHits() {
+        const hits = super.calculateHits();
+        if (this.data.manualHits && this.data.manualHits.override && this.data.manualHits.override.value !== null && this.data.manualHits.override.value !== undefined) {
+            hits.value = this.data.manualHits.override.value;
+        }
+        return hits;
+    }
+
+    /** @override */
+    calculateGlitches() {
+        const glitches = super.calculateGlitches();
+        if (this.data.manualGlitches && this.data.manualGlitches.override && this.data.manualGlitches.override.value !== null && this.data.manualGlitches.override.value !== undefined) {
+            glitches.value = this.data.manualGlitches.override.value;
+        }
+        return glitches;
     }
 
     /** @override */
@@ -210,6 +326,12 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
 
     /** @override */
     async afterTestComplete() {
+        // If this is an inline app call, do not perform standard document creation/cleanup here.
+        if (this.data.action?.dialogId) {
+            console.debug("BuildTest | Inline app call detected, skipping default completion handlers.");
+            return;
+        }
+
         console.debug(`SR5 Marketplace | Test ${this.constructor.name} completed.`);
 
         if (this.success) {
@@ -326,7 +448,8 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
      * Entry point to launch the Build Test.
      */
     static async run(actorRef, testParams = {}, options = {}) {
-        const actor = typeof actorRef === "string" ? await fromUuid(actorRef) : actorRef;
+        const rawActor = typeof actorRef === "string" ? await fromUuid(actorRef) : actorRef;
+        const actor = rawActor instanceof Actor ? rawActor : rawActor?.actor || null;
         if (!actor) throw new Error("BuildTest: actor not found");
 
         const data = {};

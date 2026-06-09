@@ -23,11 +23,12 @@
             <div class="form-group">
                 <label>{{localize "SR5Marketplace.ItemBuilder.SelectSkill"}}</label>
                 <select name="test.data.selectedSkill">
-                    <option value="AutomotiveMechanic" {{#if (eq test.data.selectedSkill 'AutomotiveMechanic')}}selected{{/if}}>{{localize "FIELDS.Skill.AutomotiveMechanic"}}</option>
-                    <option value="Armorer" {{#if (eq test.data.selectedSkill 'Armorer')}}selected{{/if}}>{{localize "FIELDS.Skill.Armorer"}}</option>
-                    <option value="AeronauticsMechanic" {{#if (eq test.data.selectedSkill 'AeronauticsMechanic')}}selected{{/if}}>{{localize "FIELDS.Skill.AeronauticsMechanic"}}</option>
-                    <option value="NauticalMechanic" {{#if (eq test.data.selectedSkill 'NauticalMechanic')}}selected{{/if}}>{{localize "FIELDS.Skill.NauticalMechanic"}}</option>
-                    <option value="IndustrialMechanic" {{#if (eq test.data.selectedSkill 'IndustrialMechanic')}}selected{{/if}}>{{localize "FIELDS.Skill.IndustrialMechanic"}}</option>
+                    <option value="AutomotiveMechanic" {{#if (eq test.data.selectedSkill 'AutomotiveMechanic')}}selected{{/if}}>{{localize "FIELDS.Skill.AutomotiveMechanic"}} ({{test.data.skillRatings.AutomotiveMechanic}})</option>
+                    <option value="Armorer" {{#if (eq test.data.selectedSkill 'Armorer')}}selected{{/if}}>{{localize "FIELDS.Skill.Armorer"}} ({{test.data.skillRatings.Armorer}})</option>
+                    <option value="AeronauticsMechanic" {{#if (eq test.data.selectedSkill 'AeronauticsMechanic')}}selected{{/if}}>{{localize "FIELDS.Skill.AeronauticsMechanic"}} ({{test.data.skillRatings.AeronauticsMechanic}})</option>
+                    <option value="NauticalMechanic" {{#if (eq test.data.selectedSkill 'NauticalMechanic')}}selected{{/if}}>{{localize "FIELDS.Skill.NauticalMechanic"}} ({{test.data.skillRatings.NauticalMechanic}})</option>
+                    <option value="IndustrialMechanic" {{#if (eq test.data.selectedSkill 'IndustrialMechanic')}}selected{{/if}}>{{localize "FIELDS.Skill.IndustrialMechanic"}} ({{test.data.skillRatings.IndustrialMechanic}})</option>
+                    <option value="Hardware" {{#if (eq test.data.selectedSkill 'Hardware')}}selected{{/if}}>{{localize "FIELDS.Skill.Hardware"}} ({{test.data.skillRatings.Hardware}})</option>
                 </select>
             </div>
 
@@ -126,11 +127,11 @@
         <div>
             <div class="form-group">
                 <label data-tooltip="SR5.Tooltips.Test.ManualHits">{{localize "SR5.ManualHits"}}</label>
-                <input type="number" name="test.data.manualHits" value="{{test.data.manualHits.override.value}}" placeholder="{{test.data.manualHits.value}}" size="3" data-dtype="Number">
+                <input type="number" name="test.data.manualHits.override.value" value="{{test.data.manualHits.override.value}}" placeholder="{{test.data.manualHits.value}}" size="3" data-dtype="Number">
             </div>
             <div class="form-group">
                 <label data-tooltip="SR5.Tooltips.Test.ManualGlitches">{{localize "SR5.ManualGlitches"}}</label>
-                <input type="number" name="test.data.manualGlitches" value="{{test.data.manualGlitches.override.value}}" placeholder="{{test.data.manualGlitches.value}}" size="3" data-dtype="Number">
+                <input type="number" name="test.data.manualGlitches.override.value" value="{{test.data.manualGlitches.override.value}}" placeholder="{{test.data.manualGlitches.value}}" size="3" data-dtype="Number">
             </div>
         </div>
     </div>

@@ -40,9 +40,9 @@ export class AvailabilityResist extends game.shadowrun5e.tests.OpposedTest {
         const pool = Math.max(parsed.rating || 0, 1);
 
         data.against = againstData;
-        data.pool = game.shadowrun5e.data.createData('value_field', { base: pool });
-        data.limit = game.shadowrun5e.data.createData('value_field', { base: 0 });
-        data.threshold = game.shadowrun5e.data.createData('value_field', { base: threshold });
+        data.pool = game.shadowrun5e.data.createData('value_field', { base: pool, override: null });
+        data.limit = game.shadowrun5e.data.createData('value_field', { base: 0, override: null });
+        data.threshold = game.shadowrun5e.data.createData('value_field', { base: threshold, override: null });
 
         data.title = `${game.i18n.localize("SR5.Labels.Availability")} ${game.i18n.localize("SR5.Resist")}`;
 
@@ -51,6 +51,31 @@ export class AvailabilityResist extends game.shadowrun5e.tests.OpposedTest {
 
     /** @override */
     prepareBaseValues() {
+        for (const field of ['pool', 'limit', 'threshold']) {
+            let val = this.data[field];
+            const currentBase = (field === 'threshold') 
+                ? (this.data.thresholdBase || (val && typeof val === 'object' ? val.base : null) || 0)
+                : (val && typeof val === 'object' ? val.base : 0);
+
+            if (typeof val === 'number' || (typeof val === 'string' && val.trim() !== '')) {
+                const num = Number(val);
+                if (!isNaN(num)) {
+                    this.data[field] = game.shadowrun5e.data.createData('value_field', {
+                        base: currentBase,
+                        override: { value: num, label: "SR5.ManualOverride" }
+                    });
+                } else {
+                    this.data[field] = game.shadowrun5e.data.createData('value_field', { base: currentBase, override: null });
+                }
+            } else if (!val || val === null || typeof val.value === 'undefined') {
+                this.data[field] = game.shadowrun5e.data.createData('value_field', { base: currentBase, override: null });
+            } else if (val && typeof val === 'object' && val.override) {
+                if (val.override.value === undefined || val.override.value === null || val.override.value === "") {
+                    val.override = null;
+                }
+            }
+        }
+
         super.prepareBaseValues();
 
         const againstData = this.data.against || {};

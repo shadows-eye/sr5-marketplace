@@ -1,4 +1,5 @@
 import { BasketService } from "../../../services/basketService.mjs";
+import { ActorSelectionService } from "../../../services/ActorSelectionService.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -45,8 +46,7 @@ export class ItemPreviewApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const itemData = item.toObject(false);
         itemData.uuid = item.uuid;
 
-        const selectedActorUuid = game.user.getFlag("sr5-marketplace", "selectedActorUuid");
-        this.purchasingActor = selectedActorUuid ? await fromUuid(selectedActorUuid) : (game.user.character || null);
+        this.purchasingActor = await ActorSelectionService.getSelectedActor();
 
         //options.window.title = itemData.name;
 

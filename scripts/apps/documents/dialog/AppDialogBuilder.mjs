@@ -14,7 +14,8 @@ export class AppDialogBuilder {
 
     static async getActor(uuid) {
         if (!uuid) return null;
-        return await fromUuid(uuid);
+        const doc = await fromUuid(uuid);
+        return doc instanceof Actor ? doc : doc?.actor || null;
     }
     static async getItem(uuid) {
         if (!uuid) return null;
@@ -33,15 +34,17 @@ export class AppDialogBuilder {
         this.testState = testState;
         if (!this.testState) return null;
 
+        const isBuildTest = this.testState.testType === "BuildTest";
+
         switch (this.testState.status) {
             case 'initial':
-                return this.#buildInitialContext();
+                return isBuildTest ? this.#buildBuildTestInitialContext() : this.#buildInitialContext();
             case 'result':
                 return this.#buildResultContext();
             case 'extended-inprogress':
-                return this.#buildExtendedInProgressContext();
+                return isBuildTest ? this.#buildBuildTestInProgressContext() : this.#buildExtendedInProgressContext();
             case 'resolved':
-                return await this.#buildResolvedContext(basket);
+                return isBuildTest ? await this.#buildBuildTestResolvedContext() : await this.#buildResolvedContext(basket);
             default:
                 console.error(`Unknown test status: "${this.testState.status}"`);
                 return null;
@@ -59,11 +62,89 @@ export class AppDialogBuilder {
         let totalDicePool = 0;
         let connectionUsed = 0;
         
-        const skillData = actor.system.skills.active[skill];
-        if (skillData) {
-            const skillLabel = game.i18n.localize(CONFIG.SR5.activeSkills[skill]);
-            dicePoolBreakdown.push({ label: skillLabel, value: skillData.value });
-            totalDicePool += skillData.value;
+        const SKILL_NAME_MAPPINGS = {
+            armorer: ["armorer", "armourer", "waffenbau"],
+            automotivemechanic: ["automotivemechanic", "fahrzeugmechanik"],
+            aeronauticsmechanic: ["aeronauticsmechanic", "luftfahrtmechanik"],
+            nauticalmechanic: ["nauticalmechanic", "seefahrtmechanik", "schiffsmechanik"],
+            industrialmechanic: ["industrialmechanic", "industriemechanik"],
+            hardware: ["hardware", "hardware"],
+            negotiation: ["negotiation", "verhandeln"]
+        };
+
+        const normK = skill.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const matchNames = SKILL_NAME_MAPPINGS[normK] || [normK];
+
+        let skillItem = actor.items.find(i => {
+            if (i.type !== "skill") return false;
+
+            const normKey = i.system.key?.toLowerCase()?.replace(/[^a-z0-9]/g, '');
+            if (normKey && matchNames.includes(normKey)) return true;
+
+            const normName = i.name?.toLowerCase()?.replace(/[^a-z0-9]/g, '');
+            if (normName && matchNames.includes(normName)) return true;
+
+            return false;
+        });
+
+        // Generate possible cased keys for legacy active skills fallback
+        const possibleKeys = [
+            skill,
+            skill.toLowerCase(),
+            skill.charAt(0).toLowerCase() + skill.slice(1)
+        ];
+
+        let ref;
+        for (const k of possibleKeys) {
+            if (actor.system.skills?.active?.[k] !== undefined) {
+                ref = actor.system.skills.active[k];
+                break;
+            }
+        }
+
+        // If not found by direct key, try normalized snake_case key matching in active skills
+        if (!ref && actor.system.skills?.active) {
+            for (const [key, value] of Object.entries(actor.system.skills.active)) {
+                const normKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (matchNames.includes(normKey)) {
+                    ref = value;
+                    break;
+                }
+            }
+        }
+
+        if (ref && !skillItem) {
+            let refId = typeof ref === "string" ? ref : (ref.uuid || ref.value || ref.base);
+            if (typeof refId === "string") {
+                if (refId.startsWith("Item.")) {
+                    refId = refId.substring(5);
+                }
+                skillItem = actor.items.get(refId) || actor.items.find(i => i.id === refId || i.uuid === refId);
+            }
+        }
+
+        let skillValue = 0;
+        if (ref !== undefined && ref !== null) {
+            if (typeof ref === "number") {
+                skillValue = ref;
+            } else if (typeof ref === "object") {
+                skillValue = ref.value ?? ref.base ?? ref.rating ?? 0;
+            }
+        } else if (skillItem) {
+            skillValue = skillItem.system.skill?.rating ?? 
+                         skillItem.system.skill?.value ?? 
+                         skillItem.system.rating?.value ?? 
+                         skillItem.system.value ?? 
+                         skillItem.system.rating ?? 
+                         0;
+        }
+
+        console.log(`[AppDialogBuilder buildInitialContext] skill="${skill}", normK="${normK}", matchNames=`, matchNames, `ref=`, ref, `skillItem=`, skillItem, `resolvedValue=${skillValue}`);
+
+        if (skillValue > 0 || skillItem || ref) {
+            const skillLabel = game.i18n.localize(CONFIG.SR5.activeSkills[skill]) || skill;
+            dicePoolBreakdown.push({ label: skillLabel, value: skillValue });
+            totalDicePool += skillValue;
         }
 
         const attributeData = actor.system.attributes[attribute];
@@ -380,6 +461,235 @@ export class AppDialogBuilder {
             deliveryTime: finalDeliveryTime,
             localizedTimeUnit: localizedTimeUnit,
             netHits: netHits
+        };
+    }
+
+    /** @private Builds context for BuildTest initial state. */
+    async #buildBuildTestInitialContext() {
+        const { actorUuid, skill, attribute, threshold, appliedModifiers } = this.testState;
+
+        const actor = await this.constructor.getActor(actorUuid);
+        if (!actor) return null;
+
+        const dicePoolBreakdown = [];
+        let totalDicePool = 0;
+
+        // 1. Robust skill lookup matching master branch AvailabilityTest logic
+        const SKILL_NAME_MAPPINGS = {
+            armorer: ["armorer", "armourer", "waffenbau"],
+            automotivemechanic: ["automotivemechanic", "fahrzeugmechanik"],
+            aeronauticsmechanic: ["aeronauticsmechanic", "luftfahrtmechanik"],
+            nauticalmechanic: ["nauticalmechanic", "seefahrtmechanik", "schiffsmechanik"],
+            industrialmechanic: ["industrialmechanic", "industriemechanik"],
+            hardware: ["hardware", "hardware"],
+            negotiation: ["negotiation", "verhandeln"]
+        };
+
+        const normK = skill.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const matchNames = SKILL_NAME_MAPPINGS[normK] || [normK];
+
+        const skillItem = actor.items.find(i => {
+            if (i.type !== "skill") return false;
+
+            const normKey = i.system.key?.toLowerCase()?.replace(/[^a-z0-9]/g, '');
+            if (normKey && matchNames.includes(normKey)) return true;
+
+            const normName = i.name?.toLowerCase()?.replace(/[^a-z0-9]/g, '');
+            if (normName && matchNames.includes(normName)) return true;
+
+            return false;
+        });
+
+        // Generate possible cased keys for legacy active skills fallback
+        const possibleKeys = [
+            skill,
+            skill.toLowerCase(),
+            skill.charAt(0).toLowerCase() + skill.slice(1)
+        ];
+
+        let activeSkill;
+        for (const k of possibleKeys) {
+            if (actor.system.skills?.active?.[k] !== undefined) {
+                activeSkill = actor.system.skills.active[k];
+                break;
+            }
+        }
+
+        // If not found by direct key, try normalized snake_case key matching in active skills
+        if (!activeSkill && actor.system.skills?.active) {
+            for (const [key, value] of Object.entries(actor.system.skills.active)) {
+                const normKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (matchNames.includes(normKey)) {
+                    activeSkill = value;
+                    break;
+                }
+            }
+        }
+        let skillValue = 0;
+        if (activeSkill !== undefined && activeSkill !== null) {
+            if (typeof activeSkill === "number") {
+                skillValue = activeSkill;
+            } else if (typeof activeSkill === "object") {
+                skillValue = activeSkill.value ?? activeSkill.base ?? activeSkill.rating ?? 0;
+            }
+        } else if (skillItem) {
+            skillValue = skillItem.system.skill?.rating ?? 
+                         skillItem.system.skill?.value ?? 
+                         skillItem.system.rating?.value ?? 
+                         skillItem.system.value ?? 
+                         skillItem.system.rating ?? 
+                         0;
+        }
+
+        console.log(`[AppDialogBuilder buildBuildTestInitialContext] skill="${skill}", normK="${normK}", matchNames=`, matchNames, `activeSkill=`, activeSkill, `skillItem=`, skillItem, `resolvedValue=${skillValue}`);
+
+        if (skillValue > 0 || skillItem || activeSkill) {
+            const skillKeyForConfig = skill.charAt(0).toLowerCase() + skill.slice(1);
+            const skillLabel = game.i18n.localize(CONFIG.SR5.activeSkills[skillKeyForConfig]) ||
+                               game.i18n.localize(CONFIG.SR5.activeSkills[skill]) ||
+                               skill;
+            dicePoolBreakdown.push({ label: skillLabel, value: skillValue });
+            totalDicePool += skillValue;
+        }
+
+        const attributeData = actor.system.attributes[attribute];
+        if (attributeData) {
+            const attributeLabel = game.i18n.localize(`FIELDS.attributes.${attribute}.label`) || "Logic";
+            dicePoolBreakdown.push({ label: attributeLabel, value: attributeData.value });
+            totalDicePool += attributeData.value;
+        }
+
+        // Check and update logic memory penalty value if checked
+        let workingModifiers = appliedModifiers ? JSON.parse(JSON.stringify(appliedModifiers)) : [];
+        let hasModified = false;
+        if (attributeData) {
+            const logicPenaltyIndex = workingModifiers.findIndex(mod => mod.label === "SR5Marketplace.ItemBuilder.LogicMemoryPenalty");
+            if (logicPenaltyIndex !== -1) {
+                const newVal = attributeData.value < 5 ? -(5 - attributeData.value) : 0;
+                if (newVal !== workingModifiers[logicPenaltyIndex].value) {
+                    if (newVal === 0) {
+                        workingModifiers.splice(logicPenaltyIndex, 1);
+                    } else {
+                        workingModifiers[logicPenaltyIndex].value = newVal;
+                    }
+                    hasModified = true;
+                }
+            }
+        }
+        if (hasModified) {
+            this.testState.appliedModifiers = workingModifiers;
+            await AppTestFlagService.updateTest(this.testState.id, { appliedModifiers: workingModifiers });
+        }
+
+        let workingConditions = 0;
+        let toolsParts = 0;
+        let plansInstructions = 0;
+        let logicMemoryPenaltyChecked = false;
+
+        if (Array.isArray(workingModifiers)) {
+            workingModifiers.forEach(mod => {
+                if (mod.label === "SR5Marketplace.ItemBuilder.WorkingConditions") {
+                    workingConditions = mod.value;
+                } else if (mod.label === "SR5Marketplace.ItemBuilder.ToolsParts") {
+                    toolsParts = mod.value;
+                } else if (mod.label === "SR5Marketplace.ItemBuilder.PlansInstructions") {
+                    plansInstructions = mod.value;
+                } else if (mod.label === "SR5Marketplace.ItemBuilder.LogicMemoryPenalty") {
+                    logicMemoryPenaltyChecked = true;
+                }
+
+                const labelLocKey = `SR5Marketplace.Marketplace.Modifiers.Labels.${mod.label}`;
+                const displayLabel = game.i18n.has(labelLocKey) ? game.i18n.localize(labelLocKey) : (game.i18n.has(mod.label) ? game.i18n.localize(mod.label) : mod.label);
+                dicePoolBreakdown.push({ label: displayLabel, value: mod.value });
+                totalDicePool += mod.value;
+            });
+        }
+
+        const formulaParts = dicePoolBreakdown.map(part => `${part.label} (${part.value >= 0 ? '+' : ''}${part.value})`);
+        const poolFormula = `${formulaParts.join(" + ")} = ${totalDicePool}`;
+
+        const buildTestStandardLabels = new Set([
+            "SR5Marketplace.ItemBuilder.WorkingConditions",
+            "SR5Marketplace.ItemBuilder.ToolsParts",
+            "SR5Marketplace.ItemBuilder.PlansInstructions",
+            "SR5Marketplace.ItemBuilder.LogicMemoryPenalty"
+        ]);
+        const customAppliedModifiers = workingModifiers.filter(mod => !buildTestStandardLabels.has(mod.label));
+
+        return {
+            actor,
+            threshold,
+            skill,
+            attribute,
+            workingConditions,
+            toolsParts,
+            plansInstructions,
+            logicMemoryPenaltyChecked,
+            showLogicMemoryPenalty: attributeData && attributeData.value < 5 && plansInstructions === 0,
+            dicePoolBreakdown,
+            totalDicePool,
+            poolFormula,
+            customAppliedModifiers,
+            appliedModifiers: workingModifiers
+        };
+    }
+
+    /** @private Builds context for BuildTest extended-inprogress state. */
+    #buildBuildTestInProgressContext() {
+        const resultData = this.testState.result;
+        const rollsData = this.testState.rolls;
+
+        const lastRoll = rollsData?.[rollsData.length - 1];
+        const diceResults = lastRoll?.terms?.[0]?.results || lastRoll?.dice?.[0]?.results || [];
+        const glitches = resultData.values?.glitches?.value || 0;
+
+        const resultForHelper = {
+            diceResults: diceResults,
+            values: { glitches: { value: glitches } }
+        };
+        const renderedDice = DiceHelperService.processDice(resultForHelper);
+
+        return {
+            cumulativeHits: resultData.values?.extendedHits?.value ?? 0,
+            threshold: resultData.threshold?.value ?? 12,
+            currentPool: resultData.pool?.value ?? 0,
+            renderedDice: renderedDice
+        };
+    }
+
+    /** @private Builds context for BuildTest resolved state. */
+    async #buildBuildTestResolvedContext() {
+        const resultData = this.testState.result;
+        const rollsData = this.testState.rolls;
+
+        const lastRoll = rollsData?.[rollsData.length - 1];
+        const diceResults = lastRoll?.terms?.[0]?.results || lastRoll?.dice?.[0]?.results || [];
+        const lastGlitches = resultData.values?.glitches?.value || 0;
+
+        // Detect critical glitch
+        const hits = diceResults.filter(d => (d?.result ?? 0) >= 5).length;
+        const ones = diceResults.filter(d => (d?.result ?? 0) === 1).length;
+        const pool = diceResults.length;
+        const isGlitch = ones > pool / 2;
+        const isCritGlitch = isGlitch && hits === 0;
+
+        const resultForHelper = {
+            diceResults: diceResults,
+            values: { glitches: { value: lastGlitches } }
+        };
+        const renderedDice = DiceHelperService.processDice(resultForHelper);
+
+        const cumulativeHits = resultData.values?.extendedHits?.value ?? 0;
+        const threshold = resultData.threshold?.value ?? 12;
+        const isSuccess = cumulativeHits >= threshold;
+
+        return {
+            isSuccess,
+            isCritGlitch,
+            renderedDice,
+            threshold,
+            cumulativeHits,
+            totalRolls: this.testState.rollCount || rollsData?.length || 1
         };
     }
 }

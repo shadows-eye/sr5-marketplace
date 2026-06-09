@@ -4,6 +4,10 @@ import { VehicleSearchService } from "../services/vehicleSearchService.mjs";
 import { BuilderStateService } from "../services/builderStateService.mjs";
 import { AppEffectsBuilderDialog } from '../apps/documents/dialog/AppEffectsBuilderDialog.mjs';
 import { BasketService } from "../services/basketService.mjs";
+import { ActorSelectionService } from "../services/ActorSelectionService.mjs";
+import { AppTestFlagService } from '../services/AppTestFlagService.mjs';
+import { AppDialogBuilder } from '../apps/documents/dialog/AppDialogBuilder.mjs';
+import { BuildTestApp } from "./BuildTestApp.mjs";
 // We will create this service later to handle the builder logic.
 // import { BuilderService } from '../services/builderService.mjs'; 
 
@@ -32,6 +36,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         console.log(this.itemData);
         this.purchasingActor = null;
         this.itemSearchService = null;
+        this.activeTestState = null;
+        this.activeDialogId = null;
         this.modSearchService = null;
         // this.builderService = new BuilderService(); // To be added later no builder data needed here
         this.tabGroups = { main: "builder" }; // Default to the 'builder' tab
@@ -135,6 +141,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             this.draggedItemType = "mod";
             this.draggedModData = { mountPoint: data.mountPoint || "none" };
             const draggedMountPoint = this.draggedModData.mountPoint;
+            const hasNoMountPoint = !draggedMountPoint || draggedMountPoint === "none" || draggedMountPoint === "";
 
             // 2. Apply visuals for MOD drag
             allSlots.forEach(slot => {
@@ -142,7 +149,11 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 const isBottomSlot = !!slot.closest(".bottom-slots");
 
                 if (isBottomSlot) {
-                    slot.classList.add("initial-invalid"); // Mods can't go in bottom slots
+                    if (hasNoMountPoint) {
+                        slot.classList.add("initial-valid");
+                    } else {
+                        slot.classList.add("initial-invalid"); // Mods with a mount point can't go in bottom slots
+                    }
                     return;
                 }
                 
@@ -241,18 +252,22 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         }
 
         if (this.draggedItemType === "mod") {
-            if (isBottomSlot) {
-                ui.notifications.error("Modifications can only be placed in the top slots.");
-                return;
-            }
-
-            const targetMountPoint = slot.dataset.mountPoint; // e.g. "barrel", "under", "top"
             const draggedMountPoint = item.system.mod_weapon?.mount_point || item.system.mount_point || data.mountPoint || "none";
+            const hasNoMountPoint = !draggedMountPoint || draggedMountPoint === "none" || draggedMountPoint === "";
 
-            // If it's a weapon, validate mount point
-            if (targetMountPoint && targetMountPoint !== draggedMountPoint) {
-                ui.notifications.warn(`This modification requires a "${draggedMountPoint}" mount point.`);
-                return;
+            if (isBottomSlot) {
+                if (!hasNoMountPoint) {
+                    ui.notifications.error("Modifications with a mount point can only be placed in the top slots.");
+                    return;
+                }
+            } else {
+                const targetMountPoint = slot.dataset.mountPoint; // e.g. "barrel", "under", "top"
+
+                // If it's a weapon, validate mount point
+                if (targetMountPoint && targetMountPoint !== draggedMountPoint) {
+                    ui.notifications.warn(`This modification requires a "${draggedMountPoint}" mount point.`);
+                    return;
+                }
             }
 
             await BuilderStateService.addChange(slotId, droppedItemData);
@@ -338,6 +353,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             this.itemSearchService = null;
             this.modSearchService = null;
         }
+
+        if (this.activeDialogId && !Object.values(ui.windows).some(w => w.constructor.name === "BuildTestApp")) {
+            new BuildTestApp().render(true);
+        }
     }
 
     /**
@@ -413,8 +432,24 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         }
 
-        const selectedActorUuid = game.user.getFlag("sr5-marketplace", "selectedActorUuid");
-        this.purchasingActor = selectedActorUuid ? await fromUuid(selectedActorUuid) : (game.user.character || null);
+        this.purchasingActor = await ActorSelectionService.getSelectedActor();
+
+        const AppUserId = game.user.id;
+        const testStates = await AppTestFlagService.readState(AppUserId);
+        const unresolvedTest = Object.values(testStates).find(t => !t.resolved && t.testType === "BuildTest");
+        this.activeDialogId = unresolvedTest?.id || null;
+
+        const activeTestState = this.activeDialogId ? testStates[this.activeDialogId] : null;
+        this.activeTestState = activeTestState;
+
+        if (activeTestState) {
+            const dialogBuilder = new AppDialogBuilder();
+            const dialogContext = await dialogBuilder.buildTestDialogContext(activeTestState);
+            if (dialogContext) {
+                Object.assign(activeTestState, dialogContext);
+                activeTestState.customGroupExpanded = this._expandedGroups?.has("toggle-mod-group-custom") ?? true;
+            }
+        }
         
         let tabContent = null;
         const render = foundry.applications.handlebars.renderTemplate;
@@ -422,7 +457,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             purchasingActor: this.purchasingActor,
             hasBaseItem: !!builderData.baseItem, // Use the state we just fetched
             builderData: builderData,             // Pass it to the partial
-            activeTab: this.tabGroups.main
+            activeTab: this.tabGroups.main,
+            activeTestState: this.activeTestState
         };
 
         switch (this.tabGroups.main) {
@@ -938,46 +974,85 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         // Determine default skill to use
         let defaultSkill = "AutomotiveMechanic";
         if (buildData.type === "vehicle") {
-            const isDrone = buildData.system?.isDrone || buildData.system?.isdrone || false;
-            if (isDrone) {
-                const category = buildData.importFlags?.category?.toLowerCase() || "";
-                if (category.includes("rotorcraft") || category.includes("aircraft")) {
+            const vehicleType = buildData.system?.vehicleType || "";
+            if (vehicleType === "air" || vehicleType === "aerospace" || vehicleType === "exotic") {
+                defaultSkill = "AeronauticsMechanic";
+            } else if (vehicleType === "water") {
+                defaultSkill = "NauticalMechanic";
+            } else if (vehicleType === "ground" || vehicleType === "walker") {
+                defaultSkill = "AutomotiveMechanic";
+            } else {
+                // Fallback to legacy categories check
+                const isDrone = buildData.system?.isDrone || buildData.system?.isdrone || false;
+                const category = isDrone 
+                    ? (buildData.importFlags?.category?.toLowerCase() || "") 
+                    : (buildData.system?.category?.toLowerCase() || "");
+                if (category.includes("rotorcraft") || category.includes("aircraft") || category.includes("aeronautics")) {
                     defaultSkill = "AeronauticsMechanic";
                 } else if (category.includes("nautical") || category.includes("watercraft")) {
                     defaultSkill = "NauticalMechanic";
-                }
-            } else {
-                const category = buildData.system?.category?.toLowerCase() || "";
-                if (category.includes("nautical") || category.includes("watercraft")) {
-                    defaultSkill = "NauticalMechanic";
-                } else if (category.includes("aeronautics") || category.includes("aircraft")) {
-                    defaultSkill = "AeronauticsMechanic";
+                } else {
+                    defaultSkill = "AutomotiveMechanic";
                 }
             }
         } else {
-            defaultSkill = "Armorer";
+            // Check changes slots to determine skill
+            const changes = state.changes || {};
+            const slotsWithItems = Object.keys(changes).filter(slotId => changes[slotId]);
+            const hasTopBoxMod = slotsWithItems.some(slotId => 
+                ["topLeft", "bottomLeft", "topRight", "middleRight", "bottomRight"].includes(slotId)
+            );
+            const hasBottomSlotMod = slotsWithItems.some(slotId => 
+                ["bottomSlot1", "bottomSlot2", "bottomSlot3", "bottomSlot4"].includes(slotId)
+            );
+
+            if (hasBottomSlotMod) {
+                defaultSkill = "Hardware";
+            } else if (hasTopBoxMod) {
+                defaultSkill = "Armorer";
+            } else {
+                // Fallback based on item type
+                if (buildData.type === "weapon") {
+                    defaultSkill = "Armorer";
+                } else {
+                    defaultSkill = "IndustrialMechanic";
+                }
+            }
         }
 
         // Determine threshold. Default is twice the item's rating, or fallback to 12.
         const rating = Number(buildData.system?.rating || buildData.system?.technology?.rating || 6);
         const threshold = rating > 0 ? rating * 2 : 12;
 
-        const selectedActorUuid = game.user.getFlag("sr5-marketplace", "selectedActorUuid");
-        const actor = selectedActorUuid ? await fromUuid(selectedActorUuid) : (game.user.character || null);
+        const actor = await ActorSelectionService.getSelectedActor();
         if (!actor) {
             ui.notifications.warn("Please select a character/actor to perform the test.");
             return;
         }
 
-        // Run the BuildTest class
-        await game.shadowrun5e.tests.BuildTest.run(
-            actor,
-            {
-                buildData,
-                threshold,
-                skill: defaultSkill
-            }
-        );
+        const logicVal = actor.system?.attributes?.logic?.value ?? 0;
+        const initialModifiers = [];
+        if (logicVal > 0 && logicVal < 5) {
+            const penaltyVal = -(5 - logicVal);
+            initialModifiers.push({
+                label: "SR5Marketplace.ItemBuilder.LogicMemoryPenalty",
+                value: penaltyVal
+            });
+        }
+
+        const initialData = {
+            testType: "BuildTest",
+            actorUuid: actor.uuid,
+            buildData,
+            threshold,
+            skill: defaultSkill,
+            attribute: "logic",
+            appliedModifiers: initialModifiers
+        };
+
+        this.activeDialogId = await AppTestFlagService.createTest(initialData);
+        new BuildTestApp().render(true);
+        this.render();
     }
 
     /**
@@ -990,8 +1065,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             return;
         }
 
-        const selectedActorUuid = game.user.getFlag("sr5-marketplace", "selectedActorUuid");
-        const actor = selectedActorUuid ? await fromUuid(selectedActorUuid) : (game.user.character || null);
+        const actor = await ActorSelectionService.getSelectedActor();
         if (!actor) {
             ui.notifications.warn("Please select a character/actor to shop on behalf of.");
             return;
@@ -1058,6 +1132,13 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      */
     static async #onClearBuild(event, target) {
         await BuilderStateService.clearState();
+        await AppTestFlagService.deleteState(game.user.id);
+
+        const buildTestApp = Object.values(ui.windows).find(w => w.constructor.name === "BuildTestApp");
+        if (buildTestApp) {
+            buildTestApp.close();
+        }
+
         this.tabGroups.main = "builder"; // Ensure we are on the builder tab
         this.render();
     }
@@ -1387,4 +1468,5 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      * @private
      */
     #dragDrop = this.#createDragDropHandlers();
+
 }

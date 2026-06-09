@@ -22,7 +22,18 @@
                     {{!-- Column 2: Availability --}}
                     <div class="form-group">
                         <label>{{localize "SR5Marketplace.UI.Availability"}}</label>
-                        <div class="availability-display">{{activeTestState.availabilityStr}}</div>
+                        <div class="availability-display" style="background: var(--color-black-transparent-20); padding: 5px 10px; border-radius: 4px; font-weight: bold; text-align: center;">{{activeTestState.availabilityStr}}</div>
+                    </div>
+
+                    {{!-- Column 2.5: Rule --}}
+                    <div class="form-group">
+                        <label>{{localize "SR5Marketplace.Marketplace.Settings.AvailabilityRule.name"}}</label>
+                        <select name="availabilityTestRule" data-action="changeAvailabilityTestRule" class="bg-[var(--color-black-transparent-20)] text-[var(--text-color-primary)] rounded px-1.5 py-0.5 text-xs focus:ring-1 focus:ring-[var(--color-yellow-base)] cursor-pointer border-none outline-none">
+                            <option value="raw" {{#if (eq @root.availabilityTestRule "raw")}}selected{{/if}}>{{localize "SR5Marketplace.Marketplace.Settings.AvailabilityRule.choices.raw"}}</option>
+                            <option value="opposed" {{#if (eq @root.availabilityTestRule "opposed")}}selected{{/if}}>{{localize "SR5Marketplace.Marketplace.Settings.AvailabilityRule.choices.opposed"}}</option>
+                            <option value="simple" {{#if (eq @root.availabilityTestRule "simple")}}selected{{/if}}>{{localize "SR5Marketplace.Marketplace.Settings.AvailabilityRule.choices.simple"}}</option>
+                            <option value="extended" {{#if (eq @root.availabilityTestRule "extended")}}selected{{/if}}>{{localize "SR5Marketplace.Marketplace.Settings.AvailabilityRule.choices.extended"}}</option>
+                        </select>
                     </div>
 
                     {{!-- Column 3: Skill --}}

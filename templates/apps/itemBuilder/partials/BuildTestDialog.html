@@ -1,0 +1,267 @@
+<div class="roll-dialog-container">
+    <div class="roll-dialog-content">
+
+    {{#if activeTestState}}
+
+        {{#if (eq activeTestState.status "initial")}}
+            <form class="availability-dialog-form">
+                <input type="hidden" name="dialogId" value="{{activeTestState.id}}" />
+                <header class="marketplace-header flex flex-row items-center gap-4 shrink-0 rounded mb-4">
+                    <div class="marketplace-user-avatar-container shrink-0">
+                        <img class="w-10 h-10 object-cover rounded-lg flex-shrink-0" src="systems/shadowrun5e/dist/icons/skills/technical-industrial_mechanic.webp" title="{{localize 'SR5Marketplace.ItemBuilder.BuildTestTitle'}}" />
+                    </div>
+                    <div class="flex-grow flex flex-row items-center justify-between">
+                        <div class="flex flex-col justify-center">
+                            <h1 class="text-xl font-bold text-[var(--color-white)] m-0 leading-none drop-shadow">
+                                {{localize "SR5Marketplace.ItemBuilder.BuildTestTitle"}}
+                            </h1>
+                        </div>
+                    </div>
+                </header>
+                
+                <div class="build-test-header-grid">
+                    {{!-- Column 1: Actor Info --}}
+                    <div class="actor-info">
+                        <div class="selectable-actor" actorUuid="{{activeTestState.actor.uuid}}">
+                            <img src="{{activeTestState.actor.img}}" title="{{activeTestState.actor.name}}"/>
+                            <span>{{activeTestState.actor.name}}</span>
+                        </div>
+                    </div>
+
+                    {{!-- Column 2: Limit --}}
+                    <div class="header-stat-box">
+                        <label>{{localize "SR5.Limit"}}</label>
+                        <div class="header-stat-value" title="{{localize 'SR5Marketplace.ItemBuilder.MentalLimitApplied'}}">
+                            {{activeTestState.actor.system.limits.mental.value}}
+                        </div>
+                    </div>
+
+                    {{!-- Column 3: Threshold --}}
+                    <div class="header-stat-box">
+                        <label>{{localize "SR5.Threshold"}}</label>
+                        <div class="header-stat-value">{{activeTestState.threshold}}</div>
+                    </div>
+                </div>
+
+                {{!-- Skill selection --}}
+                <div class="form-group mb-3 p-2 bg-[var(--Form-background-group)] rounded">
+                    <label class="font-bold text-xs opacity-80 mb-1 block">{{localize "FIELDS.Skill.Skill"}}</label>
+                    <div class="button-group flex flex-wrap gap-1.5">
+                        <button type="button" class="btn-skill {{#if (eq activeTestState.skill "AutomotiveMechanic")}}active{{/if}}" data-action="selectBuildTestSkill" data-skill="AutomotiveMechanic">
+                            {{localize "SR5.Skill.AutomotiveMechanic"}}
+                        </button>
+                        <button type="button" class="btn-skill {{#if (eq activeTestState.skill "Armorer")}}active{{/if}}" data-action="selectBuildTestSkill" data-skill="Armorer">
+                            {{localize "SR5.Skill.Armorer"}}
+                        </button>
+                        <button type="button" class="btn-skill {{#if (eq activeTestState.skill "AeronauticsMechanic")}}active{{/if}}" data-action="selectBuildTestSkill" data-skill="AeronauticsMechanic">
+                            {{localize "SR5.Skill.AeronauticsMechanic"}}
+                        </button>
+                        <button type="button" class="btn-skill {{#if (eq activeTestState.skill "NauticalMechanic")}}active{{/if}}" data-action="selectBuildTestSkill" data-skill="NauticalMechanic">
+                            {{localize "SR5.Skill.NauticalMechanic"}}
+                        </button>
+                        <button type="button" class="btn-skill {{#if (eq activeTestState.skill "IndustrialMechanic")}}active{{/if}}" data-action="selectBuildTestSkill" data-skill="IndustrialMechanic">
+                            {{localize "SR5.Skill.IndustrialMechanic"}}
+                        </button>
+                        <button type="button" class="btn-skill {{#if (eq activeTestState.skill "Hardware")}}active{{/if}}" data-action="selectBuildTestSkill" data-skill="Hardware">
+                            {{localize "SR5.Skill.Hardware"}}
+                        </button>
+                    </div>
+                </div>
+
+                {{!-- Build options selectors --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                    {{!-- Working Conditions --}}
+                    <div class="form-group p-2">
+                        <label class="font-bold text-xs opacity-80 mb-1 block">{{localize "SR5Marketplace.ItemBuilder.WorkingConditions"}}</label>
+                        <div class="button-group flex flex-wrap gap-1">
+                            <button type="button" class="btn-modifier {{#if (eq activeTestState.workingConditions 1)}}active{{/if}}" data-action="selectBuildTestCondition" data-name="workingConditions" data-value="1" title="{{localize 'SR5Marketplace.ItemBuilder.WorkingConditionsOptions.excellent'}}">+1</button>
+                            <button type="button" class="btn-modifier {{#if (eq activeTestState.workingConditions 0)}}active{{/if}}" data-action="selectBuildTestCondition" data-name="workingConditions" data-value="0" title="{{localize 'SR5Marketplace.ItemBuilder.WorkingConditionsOptions.average'}}">0</button>
+                            <button type="button" class="btn-modifier {{#if (eq activeTestState.workingConditions -1)}}active{{/if}}" data-action="selectBuildTestCondition" data-name="workingConditions" data-value="-1" title="{{localize 'SR5Marketplace.ItemBuilder.WorkingConditionsOptions.distracted'}}">-1</button>
+                            <button type="button" class="btn-modifier {{#if (eq activeTestState.workingConditions -2)}}active{{/if}}" data-action="selectBuildTestCondition" data-name="workingConditions" data-value="-2" title="{{localize 'SR5Marketplace.ItemBuilder.WorkingConditionsOptions.moderate'}}">-2</button>
+                            <button type="button" class="btn-modifier {{#if (eq activeTestState.workingConditions -3)}}active{{/if}}" data-action="selectBuildTestCondition" data-name="workingConditions" data-value="-3" title="{{localize 'SR5Marketplace.ItemBuilder.WorkingConditionsOptions.poor'}}">-3</button>
+                            <button type="button" class="btn-modifier {{#if (eq activeTestState.workingConditions -4)}}active{{/if}}" data-action="selectBuildTestCondition" data-name="workingConditions" data-value="-4" title="{{localize 'SR5Marketplace.ItemBuilder.WorkingConditionsOptions.terrible'}}">-4</button>
+                        </div>
+                    </div>
+
+                    {{!-- Tools & Parts --}}
+                    <div class="form-group p-2">
+                        <label class="font-bold text-xs opacity-80 mb-1 block">{{localize "SR5Marketplace.ItemBuilder.ToolsParts"}}</label>
+                        <div class="button-group flex flex-wrap gap-1">
+                            <button type="button" class="btn-modifier {{#if (eq activeTestState.toolsParts 1)}}active{{/if}}" data-action="selectBuildTestCondition" data-name="toolsParts" data-value="1" title="{{localize 'SR5Marketplace.ItemBuilder.ToolsPartsOptions.excellent'}}">+1</button>
+                            <button type="button" class="btn-modifier {{#if (eq activeTestState.toolsParts 0)}}active{{/if}}" data-action="selectBuildTestCondition" data-name="toolsParts" data-value="0" title="{{localize 'SR5Marketplace.ItemBuilder.ToolsPartsOptions.average'}}">0</button>
+                            <button type="button" class="btn-modifier {{#if (eq activeTestState.toolsParts -2)}}active{{/if}}" data-action="selectBuildTestCondition" data-name="toolsParts" data-value="-2" title="{{localize 'SR5Marketplace.ItemBuilder.ToolsPartsOptions.inadequate'}}">-2</button>
+                            <button type="button" class="btn-modifier {{#if (eq activeTestState.toolsParts -4)}}active{{/if}}" data-action="selectBuildTestCondition" data-name="toolsParts" data-value="-4" title="{{localize 'SR5Marketplace.ItemBuilder.ToolsPartsOptions.unavailable'}}">-4</button>
+                        </div>
+                    </div>
+
+                    {{!-- Plans & Instructions --}}
+                    <div class="form-group p-2">
+                        <label class="font-bold text-xs opacity-80 mb-1 block">{{localize "SR5Marketplace.ItemBuilder.PlansInstructions"}}</label>
+                        <div class="button-group flex flex-wrap gap-1">
+                            <button type="button" class="btn-modifier {{#if (eq activeTestState.plansInstructions 0)}}active{{/if}}" data-action="selectBuildTestCondition" data-name="plansInstructions" data-value="0" title="{{localize 'SR5Marketplace.ItemBuilder.PlansInstructionsOptions.none'}}">0</button>
+                            <button type="button" class="btn-modifier {{#if (eq activeTestState.plansInstructions 1)}}active{{/if}}" data-action="selectBuildTestCondition" data-name="plansInstructions" data-value="1" title="{{localize 'SR5Marketplace.ItemBuilder.PlansInstructionsOptions.available'}}">+1</button>
+                            <button type="button" class="btn-modifier {{#if (eq activeTestState.plansInstructions 2)}}active{{/if}}" data-action="selectBuildTestCondition" data-name="plansInstructions" data-value="2" title="{{localize 'SR5Marketplace.ItemBuilder.PlansInstructionsOptions.arEnhanced'}}">+2</button>
+                        </div>
+                    </div>
+
+                    {{!-- Logic Memory Penalty --}}
+                    {{#if activeTestState.showLogicMemoryPenalty}}
+                    <div class="form-group flex flex-row items-center justify-between p-2">
+                        <label class="mb-0 cursor-pointer text-xs font-bold opacity-80" for="logicMemoryPenaltyChecked">{{localize "SR5Marketplace.ItemBuilder.LogicMemoryPenaltyCheckbox"}}</label>
+                        <input type="checkbox" id="logicMemoryPenaltyChecked" name="logicMemoryPenaltyChecked" data-action="changeBuildTestCondition" {{#if activeTestState.logicMemoryPenaltyChecked}}checked{{/if}} class="w-4 h-4 cursor-pointer" />
+                    </div>
+                    {{/if}}
+                </div>
+
+                <div class="dice-pool-summary">
+                    <div class="pool-parts text-xs">
+                        {{#each activeTestState.dicePoolBreakdown as |part|}}
+                            <span>{{part.label}} {{#if (gt part.value -1)}}+{{/if}}{{part.value}}</span>{{#unless @last}} + {{/unless}}
+                        {{/each}}
+                    </div>
+                    <div class="pool-total font-bold text-sm" title="{{activeTestState.poolFormula}}">
+                        = <strong title="{{activeTestState.poolFormula}}" class="text-lg">{{activeTestState.totalDicePool}}</strong> {{localize "SR5.DicePool"}}
+                    </div>
+                </div>
+                <hr class="my-3 border-t border-[var(--border-color-medium)]" />
+
+                {{!-- Custom Modifiers --}}
+                <div class="marketplace-modifiers-container">
+                    <div class="modifier-group collapsible">
+                        <input type="checkbox" id="toggle-mod-group-custom" class="toggle-checkbox" {{#if activeTestState.customGroupExpanded}}checked{{/if}}>
+                        <label for="toggle-mod-group-custom" class="place-collapsible-header">{{localize "SR5Marketplace.Marketplace.Modifiers.Custom.Title"}}</label>
+                        <div class="place-collapsible-content">
+                            <div class="custom-modifiers-list flex flex-col gap-2 mb-2 animate-fade-in">
+                                {{#each activeTestState.customAppliedModifiers}}
+                                    <div class="custom-modifier-item flex justify-between items-center bg-[var(--color-black-transparent-20)] px-3 py-1.5 rounded text-xs">
+                                        <span>{{this.label}} ({{#if (gt this.value 0)}}+{{/if}}{{this.value}})</span>
+                                        <button type="button" class="remove-modifier-btn text-[var(--color-red-bright)] hover:brightness-150 transition-all cursor-pointer bg-transparent border-none p-0 flex items-center justify-center" data-action="removeCustomBuildTestModifier" data-label="{{this.label}}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                {{/each}}
+                            </div>
+                            <div class="custom-modifier-inputs flex gap-2 items-center">
+                                <input type="text" class="custom-mod-label flex-[2] px-2 py-1 text-xs rounded border border-[var(--color-black-transparent-20)] bg-[var(--Form-background-group)] text-[var(--text-color-primary)]" placeholder="Label (e.g. Rush Order)" />
+                                <input type="text" class="custom-mod-value flex-[1] px-2 py-1 text-xs rounded border border-[var(--color-black-transparent-20)] bg-[var(--Form-background-group)] text-[var(--text-color-primary)] text-center" placeholder="Value (+2 / -2)" />
+                                <button type="button" class="add-custom-modifier-btn px-3 py-1 bg-[var(--color-green-button)] text-white border-none rounded cursor-pointer font-bold text-xs flex items-center gap-1" data-action="addCustomBuildTestModifier">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr class="my-3 border-t border-[var(--border-color-medium)]" />
+
+                <div class="flex gap-2">
+                    <button type="button" class="roll-button flex-grow" data-action="runBuildTest">
+                        <i class="fas fa-dice-six"></i> {{localize "SR5Marketplace.UI.Roll"}}
+                    </button>
+                    <button type="button" class="px-4 py-2 border border-[var(--color-red-bright)] text-[var(--color-red-bright)] hover:bg-[var(--color-red-bright)] hover:text-white rounded font-bold text-xs transition-colors" data-action="clearBuildTest">
+                        {{localize "Cancel"}}
+                    </button>
+                </div>
+            </form>
+
+        {{else if (eq activeTestState.status "extended-inprogress")}}
+            <div class="MarketAppDialog-test-result-container">
+                <header class="marketplace-header flex flex-row items-center gap-4 shrink-0 rounded mb-4">
+                    <div class="marketplace-user-avatar-container shrink-0">
+                        <img class="w-10 h-10 object-cover rounded-lg flex-shrink-0" src="systems/shadowrun5e/dist/icons/skills/technical-industrial_mechanic.webp" title="{{localize 'SR5Marketplace.Marketplace.Tests.ExtendedTestInProgress'}}" />
+                    </div>
+                    <div class="flex-grow flex flex-row items-center justify-between">
+                        <div class="flex flex-col justify-center">
+                            <h1 class="text-xl font-bold text-[var(--color-white)] m-0 leading-none drop-shadow">
+                                {{localize "SR5Marketplace.Marketplace.Tests.ExtendedTestInProgress"}}
+                            </h1>
+                        </div>
+                    </div>
+                </header>
+                
+                <div class="extended-test-summary flex justify-between p-3 bg-[var(--attribute-group-bg)] rounded border border-[var(--border-color-medium)] text-xs mb-3">
+                    <span>{{localize "SR5Marketplace.Marketplace.Tests.Progress"}} <strong>{{activeTestState.cumulativeHits}} / {{activeTestState.threshold}}</strong> {{localize "SR5Marketplace.AppDialogItem.Hits"}}</span>
+                    <span>{{localize "SR5Marketplace.Marketplace.Tests.NextRoll"}} <strong>{{activeTestState.currentPool}}</strong> {{localize "SR5.DicePool"}}</span>
+                </div>
+
+                <div class="result-subtitle text-xs font-bold mb-1 opacity-80">{{localize "SR5Marketplace.Marketplace.Tests.LastRollResults"}}</div>
+                <div class="MarketAppDialog-dice-tray flex flex-wrap gap-2 p-2 bg-[var(--color-black-transparent-20)] rounded mb-3 min-h-[40px]">
+                    {{#each activeTestState.renderedDice as |die|}}
+                        <div class="MarketAppDialog-die-result {{die.cssClass}} w-7 h-7 flex items-center justify-center rounded text-xs font-bold">
+                            <span class="MarketAppDialog-die-text">{{die.text}}</span>
+                        </div>
+                    {{/each}}
+                </div>
+
+                <div class="flex gap-2">
+                    <button type="button" class="roll-button flex-grow" data-action="continueBuildTest">
+                        <i class="fas fa-dice-six"></i> {{localize "SR5Marketplace.Marketplace.Tests.ContinueTest"}}
+                    </button>
+                    <button type="button" class="px-4 py-2 border border-[var(--color-red-bright)] text-[var(--color-red-bright)] hover:bg-[var(--color-red-bright)] hover:text-white rounded font-bold text-xs transition-colors" data-action="clearBuildTest">
+                        {{localize "Cancel"}}
+                    </button>
+                </div>
+            </div>
+
+        {{else if (eq activeTestState.status "resolved")}}
+            <div class="MarketAppDialog-final-result-container">
+                <div class="MarketAppDialog-final-summary p-3 bg-[var(--attribute-group-bg)] rounded border border-[var(--border-color-medium)]">
+                    {{#if activeTestState.isSuccess}}
+                        <h3 class="success text-sm font-bold text-[var(--color-green-button)] flex items-center justify-center gap-1.5">
+                            <i class="fas fa-check-circle"></i> {{localize "SR5Marketplace.ItemBuilder.SuccessBuildCreated" name=activeTestState.buildData.name}}
+                        </h3>
+                        
+                        <div class="acquisition-details text-xs mt-2 opacity-90 text-center">
+                            {{localize "SR5Marketplace.AppDialogItem.ExtendedSuccessDetails" 
+                                rolls=activeTestState.totalRolls 
+                                connection=activeTestState.cumulativeHits 
+                                timeValue=activeTestState.totalRolls
+                            }}
+                        </div>
+
+                        <div class="result-subtitle text-xs font-bold mt-3 mb-1 opacity-80 text-left">{{localize "SR5Marketplace.Marketplace.Tests.LastRollResults"}}</div>
+                        <div class="MarketAppDialog-dice-tray flex flex-wrap gap-2 p-2 bg-[var(--color-black-transparent-20)] rounded mb-3 min-h-[40px]">
+                            {{#each activeTestState.renderedDice as |die|}}
+                                <div class="MarketAppDialog-die-result {{die.cssClass}} w-7 h-7 flex items-center justify-center rounded text-xs font-bold">
+                                    <span class="MarketAppDialog-die-text">{{die.text}}</span>
+                                </div>
+                            {{/each}}
+                        </div>
+
+                        <button type="button" class="roll-button mt-3" data-action="resolveBuildTest">
+                            <i class="fas fa-check"></i> {{localize "SR5Marketplace.ItemBuilder.Title"}}
+                        </button>
+                    {{else}}
+                        {{#if activeTestState.isCritGlitch}}
+                            <h3 class="failure text-sm font-bold text-[var(--color-red-bright)] flex items-center justify-center gap-1.5">
+                                <i class="fas fa-exclamation-triangle"></i> {{localize "SR5Marketplace.ItemBuilder.CriticalGlitchPartsDestroyed"}}
+                            </h3>
+                        {{else}}
+                            <h3 class="failure text-sm font-bold text-[var(--color-red-bright)] flex items-center justify-center gap-1.5">
+                                <i class="fas fa-times-circle"></i> {{localize "SR5Marketplace.Marketplace.Acquisition.Failure"}}
+                            </h3>
+                        {{/if}}
+
+                        <div class="result-subtitle text-xs font-bold mt-3 mb-1 opacity-80 text-left">{{localize "SR5Marketplace.Marketplace.Tests.LastRollResults"}}</div>
+                        <div class="MarketAppDialog-dice-tray flex flex-wrap gap-2 p-2 bg-[var(--color-black-transparent-20)] rounded mb-3 min-h-[40px]">
+                            {{#each activeTestState.renderedDice as |die|}}
+                                <div class="MarketAppDialog-die-result {{die.cssClass}} w-7 h-7 flex items-center justify-center rounded text-xs font-bold">
+                                    <span class="MarketAppDialog-die-text">{{die.text}}</span>
+                                </div>
+                            {{/each}}
+                        </div>
+
+                        <button type="button" class="roll-button mt-3 bg-[var(--color-red-darkest)] border-[var(--color-red-bright)] hover:bg-[var(--color-red-bright)] hover:text-white" data-action="clearBuildTest">
+                            <i class="fas fa-times"></i> {{localize "Close"}}
+                        </button>
+                    {{/if}}
+                </div>
+            </div>
+        {{/if}}
+
+    {{else}}
+        <button type="button" class="w-full py-2 bg-[var(--tab-active-bg)] text-white border border-[var(--border-color-highlight)] rounded font-bold text-sm transition-all cursor-pointer flex items-center justify-center gap-2" data-action="startBuildTest">
+            <i class="fas fa-dice-six"></i> {{localize "SR5Marketplace.ItemBuilder.BuildTest"}}
+        </button>
+    {{/if}}
+    </div>
+</div>
