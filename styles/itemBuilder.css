@@ -381,8 +381,10 @@ padding-top: 9em;
 .itemBuilder .center-display .ring-image:hover { opacity: 0.8; }
 .itemBuilder .center-display .base-item-image {
   max-width: 30em;
+  max-height: 100%;
+  width: auto;
   height: auto;
-  position: relative;
+  position: absolute;
   z-index: 1;
   border: none;
   filter: drop-shadow(2px 2px 5px var(--color-black-transparent-30));
@@ -402,6 +404,7 @@ padding-top: 9em;
 /* --- SVG FRAME STYLING --- */
 .itemBuilder .mod-slot {
   position: relative;
+  z-index: 2;
   overflow: hidden;
   min-width: 100px;
   min-height: 100px;
@@ -1214,4 +1217,44 @@ h4.category-header.mods-header{
     margin-left: 1em;
     margin-top: 1em;
     text-shadow: none;
+}
+
+/* Category buttons instead of selector dropdown on vehicle tab */
+.itemBuilder .category-buttons {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-left: 1em;
+}
+
+.itemBuilder .category-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 26px;
+  padding: 3px;
+  background: var(--input-background-color, #1a1a1a);
+  border: 1px solid var(--border-color-dark, #333);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #888;
+}
+
+.itemBuilder .category-btn:hover {
+  border-color: var(--border-color-highlight, #555);
+  background: var(--bg-dark-section-hover, #2a2a2a);
+}
+
+.itemBuilder .category-btn.active {
+  background: var(--color-red-dark, #8b0000);
+  border-color: var(--color-red-bright, #ff0000);
+  color: #fff;
+}
+
+.itemBuilder .category-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
 }

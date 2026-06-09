@@ -34,7 +34,7 @@ export class MarketplaceSettingsApp extends HandlebarsApplicationMixin(Applicati
                 title: "SR5Marketplace.Marketplace.Settings.WindowTitle",
                 resizable: true
             }
-        });
+        }, { inplace: false });
     }
 
     /**

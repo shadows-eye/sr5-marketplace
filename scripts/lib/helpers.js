@@ -157,4 +157,13 @@ export const registerBasicHelpers = () => {
         }
         return val;
     });
+    Handlebars.registerHelper('statVal', function(statObj) {
+        if (statObj === undefined || statObj === null) return 0;
+        if (typeof statObj !== 'object') return statObj;
+        const val = Number(statObj.value);
+        if (!Number.isNaN(val) && val !== 0) {
+            return val;
+        }
+        return statObj.base !== undefined ? statObj.base : 0;
+    });
 };

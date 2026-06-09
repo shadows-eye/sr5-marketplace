@@ -1,0 +1,176 @@
+<div class="item-stats-display">
+    <div class="stat-block item-image">
+        {{#if isEditingBaseItem}}
+            <a data-action="selectBaseItemImage" 
+               title="{{localize 'SR5Marketplace.ItemBuilder.SelectImage'}}">
+                <img src="{{displayItem.img}}" title="{{displayItem.name}}"/>
+            </a>
+        {{else}}
+            <img src="{{displayItem.img}}" title="{{displayItem.name}}"/>
+        {{/if}}
+
+        {{#if isEditingBaseItem}}
+            <a class="base-item-edit-icon" 
+               data-action="toggleBaseItemEdit" 
+               title="{{localize 'SR5Marketplace.ItemBuilder.DoneEditing'}}">
+                <i class="fas fa-check"></i>
+            </a>
+        {{else}}
+            <a class="base-item-edit-icon" 
+               data-action="toggleBaseItemEdit" 
+               title="{{localize 'SR5Marketplace.ItemBuilder.EditBaseItem'}}">
+                <i class="fas fa-pencil-alt"></i>
+            </a>
+        {{/if}}
+    </div>
+    
+    <div class="stat-block item-name-block">
+        {{#if isEditingBaseItem}}
+            <input type="text" 
+                   name="name" 
+                   value="{{displayItem.name}}" 
+                   class="item-name-input" /> 
+        {{else}}
+            <h4>{{displayItem.name}}</h4>
+        {{/if}}
+    </div>
+
+    {{!-- Handling --}}
+    <div class="stat-block">
+        <label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Handling"}}</label>
+        {{#if isEditingBaseItem}}
+            <input type="text" name="system.vehicle_stats.handling.value" value="{{statVal displayItem.system.vehicle_stats.handling}}" class="item-input"/> 
+        {{else}}
+            <span>{{statVal displayItem.system.vehicle_stats.handling}}</span>
+        {{/if}}
+    </div>
+
+    {{!-- Speed --}}
+    <div class="stat-block">
+        <label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Speed"}}</label>
+        {{#if isEditingBaseItem}}
+            <input type="text" name="system.vehicle_stats.speed.value" value="{{statVal displayItem.system.vehicle_stats.speed}}" class="item-input"/> 
+        {{else}}
+            <span>{{statVal displayItem.system.vehicle_stats.speed}}</span>
+        {{/if}}
+    </div>
+
+    {{!-- Acceleration --}}
+    <div class="stat-block">
+        <label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Acceleration"}}</label>
+        {{#if isEditingBaseItem}}
+            <input type="text" name="system.vehicle_stats.acceleration.value" value="{{statVal displayItem.system.vehicle_stats.acceleration}}" class="item-input"/> 
+        {{else}}
+            <span>{{statVal displayItem.system.vehicle_stats.acceleration}}</span>
+        {{/if}}
+    </div>
+
+    {{!-- Body --}}
+    <div class="stat-block">
+        <label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Body"}}</label>
+        {{#if isEditingBaseItem}}
+            <input type="text" name="system.attributes.body.value" value="{{statVal displayItem.system.attributes.body}}" class="item-input"/> 
+        {{else}}
+            <span>{{statVal displayItem.system.attributes.body}}</span>
+        {{/if}}
+    </div>
+
+    {{!-- Armor --}}
+    <div class="stat-block">
+        <label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Armor"}}</label>
+        {{#if isEditingBaseItem}}
+            <input type="text" name="system.armor.rating.value" value="{{statVal displayItem.system.armor.rating}}" class="item-input"/> 
+        {{else}}
+            <span>{{statVal displayItem.system.armor.rating}}</span>
+        {{/if}}
+    </div>
+
+    {{!-- Pilot --}}
+    <div class="stat-block">
+        <label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Pilot"}}</label>
+        {{#if isEditingBaseItem}}
+            <input type="text" name="system.vehicle_stats.pilot.value" value="{{statVal displayItem.system.vehicle_stats.pilot}}" class="item-input"/> 
+        {{else}}
+            <span>{{statVal displayItem.system.vehicle_stats.pilot}}</span>
+        {{/if}}
+    </div>
+
+    {{!-- Sensor --}}
+    <div class="stat-block">
+        <label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Sensor"}}</label>
+        {{#if isEditingBaseItem}}
+            <input type="text" name="system.vehicle_stats.sensor.value" value="{{statVal displayItem.system.vehicle_stats.sensor}}" class="item-input"/> 
+        {{else}}
+            <span>{{statVal displayItem.system.vehicle_stats.sensor}}</span>
+        {{/if}}
+    </div>
+
+    {{!-- Seats --}}
+    <div class="stat-block">
+        <label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Seats"}}</label>
+        {{#if isEditingBaseItem}}
+            <input type="text" name="system.vehicle_stats.seats.value" value="{{statVal displayItem.system.vehicle_stats.seats}}" class="item-input"/> 
+        {{else}}
+            <span>{{statVal displayItem.system.vehicle_stats.seats}}</span>
+        {{/if}}
+    </div>
+
+    {{!-- Cost & Availability --}}
+    <div class="stat-block">
+        <label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Availability"}}</label>
+        {{#if isEditingBaseItem}}
+            <input type="text" name="system.availability" value="{{displayItem.system.availability}}" class="item-input"/> 
+        {{else}}
+            <span>{{displayItem.system.availability}}</span>
+        {{/if}}
+    </div>
+    <div class="stat-block">
+        <label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Cost"}}</label>
+        {{#if isEditingBaseItem}}
+            <input type="text" name="system.cost" value="{{displayItem.system.cost}}" class="item-input"/>
+            <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen details"></i> 
+        {{else}}
+            <span>{{formatNumber displayItem.system.cost}}</span>
+            <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen"></i>
+        {{/if}}
+    </div>
+
+    {{#unless isEditingBaseItem}}
+        {{#if (or builderData.baseItem.effects.length builderData.modifications.length)}}
+            <div class="stat-block-divider"></div>
+        {{/if}}
+        
+        {{#each builderData.baseItem.effects}}
+            <div class="stat-block effect-stat">
+                <label title="{{localize 'SR5Marketplace.ItemBuilder.Effects.InnateLockedHint'}}">
+                    <i class="fas fa-lock-alt"></i> {{this.name}}
+                </label>
+                <span>{{this.changes.[0].value}}</span>
+            </div>
+        {{/each}}
+        
+        {{#each builderData.modifications}}
+            <div class="stat-block effect-stat custom-effect">
+                <label title="{{localize 'SR5Marketplace.ItemBuilder.Effects.CustomEffect'}}">
+                    <i class="fas fa-bolt"></i> {{this.name}}
+                </label>
+                <span>{{this.changes.[0].value}}</span>
+            </div>
+        {{/each}}
+        
+        <div class="stat-block-divider"></div>
+        <div class="stat-block description-block">
+            <label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Description"}}</label>
+            <div class="description-content">{{{displayItem.system.description.value}}}</div>
+        </div>
+    {{/unless}}
+
+    {{#if isEditingBaseItem}}
+        <div class="stat-block-divider"></div>
+        <div class="stat-block description-block">
+            <label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Description"}}</label>
+            <textarea name="system.description.value" 
+                      rows="4">{{displayItem.system.description.value}}</textarea> 
+        </div>
+    {{/if}}
+</div>

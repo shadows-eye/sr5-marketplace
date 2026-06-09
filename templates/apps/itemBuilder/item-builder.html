@@ -10,8 +10,14 @@
             <button type="button" class="clear-build-btn" data-action="clearBuild" title="{{localize 'SR5Marketplace.ItemBuilder.ClearEntireBuild'}}">
                 <i class="fas fa-times-circle"></i>
             </button>
+            <button type="button" class="build-test-btn" data-action="startBuildTest">
+                <i class="fas fa-dice-d6"></i> {{localize "SR5Marketplace.ItemBuilder.BuildTest"}}
+            </button>
             <button type="button" class="build-item-btn" data-action="buildItem">
-                <i class="fas fa-save"></i>{{localize "SR5Marketplace.ItemBuilder.Title"}}
+                <i class="fas fa-save"></i> {{localize "SR5Marketplace.ItemBuilder.Title"}}
+            </button>
+            <button type="button" class="add-to-cart-btn" data-action="addToCart">
+                <i class="fas fa-shopping-cart"></i> {{localize "SR5Marketplace.ItemBuilder.AddToCart"}}
             </button>
             {{#if purchasingActor}}
             <div class="actor-display" title="{{purchasingActor.name}}">
@@ -27,6 +33,13 @@
                 <i class="fa-solid fa-wrench"></i>
             </div>
             <span>{{localize "SR5Marketplace.ItemBuilder.nav.builder"}}</span>
+        </a>
+        
+        <a class="builder-tabs item{{#if (eq activeTab 'vehicle')}} active{{/if}}" data-tab="vehicle" data-action="changeTab">
+            <div class="tab-icon-wrapper">
+                <i class="fa-solid fa-car"></i>
+            </div>
+            <span>{{localize "SR5Marketplace.ItemBuilder.nav.vehicle"}}</span>
         </a>
         
         <a class="builder-tabs item{{#if (eq activeTab 'effects')}} active{{/if}}" data-tab="effects" data-action="changeTab">

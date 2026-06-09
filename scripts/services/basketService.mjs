@@ -144,10 +144,24 @@ export class BasketService {
                 calculatedKarma = game.settings.get("sr5-marketplace", "karmaCostForComplexForm");
             }
 
-            const defaultRating = item.system.technology?.rating || 0;
-            let finalCost = item.system.technology?.cost || 0;
-            let finalAvailability = item.system.technology?.availability || "0";
-            let finalEssence = item.system.essence || 0;
+            const isVehicle = item.type === "vehicle";
+            const defaultRating = !isVehicle ? (item.system.technology?.rating || 0) : 0;
+            
+            let finalCost = 0;
+            if (isVehicle) {
+                finalCost = typeof item.system.cost === "object" ? (item.system.cost.value ?? 0) : (item.system.cost ?? 0);
+            } else {
+                finalCost = typeof item.system.technology?.cost === "object" ? (item.system.technology?.cost.value ?? 0) : (item.system.technology?.cost ?? 0);
+            }
+
+            let finalAvailability = "0";
+            if (isVehicle) {
+                finalAvailability = typeof item.system.availability === "object" ? (item.system.availability.value ?? "0") : (item.system.availability ?? "0");
+            } else {
+                finalAvailability = typeof item.system.technology?.availability === "object" ? (item.system.technology?.availability.value ?? "0") : (item.system.technology?.availability ?? "0");
+            }
+
+            let finalEssence = !isVehicle ? (item.system.essence || 0) : 0;
 
             if (defaultRating > 0) {
                 try {
@@ -184,6 +198,48 @@ export class BasketService {
         const updatedBasket = this._recalculateTotals(basket);
         await this.saveBasket(updatedBasket);
         //ui.notifications.info(`'${item.name}' added to basket.`);
+    }
+
+    /**
+     * Adds a compiled custom build to the active shopping cart.
+     * @param {object} customData - The compiled item/actor build data.
+     * @param {string} actorUuid - The UUID of the actor this basket is for.
+     * @param {object} totals - Pre-calculated totals (cost, availability, essence).
+     */
+    async addCustomToBasket(customData, actorUuid, totals) {
+        if (!customData || !actorUuid) {
+            ui.notifications.error("Cannot add custom build to cart without a purchasing actor.");
+            return;
+        }
+
+        const basket = await this.getBasket();
+        basket.createdForActor = actorUuid;
+
+        const isVehicle = customData.type === "vehicle";
+        const defaultRating = !isVehicle ? (customData.system.technology?.rating || 0) : 0;
+
+        const basketItem = {
+            basketItemUuid: "basket." + foundry.utils.randomID(),
+            itemUuid: customData.uuid || ("custom." + foundry.utils.randomID()),
+            buyQuantity: 1,
+            name: customData.name, 
+            img: customData.img || "icons/svg/item-bag.svg", 
+            cost: totals.cost,
+            karma: 0, 
+            availability: totals.availability,
+            essence: totals.essence, 
+            itemQuantity: 1,
+            rating: defaultRating, 
+            selectedRating: defaultRating,
+            isCustomBuild: true,
+            customData: customData
+        };
+
+        basket.shoppingCartItems.push(basketItem);
+
+        const updatedBasket = this._recalculateTotals(basket);
+        await this.saveBasket(updatedBasket);
+        ui.notifications.info(`Custom build "${customData.name}" added to cart.`);
     }
     
     /**

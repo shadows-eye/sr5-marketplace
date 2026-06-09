@@ -26,32 +26,103 @@
 
                 <div class="flexcol flex0">
                     <div class="technology">
-                        {{#if item.system.technology.rating}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Rating"}}</label><div class="display">{{item.system.technology.rating}}</div></div>
-                        {{/if}}
-                        {{#if item.system.technology.cost}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Cost"}}</label><div class="display">{{formatNumber item.system.technology.cost}}<span class="unit"><i class="fas fa-yen-sign"></i></span></div></div>
-                        {{/if}}
-                        {{#if item.system.karma}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Karma"}}</label><div class="display">{{item.system.karma}}</div></div>
-                        {{/if}}
-                        {{#if item.flags.sr5-marketplace.Karma}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Karma"}}</label><div class="display">{{item.flags.sr5-marketplace.Karma}}</div></div>
-                        {{/if}}
-                        {{#if item.system.technology.availability}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Availability"}}</label><div class="display">{{item.system.technology.availability}}</div></div>
-                        {{/if}}
-                         {{#if item.system.slots}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Slots"}}</label><div class="display">{{item.system.slots}}</div></div>
-                        {{/if}}
-                        {{#if item.system.mount_point}}
-                        <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.MountPoint"}}</label><div class="display">{{item.system.mount_point}}</div></div>
+                        {{#if (eq item.type "vehicle")}}
+                            {{#if item.system.vehicle_stats.handling}}
+                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Handling"}}</label><div class="display">{{statVal item.system.vehicle_stats.handling}}</div></div>
+                            {{/if}}
+                            {{#if item.system.vehicle_stats.speed}}
+                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Speed"}}</label><div class="display">{{statVal item.system.vehicle_stats.speed}}</div></div>
+                            {{/if}}
+                            {{#if item.system.vehicle_stats.acceleration}}
+                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Acceleration"}}</label><div class="display">{{statVal item.system.vehicle_stats.acceleration}}</div></div>
+                            {{/if}}
+                            {{#if item.system.attributes.body}}
+                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Body"}}</label><div class="display">{{statVal item.system.attributes.body}}</div></div>
+                            {{/if}}
+                            {{#if item.system.armor.rating}}
+                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Armor"}}</label><div class="display">{{statVal item.system.armor.rating}}</div></div>
+                            {{/if}}
+                            {{#if item.system.vehicle_stats.pilot}}
+                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Pilot"}}</label><div class="display">{{statVal item.system.vehicle_stats.pilot}}</div></div>
+                            {{/if}}
+                            {{#if item.system.vehicle_stats.sensor}}
+                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Sensor"}}</label><div class="display">{{statVal item.system.vehicle_stats.sensor}}</div></div>
+                            {{/if}}
+                            {{#if item.system.vehicle_stats.seats}}
+                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Seats"}}</label><div class="display">{{statVal item.system.vehicle_stats.seats}}</div></div>
+                            {{/if}}
+                            {{#if item.system.availability}}
+                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Availability"}}</label><div class="display">{{item.system.availability}}</div></div>
+                            {{/if}}
+                            {{#if item.system.cost}}
+                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Cost"}}</label><div class="display">{{formatNumber item.system.cost}}<span class="unit"><i class="fas fa-yen-sign"></i></span></div></div>
+                            {{/if}}
+                        {{else}}
+                            {{!-- Cyberware & Bioware stats --}}
+                            {{#if (or (eq item.type "cyberware") (eq item.type "bioware"))}}
+                                {{#if item.system.grade}}
+                                <div class="flexrow nowrap"><label>{{localize "SR5.Grade"}}</label><div class="display">{{item.system.grade}}</div></div>
+                                {{/if}}
+                                {{#if item.system.essence}}
+                                <div class="flexrow nowrap"><label>{{localize "SR5.Essence"}}</label><div class="display">{{item.system.essence}}</div></div>
+                                {{/if}}
+                            {{/if}}
+
+                            {{!-- Weapon stats --}}
+                            {{#if (or (eq item.type "ranged_weapon") (eq item.type "melee_weapon"))}}
+                                {{#if item.system.damage.value}}
+                                <div class="flexrow nowrap"><label>{{localize "SR5.DamageValueAbbr"}}</label><div class="display">{{item.system.damage.value}}</div></div>
+                                {{/if}}
+                                {{#if item.system.accuracy.value}}
+                                <div class="flexrow nowrap"><label>{{localize "SR5.AccuracyAbbr"}}</label><div class="display">{{item.system.accuracy.value}}</div></div>
+                                {{/if}}
+                                {{#if item.system.ap.value}}
+                                <div class="flexrow nowrap"><label>{{localize "SR5.APAbbr"}}</label><div class="display">{{item.system.ap.value}}</div></div>
+                                {{/if}}
+                            {{/if}}
+
+                            {{!-- Armor stats --}}
+                            {{#if (eq item.type "armor")}}
+                                {{#if item.system.armor.value}}
+                                <div class="flexrow nowrap"><label>{{localize "SR5.Armor"}}</label><div class="display">{{item.system.armor.value}}</div></div>
+                                {{/if}}
+                            {{/if}}
+
+                            {{#if item.system.technology.rating}}
+                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Rating"}}</label><div class="display">{{item.system.technology.rating}}</div></div>
+                            {{/if}}
+                            {{#if item.system.technology.cost}}
+                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Cost"}}</label><div class="display">{{formatNumber item.system.technology.cost}}<span class="unit"><i class="fas fa-yen-sign"></i></span></div></div>
+                            {{/if}}
+                            {{#if item.system.karma}}
+                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Karma"}}</label><div class="display">{{item.system.karma}}</div></div>
+                            {{/if}}
+                            {{#if item.flags.sr5-marketplace.Karma}}
+                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Karma"}}</label><div class="display">{{item.flags.sr5-marketplace.Karma}}</div></div>
+                            {{/if}}
+                            {{#if item.system.technology.availability}}
+                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Availability"}}</label><div class="display">{{item.system.technology.availability}}</div></div>
+                            {{/if}}
+                             {{#if item.system.slots}}
+                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Slots"}}</label><div class="display">{{item.system.slots}}</div></div>
+                            {{/if}}
+                            {{#if item.system.mount_point}}
+                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.MountPoint"}}</label><div class="display">{{item.system.mount_point}}</div></div>
+                            {{/if}}
                         {{/if}}
                     </div>
                 </div>
     
                 <div class="description">
-                    <div class="editor"><div class="editor-content">{{{item.system.description.value}}}</div></div>
+                    <div class="editor">
+                        <div class="editor-content">
+                            {{#if item.system.description.value}}
+                                {{{item.system.description.value}}}
+                            {{else}}
+                                <span class="no-desc">{{localize "SR5Marketplace.UI.DescriptionPlaceholder"}}</span>
+                            {{/if}}
+                        </div>
+                    </div>
                 </div>
 
             </div>

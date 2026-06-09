@@ -30,6 +30,14 @@ export function mergeLocales() {
             }
         }
 
+        if (merged['itembuilder']) {
+            if (!merged['SR5Marketplace']) {
+                merged['SR5Marketplace'] = {};
+            }
+            merged['SR5Marketplace']['ItemBuilder'] = merged['itembuilder'];
+            delete merged['itembuilder'];
+        }
+
         // Sort keys alphabetically
         const sortedData = Object.keys(merged).sort().reduce((acc, k) => {
             acc[k] = merged[k];

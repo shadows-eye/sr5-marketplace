@@ -112,7 +112,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 selectContact: this.#onSelectContact,
                 changeReviewActor: this.#onChangeReviewActor
             }
-        });
+        }, { inplace: false });
     }
     
     /**

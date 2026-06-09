@@ -3,19 +3,25 @@
         <!-- Search Input Wrap (Slides out on hover of the capsule bar) -->
         <div class="marketshouter-search-wrap">
             {{#if shopActorImg}}
-            <img class="marketshouter-shop-indicator" src="/{{shopActorImg}}" title="{{localize 'SR5Marketplace.Marketshouter.SearchingInShop' name=shopActorName}}" onerror="this.src='/icons/svg/mystery-man.svg'">
+            <img class="marketshouter-shop-indicator" src="/{{shopActorImg}}"
+                title="{{localize 'SR5Marketplace.Marketshouter.SearchingInShop' name=shopActorName}}"
+                onerror="this.src='/icons/svg/mystery-man.svg'">
             {{/if}}
             <i class="fas fa-search marketshouter-search-icon"></i>
-            <input type="text" class="marketshouter-search" placeholder="{{#if shopActorName}}{{localize 'SR5Marketplace.Marketshouter.SearchShop' name=shopActorName}}{{else}}{{localize 'SR5Marketplace.Marketshouter.SearchCompendiumItems'}}{{/if}}" autocomplete="off">
-            <i class="fas fa-times marketshouter-clear-btn hidden" title="{{localize 'SR5Marketplace.Marketshouter.ClearSearch'}}"></i>
+            <input type="text" class="marketshouter-search"
+                placeholder="{{#if shopActorName}}{{localize 'SR5Marketplace.Marketshouter.SearchShop' name=shopActorName}}{{else}}{{localize 'SR5Marketplace.Marketshouter.SearchCompendiumItems'}}{{/if}}"
+                autocomplete="off">
+            <i class="fas fa-times marketshouter-clear-btn hidden"
+                title="{{localize 'SR5Marketplace.Marketshouter.ClearSearch'}}"></i>
         </div>
 
         <!-- Interactive Icon Area -->
         <div class="marketshouter-icons-area">
             <!-- GM Megaphone Button -->
             {{#if isGM}}
-            <button type="button" class="marketshouter-icon-btn marketshouter-megaphone-btn" data-action="openReview" title="{{localize 'SR5Marketplace.Marketshouter.ReviewPurchaseRequests'}}">
-                <i class="fas fa-bullhorn"></i>
+            <button type="button" class="marketshouter-icon-btn marketshouter-megaphone-btn" data-action="openReview"
+                title="{{localize 'SR5Marketplace.Marketshouter.ReviewPurchaseRequests'}}">
+                <i class="fas fa-bullhorn text-red-900"></i>
                 {{#if (gt pendingCount 0)}}
                 <span class="marketshouter-badge megaphone-badge">{{pendingCount}}</span>
                 {{/if}}
@@ -23,13 +29,15 @@
             {{/if}}
 
             <!-- Shop Button -->
-            <button type="button" class="marketshouter-icon-btn marketshouter-shop-btn" data-action="openMarketplace" title="{{localize 'SR5Marketplace.Marketshouter.OpenMarketplace'}}">
-                <i class="fas fa-store"></i>
+            <button type="button" class="marketshouter-icon-btn marketshouter-shop-btn" data-action="openMarketplace"
+                title="{{localize 'SR5Marketplace.Marketshouter.OpenMarketplace'}}">
+                <i class="fas fa-store text-yellow-400"></i>
             </button>
-            
+
             <!-- Basket/Cart Button -->
-            <button type="button" class="marketshouter-icon-btn marketshouter-basket-btn" data-action="openCart" title="{{localize 'SR5Marketplace.Marketshouter.OpenShoppingCart'}}">
-                <i class="fas fa-shopping-basket"></i>
+            <button type="button" class="marketshouter-icon-btn marketshouter-basket-btn" data-action="openCart"
+                title="{{localize 'SR5Marketplace.Marketshouter.OpenShoppingCart'}}">
+                <i class="fas fa-shopping-basket text-red-900"></i>
                 {{#if (gt itemCount 0)}}
                 <span class="marketshouter-badge">{{itemCount}}</span>
                 {{/if}}
@@ -37,21 +45,32 @@
 
             <!-- Item Builder Button (GM only for now, with player option placeholder) -->
             {{#if showItemBuilder}}
-            <button type="button" class="marketshouter-icon-btn marketshouter-builder-btn" data-action="openBuilder" title="{{localize 'SR5Marketplace.Marketshouter.OpenItemBuilder'}}">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="overflow: visible;">
+            <button type="button" class="marketshouter-icon-btn marketshouter-builder-btn" data-action="openBuilder"
+                title="{{localize 'SR5Marketplace.Marketshouter.OpenItemBuilder'}}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    style="overflow: visible;">
                     <g class="svg-car">
                         <!-- Yellow Car Chassis -->
-                        <path d="M1 12 C1 10, 3 9, 6 9 C7.5 9, 9 6, 11 6 H16 C18 6, 19.5 9, 21 9 C23 9, 24 10, 24 12 L24 15.5 C24 16, 23.5 16.5, 23 16.5 H21 C21 15, 19.5 13.5, 18 13.5 C16.5 13.5, 15 15, 15 16.5 H9 C9 15, 7.5 13.5, 6 13.5 C4.5 13.5, 3 15, 3 16.5 H1.5 C0.8 16.5, 1 16, 1 15.5 Z" fill="#ffd13b"/>
+                        <path
+                            d="M1 12 C1 10, 3 9, 6 9 C7.5 9, 9 6, 11 6 H16 C18 6, 19.5 9, 21 9 C23 9, 24 10, 24 12 L24 15.5 C24 16, 23.5 16.5, 23 16.5 H21 C21 15, 19.5 13.5, 18 13.5 C16.5 13.5, 15 15, 15 16.5 H9 C9 15, 7.5 13.5, 6 13.5 C4.5 13.5, 3 15, 3 16.5 H1.5 C0.8 16.5, 1 16, 1 15.5 Z"
+                            fill="#ffd13b" />
                         <!-- Windows -->
-                        <path d="M8.5 9 L9.5 7.2 H11.5 V9 Z" fill="#121212" opacity="0.6"/>
-                        <path d="M12.5 7.2 H14.8 L15.8 9 H12.5 Z" fill="#121212" opacity="0.6"/>
+                        <path d="M8.5 9 L9.5 7.2 H11.5 V9 Z" fill="#121212" opacity="0.6" />
+                        <path d="M12.5 7.2 H14.8 L15.8 9 H12.5 Z" fill="#121212" opacity="0.6" />
                         <!-- Wheels -->
-                        <circle cx="6" cy="16.5" r="2.2" fill="#1a1a1a" stroke="#ffffff" stroke-width="0.8"/>
-                        <circle cx="18" cy="16.5" r="2.2" fill="#1a1a1a" stroke="#ffffff" stroke-width="0.8"/>
+                        <circle cx="6" cy="16.5" r="2.2" fill="#1a1a1a" stroke="#ffffff" stroke-width="0.8" />
+                        <circle cx="18" cy="16.5" r="2.2" fill="#1a1a1a" stroke="#ffffff" stroke-width="0.8" />
                     </g>
-                    <g class="svg-wrench">
-                        <!-- Orange Wrench -->
-                        <path d="M21.71 20.29l-3-3a7 7 0 0 0-1.02-8.35c-2.43-2.43-6.19-2.68-8.91-.77l3.66 3.66-4.24 4.24-3.66-3.66C2.63 15.14 2.89 18.9 5.32 21.32a7 7 0 0 0 8.35 1.02l3 3a1 1 0 0 0 1.41 0l3.63-3.63a1 1 0 0 0 0-1.42z" fill="#ff6400" stroke="#121212" stroke-width="1.2" stroke-linejoin="round"/>
+                    <!-- Scale and Translation Refinement Group for the Wrench -->
+                    <g class="wrench-outer-wrap" transform="translate(7.8, 4.6)">
+                        <g class="wrench-scale-wrap" transform="scale(0.68, 0.68)">
+                            <g class="svg-wrench">
+                                <!-- Orange Wrench -->
+                                <path
+                                    d="M21.71 20.29l-3-3a7 7 0 0 0-1.02-8.35c-2.43-2.43-6.19-2.68-8.91-.77l3.66 3.66-4.24 4.24-3.66-3.66C2.63 15.14 2.89 18.9 5.32 21.32a7 7 0 0 0 8.35 1.02l3 3a1 1 0 0 0 1.41 0l3.63-3.63a1 1 0 0 0 0-1.42z"
+                                    fill="#ff6400" stroke="#121212" stroke-width="1.1" stroke-linejoin="round" />
+                            </g>
+                        </g>
                     </g>
                 </svg>
             </button>

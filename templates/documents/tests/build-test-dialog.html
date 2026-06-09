@@ -1,0 +1,137 @@
+<form autocomplete="off">
+    <div class="dialog-content">
+
+        {{!-- Actor Information --}}
+        <div class="document">
+            <img src="{{actor.img}}" data-edit="img" title="{{actor.name}}"/>
+            <div>
+                <a class="content-link" data-uuid="{{actor.uuid}}">{{actor.name}}</a>
+                <span class="test-type" style="display: block; font-size: 11px; color: var(--color-grey-lightest); margin-top: 2px;">{{localize "SR5Marketplace.ItemBuilder.BuildTestTitle"}}</span>
+            </div>
+        </div>
+        <hr>
+
+        {{!-- Test Code Display --}}
+        <div class="common-test">
+            {{{test.code}}}
+        </div>
+        <hr>
+
+        {{!-- Main Editable Fields --}}
+        <div>
+            {{!-- Skill Selector --}}
+            <div class="form-group">
+                <label>{{localize "SR5Marketplace.ItemBuilder.SelectSkill"}}</label>
+                <select name="test.data.selectedSkill">
+                    <option value="AutomotiveMechanic" {{#if (eq test.data.selectedSkill 'AutomotiveMechanic')}}selected{{/if}}>{{localize "FIELDS.Skill.AutomotiveMechanic"}}</option>
+                    <option value="Armorer" {{#if (eq test.data.selectedSkill 'Armorer')}}selected{{/if}}>{{localize "FIELDS.Skill.Armorer"}}</option>
+                    <option value="AeronauticsMechanic" {{#if (eq test.data.selectedSkill 'AeronauticsMechanic')}}selected{{/if}}>{{localize "FIELDS.Skill.AeronauticsMechanic"}}</option>
+                    <option value="NauticalMechanic" {{#if (eq test.data.selectedSkill 'NauticalMechanic')}}selected{{/if}}>{{localize "FIELDS.Skill.NauticalMechanic"}}</option>
+                    <option value="IndustrialMechanic" {{#if (eq test.data.selectedSkill 'IndustrialMechanic')}}selected{{/if}}>{{localize "FIELDS.Skill.IndustrialMechanic"}}</option>
+                </select>
+            </div>
+
+            {{!-- Working Conditions Selector --}}
+            <div class="form-group">
+                <label>{{localize "SR5Marketplace.ItemBuilder.WorkingConditions"}}</label>
+                <select name="test.data.workingConditions">
+                    <option value="1" {{#if (eq test.data.workingConditions '1')}}selected{{/if}}>{{localize "SR5Marketplace.ItemBuilder.WorkingConditionsOptions.excellent"}}</option>
+                    <option value="0" {{#if (eq test.data.workingConditions '0')}}selected{{/if}}>{{localize "SR5Marketplace.ItemBuilder.WorkingConditionsOptions.average"}}</option>
+                    <option value="-1" {{#if (eq test.data.workingConditions '-1')}}selected{{/if}}>{{localize "SR5Marketplace.ItemBuilder.WorkingConditionsOptions.distracted"}}</option>
+                    <option value="-2" {{#if (eq test.data.workingConditions '-2')}}selected{{/if}}>{{localize "SR5Marketplace.ItemBuilder.WorkingConditionsOptions.moderate"}}</option>
+                    <option value="-3" {{#if (eq test.data.workingConditions '-3')}}selected{{/if}}>{{localize "SR5Marketplace.ItemBuilder.WorkingConditionsOptions.poor"}}</option>
+                    <option value="-4" {{#if (eq test.data.workingConditions '-4')}}selected{{/if}}>{{localize "SR5Marketplace.ItemBuilder.WorkingConditionsOptions.terrible"}}</option>
+                </select>
+            </div>
+
+            {{!-- Tools & Parts Selector --}}
+            <div class="form-group">
+                <label>{{localize "SR5Marketplace.ItemBuilder.ToolsParts"}}</label>
+                <select name="test.data.toolsParts">
+                    <option value="1" {{#if (eq test.data.toolsParts '1')}}selected{{/if}}>{{localize "SR5Marketplace.ItemBuilder.ToolsPartsOptions.excellent"}}</option>
+                    <option value="0" {{#if (eq test.data.toolsParts '0')}}selected{{/if}}>{{localize "SR5Marketplace.ItemBuilder.ToolsPartsOptions.average"}}</option>
+                    <option value="-2" {{#if (eq test.data.toolsParts '-2')}}selected{{/if}}>{{localize "SR5Marketplace.ItemBuilder.ToolsPartsOptions.inadequate"}}</option>
+                    <option value="-4" {{#if (eq test.data.toolsParts '-4')}}selected{{/if}}>{{localize "SR5Marketplace.ItemBuilder.ToolsPartsOptions.unavailable"}}</option>
+                </select>
+            </div>
+
+            {{!-- Plans & Instructions Selector --}}
+            <div class="form-group">
+                <label>{{localize "SR5Marketplace.ItemBuilder.PlansInstructions"}}</label>
+                <select name="test.data.plansInstructions">
+                    <option value="0" {{#if (eq test.data.plansInstructions '0')}}selected{{/if}}>{{localize "SR5Marketplace.ItemBuilder.PlansInstructionsOptions.none"}}</option>
+                    <option value="1" {{#if (eq test.data.plansInstructions '1')}}selected{{/if}}>{{localize "SR5Marketplace.ItemBuilder.PlansInstructionsOptions.available"}}</option>
+                    <option value="2" {{#if (eq test.data.plansInstructions '2')}}selected{{/if}}>{{localize "SR5Marketplace.ItemBuilder.PlansInstructionsOptions.arEnhanced"}}</option>
+                </select>
+            </div>
+
+            {{!-- Logic memory penalty --}}
+            <div class="form-group">
+                <label>{{localize "SR5Marketplace.ItemBuilder.LogicMemoryPenaltyCheckbox"}}</label>
+                <input type="checkbox" name="test.data.logicMemoryPenaltyChecked" {{checked test.data.logicMemoryPenaltyChecked}}/>
+            </div>
+            
+            <hr>
+
+            {{!-- Dice Pool Input --}}
+            <div class="form-group" title="{{test.code}}">
+                <label data-tooltip="SR5.Tooltips.Test.Pool">{{localize "SR5.DicePool"}}</label>
+                <input type="number" name="test.data.pool" value="{{test.data.pool.value}}" size="3" data-dtype="Number" title="{{test.code}}"/>
+            </div>
+
+            {{!-- Limit Input --}}
+            <div class="form-group" title="{{localize 'SR5Marketplace.ItemBuilder.MentalLimitApplied'}}">
+                <label data-tooltip="SR5.Tooltips.Test.Limit">{{localize "SR5.Limit"}} ({{localize "SR5.LimitMental"}})</label>
+                <input type="number" name="test.data.limit" value="{{test.data.limit.value}}" size="3" data-dtype="Number"/>
+            </div>
+
+            {{!-- Threshold Input --}}
+            <div class="form-group">
+                <label data-tooltip="SR5.Tooltips.Test.Threshold">{{localize "SR5.Threshold"}}</label>
+                <input type="number" name="test.data.threshold" value="{{test.data.threshold.value}}" size="3" data-dtype="Number"/>
+            </div>
+        </div>
+        <hr>
+
+        {{!-- Custom Modifiers --}}
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label style="font-weight: bold;">{{localize "SR5Marketplace.Marketplace.Modifiers.Custom.Title"}}</label>
+                <button type="button" class="add-modifier-row-btn" style="padding: 2px 6px; font-size: 0.9em; cursor: pointer; border-radius: 4px; border: 1px solid var(--color-black-transparent-20); background: var(--Form-background-group); color: var(--text-color-primary);">
+                    <i class="fas fa-plus"></i> Add
+                </button>
+            </div>
+            <div class="custom-modifiers-list" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;">
+                {{#each test.data.action.modifiers}}
+                    <div class="modifier-row" style="display: flex; gap: 6px; align-items: center;">
+                        <input type="text" name="test.data.action.modifiers.{{@index}}.label" value="{{this.label}}" placeholder="Label" style="flex: 2; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--color-black-transparent-20); background: var(--Form-background-group); color: var(--text-color-primary);"/>
+                        <input type="text" name="test.data.action.modifiers.{{@index}}.value" value="{{this.value}}" placeholder="+2 or -2" style="flex: 1; text-align: center; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--color-black-transparent-20); background: var(--Form-background-group); color: var(--text-color-primary);"/>
+                        <button type="button" class="remove-modifier-row-btn" data-index="{{@index}}" style="padding: 2px 6px; background: none; border: none; color: var(--color-red-bright); cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                {{/each}}
+            </div>
+        </div>
+        <hr>
+
+        {{!-- Standard Test Options (Edge, Manual Hits, etc.) --}}
+        <div>
+            <div class="form-group">
+                <label data-tooltip="SR5.Tooltips.Test.PushTheLimit">{{localize "SR5.PushTheLimit"}} ({{actor.system.attributes.edge.uses}}/{{actor.system.attributes.edge.value}})</label>
+                <input type="checkbox" name="test.data.pushTheLimit" {{checked test.data.pushTheLimit}}>
+            </div>
+        </div>
+        <hr>
+        <div>
+            <div class="form-group">
+                <label data-tooltip="SR5.Tooltips.Test.ManualHits">{{localize "SR5.ManualHits"}}</label>
+                <input type="number" name="test.data.manualHits" value="{{test.data.manualHits.override.value}}" placeholder="{{test.data.manualHits.value}}" size="3" data-dtype="Number">
+            </div>
+            <div class="form-group">
+                <label data-tooltip="SR5.Tooltips.Test.ManualGlitches">{{localize "SR5.ManualGlitches"}}</label>
+                <input type="number" name="test.data.manualGlitches" value="{{test.data.manualGlitches.override.value}}" placeholder="{{test.data.manualGlitches.value}}" size="3" data-dtype="Number">
+            </div>
+        </div>
+    </div>
+</form>

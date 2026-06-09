@@ -77,6 +77,7 @@ const initializeTemplates = () => {
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/Builder.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/ItemDetails.html",
+        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/vehicleDetails.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/multi-select.html",
         "modules/sr5-marketplace/templates/apps/marketshouter/marketshouter.html",
         "modules/sr5-marketplace/templates/chat/chatMessageRequest.html",
@@ -674,6 +675,14 @@ Hooks.on("ready", async () => {
                 await handleGMRunAvailabilityTest(data);
             } else if (data.type === "continue_extended_test") {
                 await handleGMContinueExtendedTest(data);
+            } else if (data.action === "create_actor") {
+                const actorData = foundry.utils.deepClone(data.actorData);
+                actorData.ownership = actorData.ownership || {};
+                actorData.ownership[data.userId] = CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER;
+                const newActor = await Actor.create(actorData);
+                if (newActor) {
+                    console.log(`SR5 Marketplace | GM created actor: ${newActor.name} for user ${data.userId}`);
+                }
             }
         }
         if (data.type === "request_resolved" || data.type === "new_request") {

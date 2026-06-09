@@ -1,7 +1,9 @@
 import { ItemPreviewApp } from "../apps/documents/items/ItemPreviewApp.mjs";
 import { SearchService as itemSearchService } from '../services/searchTag.mjs';
+import { VehicleSearchService } from "../services/vehicleSearchService.mjs";
 import { BuilderStateService } from "../services/builderStateService.mjs";
 import { AppEffectsBuilderDialog } from '../apps/documents/dialog/AppEffectsBuilderDialog.mjs';
+import { BasketService } from "../services/basketService.mjs";
 // We will create this service later to handle the builder logic.
 // import { BuilderService } from '../services/builderService.mjs'; 
 
@@ -74,11 +76,14 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 clickItemName: this.#onClickItemName,
                 buildItem: this.#onBuildItem,
                 clearBuild: this.#onClearBuild,
+                startBuildTest: this.#onStartBuildTest,
+                addToCart: this.#onAddToCart,
                 toggleBaseItemEdit: this.#onToggleBaseItemEdit,
                 selectBaseItemImage: this.#onSelectBaseItemImage,
                 // Builder Tab
                 selectBaseItem: this.#onSelectBaseItem,
                 removeChange: this.#onRemoveChange,
+                selectCategory: this.#onSelectCategory,
                 // Effects Tab
                 createEffect: this.#onCreateEffect,
                 editEffect: this.#onEditEffect,
@@ -94,7 +99,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 toggleMultiSelectDropdown: this.#onToggleMultiSelectDropdown,
                 updateMultiSelect: this.#onUpdateMultiSelect
             }
-        });
+        }, { inplace: false });
     }
 
     /**
@@ -275,12 +280,13 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         // --- BIND DRAG & DROP HANDLERS ---
         this.#dragDrop.forEach(d => d.bind(this.element));
 
-        // --- Logic for the "Builder" Tab ---
-        if (this.tabGroups.main === "builder") {
+        // --- Logic for the "Builder" and "Vehicle" Tabs ---
+        if (this.tabGroups.main === "builder" || this.tabGroups.main === "vehicle") {
             // Initialize Search Services scoped to their sections
             const itemSection = this.element.querySelector(".item-selector-section");
             if (itemSection) {
-                this.itemSearchService = new itemSearchService(itemSection, (tags, query) => {
+                const searchClass = this.tabGroups.main === "vehicle" ? VehicleSearchService : itemSearchService;
+                this.itemSearchService = new searchClass(itemSection, (tags, query) => {
                     this.itemSearchQuery = query;
                     this.itemSearchTags = tags;
                     this._filterItemsDOM('.item-selector-section .item-content-grid', tags, query);
@@ -348,12 +354,27 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const cards = container.querySelectorAll(".item-card");
         const queryTerm = query.trim().toLowerCase();
         const tagTerms = tags.map(t => t.trim().toLowerCase());
+        const isVehicleTab = this.tabGroups.main === "vehicle";
 
         cards.forEach(card => {
             const nameEl = card.querySelector(".item-name");
             const name = nameEl ? nameEl.textContent.trim().toLowerCase() : "";
             const matchesQuery = !queryTerm || name.includes(queryTerm);
-            const matchesTags = tagTerms.every(tag => name.includes(tag));
+
+            let matchesTags = false;
+            if (isVehicleTab && containerSelector.includes(".item-selector-section")) {
+                const category = (card.dataset.category || "").toLowerCase();
+                const isDrone = card.dataset.isDrone === "true";
+                const typeText = isDrone ? "drone" : "vehicle";
+
+                matchesTags = tagTerms.every(tag => {
+                    return name.includes(tag) || 
+                           category.includes(tag) || 
+                           typeText.includes(tag);
+                });
+            } else {
+                matchesTags = tagTerms.every(tag => name.includes(tag));
+            }
 
             if (matchesQuery && matchesTags) {
                 card.style.display = "";
@@ -382,6 +403,16 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         // At the start of every render, get the latest state from the flag.
         const builderData = options.builderData ?? await BuilderStateService.getState();
 
+        // Automatically switch tabs if the selected base item type demands it
+        if (builderData.baseItem) {
+            const isVehicle = builderData.baseItem.type === "vehicle";
+            if (isVehicle && this.tabGroups.main === "builder") {
+                this.tabGroups.main = "vehicle";
+            } else if (!isVehicle && this.tabGroups.main === "vehicle") {
+                this.tabGroups.main = "builder";
+            }
+        }
+
         const selectedActorUuid = game.user.getFlag("sr5-marketplace", "selectedActorUuid");
         this.purchasingActor = selectedActorUuid ? await fromUuid(selectedActorUuid) : (game.user.character || null);
         
@@ -390,7 +421,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const partialContext = { 
             purchasingActor: this.purchasingActor,
             hasBaseItem: !!builderData.baseItem, // Use the state we just fetched
-            builderData: builderData             // Pass it to the partial
+            builderData: builderData,             // Pass it to the partial
+            activeTab: this.tabGroups.main
         };
 
         switch (this.tabGroups.main) {
@@ -401,8 +433,12 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 foundry.utils.mergeObject(partialContext, effectsContext);
                 tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/Effects.html", partialContext);
                 break;
-            default: // "builder" tab
-                this.tabGroups.main = "builder";
+            case "builder":
+            case "vehicle":
+            default: // "builder" or "vehicle" tab
+                if (this.tabGroups.main !== "builder" && this.tabGroups.main !== "vehicle") {
+                    this.tabGroups.main = "builder";
+                }
                 let displayItem = null;
                 if (builderData.baseItem) {
                     displayItem = foundry.utils.deepClone(builderData.baseItem);
@@ -417,19 +453,42 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
                 // We now use the 'allModifications' key as the single, reliable source for all mods.
                 let allMods = modsByType.allModifications?.items || [];
+                let itemsByType = { ...baseItemsByType };
+
+                if (this.tabGroups.main === "vehicle") {
+                    // Filter base items to show only vehicles and drones
+                    itemsByType = {
+                        vehicles: baseItemsByType.vehicles || { label: "SR5.Vehicle.Vehicle", items: [] },
+                        drones: baseItemsByType.drones || { label: "SR5.Vehicle.Drone", items: [] }
+                    };
+                    // Filter modifications to show only vehicle and drone mods
+                    allMods = [
+                        ...(modsByType.vehicleMods?.items || []),
+                        ...(modsByType.droneMods?.items || [])
+                    ];
+                } else {
+                    // Exclude vehicles and drones from normal item builder
+                    itemsByType = { ...baseItemsByType };
+                    delete itemsByType.vehicles;
+                    delete itemsByType.drones;
+                    // Exclude vehicle and drone modifications
+                    allMods = allMods.filter(mod => mod.system?.type !== 'vehicle' && mod.system?.type !== 'drone');
+                }
 
                 // --- Item Selector Context ---
-                partialContext.itemsByType = baseItemsByType;
-                if (!this.selectedKey || !baseItemsByType[this.selectedKey]) {
-                    if (baseItemsByType.rangedWeapons && baseItemsByType.rangedWeapons.items.length > 0) {
+                partialContext.itemsByType = itemsByType;
+                if (!this.selectedKey || !itemsByType[this.selectedKey]) {
+                    if (this.tabGroups.main === "vehicle") {
+                        this.selectedKey = "vehicles";
+                    } else if (itemsByType.rangedWeapons && itemsByType.rangedWeapons.items.length > 0) {
                         this.selectedKey = "rangedWeapons";
                     } else {
-                        this.selectedKey = Object.keys(baseItemsByType).find(k => baseItemsByType[k].items.length > 0) || null;
+                        this.selectedKey = Object.keys(itemsByType).find(k => itemsByType[k]?.items?.length > 0) || null;
                     }
                 }
                 partialContext.selectedKey = this.selectedKey;
                 
-                let selectedItems = this.selectedKey ? (baseItemsByType[this.selectedKey]?.items || []) : [];
+                let selectedItems = this.selectedKey ? (itemsByType[this.selectedKey]?.items || []) : [];
 
                 // Filter functions using tags and queries
                 const filterBySearch = (items, tags = [], query = "") => {
@@ -445,7 +504,11 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 };
 
                 // Apply search filters
-                selectedItems = filterBySearch(selectedItems, this.itemSearchTags, this.itemSearchQuery);
+                if (this.tabGroups.main === "vehicle") {
+                    selectedItems = VehicleSearchService.filter(selectedItems, this.itemSearchTags, this.itemSearchQuery);
+                } else {
+                    selectedItems = filterBySearch(selectedItems, this.itemSearchTags, this.itemSearchQuery);
+                }
                 allMods = filterBySearch(allMods, this.modSearchTags, this.modSearchQuery);
 
                 partialContext.selectedItems = selectedItems;
@@ -453,6 +516,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 // --- Logic for when a Base Item IS Selected ---
                 if (builderData.baseItem) {
                     const baseItemType = builderData.baseItem.type;
+                    const isDrone = builderData.baseItem.system?.isDrone || builderData.baseItem.system?.isdrone || false;
                     
                     partialContext.isWeapon = ['rangedWeapon', 'meleeWeapon', 'weapon'].includes(baseItemType);
 
@@ -466,8 +530,11 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                         const modType = mod.system?.type;
 
                         if (specificModTypes.includes(modType)) {
-                            // This condition will now correctly evaluate to TRUE for weapon mods
-                            if ((modType === 'weapon' && weaponTypes.includes(baseItemType)) || (modType === 'armor' && baseItemType === 'armor')) {
+                            // Map mods specifically: weapon mods for weapons, armor for armor, vehicle for vehicle, drone for drone
+                            if ((modType === 'weapon' && weaponTypes.includes(baseItemType)) || 
+                                (modType === 'armor' && baseItemType === 'armor') ||
+                                (modType === 'vehicle' && baseItemType === 'vehicle') ||
+                                (modType === 'drone' && isDrone)) {
                                 specificMods.push(mod);
                             }
                         } else {
@@ -479,7 +546,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
                     partialContext.categorizedMods = {
                         specific: {
-                            label: `${baseItemType.includes('weapon') ? 'Weapon' : 'Armor'} Modifications`,
+                            label: weaponTypes.includes(baseItemType) ? 'Weapon Modifications' : 
+                                   (baseItemType === 'armor' ? 'Armor Modifications' : 'Vehicle Modifications'),
                             items: specificMods
                         },
                         general: {
@@ -495,7 +563,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 }
 
                 tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/Builder.html", partialContext);
-                console.log("Marketplace Builder | Builder Tab Context:", partialContext);
+                console.log("Marketplace Builder | Builder/Vehicle Tab Context:", partialContext);
                 break;
         }
 
@@ -530,6 +598,15 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     // --- Action Handlers (from DEFAULT_OPTIONS) ---
+
+    static async #onSelectCategory(event, target) {
+        const category = target.dataset.category;
+        if (category) {
+            this.selectedKey = category;
+            this.itemSearchService?.clearAllFilters(); // Clear search when changing category
+            this.render();
+        }
+    }
 
     static #onChangeTab(event, target) {
         const tabId = target.dataset.tab;
@@ -700,61 +777,64 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      * @param {*} target 
      * @returns 
      */
-    static async #onBuildItem(event, target) {
-        // 1. Get the current state
-        const state = await BuilderStateService.getState();
-        if (!state.baseItem) {
-            ui.notifications.warn("Please select a base item before building.");
-            return;
-        }
+    /**
+     * Compiles the complete build data payload (Item or Actor) from the current state.
+     * @param {object} state - The current builder state.
+     * @returns {object} The compiled item or actor payload.
+     * @private
+     */
+    static _prepareBuildData(state) {
+        if (!state.baseItem) return null;
 
-        // 2. Clone base item to create our new item payload
+        // 1. Clone base item
         const baseItemData = foundry.utils.deepClone(state.baseItem);
         foundry.utils.mergeObject(baseItemData, state.baseItemOverrides);
-        const baseItemName = baseItemData.name; // Store name *after* overrides
+        const baseItemName = baseItemData.name;
 
-        // --- 3. Process ALL Effects and Slotted Items ---
+        // 2. Determine if it is a vehicle (Actor) or regular Item
+        const isVehicle = baseItemData.type === "vehicle";
 
         // A. Start with base item's effects
-        const allEffects = [...baseItemData.effects];
+        const allEffects = [...(baseItemData.effects || [])];
 
-        // B. Add all custom-created effects (from the 'Effects' tab)
-        //    THIS IS THE FIX FOR THE MISSING EFFECTS
+        // B. Add all custom-created effects
         if (state.modifications && state.modifications.length > 0) {
             allEffects.push(...foundry.utils.deepClone(state.modifications));
         }
 
-        const linkedItemsFlag = [];   // For the actor hook
-        const descriptionModList = [];    // For "consumed" mods
-        const descriptionLinkList = [];   // For "linked" items
+        const linkedItemsFlag = [];
+        const descriptionModList = [];
+        const descriptionLinkList = [];
+        const embeddedItemsToCreate = []; // for vehicles/drones
 
         // C. Loop through every single item in a slot
         for (const [slotId, item] of Object.entries(state.changes)) {
-            
-            // D. MERGE EFFECTS from slotted items
+            // MERGE EFFECTS from slotted items
             if (item.effects && item.effects.length > 0) {
                 allEffects.push(...foundry.utils.deepClone(item.effects));
             }
 
-            // E. CHECK IF ITEM SHOULD BE "LINKED" vs. "CONSUMED"
-            if (item.type === 'modification' || item.type === 'ammo') {
-                // "Consumed" Mod/Ammo
+            if (isVehicle) {
+                // For vehicles, slotted modifications/items go to embedded items
+                embeddedItemsToCreate.push(foundry.utils.deepClone(item));
                 descriptionModList.push(`<li>${item.name}</li>`);
             } else {
-                // "Linkable Item"
-                linkedItemsFlag.push({ 
-                    uuid: item.uuid, 
-                    slotId: slotId 
-                });
-                
-                // THIS IS THE NEW DESCRIPTION FORMAT
-                descriptionLinkList.push(`<b>@UUID[${item.uuid}]</b>`);
+                // For standard items: CHECK IF ITEM SHOULD BE "LINKED" vs. "CONSUMED"
+                if (item.type === 'modification' || item.type === 'ammo') {
+                    // "Consumed" Mod/Ammo
+                    descriptionModList.push(`<li>${item.name}</li>`);
+                } else {
+                    // "Linkable Item"
+                    linkedItemsFlag.push({ 
+                        uuid: item.uuid, 
+                        slotId: slotId 
+                    });
+                    descriptionLinkList.push(`<b>@UUID[${item.uuid}]</b>`);
+                }
             }
         }
 
-        // --- 4. Finalize the new item data ---
-
-        // A. Set all merged effects and normalize changes to arrays
+        // D. Finalize effects
         baseItemData.effects = allEffects.map(effect => {
             const cleanEffect = { ...effect };
             if (cleanEffect.changes) {
@@ -763,40 +843,213 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             return cleanEffect;
         });
 
-        // B. Update name
+        // E. Update name
         if (descriptionModList.length > 0) {
             baseItemData.name = `${baseItemName} (Modified)`;
         }
 
-        // C. Update description
-        let description = baseItemData.system.description?.value || "";
-        if (descriptionModList.length > 0) {
-            description += `<hr><p><b>Embedded Modifications:</b><ul>${descriptionModList.join('')}</ul></p>`;
-        }
-        if (descriptionLinkList.length > 0) {
-            // THIS IS THE NEW DESCRIPTION FORMAT
-            description += `<hr><p><b>Linked Items: </b>${descriptionLinkList.join(' ')}</p>`;
-        }
-        baseItemData.system.description.value = description;
-
-        // D. Update flags
-        if (!baseItemData.flags) baseItemData.flags = {};
-        baseItemData.flags['sr5-marketplace'] = {
-            ...baseItemData.flags['sr5-marketplace'],
-            linkedItems: linkedItemsFlag 
-        };
-        
-        // --- 5. Physically create the Item document in the World directory ---
-        console.log("Marketplace Builder | Creating new item in World:", baseItemData);
-        try {
-            const createdItem = await Item.create(baseItemData);
-            if (createdItem) {
-                ui.notifications.info(`Item "${createdItem.name}" was successfully created in the World directory.`);
+        // F. Update description
+        let description = "";
+        if (isVehicle) {
+            description = baseItemData.system?.description || "";
+            if (descriptionModList.length > 0) {
+                description += `<hr><p><b>Installed Modifications:</b><ul>${descriptionModList.join('')}</ul></p>`;
             }
-        } catch (err) {
-            console.error("Marketplace Builder | Failed to create item in world:", err);
-            ui.notifications.error("Failed to create the item in the World directory.");
+            if (baseItemData.system) {
+                baseItemData.system.description = description;
+            }
+        } else {
+            description = baseItemData.system?.description?.value || "";
+            if (descriptionModList.length > 0) {
+                description += `<hr><p><b>Embedded Modifications:</b><ul>${descriptionModList.join('')}</ul></p>`;
+            }
+            if (descriptionLinkList.length > 0) {
+                description += `<hr><p><b>Linked Items: </b>${descriptionLinkList.join(' ')}</p>`;
+            }
+            if (baseItemData.system?.description) {
+                baseItemData.system.description.value = description;
+            }
         }
+
+        // G. Update flags
+        if (!isVehicle) {
+            if (!baseItemData.flags) baseItemData.flags = {};
+            baseItemData.flags['sr5-marketplace'] = {
+                ...baseItemData.flags['sr5-marketplace'],
+                linkedItems: linkedItemsFlag 
+            };
+        } else {
+            // For vehicles, append embedded items
+            baseItemData.items = [
+                ...(baseItemData.items || []),
+                ...embeddedItemsToCreate
+            ];
+        }
+
+        return baseItemData;
+    }
+
+    /**
+     * Handles building the item and physical document creation.
+     */
+    static async #onBuildItem(event, target) {
+        const state = await BuilderStateService.getState();
+        if (!state.baseItem) {
+            ui.notifications.warn("Please select a base item before building.");
+            return;
+        }
+
+        const buildData = ItemBuilderApp._prepareBuildData(state);
+        
+        if (buildData.type === "vehicle") {
+            // Send socket event to GM client to create actor and grant ownership
+            game.socket.emit(`module.sr5-marketplace`, {
+                action: "create_actor",
+                actorData: buildData,
+                userId: game.user.id
+            });
+            ui.notifications.info(`Request sent to GM to create vehicle "${buildData.name}".`);
+        } else {
+            console.log("Marketplace Builder | Creating new item in World:", buildData);
+            try {
+                const createdItem = await Item.create(buildData);
+                if (createdItem) {
+                    ui.notifications.info(`Item "${createdItem.name}" was successfully created in the World directory.`);
+                }
+            } catch (err) {
+                console.error("Marketplace Builder | Failed to create item in world:", err);
+                ui.notifications.error("Failed to create the item in the World directory.");
+            }
+        }
+    }
+
+    /**
+     * Triggers the custom extended build test.
+     */
+    static async #onStartBuildTest(event, target) {
+        const state = await BuilderStateService.getState();
+        if (!state.baseItem) {
+            ui.notifications.warn("Please select a base item before performing a build test.");
+            return;
+        }
+
+        const buildData = ItemBuilderApp._prepareBuildData(state);
+
+        // Determine default skill to use
+        let defaultSkill = "AutomotiveMechanic";
+        if (buildData.type === "vehicle") {
+            const isDrone = buildData.system?.isDrone || buildData.system?.isdrone || false;
+            if (isDrone) {
+                const category = buildData.importFlags?.category?.toLowerCase() || "";
+                if (category.includes("rotorcraft") || category.includes("aircraft")) {
+                    defaultSkill = "AeronauticsMechanic";
+                } else if (category.includes("nautical") || category.includes("watercraft")) {
+                    defaultSkill = "NauticalMechanic";
+                }
+            } else {
+                const category = buildData.system?.category?.toLowerCase() || "";
+                if (category.includes("nautical") || category.includes("watercraft")) {
+                    defaultSkill = "NauticalMechanic";
+                } else if (category.includes("aeronautics") || category.includes("aircraft")) {
+                    defaultSkill = "AeronauticsMechanic";
+                }
+            }
+        } else {
+            defaultSkill = "Armorer";
+        }
+
+        // Determine threshold. Default is twice the item's rating, or fallback to 12.
+        const rating = Number(buildData.system?.rating || buildData.system?.technology?.rating || 6);
+        const threshold = rating > 0 ? rating * 2 : 12;
+
+        const selectedActorUuid = game.user.getFlag("sr5-marketplace", "selectedActorUuid");
+        const actor = selectedActorUuid ? await fromUuid(selectedActorUuid) : (game.user.character || null);
+        if (!actor) {
+            ui.notifications.warn("Please select a character/actor to perform the test.");
+            return;
+        }
+
+        // Run the BuildTest class
+        await game.shadowrun5e.tests.BuildTest.run(
+            actor,
+            {
+                buildData,
+                threshold,
+                skill: defaultSkill
+            }
+        );
+    }
+
+    /**
+     * Adds the compiled build data to the active shopping cart.
+     */
+    static async #onAddToCart(event, target) {
+        const state = await BuilderStateService.getState();
+        if (!state.baseItem) {
+            ui.notifications.warn("Please select a base item before adding to cart.");
+            return;
+        }
+
+        const selectedActorUuid = game.user.getFlag("sr5-marketplace", "selectedActorUuid");
+        const actor = selectedActorUuid ? await fromUuid(selectedActorUuid) : (game.user.character || null);
+        if (!actor) {
+            ui.notifications.warn("Please select a character/actor to shop on behalf of.");
+            return;
+        }
+
+        const buildData = ItemBuilderApp._prepareBuildData(state);
+
+        // Pre-calculate totals for the custom item
+        const baseItem = state.baseItem;
+        const isVehicle = baseItem.type === "vehicle";
+
+        let totalCost = 0;
+        if (isVehicle) {
+            totalCost = typeof baseItem.system.cost === "object" ? (baseItem.system.cost.value ?? 0) : (baseItem.system.cost ?? 0);
+        } else {
+            totalCost = typeof baseItem.system.technology?.cost === "object" ? (baseItem.system.technology?.cost.value ?? 0) : (baseItem.system.technology?.cost ?? 0);
+        }
+
+        let allAvails = [];
+        let baseAvail = "0";
+        if (isVehicle) {
+            baseAvail = typeof baseItem.system.availability === "object" ? (baseItem.system.availability.value ?? "0") : (baseItem.system.availability ?? "0");
+        } else {
+            baseAvail = typeof baseItem.system.technology?.availability === "object" ? (baseItem.system.technology?.availability.value ?? "0") : (baseItem.system.technology?.availability ?? "0");
+        }
+        allAvails.push(baseAvail);
+
+        let totalEssence = isVehicle ? 0 : (baseItem.system.essence || 0);
+
+        // Sum up modifications
+        for (const mod of Object.values(state.changes)) {
+            let modCost = typeof mod.system.technology?.cost === "object" ? (mod.system.technology?.cost.value ?? 0) : (mod.system.technology?.cost ?? 0);
+            if (modCost === undefined || modCost === null || modCost === 0) {
+                modCost = typeof mod.system.cost === "object" ? (mod.system.cost.value ?? 0) : (mod.system.cost ?? 0);
+            }
+            totalCost += Number(modCost) || 0;
+
+            let modAvail = typeof mod.system.technology?.availability === "object" ? (mod.system.technology?.availability.value ?? "0") : (mod.system.technology?.availability ?? "0");
+            if (modAvail === undefined || modAvail === null || modAvail === "0") {
+                modAvail = typeof mod.system.availability === "object" ? (mod.system.availability.value ?? "0") : (mod.system.availability ?? "0");
+            }
+            allAvails.push(modAvail);
+
+            let modEssence = mod.system.essence || 0;
+            totalEssence += Number(modEssence) || 0;
+        }
+
+        const basketService = new BasketService();
+        const combinedAvailability = basketService._combineAvailabilities(allAvails);
+
+        const totals = {
+            cost: totalCost,
+            availability: combinedAvailability,
+            essence: totalEssence
+        };
+
+        // Add custom item/actor to cart
+        await basketService.addCustomToBasket(buildData, actor.uuid, totals);
     }
 
     /**
@@ -1053,15 +1306,40 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.hoverTimeout = setTimeout(() => {
             const rect = card.getBoundingClientRect();
 
+            const tooltipWidth = 500;
+            const tooltipHeight = 320;
+            const margin = 5;
+
+            // Calculate vertical position (above card if there is space, otherwise below)
+            let topPos;
+            if (rect.top >= tooltipHeight + margin) {
+                // Space above card
+                topPos = rect.top - tooltipHeight - margin;
+            } else {
+                // Not enough space above, show below the card
+                topPos = rect.bottom + margin;
+                
+                // If it overflows the bottom of the screen, clamp it
+                if (topPos + tooltipHeight > window.innerHeight) {
+                    topPos = Math.max(margin, window.innerHeight - tooltipHeight - margin);
+                }
+            }
+
+            // Calculate horizontal position (prevent overflowing right/left boundaries)
+            let leftPos = rect.left;
+            if (leftPos + tooltipWidth > window.innerWidth) {
+                leftPos = Math.max(margin, window.innerWidth - tooltipWidth - margin);
+            }
+
             this.tooltipApp = new ItemPreviewApp(uuid, {
+                id: "ItemPreview-tooltip",
                 window: { frame: true },
                 classes: ["item-preview-tooltip"],
                 position: {
-                    top: rect.top,
-                    left: rect.left,
-                    width: 500, 
-                    height: 320 // Set a fixed width for consistency
-
+                    top: topPos,
+                    left: leftPos,
+                    width: tooltipWidth,
+                    height: tooltipHeight
                 }
             });
             this.tooltipApp.render(true);
