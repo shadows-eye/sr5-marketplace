@@ -1,573 +1,164 @@
-<style>
-.workshop-container {
-    display: flex;
-    gap: 20px;
-    height: 100%;
-    width: 100%;
-    color: var(--text-color-primary, #fff);
-    font-family: 'Inter', sans-serif;
-    padding: 10px;
-}
-
-.workshop-main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    height: 100%;
-    min-height: 0;
-}
-
-.workshop-header-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.4);
-    padding: 10px 15px;
-    border-radius: 6px;
-    border: 1px solid var(--border-color-medium, #444);
-}
-
-.vehicle-selector-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 15px;
-    padding: 10px;
-}
-
-.vehicle-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 15px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-}
-
-.vehicle-card:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: var(--color-yellow-dark, #ffaa00);
-    box-shadow: 0 0 10px rgba(255, 170, 0, 0.2);
-    transform: translateY(-2px);
-}
-
-.vehicle-card img {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    border: 2px solid var(--border-color-medium, #444);
-    object-fit: cover;
-}
-
-.vehicle-card .vehicle-name {
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.vehicle-card .vehicle-info {
-    font-size: 0.9em;
-    opacity: 0.7;
-}
-
-.workshop-layout {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 20px;
-    flex: 1;
-    min-height: 0;
-}
-
-.workshop-visualizer {
-    position: relative;
-    background: radial-gradient(circle, rgba(20, 24, 30, 0.9) 0%, rgba(10, 12, 15, 0.95) 100%);
-    border-radius: 12px;
-    border: 1px solid var(--border-color-medium, #444);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    height: 100%;
-    min-height: 500px;
-}
-
-.workshop-visualizer-bg {
-    position: absolute;
-    width: 90%;
-    height: 90%;
-    opacity: 0.15;
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
-    pointer-events: none;
-}
-
-.center-vehicle {
-    position: relative;
-    width: 180px;
-    height: 180px;
-    border-radius: 50%;
-    border: 4px solid rgba(255, 170, 0, 0.6);
-    box-shadow: 0 0 20px rgba(255, 170, 0, 0.4);
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
-}
-
-.center-vehicle img {
-    width: 90%;
-    height: 90%;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-/* Slot categories positioned around vehicle */
-.category-box {
-    position: absolute;
-    width: 145px;
-    background: rgba(15, 20, 25, 0.85);
-    border: 1px dashed rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    padding: 8px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    transition: all 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.category-box.valid-drop {
-    border-color: #00ffcc !important;
-    background: rgba(0, 255, 204, 0.1) !important;
-    box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
-}
-
-.category-box.invalid-drop {
-    border-color: #ff3366 !important;
-    background: rgba(255, 51, 102, 0.1) !important;
-}
-
-.category-box.drag-hover {
-    border-style: solid;
-    transform: scale(1.05);
-}
-
-/* Positioning boxes in a hexagon layout */
-.category-box.drive { top: 10%; left: 15%; }
-.category-box.protection { top: 10%; right: 15%; }
-.category-box.weapons { top: 45%; left: 5%; }
-.category-box.body { top: 45%; right: 5%; }
-.category-box.electronics { bottom: 10%; left: 15%; }
-.category-box.cosmetic { bottom: 10%; right: 15%; }
-
-.category-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 4px;
-    margin-bottom: 4px;
-    font-size: 0.85em;
-    font-weight: bold;
-}
-
-.category-header span {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.category-header .slots-counter {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 1px 5px;
-    border-radius: 4px;
-    font-size: 0.85em;
-}
-
-.category-header .slots-counter.limit-reached {
-    background: rgba(255, 51, 102, 0.3);
-    color: #ff3366;
-}
-
-.installed-mods-list {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    max-height: 80px;
-    overflow-y: auto;
-}
-
-.installed-mod-item {
-    font-size: 0.75em;
-    padding: 3px 6px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-left: 2px solid var(--color-yellow-dark, #ffaa00);
-}
-
-.installed-mod-item span {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.workshop-shelf-sidebar {
-    background: rgba(15, 20, 25, 0.6);
-    border-radius: 12px;
-    border: 1px solid var(--border-color-medium, #444);
-    display: flex;
-    flex-direction: column;
-    padding: 15px;
-    gap: 15px;
-    min-height: 250px;
-    flex: 1;
-}
-
-.workshop-shelf-header {
-    font-weight: bold;
-    font-size: 1.2em;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 8px;
-    margin-bottom: 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.shelf-items-list {
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding-right: 5px;
-}
-
-.mod-card {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    padding: 8px;
-    cursor: grab;
-    transition: all 0.2s ease;
-    position: relative;
-}
-
-.mod-card:hover {
-    background: rgba(255, 255, 255, 0.08);
-    transform: translateY(-1px);
-}
-
-.mod-card.owner-mod {
-    border-color: #ffb700;
-    box-shadow: inset 0 0 5px rgba(255, 183, 0, 0.1);
-}
-
-.mod-card.owner-mod::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background: #ffb700;
-    border-radius: 3px 0 0 3px;
-}
-
-.mod-card img {
-    width: 32px;
-    height: 32px;
-    border-radius: 4px;
-    object-fit: cover;
-}
-
-.mod-card-details {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
-
-.mod-card-name {
-    font-weight: bold;
-    font-size: 0.9em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.mod-card-sub {
-    font-size: 0.75em;
-    opacity: 0.6;
-    display: flex;
-    justify-content: space-between;
-}
-
-.owner-indicator-badge {
-    background: rgba(255, 183, 0, 0.15);
-    color: #ffb700;
-    padding: 1px 4px;
-    border-radius: 3px;
-    font-weight: bold;
-    font-size: 0.85em;
-}
-
-.repair-panel {
-    background: rgba(15, 20, 25, 0.6);
-    border-radius: 12px;
-    border: 1px solid var(--border-color-medium, #444);
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.repair-header {
-    font-weight: bold;
-    font-size: 1.1em;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 6px;
-}
-
-.damage-track-grid {
-    display: flex;
-    gap: 4px;
-    flex-wrap: wrap;
-    margin: 5px 0;
-}
-
-.damage-box {
-    width: 20px;
-    height: 20px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-    background: rgba(0, 0, 0, 0.3);
-    position: relative;
-}
-
-.damage-box.filled {
-    border-color: #ff3366;
-    background: #ff3366;
-    box-shadow: 0 0 5px rgba(255, 51, 102, 0.5);
-}
-
-.damage-box.filled::after {
-    content: 'X';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.repair-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-}
-
-.repair-stats {
-    font-size: 0.85em;
-    opacity: 0.8;
-}
-
-.repair-button {
-    background-color: var(--color-green-button, #15aa5a);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
-}
-
-.repair-button:hover {
-    background-color: #1cc66b;
-    box-shadow: 0 0 10px rgba(28, 198, 107, 0.3);
-}
-
-.repair-button:disabled {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.3);
-    cursor: not-allowed;
-}
-
-.no-vehicles-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 300px;
-    text-align: center;
-    opacity: 0.5;
-    font-style: italic;
-    gap: 10px;
-}
-</style>
-
 <div class="workshop-container">
     {{#if activeVehicle}}
-        {{!-- RENDER ACTIVE WORKSHOP VISUALIZER --}}
-        <div class="workshop-main">
-            <div class="workshop-header-bar">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <img src="{{activeVehicle.img}}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
-                    <h3 style="margin: 0; font-weight: bold;">{{activeVehicle.name}}</h3>
-                </div>
-                <button type="button" class="button" data-action="deselectVehicleActor" style="padding: 4px 10px; font-size: 0.9em;">
-                    <i class="fas fa-exchange-alt"></i> {{localize "SR5Marketplace.Factory.ChangeVehicle"}}
-                </button>
+    {{!-- RENDER ACTIVE WORKSHOP VISUALIZER --}}
+    <div class="workshop-main">
+        <div class="workshop-header-bar">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="{{activeVehicle.img}}"
+                    style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+                <h3 style="margin: 0; font-weight: bold;">{{activeVehicle.name}}</h3>
             </div>
+            <button type="button" class="button" data-action="deselectVehicleActor"
+                style="padding: 4px 10px; font-size: 0.9em;">
+                <i class="fas fa-exchange-alt"></i> {{localize "SR5Marketplace.Factory.ChangeVehicle"}}
+            </button>
+        </div>
 
-            <div class="workshop-layout">
-                <!-- Center/Visualizer Columns -->
-                <div class="workshop-visualizer">
-                    <div class="workshop-visualizer-bg" style="background-image: url('assets/frame/builder-frame.svg');"></div>
-                    
-                    <!-- Center vehicle token -->
-                    <div class="center-vehicle">
-                        <img src="{{activeVehicle.img}}" />
-                    </div>
+        <div class="workshop-layout">
+            <!-- Center/Visualizer Columns -->
+            <div class="workshop-visualizer">
+                <div class="workshop-visualizer-bg" style="background-image: url('assets/frame/builder-frame.svg');">
+                </div>
 
-                    <!-- Surrounding Slots boxes -->
-                    {{#each categories}}
-                    <div class="category-box {{#if (eq @key 'drive')}}drive{{/if}}
+                <!-- Center vehicle token -->
+                <div class="center-vehicle">
+                    <img src="{{activeVehicle.img}}" />
+                </div>
+
+                <!-- Surrounding Slots boxes -->
+                {{#each categories}}
+                <div class="category-box {{#if (eq @key 'drive')}}drive{{/if}}
                                               {{#if (eq @key 'protection')}}protection{{/if}}
                                               {{#if (eq @key 'weapons')}}weapons{{/if}}
                                               {{#if (eq @key 'body')}}body{{/if}}
                                               {{#if (eq @key 'electronics')}}electronics{{/if}}
-                                              {{#if (eq @key 'cosmetic')}}cosmetic{{/if}} drop-target" data-category="{{@key}}">
-                        <div class="category-header">
-                            <span title="{{localize this.label}}">{{localize this.label}}</span>
-                            <div class="slots-counter {{#if (ge this.used this.max)}}limit-reached{{/if}}">{{this.used}} / {{this.max}}</div>
-                        </div>
-                        <div class="installed-mods-list">
-                            {{#each this.items}}
-                            <div class="installed-mod-item" title="{{this.name}}">
-                                <span>{{this.name}}</span>
-                                <span style="font-weight: bold; font-size: 0.85em; opacity: 0.7;">R{{this.system.rating}}</span>
-                            </div>
-                            {{else}}
-                            <div style="font-size: 0.75em; font-style: italic; opacity: 0.4; text-align: center; padding: 4px 0;">Empty</div>
-                            {{/each}}
-                        </div>
+                                              {{#if (eq @key 'cosmetic')}}cosmetic{{/if}} drop-target"
+                    data-category="{{@key}}">
+                    <div class="category-header">
+                        <span title="{{localize this.label}}">{{localize this.label}}</span>
+                        <div class="slots-counter {{#if (ge this.used this.max)}}limit-reached{{/if}}">{{this.used}} /
+                            {{this.max}}</div>
                     </div>
-                    {{/each}}
-                </div>
-
-                <!-- Right sidebar columns -->
-                <div style="display: flex; flex-direction: column; gap: 20px; height: 100%; min-height: 0;">
-                    <!-- Repair Panel -->
-                    <div class="repair-panel">
-                        <div class="repair-header">
-                            <i class="fas fa-tools"></i> {{localize "SR5Marketplace.Factory.Repair.Title"}}
+                    <div class="installed-mods-list">
+                        {{#each this.items}}
+                        <div class="installed-mod-item" title="{{this.name}}">
+                            <span>{{this.name}}</span>
+                            <span
+                                style="font-weight: bold; font-size: 0.85em; opacity: 0.7;">R{{this.system.rating}}</span>
                         </div>
-                        <div style="font-size: 0.85em;">
-                            {{localize "SR5Marketplace.Factory.Repair.DamageTrack"}}
-                        </div>
-                        <div class="damage-track-grid">
-                            {{#each physicalTrack.boxes}}
-                            <div class="damage-box {{#if this.filled}}filled{{/if}}"></div>
-                            {{else}}
-                            <div style="font-size: 0.8em; font-style: italic; opacity: 0.5;">No Physical Track available</div>
-                            {{/each}}
-                        </div>
-                        
-                        <div class="stat-block-divider" style="margin: 4px 0;"></div>
-                        
-                        <div class="repair-actions">
-                            <div class="repair-stats">
-                                <div>Damage: <b>{{physicalTrack.value}}</b> boxes</div>
-                                <div>Threshold: <b>{{multiply physicalTrack.value 3}}</b> hits</div>
-                            </div>
-                            <button type="button" class="repair-button" data-action="runWorkshopRepair" {{#if (eq physicalTrack.value 0)}}disabled title="Vehicle is fully repaired"{{/if}}>
-                                <i class="fas fa-wrench"></i> {{localize "SR5Marketplace.Factory.Repair.RollButton"}}
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Shelf Panel -->
-                    <div class="workshop-shelf-sidebar">
-                        <div class="workshop-shelf-header">
-                            <span><i class="fas fa-warehouse"></i> {{localize "SR5Marketplace.Factory.Shelf.Title"}}</span>
-                            <span style="font-size: 0.75em; opacity: 0.6; font-weight: normal;">{{modsOnShelf.length}} items</span>
-                        </div>
-                        <div class="shelf-items-list workshop-shelf">
-                            {{#each modsOnShelf}}
-                            <div class="mod-card {{#if this.isFromOwner}}owner-mod{{/if}}" draggable="true" data-item-uuid="{{this.uuid}}" data-is-from-owner="{{this.isFromOwner}}" data-entry-id="{{this.entryId}}" data-mount-point="{{this.category}}">
-                                <img src="{{this.img}}" />
-                                <div class="mod-card-details">
-                                    <div class="mod-card-name" title="{{this.name}}">{{this.name}}</div>
-                                    <div class="mod-card-sub">
-                                        <span>R{{this.rating}} &bull; {{this.category}}</span>
-                                        {{#if this.isFromOwner}}
-                                        <span class="owner-indicator-badge">Owner</span>
-                                        {{else}}
-                                        <span style="font-size: 0.9em; opacity: 0.7;">Qty: {{this.qty}}</span>
-                                        {{/if}}
-                                    </div>
-                                </div>
-                            </div>
-                            {{else}}
-                            <div class="no-items-placeholder" style="padding: 20px 0; font-size: 0.85em; text-align: center; opacity: 0.4;">
-                                {{localize "SR5Marketplace.Factory.Shelf.Empty"}}
-                            </div>
-                            {{/each}}
-                        </div>
+                        {{else}}
+                        <div
+                            style="font-size: 0.75em; font-style: italic; opacity: 0.4; text-align: center; padding: 4px 0;">
+                            Empty</div>
+                        {{/each}}
                     </div>
                 </div>
+                {{/each}}
             </div>
-        </div>
-    {{else}}
-        {{!-- RENDER VEHICLE SELECTOR GRID --}}
-        <div class="workshop-main" style="flex: 1; align-items: center; justify-content: center;">
-            <div style="background: rgba(15, 20, 25, 0.6); border: 1px solid var(--border-color-medium, #444); border-radius: 12px; padding: 25px; max-width: 800px; width: 100%;">
-                <h3 style="margin-top: 0; margin-bottom: 15px; font-weight: bold; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;">
-                    <i class="fas fa-warehouse"></i> {{localize "SR5Marketplace.Factory.SelectorTitle"}}
-                </h3>
-                
-                {{#if vehiclesInRadius.length}}
-                    <p style="font-size: 0.95em; opacity: 0.8; margin-bottom: 20px;">
-                        {{localize "SR5Marketplace.Factory.SelectorSubtitle"}}
-                    </p>
-                    <div class="vehicle-selector-grid">
-                        {{#each vehiclesInRadius}}
-                        <div class="vehicle-card" data-action="selectVehicleActor" data-uuid="{{this.uuid}}">
-                            <img src="{{this.img}}" />
-                            <div class="vehicle-name">{{this.name}}</div>
-                            <div class="vehicle-info">
-                                <div>Body/Hull: <b>{{this.body}}</b></div>
-                                <div>Damage: <b>{{this.physicalTrack.value}}</b> / {{this.physicalTrack.max}}</div>
-                            </div>
+
+            <!-- Right sidebar columns -->
+            <div style="display: flex; flex-direction: column; gap: 20px; height: 100%; min-height: 0;">
+                <!-- Repair Panel -->
+                <div class="repair-panel">
+                    <div class="repair-header">
+                        <i class="fas fa-tools"></i> {{localize "SR5Marketplace.Factory.Repair.Title"}}
+                    </div>
+                    <div style="font-size: 0.85em;">
+                        {{localize "SR5Marketplace.Factory.Repair.DamageTrack"}}
+                    </div>
+                    <div class="damage-track-grid">
+                        {{#each physicalTrack.boxes}}
+                        <div class="damage-box {{#if this.filled}}filled{{/if}}"></div>
+                        {{else}}
+                        <div style="font-size: 0.8em; font-style: italic; opacity: 0.5;">No Physical Track available
                         </div>
                         {{/each}}
                     </div>
-                {{else}}
-                    <div class="no-vehicles-placeholder">
-                        <i class="fas fa-car-crash" style="font-size: 3em; color: var(--color-yellow-dark, #ffaa00); margin-bottom: 10px;"></i>
-                        <p>{{localize "SR5Marketplace.Factory.NoVehiclesInRadius"}}</p>
+
+                    <div class="stat-block-divider" style="margin: 4px 0;"></div>
+
+                    <div class="repair-actions">
+                        <div class="repair-stats">
+                            <div>Damage: <b>{{physicalTrack.value}}</b> boxes</div>
+                            <div>Threshold: <b>{{multiply physicalTrack.value 3}}</b> hits</div>
+                        </div>
+                        <button type="button" class="repair-button" data-action="runWorkshopRepair" {{#if (eq
+                            physicalTrack.value 0)}}disabled title="Vehicle is fully repaired" {{/if}}>
+                            <i class="fas fa-wrench"></i> {{localize "SR5Marketplace.Factory.Repair.RollButton"}}
+                        </button>
                     </div>
-                {{/if}}
+                </div>
+
+                <!-- Shelf Panel -->
+                <div class="workshop-shelf-sidebar">
+                    <div class="workshop-shelf-header">
+                        <span><i class="fas fa-warehouse"></i> {{localize "SR5Marketplace.Factory.Shelf.Title"}}</span>
+                        <span style="font-size: 0.75em; opacity: 0.6; font-weight: normal;">{{modsOnShelf.length}}
+                            items</span>
+                    </div>
+                    <div class="shelf-items-list workshop-shelf">
+                        {{#each modsOnShelf}}
+                        <div class="mod-card {{#if this.isFromOwner}}owner-mod{{/if}}" draggable="true"
+                            data-item-uuid="{{this.uuid}}" data-is-from-owner="{{this.isFromOwner}}"
+                            data-entry-id="{{this.entryId}}" data-mount-point="{{this.category}}">
+                            <img src="{{this.img}}" />
+                            <div class="mod-card-details">
+                                <div class="mod-card-name" title="{{this.name}}">{{this.name}}</div>
+                                <div class="mod-card-sub">
+                                    <span>R{{this.rating}} &bull; {{this.category}}</span>
+                                    {{#if this.isFromOwner}}
+                                    <span class="owner-indicator-badge">Owner</span>
+                                    {{else}}
+                                    <span style="font-size: 0.9em; opacity: 0.7;">Qty: {{this.qty}}</span>
+                                    {{/if}}
+                                </div>
+                            </div>
+                        </div>
+                        {{else}}
+                        <div class="no-items-placeholder"
+                            style="padding: 20px 0; font-size: 0.85em; text-align: center; opacity: 0.4;">
+                            {{localize "SR5Marketplace.Factory.Shelf.Empty"}}
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
             </div>
         </div>
+    </div>
+    {{else}}
+    {{!-- RENDER VEHICLE SELECTOR GRID --}}
+    <div class="workshop-main" style="flex: 1; align-items: center; justify-content: center;">
+        <div
+            style="background: rgba(15, 20, 25, 0.6); border: 1px solid var(--border-color-medium, #444); border-radius: 12px; padding: 25px; max-width: 800px; width: 100%;">
+            <h3
+                style="margin-top: 0; margin-bottom: 15px; font-weight: bold; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;">
+                <i class="fas fa-warehouse"></i> {{localize "SR5Marketplace.Factory.SelectorTitle"}}
+            </h3>
+
+            {{#if vehiclesInRadius.length}}
+            <p style="font-size: 0.95em; opacity: 0.8; margin-bottom: 20px;">
+                {{localize "SR5Marketplace.Factory.SelectorSubtitle"}}
+            </p>
+            <div class="vehicle-selector-grid">
+                {{#each vehiclesInRadius}}
+                <div class="vehicle-card" data-action="selectVehicleActor" data-uuid="{{this.uuid}}">
+                    <img src="{{this.img}}" />
+                    <div class="vehicle-name">{{this.name}}</div>
+                    <div class="vehicle-info">
+                        <div>Body/Hull: <b>{{this.body}}</b></div>
+                        <div>Damage: <b>{{this.physicalTrack.value}}</b> / {{this.physicalTrack.max}}</div>
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+            {{else}}
+            <div class="no-vehicles-placeholder">
+                <i class="fas fa-car-crash"
+                    style="font-size: 3em; color: var(--color-yellow-dark, #ffaa00); margin-bottom: 10px;"></i>
+                <p>{{localize "SR5Marketplace.Factory.NoVehiclesInRadius"}}</p>
+            </div>
+            {{/if}}
+        </div>
+    </div>
     {{/if}}
 </div>
