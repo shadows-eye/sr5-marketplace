@@ -34,6 +34,10 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
         this.shopRadius = 1;
         this.shopDescription = "";
         
+        this.isFactory = false;
+        this.factoryRating = 5;
+        this.existingActorUuid = null;
+        
         // Collapsible sections state tracking (Shop details open by default)
         this.expandedSections = new Set(["shop-details"]);
         
@@ -122,7 +126,10 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
         const typeLabel = game.i18n.localize(CONFIG.Actor.typeLabels?.[this.selectedActorType] || `TYPES.Actor.${this.selectedActorType}`) || this.selectedActorType;
         const newPrefix = game.i18n.localize("SR5Marketplace.UI.New");
         const defaultName = this.actorName || `${newPrefix} ${typeLabel}`;
-        const createLabel = game.i18n.format("SR5Marketplace.UI.CreateType", { type: typeLabel });
+        let createLabel = game.i18n.format("SR5Marketplace.UI.CreateType", { type: typeLabel });
+        if (this.existingActorUuid) {
+            createLabel = game.i18n.localize("SR5Marketplace.UI.ActorCreator.UpgradeShop");
+        }
 
         context.defaultName = defaultName;
         context.createLabel = createLabel;
@@ -283,7 +290,11 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
                     selectedCount: this.selectedItemUuids.size,
                     shopMarkup: this.shopMarkup,
                     shopRadius: this.shopRadius,
-                    shopDescription: this.shopDescription
+                    shopDescription: this.shopDescription,
+                    isFactory: this.isFactory,
+                    factoryRating: this.factoryRating,
+                    existingActorUuid: this.existingActorUuid,
+                    actorName: this.actorName
                 });
             }
         } else {
@@ -354,6 +365,46 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
 
         // 4. Shop Seeding controls
         if (this.selectedActorType === "sr5-marketplace.shop") {
+            const loadExistingBtn = this.element.querySelector('.load-existing-shop-btn');
+            if (loadExistingBtn) {
+                loadExistingBtn.addEventListener("click", () => this._onLoadExistingShop());
+            }
+
+            const clearExistingBtn = this.element.querySelector('.clear-existing-shop-btn');
+            if (clearExistingBtn) {
+                clearExistingBtn.addEventListener("click", () => {
+                    this.existingActorUuid = null;
+                    this.actorName = "";
+                    this.actorImg = "icons/svg/mystery-man.svg";
+                    this.shopMarkup = 0;
+                    this.shopRadius = 1;
+                    this.shopDescription = "";
+                    this.isFactory = false;
+                    this.factoryRating = 5;
+                    this.selectedEmployeeUuids.clear();
+                    this.selectedHostUuid = null;
+                    this.render();
+                });
+            }
+
+            const isFactoryCb = this.element.querySelector(".shop-is-factory-cb");
+            if (isFactoryCb) {
+                isFactoryCb.addEventListener("change", (e) => {
+                    this.isFactory = e.target.checked;
+                    const ratingContainer = this.element.querySelector(".factory-rating-container");
+                    if (ratingContainer) {
+                        ratingContainer.style.display = this.isFactory ? "block" : "none";
+                    }
+                });
+            }
+
+            const ratingInput = this.element.querySelector(".factory-rating-input");
+            if (ratingInput) {
+                ratingInput.addEventListener("input", (e) => {
+                    this.factoryRating = Number(e.target.value) || 5;
+                });
+            }
+
             // Collapsible header toggling with state preservation
             const collapsibleHeaders = this.element.querySelectorAll(".actor-creator-collapsible-header");
             for (const header of collapsibleHeaders) {
@@ -635,6 +686,8 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
                     owner: "",
                     connection: "",
                     servingEmployee: "",
+                    isFactory: this.isFactory,
+                    factoryRating: this.factoryRating,
                     inventory: {}
                 },
                 description: {
@@ -644,21 +697,65 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
         }
 
         try {
-            // 2. Create the document in the database
-            const actor = await Actor.create(createData, { renderSheet: true });
-            
-            if (this.selectedActorType === "sr5-marketplace.shop") {
-                // 3. Clone Matrix Host item into the newly created Shop Actor
-                if (this.selectedHostUuid) {
-                    const hostItem = await fromUuid(this.selectedHostUuid);
-                    if (hostItem) {
-                        const hostData = hostItem.toObject();
-                        delete hostData._id; // Ensure clean ID creation
-                        await actor.createEmbeddedDocuments("Item", [hostData]);
-                        console.log(`SR5 Marketplace | Host "${hostItem.name}" cloned into "${actor.name}".`);
+            let actor;
+            if (this.existingActorUuid) {
+                actor = await fromUuid(this.existingActorUuid);
+                if (!actor) throw new Error("Existing actor not found.");
+                
+                const updateData = {
+                    name: name,
+                    img: this.actorImg,
+                    folder: this.folder || null,
+                    "system.shop.itemMarkup": this.shopMarkup,
+                    "system.shop.shopRadius.value": this.shopRadius,
+                    "system.shop.shopRadius.base": this.shopRadius,
+                    "system.shop.employees": Array.from(this.selectedEmployeeUuids),
+                    "system.shop.isFactory": this.isFactory,
+                    "system.shop.factoryRating": this.factoryRating,
+                    "system.description.value": this.shopDescription
+                };
+                await actor.update(updateData);
+
+                if (this.selectedActorType === "sr5-marketplace.shop") {
+                    const currentHostItem = actor.hostItem;
+                    if (this.selectedHostUuid) {
+                        const selectedHostItem = await fromUuid(this.selectedHostUuid);
+                        if (selectedHostItem) {
+                            const currentSourceId = currentHostItem?.getFlag("core", "sourceId") || currentHostItem?.uuid;
+                            if (!currentHostItem || currentSourceId !== this.selectedHostUuid) {
+                                if (currentHostItem) {
+                                    await actor.deleteEmbeddedDocuments("Item", [currentHostItem.id]);
+                                }
+                                const hostData = selectedHostItem.toObject();
+                                delete hostData._id;
+                                await actor.createEmbeddedDocuments("Item", [hostData]);
+                                console.log(`SR5 Marketplace | Host "${selectedHostItem.name}" cloned into "${actor.name}" (upgrade).`);
+                            }
+                        }
+                    } else if (currentHostItem) {
+                        await actor.deleteEmbeddedDocuments("Item", [currentHostItem.id]);
                     }
                 }
+                if (actor.sheet) actor.sheet.render(true);
+            } else {
+                // 2. Create the document in the database
+                actor = await Actor.create(createData, { renderSheet: true });
+                
+                if (this.selectedActorType === "sr5-marketplace.shop") {
+                    // 3. Clone Matrix Host item into the newly created Shop Actor
+                    if (this.selectedHostUuid) {
+                        const hostItem = await fromUuid(this.selectedHostUuid);
+                        if (hostItem) {
+                            const hostData = hostItem.toObject();
+                            delete hostData._id; // Ensure clean ID creation
+                            await actor.createEmbeddedDocuments("Item", [hostData]);
+                            console.log(`SR5 Marketplace | Host "${hostItem.name}" cloned into "${actor.name}".`);
+                        }
+                    }
+                }
+            }
 
+            if (this.selectedActorType === "sr5-marketplace.shop") {
                 // 4. Batch seed inventory using fast synchronous index calculations
                 if (this.selectedItemUuids.size > 0) {
                     ui.notifications.info(`Seeding ${this.selectedItemUuids.size} items into shop inventory...`);
@@ -754,5 +851,58 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
             this.resolve = null;
         }
         return super.close(options);
+    }
+
+    async _onLoadExistingShop() {
+        const shops = game.actors.filter(a => a.type === "sr5-marketplace.shop");
+        if (shops.length === 0) {
+            ui.notifications.warn("No Shop Actors found in this World.");
+            return;
+        }
+
+        const optionsHtml = shops.map(s => `<option value="${s.uuid}">${s.name}</option>`).join("");
+        const content = `
+            <div class="form-group" style="padding: 10px; display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-weight: bold;">Select Shop to Upgrade:</label>
+                <select name="selectedShopUuid" class="form-select-custom" style="padding: 6px;">
+                    ${optionsHtml}
+                </select>
+            </div>
+        `;
+
+        const choice = await foundry.applications.api.DialogV2.wait({
+            window: { title: "Load Shop for Upgrade" },
+            content: content,
+            buttons: [
+                { label: "Load", action: "load", icon: "fa-solid fa-file-import" },
+                { label: "Cancel", action: "cancel", icon: "fa-solid fa-times" }
+            ],
+            default: "cancel"
+        });
+
+        if (choice === "load") {
+            const selectEl = document.querySelector('select[name="selectedShopUuid"]');
+            const uuid = selectEl?.value;
+            if (uuid) {
+                const actor = await fromUuid(uuid);
+                if (actor) {
+                    this.existingActorUuid = actor.uuid;
+                    this.actorName = actor.name;
+                    this.actorImg = actor.img;
+                    this.shopMarkup = actor.system.shop?.itemMarkup ?? 0;
+                    this.shopRadius = actor.system.shop?.shopRadius?.value ?? 1;
+                    this.shopDescription = actor.system.description?.value ?? "";
+                    this.isFactory = actor.system.shop?.isFactory ?? false;
+                    this.factoryRating = actor.system.shop?.factoryRating ?? 5;
+                    this.selectedEmployeeUuids = new Set(actor.system.shop?.employees || []);
+                    
+                    const hostItem = actor.hostItem;
+                    this.selectedHostUuid = hostItem ? hostItem.uuid : null;
+
+                    // Re-render
+                    this.render(false);
+                }
+            }
+        }
     }
 }

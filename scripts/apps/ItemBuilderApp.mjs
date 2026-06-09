@@ -42,6 +42,12 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         // this.builderService = new BuilderService(); // To be added later no builder data needed here
         this.tabGroups = { main: "builder" }; // Default to the 'builder' tab
 
+        this.workshopActorUuid = options.workshopActorUuid || null;
+        this.selectedVehicleActorUuid = null;
+        if (options.initialTab) {
+            this.tabGroups.main = options.initialTab;
+        }
+
         // --- Item & Category Selection State ---
         this.selectedKey = null;
         this.itemSearchQuery = "";
@@ -74,6 +80,11 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     // Handler 2: Base Items -> Bottom Slots
                     dragSelector: ".item-selector-section .item-card[draggable='true']",
                     dropSelector: ".bottom-slots .mod-slot[data-slot-id]"
+                },
+                {
+                    // Handler 3: Workshop Modifications -> Category Boxes
+                    dragSelector: ".workshop-shelf [draggable='true']",
+                    dropSelector: ".workshop-layout .category-box.drop-target"
                 }
             ],
             actions: {
@@ -103,7 +114,11 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 setEffectTargetType: this.#onSetEffectTargetType,
                 // --- Tagify ---
                 toggleMultiSelectDropdown: this.#onToggleMultiSelectDropdown,
-                updateMultiSelect: this.#onUpdateMultiSelect
+                updateMultiSelect: this.#onUpdateMultiSelect,
+                // Workshop Tab
+                selectVehicleActor: this.#onSelectVehicleActor,
+                deselectVehicleActor: this.#onDeselectVehicleActor,
+                runWorkshopRepair: this.#onRunWorkshopRepair
             }
         }, { inplace: false });
     }
@@ -223,13 +238,72 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         });
     }
 
-    /**
-     * Callback for when a dragged element is dropped on a target.
-     * @param {DragEvent} event The originating DragEvent.
-     */
     async _onDrop(event) {
         const data = JSON.parse(event.dataTransfer.getData("text/plain"));
         const slot = event.currentTarget;
+        
+        // Check if dropping onto a workshop category box
+        const isWorkshopDrop = slot.classList.contains("category-box");
+        if (isWorkshopDrop) {
+            const targetCategory = slot.dataset.category; // e.g. "drive"
+            const vehicleUuid = this.selectedVehicleActorUuid;
+            if (!vehicleUuid) return;
+            const vehicle = await fromUuid(vehicleUuid);
+            if (!vehicle) return;
+
+            const item = await fromUuid(data.uuid);
+            if (!item || item.type !== "modification") {
+                ui.notifications.warn("Only modifications can be installed in the workshop.");
+                return;
+            }
+
+            // Verify category matches
+            const modCategory = (item.system.category || "cosmetic").toLowerCase();
+            if (modCategory !== targetCategory) {
+                ui.notifications.warn(`This modification belongs to the "${modCategory}" category, not "${targetCategory}".`);
+                return;
+            }
+
+            // Check slot limit
+            const bodyRating = vehicle.system.attributes?.body?.value ?? 0;
+            const getSlotLimit = (cat) => {
+                const override = game.settings.get("sr5-marketplace", `slotOverride_${cat}`);
+                return override > 0 ? override : bodyRating;
+            };
+
+            const max = getSlotLimit(targetCategory);
+            const installedMods = vehicle.items.filter(i => i.type === "modification" && (i.system.category || "cosmetic").toLowerCase() === targetCategory);
+            const used = installedMods.reduce((sum, m) => sum + (Number(m.system.rating ?? m.system.technology?.rating ?? 1) || 1), 0);
+            const newModRating = Number(item.system.rating ?? item.system.technology?.rating ?? 1) || 1;
+
+            if (used + newModRating > max) {
+                ui.notifications.error(`Not enough slots available in category "${targetCategory}" (Max: ${max}, Used: ${used}, Required: ${newModRating}).`);
+                return;
+            }
+
+            // Close any existing build test dialogs
+            const buildTestApp = Object.values(ui.windows).find(w => w.constructor.name === "BuildTestApp");
+            if (buildTestApp) {
+                buildTestApp.close();
+            }
+
+            // Open the build test dialog!
+            const rating = Number(item.system.rating ?? item.system.technology?.rating ?? 1);
+            const threshold = rating > 0 ? rating * 2 : 12;
+
+            const workshop = await fromUuid(this.workshopActorUuid);
+
+            await game.sr5marketplace.api.system.BuildTest.run(vehicle.uuid, {
+                buildData: item.toObject(),
+                threshold: threshold,
+                installSource: data.isFromOwner ? "owner" : "workshop",
+                installSourceId: data.entryId,
+                vehicle: vehicle,
+                workshop: workshop
+            });
+            return;
+        }
+
         const slotId = slot.dataset.slotId;
         const isBottomSlot = !!slot.closest(".bottom-slots");
 
@@ -421,7 +495,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     async _prepareContext(options) {
         // At the start of every render, get the latest state from the flag.
         const builderData = options.builderData ?? await BuilderStateService.getState();
-
+ 
         // Automatically switch tabs if the selected base item type demands it
         if (builderData.baseItem) {
             const isVehicle = builderData.baseItem.type === "vehicle";
@@ -431,17 +505,17 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 this.tabGroups.main = "builder";
             }
         }
-
+ 
         this.purchasingActor = await ActorSelectionService.getSelectedActor();
-
+ 
         const AppUserId = game.user.id;
         const testStates = await AppTestFlagService.readState(AppUserId);
         const unresolvedTest = Object.values(testStates).find(t => !t.resolved && t.testType === "BuildTest");
         this.activeDialogId = unresolvedTest?.id || null;
-
+ 
         const activeTestState = this.activeDialogId ? testStates[this.activeDialogId] : null;
         this.activeTestState = activeTestState;
-
+ 
         if (activeTestState) {
             const dialogBuilder = new AppDialogBuilder();
             const dialogContext = await dialogBuilder.buildTestDialogContext(activeTestState);
@@ -458,9 +532,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             hasBaseItem: !!builderData.baseItem, // Use the state we just fetched
             builderData: builderData,             // Pass it to the partial
             activeTab: this.tabGroups.main,
-            activeTestState: this.activeTestState
+            activeTestState: this.activeTestState,
+            workshopActorUuid: this.workshopActorUuid
         };
-
+ 
         switch (this.tabGroups.main) {
             case "effects":
                 this.tabGroups.main = "effects";
@@ -468,6 +543,129 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 const effectsContext = await effectsBuilder.buildEffectsContext(builderData);
                 foundry.utils.mergeObject(partialContext, effectsContext);
                 tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/Effects.html", partialContext);
+                break;
+            case "workshop":
+                this.tabGroups.main = "workshop";
+                try {
+                    if (this.workshopActorUuid) {
+                        const workshopActor = await fromUuid(this.workshopActorUuid);
+                        if (workshopActor) {
+                            partialContext.workshopActor = workshopActor;
+                            partialContext.factoryRating = workshopActor.system.shop.factoryRating;
+                            partialContext.isFactory = workshopActor.system.shop.isFactory;
+ 
+                            const tokensInRadius = await workshopActor.getTokensInRadius() || [];
+                            
+                            const vehiclesInRadius = tokensInRadius.filter(t => t.actor?.type === "vehicle").map(t => ({
+                                uuid: t.actor.uuid,
+                                tokenId: t.id,
+                                name: t.name,
+                                img: t.actor.img || "systems/shadowrun5e/dist/icons/importer/equipment/vehicle.svg",
+                                body: t.actor.system.attributes?.body?.value ?? 0,
+                                physicalTrack: t.actor.system.physical_track
+                            }));
+                            partialContext.vehiclesInRadius = vehiclesInRadius;
+     
+                            let activeVehicle = null;
+                            if (this.selectedVehicleActorUuid) {
+                                activeVehicle = await fromUuid(this.selectedVehicleActorUuid);
+                            }
+                            if (!activeVehicle && vehiclesInRadius.length > 0) {
+                                if (vehiclesInRadius.length === 1) {
+                                    this.selectedVehicleActorUuid = vehiclesInRadius[0].uuid;
+                                    activeVehicle = await fromUuid(this.selectedVehicleActorUuid);
+                                }
+                            }
+                            
+                            partialContext.activeVehicle = activeVehicle;
+ 
+                            if (activeVehicle) {
+                                const installedMods = activeVehicle.items.filter(i => i.type === "modification");
+                                const bodyRating = activeVehicle.system.attributes?.body?.value ?? 0;
+                                const getSlotLimit = (cat) => {
+                                    const override = game.settings.get("sr5-marketplace", `slotOverride_${cat}`);
+                                    return override > 0 ? override : bodyRating;
+                                };
+ 
+                                const categories = {
+                                    drive: { label: "SR5Marketplace.Factory.Category.Drive", items: [], max: getSlotLimit("drive"), used: 0 },
+                                    protection: { label: "SR5Marketplace.Factory.Category.Protection", items: [], max: getSlotLimit("protection"), used: 0 },
+                                    weapons: { label: "SR5Marketplace.Factory.Category.Weapons", items: [], max: getSlotLimit("weapons"), used: 0 },
+                                    body: { label: "SR5Marketplace.Factory.Category.Hull", items: [], max: getSlotLimit("body"), used: 0 },
+                                    electronics: { label: "SR5Marketplace.Factory.Category.Electronics", items: [], max: getSlotLimit("electronics"), used: 0 },
+                                    cosmetic: { label: "SR5Marketplace.Factory.Category.Cosmetic", items: [], max: getSlotLimit("cosmetic"), used: 0 }
+                                };
+ 
+                                for (const mod of installedMods) {
+                                    const cat = (mod.system.category || "cosmetic").toLowerCase();
+                                    const rating = mod.system.rating ?? mod.system.technology?.rating ?? 1;
+                                    if (categories[cat]) {
+                                        categories[cat].items.push(mod);
+                                        categories[cat].used += Number(rating) || 1;
+                                    } else {
+                                        categories.cosmetic.items.push(mod);
+                                        categories.cosmetic.used += Number(rating) || 1;
+                                    }
+                                }
+                                partialContext.categories = categories;
+                                
+                                const pTrack = activeVehicle.system.physical_track || {};
+                                partialContext.physicalTrack = {
+                                    value: pTrack.value ?? 0,
+                                    max: pTrack.max ?? 0,
+                                    boxes: Array.from({ length: pTrack.max ?? 0 }, (_, i) => ({
+                                        filled: i < (pTrack.value ?? 0)
+                                    }))
+                                };
+                            }
+ 
+                            const shopInv = workshopActor.system.shop.inventory || {};
+                            const shopInvEntries = Object.entries(shopInv);
+                            
+                            const shopModsPromises = shopInvEntries.map(async ([entryId, itemData]) => {
+                                const sourceItem = await fromUuid(itemData.itemUuid);
+                                if (sourceItem && sourceItem.type === "modification") {
+                                    return {
+                                        uuid: sourceItem.uuid,
+                                        entryId: entryId,
+                                        name: sourceItem.name,
+                                        img: sourceItem.img || "systems/shadowrun5e/dist/icons/importer/equipment/modification.svg",
+                                        qty: itemData.qty ?? 1,
+                                        category: sourceItem.system.category || "cosmetic",
+                                        rating: sourceItem.system.rating ?? sourceItem.system.technology?.rating ?? 1,
+                                        isFromOwner: false
+                                    };
+                                }
+                                return null;
+                            });
+                            
+                            const resolvedShopMods = await Promise.all(shopModsPromises);
+                            const modsOnShelf = resolvedShopMods.filter(m => m !== null);
+ 
+                            const ownerActor = await workshopActor.getOwner();
+                            if (ownerActor) {
+                                const ownerMods = ownerActor.items.filter(i => i.type === "modification");
+                                for (const mod of ownerMods) {
+                                    modsOnShelf.push({
+                                        uuid: mod.uuid,
+                                        entryId: mod.id,
+                                        name: mod.name,
+                                        img: mod.img || "systems/shadowrun5e/dist/icons/importer/equipment/modification.svg",
+                                        qty: mod.system.quantity ?? 1,
+                                        category: mod.system.category || "cosmetic",
+                                        rating: mod.system.rating ?? mod.system.technology?.rating ?? 1,
+                                        isFromOwner: true
+                                    });
+                                }
+                            }
+                            partialContext.modsOnShelf = modsOnShelf;
+                        }
+                    }
+                    tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/Workshop.html", partialContext);
+                } catch (workshopError) {
+                    console.error("SR5 Marketplace | Error in workshop context prep:", workshopError);
+                    throw workshopError;
+                }
                 break;
             case "builder":
             case "vehicle":
@@ -612,7 +810,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             tabContent,
             purchasingActor: this.purchasingActor,
             builder: builderContext,
-            activeTab: this.tabGroups.main
+            activeTab: this.tabGroups.main,
+            workshopActorUuid: this.workshopActorUuid
         };
     }
 
@@ -1466,5 +1665,47 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      * @private
      */
     #dragDrop = this.#createDragDropHandlers();
+
+    static async #onSelectVehicleActor(event, target) {
+        const uuid = target.dataset.uuid;
+        if (uuid) {
+            this.selectedVehicleActorUuid = uuid;
+            this.render();
+        }
+    }
+
+    static async #onDeselectVehicleActor(event, target) {
+        this.selectedVehicleActorUuid = null;
+        this.render();
+    }
+
+    static async #onRunWorkshopRepair(event, target) {
+        if (!this.selectedVehicleActorUuid) return;
+        const vehicleActor = await fromUuid(this.selectedVehicleActorUuid);
+        if (!vehicleActor) return;
+        
+        const damage = vehicleActor.system.physical_track?.value ?? 0;
+        if (damage <= 0) {
+            ui.notifications.info(game.i18n.localize("SR5Marketplace.ItemBuilder.NoDamageToRepair"));
+            return;
+        }
+
+        const threshold = damage * 3;
+
+        // Close any existing build test dialogs
+        const buildTestApp = Object.values(ui.windows).find(w => w.constructor.name === "BuildTestApp");
+        if (buildTestApp) {
+            buildTestApp.close();
+        }
+
+        const workshop = await fromUuid(this.workshopActorUuid);
+
+        await game.sr5marketplace.api.system.BuildTest.run(vehicleActor.uuid, {
+            isRepair: true,
+            threshold: threshold,
+            vehicle: vehicleActor,
+            workshop: workshop
+        });
+    }
 
 }

@@ -53,6 +53,23 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
 
         data.buildData = data.buildData || options?.buildData || null;
 
+        if (options?.workshop) {
+            const rating = options.workshop.system.shop?.factoryRating ?? 5;
+            const cond = rating - 5;
+            let tools = 0;
+            if (rating === 6) tools = 1;
+            else if (rating === 5) tools = 0;
+            else if (rating === 3 || rating === 4) tools = -2;
+            else if (rating === 1 || rating === 2) tools = -4;
+
+            if (data.workingConditions === undefined) {
+                data.workingConditions = String(cond);
+            }
+            if (data.toolsParts === undefined) {
+                data.toolsParts = String(tools);
+            }
+        }
+
         if (!data.manualHits || typeof data.manualHits.value === 'undefined') {
             data.manualHits = game.shadowrun5e.data.createData('value_field', { base: 0, override: { value: null, label: "SR5.ManualOverride" } });
         }
@@ -369,20 +386,55 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
         }
 
         if (this.success) {
-            const buildData = this.data.buildData;
-            if (buildData) {
-                if (buildData.type === "vehicle") {
-                    // Send socket request to GM client to create actor and grant ownership
-                    game.socket.emit(`module.sr5-marketplace`, {
-                        action: "create_actor",
-                        actorData: buildData,
-                        userId: game.user.id
-                    });
-                    ui.notifications.info(game.i18n.format("SR5Marketplace.ItemBuilder.SuccessBuildCreated", { name: buildData.name }));
+            const vehicle = this.options?.vehicle || this.actor;
+
+            if (this.data.isRepair) {
+                const healCompletely = game.settings.get("sr5-marketplace", "healCompletelyOnRepairSuccess");
+                if (healCompletely) {
+                    await vehicle.update({ "system.physical_track.value": 0 });
+                    ui.notifications.info(game.i18n.localize("SR5Marketplace.ItemBuilder.RepairHealedComplete"));
                 } else {
-                    // Item document can be created directly by player
-                    await this.actor.createEmbeddedDocuments("Item", [buildData]);
-                    ui.notifications.info(game.i18n.format("SR5Marketplace.ItemBuilder.SuccessBuildCreated", { name: buildData.name }));
+                    const currentDamage = vehicle.system.physical_track?.value ?? 0;
+                    const netHits = this.calculateNetHits().value;
+                    const newDamage = Math.max(0, currentDamage - netHits);
+                    await vehicle.update({ "system.physical_track.value": newDamage });
+                    ui.notifications.info(game.i18n.format("SR5Marketplace.ItemBuilder.RepairHealedHits", { hits: netHits, damage: newDamage }));
+                }
+            } else {
+                const buildData = this.data.buildData;
+                if (buildData) {
+                    if (buildData.type === "vehicle") {
+                        // Send socket request to GM client to create actor and grant ownership
+                        game.socket.emit(`module.sr5-marketplace`, {
+                            action: "create_actor",
+                            actorData: buildData,
+                            userId: game.user.id
+                        });
+                        ui.notifications.info(game.i18n.format("SR5Marketplace.ItemBuilder.SuccessBuildCreated", { name: buildData.name }));
+                    } else {
+                        // Item document can be created directly by player
+                        const targetActor = vehicle || this.actor;
+                        await targetActor.createEmbeddedDocuments("Item", [buildData]);
+                        ui.notifications.info(game.i18n.format("SR5Marketplace.ItemBuilder.SuccessBuildCreated", { name: buildData.name }));
+                    }
+                }
+
+                // Handle modification item removal after successful install
+                if (this.data.installSource === "owner") {
+                    const ownerActor = this.actor; // The test roller is the owner
+                    if (ownerActor && this.data.installSourceId) {
+                        const itemExists = ownerActor.items.has(this.data.installSourceId);
+                        if (itemExists) {
+                            await ownerActor.deleteEmbeddedDocuments("Item", [this.data.installSourceId]);
+                            console.log(`SR5 Marketplace | Deleted installed modification ${this.data.installSourceId} from owner ${ownerActor.name}`);
+                        }
+                    }
+                } else if (this.data.installSource === "workshop" && this.data.installSourceId) {
+                    const workshopActor = this.options?.workshop;
+                    if (workshopActor) {
+                        await workshopActor.removeItemFromInventory(this.data.installSourceId);
+                        console.log(`SR5 Marketplace | Deleted installed modification ${this.data.installSourceId} from workshop inventory`);
+                    }
                 }
             }
 
@@ -448,16 +500,56 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
      * Entry point to launch the Build Test.
      */
     static async run(actorRef, testParams = {}, options = {}) {
-        const rawActor = typeof actorRef === "string" ? await fromUuid(actorRef) : actorRef;
-        const actor = rawActor instanceof Actor ? rawActor : rawActor?.actor || null;
+        let rawActor = typeof actorRef === "string" ? await fromUuid(actorRef) : actorRef;
+        let actor = rawActor instanceof Actor ? rawActor : rawActor?.actor || null;
         if (!actor) throw new Error("BuildTest: actor not found");
 
-        const data = {};
+        const data = {
+            isRepair: testParams.isRepair ?? false,
+            installSource: testParams.installSource ?? null,
+            installSourceId: testParams.installSourceId ?? null
+        };
         const finalOptions = { 
             ...options, 
             buildData: testParams.buildData,
             threshold: testParams.threshold
         };
+
+        if (testParams.vehicle) {
+            finalOptions.vehicle = typeof testParams.vehicle === "string" ? await fromUuid(testParams.vehicle) : testParams.vehicle;
+        }
+        if (testParams.workshop) {
+            finalOptions.workshop = typeof testParams.workshop === "string" ? await fromUuid(testParams.workshop) : testParams.workshop;
+        }
+
+        // Workshop detection
+        if (actor.type === "vehicle" && canvas.ready) {
+            const vehicleToken = canvas.tokens.placeables.find(t => t.actor?.id === actor.id);
+            if (vehicleToken) {
+                const workshops = canvas.tokens.placeables.filter(t => 
+                    t.actor?.type === "sr5-marketplace.shop" && 
+                    t.actor?.system?.shop?.isFactory === true
+                );
+                for (const wToken of workshops) {
+                    const radius = wToken.actor.system.shop.shopRadius.value;
+                    const p1 = vehicleToken.center || { x: vehicleToken.x, y: vehicleToken.y };
+                    const p2 = wToken.center || { x: wToken.x, y: wToken.y };
+                    const distance = canvas.grid.measurePath([p1, p2]).distance;
+                    if (distance <= radius) {
+                        finalOptions.workshop = wToken.actor;
+                        const ownerUuid = wToken.actor.system.shop.owner;
+                        if (ownerUuid) {
+                            const ownerActor = await fromUuid(ownerUuid);
+                            if (ownerActor) {
+                                finalOptions.vehicle = actor;
+                                actor = ownerActor; // Override roller actor to workshop owner
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
 
         finalOptions.showDialog = true;
         finalOptions.showMessage = true;

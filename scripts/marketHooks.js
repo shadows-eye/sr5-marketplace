@@ -35,7 +35,8 @@ export {
     diceHelperService,
     themeService,
     systemDataMapperService,
-    ItemDataServices
+    ItemDataServices,
+    ItemBuilderApp
 };
 
 import { inGameMarketplace } from "./apps/inGameMarketplace.mjs";
@@ -80,6 +81,7 @@ const initializeTemplates = () => {
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/BuildTestDialog.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/ItemDetails.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/vehicleDetails.html",
+        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/Workshop.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/multi-select.html",
         "modules/sr5-marketplace/templates/apps/marketshouter/marketshouter.html",
         "modules/sr5-marketplace/templates/chat/chatMessageRequest.html",
@@ -280,6 +282,30 @@ const initializeSettings = () => {
         type: Boolean,
         default: false,
     });
+
+    game.settings.register("sr5-marketplace", "healCompletelyOnRepairSuccess", {
+        name: "SR5Marketplace.Marketplace.Settings.HealCompletely.name",
+        hint: "SR5Marketplace.Marketplace.Settings.HealCompletely.hint",
+        scope: "world",
+        config: true,
+        type: Boolean,
+        default: false,
+        restricted: true,
+    });
+
+    const slotCategories = ["drive", "protection", "weapons", "body", "electronics", "cosmetic"];
+    for (const cat of slotCategories) {
+        const capCat = cat.charAt(0).toUpperCase() + cat.slice(1);
+        game.settings.register("sr5-marketplace", `slotOverride_${cat}`, {
+            name: `SR5Marketplace.Marketplace.Settings.SlotOverride${capCat}.name`,
+            hint: `SR5Marketplace.Marketplace.Settings.SlotOverride${capCat}.hint`,
+            scope: "world",
+            config: true,
+            type: Number,
+            default: 0,
+            restricted: true,
+        });
+    }
 
     registerShopRegionHooks();
 };
@@ -752,8 +778,12 @@ Hooks.on("canvasReady", () => {
 
             console.log(`Marketplace | Intercepted double-click on Shop Actor: ${hoveredToken.name}`);
 
-            // Open the marketplace application, passing the shop's UUID as an option.
-            new inGameMarketplace({ shopActorUuid: hoveredToken.actor.uuid }).render(true);
+            if (hoveredToken.actor.system.shop?.isFactory) {
+                new ItemBuilderApp({ workshopActorUuid: hoveredToken.actor.uuid, initialTab: "workshop" }).render(true);
+            } else {
+                // Open the marketplace application, passing the shop's UUID as an option.
+                new inGameMarketplace({ shopActorUuid: hoveredToken.actor.uuid }).render(true);
+            }
         }
     });
 
