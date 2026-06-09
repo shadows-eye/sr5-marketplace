@@ -880,9 +880,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         });
 
         // E. Update name
-        if (descriptionModList.length > 0) {
-            baseItemData.name = `${baseItemName} (Modified)`;
-        }
+        // (Do not append anything to the name automatically)
 
         // F. Update description
         let description = "";

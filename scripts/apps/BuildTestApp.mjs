@@ -45,7 +45,8 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 resolveBuildTest: this.#onResolveBuildTest,
                 clearBuildTest: this.#onClearBuildTest,
                 addCustomBuildTestModifier: this.#onAddCustomBuildTestModifier,
-                removeCustomBuildTestModifier: this.#onRemoveCustomBuildTestModifier
+                removeCustomBuildTestModifier: this.#onRemoveCustomBuildTestModifier,
+                updateBuildItemName: this._onUpdateBuildItemName
             }
         }, { inplace: false });
     }
@@ -96,6 +97,16 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 }
             });
         }
+    }
+
+    static async _onUpdateBuildItemName(event, target) {
+        if (!this.activeTestState) return;
+        const newName = target.value.trim();
+        if (!newName) return;
+
+        this.activeTestState.buildData.name = newName;
+        await AppTestFlagService.updateTest(this.activeTestState.id, { buildData: this.activeTestState.buildData });
+        this.render();
     }
 
     static async _onChangeBuildTestParameter(event, target) {

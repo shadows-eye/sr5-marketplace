@@ -206,9 +206,19 @@
             <div class="MarketAppDialog-final-result-container">
                 <div class="MarketAppDialog-final-summary p-3 bg-[var(--attribute-group-bg)] rounded border border-[var(--border-color-medium)]">
                     {{#if activeTestState.isSuccess}}
-                        <h3 class="success text-sm font-bold text-[var(--color-green-button)] flex items-center justify-center gap-1.5">
+                        <h3 class="success text-sm font-bold text-[var(--color-green-button)] flex items-center justify-center gap-1.5 mb-2">
                             <i class="fas fa-check-circle"></i> {{localize "SR5Marketplace.ItemBuilder.SuccessBuildCreated" name=activeTestState.buildData.name}}
                         </h3>
+                        
+                        <div class="form-group flex flex-row items-center justify-center gap-2 mb-3 p-2 bg-[var(--Form-background-group)] rounded border border-[var(--border-color-medium)]">
+                            <label class="font-bold text-xs opacity-80 mb-0 flex items-center gap-1.5 shrink-0">
+                                {{localize "SR5Marketplace.UI.Name"}}:
+                            </label>
+                            <div class="flex-grow relative flex items-center">
+                                <input type="text" class="build-item-name-input px-2 py-1 pr-6 text-sm rounded border border-[var(--border-color-medium)] bg-[var(--input-bg-transparent)] text-[var(--text-color-primary)] font-bold w-full" value="{{activeTestState.buildData.name}}" data-action="updateBuildItemName" />
+                                <i class="fas fa-pen absolute right-2 text-xs opacity-60 pointer-events-none" style="color: var(--text-color-subheader);"></i>
+                            </div>
+                        </div>
                         
                         <div class="acquisition-details text-xs mt-2 opacity-90 text-center">
                             {{localize "SR5Marketplace.AppDialogItem.ExtendedSuccessDetails" 

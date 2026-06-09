@@ -287,7 +287,7 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
 
     /** @override */
     get success() {
-        return this.extendedHits().value >= this.threshold.value;
+        return this.extendedHits.value >= this.threshold.value;
     }
 
     /** @override */
@@ -297,7 +297,7 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
 
     /** @override */
     calculateNetHits() {
-        const hitsToUse = this.extendedHits();
+        const hitsToUse = this.extendedHits;
         const base = this.hasThreshold ? Math.max(hitsToUse.value - this.threshold.value, 0) : hitsToUse.value;
         const netHits = game.shadowrun5e.data.createData('value_field', {
             label: "SR5.NetHits",

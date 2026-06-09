@@ -424,7 +424,7 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
 
         // For an extended test, "success" means the CUMULATIVE hits have met the threshold.
         if (rule === "extended") {
-            return this.extendedHits().value >= this.threshold.value;
+            return this.extendedHits.value >= this.threshold.value;
         }
 
         // For all other tests (simple, opposed), we use the default system behavior.
@@ -457,7 +457,7 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
         let hitsToUse;
 
         if (rule === "extended") {
-            hitsToUse = this.extendedHits();
+            hitsToUse = this.extendedHits;
         } else {
             hitsToUse = this.hits;
         }
