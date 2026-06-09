@@ -45,8 +45,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 resolveBuildTest: this.#onResolveBuildTest,
                 clearBuildTest: this.#onClearBuildTest,
                 addCustomBuildTestModifier: this.#onAddCustomBuildTestModifier,
-                removeCustomBuildTestModifier: this.#onRemoveCustomBuildTestModifier,
-                updateBuildItemName: this._onUpdateBuildItemName
+                removeCustomBuildTestModifier: this.#onRemoveCustomBuildTestModifier
             }
         }, { inplace: false });
     }
@@ -97,16 +96,19 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 }
             });
         }
-    }
 
-    static async _onUpdateBuildItemName(event, target) {
-        if (!this.activeTestState) return;
-        const newName = target.value.trim();
-        if (!newName) return;
-
-        this.activeTestState.buildData.name = newName;
-        await AppTestFlagService.updateTest(this.activeTestState.id, { buildData: this.activeTestState.buildData });
-        this.render();
+        // Bind name edit change tracking to prevent losing focus while typing
+        const nameInput = this.element.querySelector(".build-item-name-input");
+        if (nameInput) {
+            nameInput.addEventListener("change", async (e) => {
+                const newName = e.target.value.trim();
+                if (newName && this.activeTestState) {
+                    this.activeTestState.buildData.name = newName;
+                    await AppTestFlagService.updateTest(this.activeTestState.id, { buildData: this.activeTestState.buildData });
+                    this.render();
+                }
+            });
+        }
     }
 
     static async _onChangeBuildTestParameter(event, target) {
@@ -371,6 +373,14 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
         if (!this.activeTestState || this.activeTestState.status !== 'resolved') return;
 
         const buildData = this.activeTestState.buildData;
+        const nameInput = this.element.querySelector(".build-item-name-input");
+        if (nameInput && buildData) {
+            const finalName = nameInput.value.trim();
+            if (finalName) {
+                buildData.name = finalName;
+            }
+        }
+
         const doc = await fromUuid(this.activeTestState.actorUuid);
         const actor = doc instanceof Actor ? doc : doc?.actor || null;
 
