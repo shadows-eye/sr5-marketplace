@@ -659,6 +659,9 @@
             "MentalLimitApplied": "Mental Limit is applied to this test.",
             "CriticalGlitchPartsDestroyed": "Critical glitch! The parts were destroyed and the builder queue has been cleared.",
             "SuccessBuildCreated": "Build successful! Created {name} in inventory.",
+            "RepairHealedComplete": "Vehicle successfully repaired and fully healed.",
+            "RepairHealedHits": "Vehicle repaired! Recovered {hits} boxes of damage. Remaining damage: {damage}.",
+            "SuccessRepairCreated": "Vehicle successfully repaired!",
             "WorkingConditionsOptions": {
                 "excellent": "Excellent (+1)",
                 "average": "Average (0)",

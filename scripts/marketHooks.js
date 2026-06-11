@@ -723,6 +723,12 @@ Hooks.on("ready", async () => {
                 if (newActor) {
                     console.log(`SR5 Marketplace | GM created actor: ${newActor.name} for user ${data.userId}`);
                 }
+            } else if (data.action === "update_actor_field") {
+                const actor = await fromUuid(data.actorUuid);
+                if (actor) {
+                    await actor.update(data.updateData);
+                    console.log(`SR5 Marketplace | GM updated actor field for: ${actor.name}`);
+                }
             }
         }
         if (data.type === "request_resolved" || data.type === "new_request" || data.type === "setting_updated") {
@@ -1119,7 +1125,18 @@ async function handleGMContinueExtendedTest({ userId, dialogId, actorUuid, rollC
 
         const previousHits = activeTestState.result.values.extendedHits.value;
         test.data.values.extendedHits.value += previousHits;
-        test.data.values.extendedHits.mod.push({ name: "Previous Hits", value: previousHits });
+        if (test.data.values.extendedHits.mod) {
+            test.data.values.extendedHits.mod.push({ name: "Previous Hits", value: previousHits });
+        }
+        if (test.data.values.extendedHits.changes) {
+            test.data.values.extendedHits.changes.push({
+                name: "Previous Hits",
+                value: previousHits,
+                mode: typeof CONST !== 'undefined' ? (CONST.ACTIVE_EFFECT_MODES?.ADD ?? 2) : 2,
+                priority: 0,
+                enabled: true
+            });
+        }
 
         let finalStatus = 'extended-inprogress';
         if (test.data.values.extendedHits.value >= test.data.threshold.value || test.pool.value <= 0) {
@@ -1153,7 +1170,29 @@ async function handleGMRunBuildTest({ userId, dialogId, actorUuid, data }) {
         const actor = doc instanceof Actor ? doc : doc?.actor || null;
         if (!actor) return;
 
-        const options = { showDialog: false, showMessage: false };
+        const testStates = await AppTestFlagService.readState(userId);
+        const activeTestState = testStates[dialogId];
+
+        const vehicleDoc = activeTestState?.vehicleUuid ? await fromUuid(activeTestState.vehicleUuid) : null;
+        const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+        const workshopDoc = activeTestState?.workshopUuid ? await fromUuid(activeTestState.workshopUuid) : null;
+        const workshop = workshopDoc instanceof Actor ? workshopDoc : workshopDoc?.actor || null;
+
+        if (activeTestState) {
+            data.isRepair = activeTestState.isRepair ?? false;
+            data.installSource = activeTestState.installSource ?? null;
+            data.installSourceId = activeTestState.installSourceId ?? null;
+        }
+
+        const options = { 
+            showDialog: false, 
+            showMessage: false,
+            buildData: activeTestState?.buildData,
+            threshold: activeTestState?.threshold,
+            vehicle: vehicle,
+            workshop: workshop,
+            rollCount: 1
+        };
         const test = new game.shadowrun5e.tests.BuildTest(data, { actor }, options);
         await test.execute();
 
@@ -1207,6 +1246,9 @@ async function handleGMContinueBuildTest({ userId, dialogId, actorUuid, rollCoun
         if (!activeTestState) return;
 
         const data = {
+            isRepair: activeTestState.isRepair ?? false,
+            installSource: activeTestState.installSource ?? null,
+            installSourceId: activeTestState.installSourceId ?? null,
             action: {
                 skill: activeTestState.skill,
                 attribute: activeTestState.attribute,
@@ -1222,12 +1264,36 @@ async function handleGMContinueBuildTest({ userId, dialogId, actorUuid, rollCoun
         };
 
         const previousHits = activeTestState.result.values.extendedHits.value;
-        const options = { showDialog: false, showMessage: false };
+        const vehicleDoc = activeTestState.vehicleUuid ? await fromUuid(activeTestState.vehicleUuid) : null;
+        const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+        const workshopDoc = activeTestState.workshopUuid ? await fromUuid(activeTestState.workshopUuid) : null;
+        const workshop = workshopDoc instanceof Actor ? workshopDoc : workshopDoc?.actor || null;
+
+        const options = { 
+            showDialog: false, 
+            showMessage: false,
+            buildData: activeTestState.buildData,
+            threshold: activeTestState.threshold,
+            vehicle: vehicle,
+            workshop: workshop,
+            rollCount: rollCount
+        };
         const test = new game.shadowrun5e.tests.BuildTest(data, { actor }, options);
         await test.execute();
 
         test.data.values.extendedHits.value += previousHits;
-        test.data.values.extendedHits.mod.push({ name: "Previous Hits", value: previousHits });
+        if (test.data.values.extendedHits.mod) {
+            test.data.values.extendedHits.mod.push({ name: "Previous Hits", value: previousHits });
+        }
+        if (test.data.values.extendedHits.changes) {
+            test.data.values.extendedHits.changes.push({
+                name: "Previous Hits",
+                value: previousHits,
+                mode: typeof CONST !== 'undefined' ? (CONST.ACTIVE_EFFECT_MODES?.ADD ?? 2) : 2,
+                priority: 0,
+                enabled: true
+            });
+        }
 
         let finalStatus = 'extended-inprogress';
         if (test.data.values.extendedHits.value >= test.data.threshold.value || test.pool.value <= 0) {

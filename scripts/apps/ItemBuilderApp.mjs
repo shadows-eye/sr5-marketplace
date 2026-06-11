@@ -60,7 +60,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.workshopShelfEntries = [];
         this.filteredWorkshopShelfEntries = [];
 
-        this.hoverTimeout = null; 
+        this.hoverTimeout = null;
         // To hold a reference to the active tooltip application
         this.tooltipApp = null;
 
@@ -125,7 +125,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 selectVehicleActor: this.#onSelectVehicleActor,
                 deselectVehicleActor: this.#onDeselectVehicleActor,
                 runWorkshopRepair: this.#onRunWorkshopRepair,
-                toggleBuiltIn: this.#onToggleBuiltIn
+                toggleBuiltIn: this.#onToggleBuiltIn,
+                clearConditionMonitor: this.#onClearConditionMonitor,
+                modifyConditionMonitor: this.#onModifyConditionMonitor,
+                rollConditionMonitor: this.#onRollConditionMonitor
             }
         }, { inplace: false });
     }
@@ -196,7 +199,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     }
                     return;
                 }
-                
+
                 if (!targetMountPoint || targetMountPoint === draggedMountPoint) {
                     slot.classList.add("initial-valid");
                 } else {
@@ -253,7 +256,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.draggedModData = null;
         this.draggedItemType = null;
         this.element.classList.remove("dragging-mod");
-        
+
         // Clean up ALL drag-related classes from ALL slots and workshop category boxes
         this.element.querySelectorAll(".mod-slot[data-slot-id], .category-box.drop-target").forEach(s => {
             s.classList.remove(
@@ -267,14 +270,15 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const data = JSON.parse(event.dataTransfer.getData("text/plain"));
         const slot = event.currentTarget;
 
-        
+
         // Check if dropping onto a workshop category box
         const isWorkshopDrop = slot.classList.contains("category-box");
         if (isWorkshopDrop) {
             const targetCategory = slot.dataset.category; // e.g. "drive"
             const vehicleUuid = this.selectedVehicleActorUuid;
             if (!vehicleUuid) return;
-            const vehicle = await fromUuid(vehicleUuid);
+            const vehicleDoc = await fromUuid(vehicleUuid);
+            const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
             if (!vehicle) return;
 
             const item = await fromUuid(data.uuid);
@@ -301,15 +305,15 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             const installedMods = vehicle.items.filter(i => {
                 if (i.type !== "modification") return false;
                 if ((i.system.category || "cosmetic").toLowerCase() !== targetCategory) return false;
-                
+
                 const isPreinstalled = i.getFlag?.("sr5-marketplace", "isPreinstalled") ||
-                                       i.system.preInstalled || 
-                                       i.system.preinstalled || 
-                                       i.system.isPreInstalled || 
-                                       i.system.isPreinstalled || 
-                                       i.flags?.shadowrun5e?.preInstalled || 
-                                       i.flags?.shadowrun5e?.preinstalled || 
-                                       false;
+                    i.system.preInstalled ||
+                    i.system.preinstalled ||
+                    i.system.isPreInstalled ||
+                    i.system.isPreinstalled ||
+                    i.flags?.shadowrun5e?.preInstalled ||
+                    i.flags?.shadowrun5e?.preinstalled ||
+                    false;
                 return !isPreinstalled;
             });
             const used = installedMods.reduce((sum, m) => sum + (Number(m.system.rating ?? m.system.technology?.rating ?? 1) || 1), 0);
@@ -332,7 +336,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
             const workshop = await fromUuid(this.workshopActorUuid);
 
-            await game.sr5marketplace.api.system.BuildTest.run(vehicle.uuid, {
+            console.log("SR5 Marketplace | Starting modification build test...");
+            const runResult = await game.shadowrun5e.tests.BuildTest.run(vehicle.uuid, {
                 buildData: item.toObject(),
                 threshold: threshold,
                 installSource: data.isFromOwner ? "owner" : "workshop",
@@ -340,6 +345,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 vehicle: vehicle,
                 workshop: workshop
             });
+            console.log("SR5 Marketplace | Modification build test resolved. Result:", runResult);
+            this.render(true);
             return;
         }
 
@@ -386,7 +393,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
             await BuilderStateService.addChange(slotId, droppedItemData);
             this.render();
-        } 
+        }
         else if (this.draggedItemType === "item") {
             if (!isBottomSlot) {
                 ui.notifications.error("Items can only be placed in the bottom slots.");
@@ -460,7 +467,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             // --- UNIFIED TOOLTIP LISTENERS ---
             // Select all elements that should have a hover tooltip
             const hoverTargets = this.element.querySelectorAll("[data-hover-delay]");
-            
+
             hoverTargets.forEach(target => {
                 target.addEventListener("mouseenter", this.#onItemHoverIn.bind(this));
                 target.addEventListener("mouseleave", this.#onItemHoverOut.bind(this));
@@ -543,9 +550,9 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 const typeText = isDrone ? "drone" : "vehicle";
 
                 matchesTags = tagTerms.every(tag => {
-                    return name.includes(tag) || 
-                           category.includes(tag) || 
-                           typeText.includes(tag);
+                    return name.includes(tag) ||
+                        category.includes(tag) ||
+                        typeText.includes(tag);
                 });
             } else {
                 matchesTags = tagTerms.every(tag => name.includes(tag));
@@ -639,7 +646,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     async _prepareContext(options) {
         // At the start of every render, get the latest state from the flag.
         const builderData = options.builderData ?? await BuilderStateService.getState();
- 
+
         // Automatically switch tabs if the selected base item type demands it
         if (builderData.baseItem) {
             const isVehicle = builderData.baseItem.type === "vehicle";
@@ -649,17 +656,17 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 this.tabGroups.main = "builder";
             }
         }
- 
+
         this.purchasingActor = await ActorSelectionService.getSelectedActor();
- 
+
         const AppUserId = game.user.id;
         const testStates = await AppTestFlagService.readState(AppUserId);
         const unresolvedTest = Object.values(testStates).find(t => !t.resolved && t.testType === "BuildTest");
         this.activeDialogId = unresolvedTest?.id || null;
- 
+
         const activeTestState = this.activeDialogId ? testStates[this.activeDialogId] : null;
         this.activeTestState = activeTestState;
- 
+
         if (activeTestState) {
             const dialogBuilder = new AppDialogBuilder();
             const dialogContext = await dialogBuilder.buildTestDialogContext(activeTestState);
@@ -668,10 +675,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 activeTestState.customGroupExpanded = this._expandedGroups?.has("toggle-mod-group-custom") ?? true;
             }
         }
-        
+
         let tabContent = null;
         const render = foundry.applications.handlebars.renderTemplate;
-        const partialContext = { 
+        const partialContext = {
             purchasingActor: this.purchasingActor,
             hasBaseItem: !!builderData.baseItem, // Use the state we just fetched
             builderData: builderData,             // Pass it to the partial
@@ -679,7 +686,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             activeTestState: this.activeTestState,
             workshopActorUuid: this.workshopActorUuid
         };
- 
+
         switch (this.tabGroups.main) {
             case "effects":
                 this.tabGroups.main = "effects";
@@ -698,9 +705,9 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                             partialContext.workshopActor = workshopActor;
                             partialContext.factoryRating = workshopActor.system.shop.factoryRating;
                             partialContext.isFactory = workshopActor.system.shop.isFactory;
- 
+
                             const tokensInRadius = await workshopActor.getTokensInRadius() || [];
-                            
+
                             const vehiclesInRadius = tokensInRadius.filter(t => t.actor?.type === "vehicle").map(t => {
                                 const pTrack = t.actor.system.track?.physical || t.actor.system.physical_track || {};
                                 return {
@@ -713,7 +720,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                 };
                             });
                             partialContext.vehiclesInRadius = vehiclesInRadius;
-     
+
                             let activeVehicle = null;
                             if (this.selectedVehicleActorUuid) {
                                 activeVehicle = await fromUuid(this.selectedVehicleActorUuid);
@@ -724,9 +731,9 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                     activeVehicle = await fromUuid(this.selectedVehicleActorUuid);
                                 }
                             }
-                            
+
                             partialContext.activeVehicle = activeVehicle;
- 
+
                             if (activeVehicle) {
                                 const installedMods = activeVehicle.items.filter(i => i.type === "modification");
                                 const bodyRating = activeVehicle.system.attributes?.body?.value ?? 0;
@@ -734,7 +741,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                     const override = game.settings.get("sr5-marketplace", `slotOverride_${cat}`);
                                     return override > 0 ? override : bodyRating;
                                 };
- 
+
                                 const categories = {
                                     drive: { label: "SR5Marketplace.Factory.Category.Drive", items: [], max: getSlotLimit("drive"), used: 0 },
                                     protection: { label: "SR5Marketplace.Factory.Category.Protection", items: [], max: getSlotLimit("protection"), used: 0 },
@@ -743,18 +750,18 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                     electronics: { label: "SR5Marketplace.Factory.Category.Electronics", items: [], max: getSlotLimit("electronics"), used: 0 },
                                     cosmetic: { label: "SR5Marketplace.Factory.Category.Cosmetic", items: [], max: getSlotLimit("cosmetic"), used: 0 }
                                 };
- 
+
                                 for (const mod of installedMods) {
                                     const cat = (mod.system.category || "cosmetic").toLowerCase();
                                     const rating = mod.system.rating ?? mod.system.technology?.rating ?? 1;
                                     const isPreinstalled = mod.getFlag?.("sr5-marketplace", "isPreinstalled") ||
-                                                           mod.system.preInstalled || 
-                                                           mod.system.preinstalled || 
-                                                           mod.system.isPreInstalled || 
-                                                           mod.system.isPreinstalled || 
-                                                           mod.flags?.shadowrun5e?.preInstalled || 
-                                                           mod.flags?.shadowrun5e?.preinstalled || 
-                                                           false;
+                                        mod.system.preInstalled ||
+                                        mod.system.preinstalled ||
+                                        mod.system.isPreInstalled ||
+                                        mod.system.isPreinstalled ||
+                                        mod.flags?.shadowrun5e?.preInstalled ||
+                                        mod.flags?.shadowrun5e?.preinstalled ||
+                                        false;
 
                                     const modData = mod.toObject();
                                     modData.uuid = mod.uuid;
@@ -774,7 +781,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                     }
                                 }
                                 partialContext.categories = categories;
-                                
+
                                 const pTrack = activeVehicle.system.track?.physical || activeVehicle.system.physical_track || {};
                                 partialContext.physicalTrack = {
                                     value: pTrack.value ?? 0,
@@ -783,12 +790,22 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                         filled: i < (pTrack.value ?? 0)
                                     }))
                                 };
+
+                                const mTrack = activeVehicle.system.matrix?.condition_monitor || {};
+                                partialContext.matrixTrack = {
+                                    value: mTrack.value ?? 0,
+                                    max: mTrack.max ?? 0,
+                                    boxes: Array.from({ length: mTrack.max ?? 0 }, (_, i) => ({
+                                        filled: i < (mTrack.value ?? 0),
+                                        value: i + 1
+                                    }))
+                                };
                             }
- 
+
                             const allGlobalItems = game.sr5marketplace.api.itemData.getItems() || [];
                             const shopInv = workshopActor.system.shop.inventory || {};
                             const shopInvEntries = Object.entries(shopInv);
-                            
+
                             const shopModsPromises = shopInvEntries.map(async ([entryId, itemData]) => {
                                 let sourceItem = allGlobalItems.find(i => i.uuid === itemData.itemUuid);
                                 if (!sourceItem) {
@@ -808,10 +825,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                 }
                                 return null;
                             });
-                            
+
                             const resolvedShopMods = await Promise.all(shopModsPromises);
                             const modsOnShelf = resolvedShopMods.filter(m => m !== null);
- 
+
                             const ownerActor = await workshopActor.getOwner();
                             if (ownerActor) {
                                 const ownerMods = ownerActor.items.filter(i => i.type === "modification");
@@ -893,7 +910,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     }
                 }
                 partialContext.selectedKey = this.selectedKey;
-                
+
                 let selectedItems = this.selectedKey ? (itemsByType[this.selectedKey]?.items || []) : [];
 
                 // Filter functions using tags and queries
@@ -923,7 +940,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 if (builderData.baseItem) {
                     const baseItemType = builderData.baseItem.type;
                     const isDrone = builderData.baseItem.system?.isDrone || builderData.baseItem.system?.isdrone || false;
-                    
+
                     partialContext.isWeapon = ['rangedWeapon', 'meleeWeapon', 'weapon'].includes(baseItemType);
 
                     const weaponTypes = ['rangedWeapon', 'meleeWeapon', 'weapon'];
@@ -937,7 +954,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
                         if (specificModTypes.includes(modType)) {
                             // Map mods specifically: weapon mods for weapons, armor for armor, vehicle for vehicle, drone for drone
-                            if ((modType === 'weapon' && weaponTypes.includes(baseItemType)) || 
+                            if ((modType === 'weapon' && weaponTypes.includes(baseItemType)) ||
                                 (modType === 'armor' && baseItemType === 'armor') ||
                                 (modType === 'vehicle' && baseItemType === 'vehicle') ||
                                 (modType === 'drone' && isDrone)) {
@@ -952,8 +969,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
                     partialContext.categorizedMods = {
                         specific: {
-                            label: weaponTypes.includes(baseItemType) ? 'Weapon Modifications' : 
-                                   (baseItemType === 'armor' ? 'Armor Modifications' : 'Vehicle Modifications'),
+                            label: weaponTypes.includes(baseItemType) ? 'Weapon Modifications' :
+                                (baseItemType === 'armor' ? 'Armor Modifications' : 'Vehicle Modifications'),
                             items: specificMods
                         },
                         general: {
@@ -978,7 +995,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             itemTypeImage: builderData.itemTypeImage || "icons/svg/item-bag.svg"
         };
 
-        return { 
+        return {
             tabContent,
             purchasingActor: this.purchasingActor,
             builder: builderContext,
@@ -1027,7 +1044,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const itemUuid = target.dataset.itemUuid;
         if (itemUuid) new ItemPreviewApp(itemUuid).render(true);
     }
-    
+
 
     /**
      * Handles selecting a base item from the sidebar.
@@ -1055,13 +1072,13 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             technology: item.technology,
             effects: item.effects?.map(e => e.toObject(false)) ?? []
         };
-        
+
         // 3. Set the base item. This clears the builder state (which is what we want).
         await BuilderStateService.setBaseItem(cleanItemData);
 
         // --- 4. NEW: Check for and load linked items ---
         const linkedItems = item.getFlag("sr5-marketplace", "linkedItems");
-        
+
         if (linkedItems && Array.isArray(linkedItems) && linkedItems.length > 0) {
             // If we have links, load them one by one into the state
             for (const link of linkedItems) {
@@ -1086,7 +1103,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 }
             }
         }
-        
+
         // 5. Re-render the application.
         // The UI will now show the base item AND any linked items in their slots.
         this.render();
@@ -1116,7 +1133,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         // 1. Tell the service to update the persistent flag.
         //    The 'await' ensures this operation completes before we proceed.
         await BuilderStateService.removeChange(slotId);
-        
+
         // 2. Trigger a re-render. 
         //    The _prepareContext method will now run again and fetch the new state from the flag.
         this.render();
@@ -1130,7 +1147,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      */
     static async #onToggleBaseItemEdit(event, target) {
         const state = await BuilderStateService.getState();
-        
+
         if (state.isEditingBaseItem) {
             // We are CLICKING THE CHECKMARK (finishing the edit)
             // 1. Find all inputs within the stats display
@@ -1138,21 +1155,21 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             if (statsContainer) {
                 const inputs = statsContainer.querySelectorAll('input[name], textarea[name]');
                 const updateData = {};
-                
+
                 // 2. Build the update object from all input values
                 inputs.forEach(input => {
                     updateData[input.name] = input.value;
                 });
-                
+
                 // 3. Save all overrides in one go
                 // We await this to ensure it's saved before we toggle
                 await BuilderStateService.updateBaseItemOverrides(updateData);
             }
         }
-        
+
         // 4. Toggle the edit state (for both starting and finishing)
         const newState = await BuilderStateService.toggleBaseItemEdit();
-        
+
         // 5. Re-render
         this.render(false, { builderData: newState });
     }
@@ -1232,9 +1249,9 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     descriptionModList.push(`<li>${item.name}</li>`);
                 } else {
                     // "Linkable Item"
-                    linkedItemsFlag.push({ 
-                        uuid: item.uuid, 
-                        slotId: slotId 
+                    linkedItemsFlag.push({
+                        uuid: item.uuid,
+                        slotId: slotId
                     });
                     descriptionLinkList.push(`<b>@UUID[${item.uuid}]</b>`);
                 }
@@ -1281,7 +1298,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             if (!baseItemData.flags) baseItemData.flags = {};
             baseItemData.flags['sr5-marketplace'] = {
                 ...baseItemData.flags['sr5-marketplace'],
-                linkedItems: linkedItemsFlag 
+                linkedItems: linkedItemsFlag
             };
         } else {
             // For vehicles, append embedded items
@@ -1305,7 +1322,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         }
 
         const buildData = ItemBuilderApp._prepareBuildData(state);
-        
+
         if (buildData.type === "vehicle") {
             // Send socket event to GM client to create actor and grant ownership
             game.socket.emit(`module.sr5-marketplace`, {
@@ -1353,8 +1370,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             } else {
                 // Fallback to legacy categories check
                 const isDrone = buildData.system?.isDrone || buildData.system?.isdrone || false;
-                const category = isDrone 
-                    ? (buildData.importFlags?.category?.toLowerCase() || "") 
+                const category = isDrone
+                    ? (buildData.importFlags?.category?.toLowerCase() || "")
                     : (buildData.system?.category?.toLowerCase() || "");
                 if (category.includes("rotorcraft") || category.includes("aircraft") || category.includes("aeronautics")) {
                     defaultSkill = "AeronauticsMechanic";
@@ -1368,10 +1385,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             // Check changes slots to determine skill
             const changes = state.changes || {};
             const slotsWithItems = Object.keys(changes).filter(slotId => changes[slotId]);
-            const hasTopBoxMod = slotsWithItems.some(slotId => 
+            const hasTopBoxMod = slotsWithItems.some(slotId =>
                 ["topLeft", "bottomLeft", "topRight", "middleRight", "bottomRight"].includes(slotId)
             );
-            const hasBottomSlotMod = slotsWithItems.some(slotId => 
+            const hasBottomSlotMod = slotsWithItems.some(slotId =>
                 ["bottomSlot1", "bottomSlot2", "bottomSlot3", "bottomSlot4"].includes(slotId)
             );
 
@@ -1419,9 +1436,21 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             appliedModifiers: initialModifiers
         };
 
+        // Close any existing build test dialogs
+        const buildTestApp = Object.values(ui.windows).find(w => w.constructor.name === "BuildTestApp");
+        if (buildTestApp) {
+            buildTestApp.close();
+        }
+
         this.activeDialogId = await AppTestFlagService.createTest(initialData);
-        new BuildTestApp().render(true);
-        this.render();
+        
+        console.log("SR5 Marketplace | Starting item build test...");
+        await new Promise((resolve) => {
+            BuildTestApp._resolve = resolve;
+            new BuildTestApp().render(true);
+        });
+        console.log("SR5 Marketplace | Item build test resolved. Re-rendering ItemBuilderApp.");
+        this.render(true);
     }
 
     /**
@@ -1516,12 +1545,12 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     static async #onCreateEffect(event, target) {
         const sourceUuid = target.dataset.sourceUuid;
         if (!sourceUuid) return;
-        
+
         ItemBuilderApp.#handleStateUpdate(this, "#onCreateEffect", () => {
             return BuilderStateService.startEffectCreation(sourceUuid);
         });
     }
-    
+
     /**
      * Handles updates from individual form fields, like a button click or input change.
      * This is more efficient than reading the entire form for every small change.
@@ -1546,7 +1575,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             return BuilderStateService.updateDraftEffect(updates);
         });
     }
-    
+
     /**
      * Handles selecting the 'applyTo' type for the effect.
      * It now correctly saves the value to the 'system.applyTo' property.
@@ -1579,7 +1608,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             return BuilderStateService.cancelEffectCreation();
         });
     }
-    
+
     static async #onEditEffect(event, target) {
         const { sourceUuid, effectId } = target.dataset;
         ItemBuilderApp.#handleStateUpdate(this, "#onEditEffect", () => {
@@ -1615,7 +1644,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             this.activeDropdown.querySelector(".dropdown-content")?.classList.remove("show");
             this.activeDropdown.querySelector(".tags-input")?.classList.remove("active");
         }
-        
+
         // Toggle the current dropdown
         const dropdown = container.querySelector(".dropdown-content");
         const tagsInput = container.querySelector(".tags-input");
@@ -1638,7 +1667,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     this.activeDropdown = null;
                 }
             };
-            
+
             // Attach the listener. The { once: true } option is key:
             // it automatically removes the listener after it fires once.
             window.addEventListener('click', closeListener, { once: true });
@@ -1673,7 +1702,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             } else if (mode === 'remove') {
                 currentObjects = currentObjects.filter(o => o.id !== id);
             }
-            
+
             const updates = foundry.utils.expandObject({ [name]: currentObjects });
             return BuilderStateService.updateDraftEffect(updates);
         });
@@ -1708,7 +1737,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             const stateUpdate = {
                 isDerivedValueSelectorVisible: false
             };
-            
+
             // Call the new service method that handles both updates correctly
             return BuilderStateService.updateDraftAndState(draftUpdate, stateUpdate);
         });
@@ -1731,7 +1760,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const newState = await stateChangeFn(oldState);
 
         console.log(`Marketplace Builder | State AFTER ${handlerName}:`, foundry.utils.deepClone(newState));
-        
+
         // Use the passed-in application instance to render
         await app.render(false, { builderData: newState });
 
@@ -1768,7 +1797,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             } else {
                 // Not enough space above, show below the card
                 topPos = rect.bottom + margin;
-                
+
                 // If it overflows the bottom of the screen, clamp it
                 if (topPos + tooltipHeight > window.innerHeight) {
                     topPos = Math.max(margin, window.innerHeight - tooltipHeight - margin);
@@ -1856,8 +1885,9 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         if (!this.selectedVehicleActorUuid) return;
         const vehicleActor = await fromUuid(this.selectedVehicleActorUuid);
         if (!vehicleActor) return;
-        
-        const damage = vehicleActor.system.physical_track?.value ?? 0;
+
+        const pTrack = vehicleActor.system.track?.physical || vehicleActor.system.physical_track || {};
+        const damage = pTrack.value ?? 0;
         if (damage <= 0) {
             ui.notifications.info(game.i18n.localize("SR5Marketplace.ItemBuilder.NoDamageToRepair"));
             return;
@@ -1873,12 +1903,23 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         const workshop = await fromUuid(this.workshopActorUuid);
 
-        await game.sr5marketplace.api.system.BuildTest.run(vehicleActor.uuid, {
+        console.log("SR5 Marketplace | Starting workshop repair build test...");
+        const runResult = await game.shadowrun5e.tests.BuildTest.run(vehicleActor.uuid, {
             isRepair: true,
             threshold: threshold,
             vehicle: vehicleActor,
             workshop: workshop
         });
+        console.log("SR5 Marketplace | Repair dialog closed/resolved. Result:", runResult);
+
+        if (this.selectedVehicleActorUuid) {
+            const freshVehicleDoc = await fromUuid(this.selectedVehicleActorUuid);
+            const freshVehicle = freshVehicleDoc instanceof Actor ? freshVehicleDoc : freshVehicleDoc?.actor || null;
+            if (freshVehicle) {
+                console.log("SR5 Marketplace | Fresh vehicle actor fetched. Current physical track value:", freshVehicle.system.track?.physical?.value);
+            }
+        }
+        this.render(true);
     }
 
     static async #onToggleBuiltIn(event, target) {
@@ -1889,7 +1930,67 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         const currentVal = item.getFlag("sr5-marketplace", "isPreinstalled") || false;
         await item.setFlag("sr5-marketplace", "isPreinstalled", !currentVal);
-        
+
         this.render();
+    }
+
+    static async #onClearConditionMonitor(event, target) {
+        event.preventDefault();
+        if (!this.selectedVehicleActorUuid) return;
+        const vehicleDoc = await fromUuid(this.selectedVehicleActorUuid);
+        const vehicleActor = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+        if (!vehicleActor) return;
+
+        const trackId = target.dataset.id;
+        if (trackId === "matrix") {
+            if (typeof vehicleActor.setMatrixDamage === "function") {
+                await vehicleActor.setMatrixDamage(0);
+            } else {
+                await vehicleActor.update({ "system.matrix.condition_monitor.value": 0 });
+            }
+            this.render();
+        } else if (trackId === "physical") {
+            const updatePath = vehicleActor.system.track?.physical ? "system.track.physical.value" : "system.physical_track.value";
+            await vehicleActor.update({ [updatePath]: 0 });
+            this.render();
+        }
+    }
+
+    static async #onModifyConditionMonitor(event, target) {
+        event.preventDefault();
+        if (!this.selectedVehicleActorUuid) return;
+        const vehicleDoc = await fromUuid(this.selectedVehicleActorUuid);
+        const vehicleActor = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+        if (!vehicleActor) return;
+
+        const trackId = target.dataset.id;
+        if (trackId === "matrix") {
+            let value = Number(target.dataset.value);
+            const mTrack = vehicleActor.system.matrix?.condition_monitor || {};
+            const currentDamage = mTrack.value ?? 0;
+            if (currentDamage === value) {
+                value = 0;
+            }
+            if (typeof vehicleActor.setMatrixDamage === "function") {
+                await vehicleActor.setMatrixDamage(value);
+            } else {
+                await vehicleActor.update({ "system.matrix.condition_monitor.value": value });
+            }
+            this.render();
+        } else if (trackId === "physical") {
+            let value = Number(target.dataset.value);
+            const pTrack = vehicleActor.system.track?.physical || vehicleActor.system.physical_track || {};
+            const currentDamage = pTrack.value ?? 0;
+            if (currentDamage === value) {
+                value = 0;
+            }
+            const updatePath = vehicleActor.system.track?.physical ? "system.track.physical.value" : "system.physical_track.value";
+            await vehicleActor.update({ [updatePath]: value });
+            this.render();
+        }
+    }
+
+    static async #onRollConditionMonitor(event, target) {
+        event.preventDefault();
     }
 }

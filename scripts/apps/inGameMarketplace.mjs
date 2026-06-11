@@ -1354,7 +1354,18 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             // 5. Accumulate hits from the previous total.
             const previousHits = this.activeTestState.result.values.extendedHits.value;
             test.data.values.extendedHits.value += previousHits;
-            test.data.values.extendedHits.mod.push({ name: "Previous Hits", value: previousHits });
+            if (test.data.values.extendedHits.mod) {
+                test.data.values.extendedHits.mod.push({ name: "Previous Hits", value: previousHits });
+            }
+            if (test.data.values.extendedHits.changes) {
+                test.data.values.extendedHits.changes.push({
+                    name: "Previous Hits",
+                    value: previousHits,
+                    mode: typeof CONST !== 'undefined' ? (CONST.ACTIVE_EFFECT_MODES?.ADD ?? 2) : 2,
+                    priority: 0,
+                    enabled: true
+                });
+            }
 
             // 6. Check if the test is now resolved.
             let finalStatus = 'extended-inprogress';

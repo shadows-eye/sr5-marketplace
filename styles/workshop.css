@@ -109,9 +109,9 @@
 .workshop-sidebar-left {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 8px;
     height: 100%;
-    overflow-y: auto;
+    overflow-y: hidden;
     padding-right: 5px;
     position: relative;
     z-index: 1;
@@ -130,10 +130,10 @@
     background: rgba(15, 20, 25, 0.6);
     border-radius: 12px;
     border: 1px solid var(--border-color-medium, #444);
-    padding: 12px;
+    padding: 8px 12px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
 
 .vehicle-details-card .details-header {
@@ -182,12 +182,12 @@
     background: rgba(15, 20, 25, 0.6);
     border-radius: 12px;
     border: 1px solid var(--border-color-medium, #444);
-    padding: 12px;
+    padding: 8px 12px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     flex: 1;
-    min-height: 200px;
+    min-height: 120px;
 }
 
 .installed-mods-summary-card .summary-header {
@@ -637,10 +637,10 @@
     background: rgba(15, 20, 25, 0.6);
     border-radius: 12px;
     border: 1px solid var(--border-color-medium, #444);
-    padding: 15px;
+    padding: 8px 12px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 6px;
 }
 
 .repair-header {
@@ -667,9 +667,9 @@
 }
 
 .damage-box.filled {
-    border-color: #ff3366;
-    background: #ff3366;
-    box-shadow: 0 0 5px rgba(255, 51, 102, 0.5);
+    border-color: #8b0000;
+    background: linear-gradient(to bottom, #aa0000, #660000);
+    box-shadow: 0 0 5px rgba(139, 0, 0, 0.6);
 }
 
 .damage-box.filled::after {
@@ -678,8 +678,8 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: white;
-    font-size: 12px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 11px;
     font-weight: bold;
 }
 
@@ -766,4 +766,77 @@
     border-radius: 50%;
     min-width: 0.8em;
     padding-left: 0.16em;
+}
+
+/* Workshop Custom Styling for Matrix Condition Monitor */
+.repair-panel .sr5v2.condition-monitor-container {
+    background: transparent !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.repair-panel .sr5v2 .horizontal-cell-input,
+.repair-panel .sr5v2 .horizontal-cell-input.matrix {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: 4px;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    background: transparent !important;
+}
+
+.repair-panel .sr5v2 .horizontal-cell-input .icon-container a,
+.repair-panel .sr5v2 .horizontal-cell-input .clear-container a {
+    color: #00ffcc;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.repair-panel .sr5v2 .horizontal-cell-input .icon-container a:hover,
+.repair-panel .sr5v2 .horizontal-cell-input .clear-container a:hover {
+    opacity: 1;
+}
+
+.repair-panel .sr5v2 .horizontal-cell-input .cell-container {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 2px;
+    max-width: 160px;
+}
+
+.repair-panel .sr5v2 .horizontal-cell-input .cell {
+    cursor: pointer;
+    border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 3px !important;
+    background: rgba(0, 0, 0, 0.3) !important;
+    width: 14px !important;
+    height: 14px !important;
+    margin: 0 !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+}
+
+.repair-panel .sr5v2 .horizontal-cell-input .cell.filled {
+    border-color: #00ff66 !important;
+    background: linear-gradient(to bottom, #00ff66, #ffea00) !important;
+    box-shadow: 0 0 6px rgba(0, 255, 102, 0.5) !important;
+    position: relative !important;
+}
+
+.repair-panel .sr5v2 .horizontal-cell-input .cell.filled::after {
+    content: 'X' !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    color: #0d121d !important;
+    font-size: 8px !important;
+    font-weight: bold !important;
+}
+
+.repair-panel .sr5v2 .horizontal-cell-input .cell:hover {
+    border-color: #00ff66 !important;
 }

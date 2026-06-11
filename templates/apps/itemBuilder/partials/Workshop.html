@@ -80,6 +80,31 @@
                         {{/each}}
                     </div>
 
+                    {{#if matrixTrack.max}}
+                    <div style="font-size: 0.85em; opacity: 0.8; margin-top: 4px; margin-bottom: 2px;">
+                        {{localize "SR5.DmgTypeMatrix"}}
+                    </div>
+                    <div class="sr5v2 condition-monitor-container" style="margin-top: 0;">
+                        <div class="horizontal-cell-input matrix" data-id="matrix" style="border: none !important; box-shadow: none !important; outline: none !important;">
+                            <div class="icon-container" style="font-size: 11px !important; width: 12px !important; margin: 0 4px 0 0 !important;">
+                                <a data-tooltip="Matrix" data-action="rollConditionMonitor">
+                                    <i class="fas fa-microchip" style="font-size: 11px !important;"></i>
+                                </a>
+                            </div>
+                            <div class="clear-container" style="font-size: 9px !important; margin-left: 0 !important; margin-right: 4px !important;">
+                                <a data-tooltip="Matrix:&nbsp;0/{{matrixTrack.max}}" data-action="clearConditionMonitor" data-id="matrix">
+                                    <i class="fas fa-ban" style="font-size: 9px !important;"></i>
+                                </a>
+                            </div>
+                            <div class="cell-container" style="max-width: 160px; display: flex; flex-flow: row wrap; gap: 2px;">
+                                {{#each matrixTrack.boxes}}
+                                <div class="cell {{#if this.filled}}filled{{/if}}" data-action="modifyConditionMonitor" data-id="matrix" data-tooltip="Matrix:&nbsp;{{this.value}}/{{../matrixTrack.max}}" data-value="{{this.value}}"></div>
+                                {{/each}}
+                            </div>
+                        </div>
+                    </div>
+                    {{/if}}
+
                     <div class="stat-block-divider" style="margin: 4px 0;"></div>
 
                     <div class="repair-actions">

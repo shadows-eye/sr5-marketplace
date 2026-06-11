@@ -11,8 +11,8 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     constructor(options = {}) {
         // Apply theme classes
-        const currentTheme = game.settings.get("sr5-marketplace", "enablePremiumThemes") 
-            ? (game.user.getFlag("sr5-marketplace", "theme") || "theme-dark") 
+        const currentTheme = game.settings.get("sr5-marketplace", "enablePremiumThemes")
+            ? (game.user.getFlag("sr5-marketplace", "theme") || "theme-dark")
             : "theme-dark";
         options.classes = [
             ...(options.classes || []),
@@ -224,7 +224,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         this.activeTestState.appliedModifiers = newModifiers;
         await AppTestFlagService.updateTest(this.activeTestState.id, { appliedModifiers: newModifiers });
-        
+
         const updatedState = (await AppTestFlagService.readState(game.user.id))[this.activeTestState.id];
         console.log(`[onChangeBuildTestCondition] AFTER: appliedModifiers =`, updatedState?.appliedModifiers);
         this.render(false);
@@ -238,6 +238,9 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
         if (!actor) return;
 
         const data = {
+            isRepair: this.activeTestState.isRepair ?? false,
+            installSource: this.activeTestState.installSource ?? null,
+            installSourceId: this.activeTestState.installSourceId ?? null,
             action: {
                 skill: this.activeTestState.skill,
                 attribute: this.activeTestState.attribute,
@@ -260,7 +263,20 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
             return;
         }
 
-        const options = { showDialog: false, showMessage: false };
+        const vehicleDoc = this.activeTestState.vehicleUuid ? await fromUuid(this.activeTestState.vehicleUuid) : null;
+        const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+        const workshopDoc = this.activeTestState.workshopUuid ? await fromUuid(this.activeTestState.workshopUuid) : null;
+        const workshop = workshopDoc instanceof Actor ? workshopDoc : workshopDoc?.actor || null;
+
+        const options = {
+            showDialog: false,
+            showMessage: false,
+            buildData: this.activeTestState.buildData,
+            threshold: this.activeTestState.threshold,
+            vehicle: vehicle,
+            workshop: workshop,
+            rollCount: 1
+        };
         try {
             const test = new game.shadowrun5e.tests.BuildTest(data, { actor }, options);
             await test.execute();
@@ -292,7 +308,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
             });
 
             this.render();
-        } catch(e) {
+        } catch (e) {
             console.log("Marketplace Builder | BuildTest failed to run:", e);
         }
     }
@@ -319,6 +335,9 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
         }
 
         const data = {
+            isRepair: this.activeTestState.isRepair ?? false,
+            installSource: this.activeTestState.installSource ?? null,
+            installSourceId: this.activeTestState.installSourceId ?? null,
             action: {
                 skill: this.activeTestState.skill,
                 attribute: this.activeTestState.attribute,
@@ -330,13 +349,38 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
         };
 
         const previousHits = this.activeTestState.result.values.extendedHits.value;
-        const options = { showDialog: false, showMessage: false };
+
+        const vehicleDoc = this.activeTestState.vehicleUuid ? await fromUuid(this.activeTestState.vehicleUuid) : null;
+        const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+        const workshopDoc = this.activeTestState.workshopUuid ? await fromUuid(this.activeTestState.workshopUuid) : null;
+        const workshop = workshopDoc instanceof Actor ? workshopDoc : workshopDoc?.actor || null;
+
+        const options = {
+            showDialog: false,
+            showMessage: false,
+            buildData: this.activeTestState.buildData,
+            threshold: this.activeTestState.threshold,
+            vehicle: vehicle,
+            workshop: workshop,
+            rollCount: rollCount
+        };
         try {
             const test = new game.shadowrun5e.tests.BuildTest(data, { actor }, options);
             await test.execute();
 
             test.data.values.extendedHits.value += previousHits;
-            test.data.values.extendedHits.mod.push({ name: "Previous Hits", value: previousHits });
+            if (test.data.values.extendedHits.mod) {
+                test.data.values.extendedHits.mod.push({ name: "Previous Hits", value: previousHits });
+            }
+            if (test.data.values.extendedHits.changes) {
+                test.data.values.extendedHits.changes.push({
+                    name: "Previous Hits",
+                    value: previousHits,
+                    mode: typeof CONST !== 'undefined' ? (CONST.ACTIVE_EFFECT_MODES?.ADD ?? 2) : 2,
+                    priority: 0,
+                    enabled: true
+                });
+            }
 
             let finalStatus = 'extended-inprogress';
             if (test.data.values.extendedHits.value >= test.data.threshold.value || test.pool.value <= 0) {
@@ -364,13 +408,76 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
             });
 
             this.render();
-        } catch(e) {
+        } catch (e) {
             console.log("Marketplace Builder | BuildTest continue failed:", e);
         }
     }
 
     static async #onResolveBuildTest(event, target) {
         if (!this.activeTestState || this.activeTestState.status !== 'resolved') return;
+
+        if (this.activeTestState.isRepair) {
+            const vehicleUuid = this.activeTestState.vehicleUuid || this.activeTestState.actorUuid;
+            console.log("Marketplace Builder | #onResolveBuildTest: Resolving vehicle with UUID:", vehicleUuid);
+            const vehicleDoc = vehicleUuid ? await fromUuid(vehicleUuid) : null;
+            const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+            console.log("Marketplace Builder | Resolved vehicle actor:", vehicle?.name, vehicle);
+
+            if (vehicle) {
+                const hits = this.activeTestState.result?.values?.extendedHits?.value ?? 0;
+                const pTrack = vehicle.system.track?.physical || vehicle.system.physical_track || {};
+                const currentDamage = pTrack.value ?? 0;
+
+                // Heal 1 box per 3 hits (since threshold = damage * 3)
+                const healed = Math.floor(hits / 3);
+                const newDamage = Math.max(0, currentDamage - healed);
+
+                const isVehicleTrack = !!vehicle.system.track?.physical;
+                const updatePath = isVehicleTrack ? "system.track.physical.value" : "system.physical_track.value";
+
+                console.log(`Marketplace Builder | Repair calculation: hits=${hits}, currentDamage=${currentDamage}, healed=${healed}, newDamage=${newDamage}, path=${updatePath}`);
+
+                const updateData = { [updatePath]: newDamage };
+                console.log("Marketplace Builder | updateData payload:", updateData);
+                console.log("Marketplace Builder | Actor ownership: isOwner =", vehicle.isOwner, "isGM =", game.user.isGM);
+
+                if (vehicle.isOwner || game.user.isGM) {
+                    console.log("Marketplace Builder | Performing local update...");
+                    await vehicle.update(updateData);
+                } else {
+                    console.log("Marketplace Builder | Player is not owner. Emitting socket request...");
+                    game.socket.emit("module.sr5-marketplace", {
+                        action: "update_actor_field",
+                        actorUuid: vehicle.uuid,
+                        updateData: updateData
+                    });
+                }
+
+                if (newDamage === 0) {
+                    ui.notifications.info(game.i18n.localize("SR5Marketplace.ItemBuilder.RepairHealedComplete"));
+                } else {
+                    ui.notifications.info(game.i18n.format("SR5Marketplace.ItemBuilder.RepairHealedHits", { hits: healed, damage: newDamage }));
+                }
+            } else {
+                console.warn("Marketplace Builder | No vehicle actor resolved during resolve!");
+            }
+
+            await AppTestFlagService.deleteState(game.user.id);
+            this.activeTestState = null;
+            this.activeDialogId = null;
+
+            if (BuildTestApp._resolve) {
+                BuildTestApp._resolve(true);
+                BuildTestApp._resolve = null;
+            } else {
+                const builderApp = Object.values(ui.windows).find(w => w.constructor.name === "ItemBuilderApp");
+                if (builderApp) {
+                    builderApp.render(true);
+                }
+            }
+            this.close();
+            return;
+        }
 
         const buildData = this.activeTestState.buildData;
         const nameInput = this.element.querySelector(".build-item-name-input");
@@ -404,11 +511,16 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.activeTestState = null;
         this.activeDialogId = null;
 
-        // Re-render builder if open
-        const builderApp = Object.values(ui.windows).find(w => w.constructor.name === "ItemBuilderApp");
-        if (builderApp) {
-            builderApp.tabGroups.main = "builder";
-            builderApp.render();
+        if (BuildTestApp._resolve) {
+            BuildTestApp._resolve(true);
+            BuildTestApp._resolve = null;
+        } else {
+            // Re-render builder if open
+            const builderApp = Object.values(ui.windows).find(w => w.constructor.name === "ItemBuilderApp");
+            if (builderApp) {
+                builderApp.tabGroups.main = "builder";
+                builderApp.render(true);
+            }
         }
 
         this.close();
@@ -417,7 +529,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
     static async #onClearBuildTest(event, target) {
         const state = await AppTestFlagService.readState(game.user.id);
         const activeTest = Object.values(state).find(t => t.id === this.activeDialogId);
-        
+
         if (activeTest && activeTest.status === 'resolved' && !activeTest.result?.values?.extendedHits?.value) {
             await BuilderStateService.clearState();
         } else if (activeTest && activeTest.status === 'resolved') {
@@ -502,5 +614,18 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         await AppTestFlagService.updateTest(this.activeTestState.id, { appliedModifiers: newModifiers });
         this.render();
+    }
+
+    async close(options = {}) {
+        if (BuildTestApp._resolve) {
+            BuildTestApp._resolve(false);
+            BuildTestApp._resolve = null;
+        } else {
+            const builderApp = Object.values(ui.windows).find(w => w.constructor.name === "ItemBuilderApp");
+            if (builderApp) {
+                builderApp.render(true);
+            }
+        }
+        return super.close(options);
     }
 }

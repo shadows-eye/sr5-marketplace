@@ -206,10 +206,17 @@
             <div class="MarketAppDialog-final-result-container">
                 <div class="MarketAppDialog-final-summary p-3 bg-[var(--attribute-group-bg)] rounded border border-[var(--border-color-medium)]">
                     {{#if activeTestState.isSuccess}}
-                        <h3 class="success text-sm font-bold text-[var(--color-green-button)] flex items-center justify-center gap-1.5 mb-2">
-                            <i class="fas fa-check-circle"></i> {{localize "SR5Marketplace.ItemBuilder.SuccessBuildCreated" name=activeTestState.buildData.name}}
-                        </h3>
+                        {{#if activeTestState.isRepair}}
+                            <h3 class="success text-sm font-bold text-[var(--color-green-button)] flex items-center justify-center gap-1.5 mb-2">
+                                <i class="fas fa-check-circle"></i> {{localize "SR5Marketplace.ItemBuilder.SuccessRepairCreated"}}
+                            </h3>
+                        {{else}}
+                            <h3 class="success text-sm font-bold text-[var(--color-green-button)] flex items-center justify-center gap-1.5 mb-2">
+                                <i class="fas fa-check-circle"></i> {{localize "SR5Marketplace.ItemBuilder.SuccessBuildCreated" name=activeTestState.buildData.name}}
+                            </h3>
+                        {{/if}}
                         
+                        {{#unless activeTestState.isRepair}}
                         <div class="form-group flex flex-row items-center justify-center gap-2 mb-3 p-2 bg-[var(--Form-background-group)] rounded border border-[var(--border-color-medium)]">
                             <label class="font-bold text-xs opacity-80 mb-0 flex items-center gap-1.5 shrink-0">
                                 {{localize "SR5Marketplace.UI.Name"}}:
@@ -219,13 +226,18 @@
                                 <i class="fas fa-pen absolute right-2 text-xs opacity-60 pointer-events-none" style="color: var(--text-color-subheader);"></i>
                             </div>
                         </div>
+                        {{/unless}}
                         
                         <div class="acquisition-details text-xs mt-2 opacity-90 text-center">
-                            {{localize "SR5Marketplace.AppDialogItem.ExtendedSuccessDetails" 
-                                rolls=activeTestState.totalRolls 
-                                connection=activeTestState.cumulativeHits 
-                                timeValue=activeTestState.totalRolls
-                            }}
+                            {{#if activeTestState.isRepair}}
+                                {{localize "SR5Marketplace.Marketplace.Tests.Progress"}}: <strong>{{activeTestState.cumulativeHits}} / {{activeTestState.threshold}}</strong> {{localize "SR5Marketplace.AppDialogItem.Hits"}} ({{activeTestState.totalRolls}} {{localize "SR5Marketplace.UI.Roll"}})
+                            {{else}}
+                                {{localize "SR5Marketplace.AppDialogItem.ExtendedSuccessDetails" 
+                                    rolls=activeTestState.totalRolls 
+                                    connection=activeTestState.cumulativeHits 
+                                    timeValue=activeTestState.totalRolls
+                                }}
+                            {{/if}}
                         </div>
 
                         <div class="result-subtitle text-xs font-bold mt-3 mb-1 opacity-80 text-left">{{localize "SR5Marketplace.Marketplace.Tests.LastRollResults"}}</div>
@@ -237,9 +249,15 @@
                             {{/each}}
                         </div>
 
-                        <button type="button" class="roll-button mt-3" data-action="resolveBuildTest">
-                            <i class="fas fa-check"></i> {{localize "SR5Marketplace.ItemBuilder.Title"}}
-                        </button>
+                        {{#if activeTestState.isRepair}}
+                            <button type="button" class="roll-button mt-3" data-action="resolveBuildTest">
+                                <i class="fas fa-check"></i> {{localize "Close"}}
+                            </button>
+                        {{else}}
+                            <button type="button" class="roll-button mt-3" data-action="resolveBuildTest">
+                                <i class="fas fa-check"></i> {{localize "SR5Marketplace.ItemBuilder.Title"}}
+                            </button>
+                        {{/if}}
                     {{else}}
                         {{#if activeTestState.isCritGlitch}}
                             <h3 class="failure text-sm font-bold text-[var(--color-red-bright)] flex items-center justify-center gap-1.5">

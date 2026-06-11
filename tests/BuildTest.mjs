@@ -1,5 +1,8 @@
 import { DialogList } from '../scripts/services/dialogList.mjs';
 import { BuilderStateService } from '../scripts/services/builderStateService.mjs';
+import { BuildTestApp } from '../scripts/apps/BuildTestApp.mjs';
+import { AppTestFlagService } from '../scripts/services/AppTestFlagService.mjs';
+
 
 /**
  * @summary A specialized extended success test for building items/vehicles and installing modifications.
@@ -27,6 +30,7 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
 
     constructor(data, documents, options) {
         super(data, documents, options);
+        this.options = options || {};
     }
 
     /** @override */
@@ -45,9 +49,12 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
 
         
         // Default threshold is 12 (RAW average threshold) if not specified
-        if (data.threshold?.base === undefined || data.threshold?.base === null) {
+        if (options?.threshold !== undefined && options?.threshold !== null) {
             data.threshold = data.threshold || {};
-            data.threshold.base = options?.threshold || data.thresholdBase || 12;
+            data.threshold.base = options.threshold;
+        } else if (data.threshold?.base === undefined || data.threshold?.base === null || data.threshold?.base === 0) {
+            data.threshold = data.threshold || {};
+            data.threshold.base = data.thresholdBase || 12;
         }
         data.thresholdBase = data.threshold.base;
 
@@ -78,6 +85,36 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
         }
         
         return data;
+    }
+
+    /** @override */
+    async showDialog() {
+        if (!this.data.options?.showDialog) return true;
+
+        const initialData = {
+            testType: "BuildTest",
+            actorUuid: this.actor.uuid,
+            vehicleUuid: this.options?.vehicle?.uuid || null,
+            workshopUuid: this.options?.workshop?.uuid || null,
+            buildData: this.data.buildData || null,
+            threshold: this.options?.threshold ?? this.data.threshold?.base ?? this.data.threshold?.value ?? this.data.thresholdBase ?? 12,
+            skill: this.data.selectedSkill || 'AutomotiveMechanic',
+            attribute: this.data.selectedAttribute || 'logic',
+            appliedModifiers: this.data.action?.modifiers || [],
+            isRepair: this.data.isRepair || false,
+            installSource: this.data.installSource || null,
+            installSourceId: this.data.installSourceId || null
+        };
+
+        const buildTestApp = Object.values(ui.windows).find(w => w.constructor.name === "BuildTestApp");
+        if (buildTestApp) {
+            buildTestApp.close();
+        }
+
+        await AppTestFlagService.createTest(initialData);
+        new BuildTestApp().render(true);
+
+        return false;
     }
 
     /** @override */
@@ -260,6 +297,14 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
 
         // 4. Limit: Mental Limit is applied to build test
         this.data.limit.base = this.actor.system.limits.mental?.value ?? 0;
+
+        // Apply extended test subsequent roll penalty: -1 for each next roll (if rollCount > 1)
+        const rollCount = this.options?.rollCount ?? 1;
+        if (rollCount > 1) {
+            const penalty = -(rollCount - 1);
+            const label = game.i18n.localize("SR5.ExtendedTestStep") || "Subsequent Roll Penalty";
+            pool.addPart(label, penalty);
+        }
 
         // 5. Extended test setup
         this.data.extended = true;
@@ -559,7 +604,17 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
         finalOptions.showMessage = true;
 
         const test = new this(data, { actor }, finalOptions);
-        await test.execute();
-        return test;
+        
+        if (finalOptions.showDialog) {
+            return new Promise(async (resolve) => {
+                BuildTestApp._resolve = (result) => {
+                    resolve({ test, resolved: result });
+                };
+                await test.execute();
+            });
+        } else {
+            await test.execute();
+            return test;
+        }
     }
 }

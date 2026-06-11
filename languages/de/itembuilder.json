@@ -85,6 +85,9 @@
     "MentalLimitApplied": "Das geistige Limit wird auf diese Probe angewendet.",
     "CriticalGlitchPartsDestroyed": "Kritischer Patzer! Die Teile wurden zerstört und die Bauschlange wurde geleert.",
     "SuccessBuildCreated": "Bau erfolgreich! {name} im Inventar erstellt.",
+    "RepairHealedComplete": "Fahrzeug erfolgreich repariert und vollständig geheilt.",
+    "RepairHealedHits": "Fahrzeug repariert! {hits} Schadenskästchen geheilt. Verbleibender Schaden: {damage}.",
+    "SuccessRepairCreated": "Fahrzeug erfolgreich repariert!",
     "WorkingConditionsOptions": {
         "excellent": "Hervorragend (+1)",
         "average": "Normal (0)",
