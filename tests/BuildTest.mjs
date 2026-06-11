@@ -1,6 +1,6 @@
 import { DialogList } from '../scripts/services/dialogList.mjs';
 import { BuilderStateService } from '../scripts/services/builderStateService.mjs';
-import { BuildTestApp } from '../scripts/apps/BuildTestApp.mjs';
+import { BuildTestApp } from '../scripts/apps/documents/dialog/BuildTestApp.mjs';
 import { AppTestFlagService } from '../scripts/services/AppTestFlagService.mjs';
 
 

@@ -47,7 +47,7 @@ import { ShopActorSheet } from "../sheets/ShopActorSheet.mjs";
 // --- 4. API IMPORTS ---
 import { MarketplaceAPI, SR5SystemAPI } from './API/_module.mjs';
 import { ItemBuilderApp } from "./apps/ItemBuilderApp.mjs";
-import { BuildTestApp } from "./apps/BuildTestApp.mjs";
+import { BuildTestApp } from "./apps/documents/dialog/BuildTestApp.mjs";
 import { SR5CreateActorApp } from "./apps/SR5CreateActorApp.mjs";
 import { AppDialogBuilder } from "./apps/documents/dialog/AppDialogBuilder.mjs";
 import { AppTestFlagService } from "./services/AppTestFlagService.mjs";
@@ -78,7 +78,7 @@ const initializeTemplates = () => {
         "modules/sr5-marketplace/templates/documents/items/itemPreviewApp/item-preview.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/Builder.html",
-        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/BuildTestDialog.html",
+        "modules/sr5-marketplace/templates/documents/tests/BuildTestDialog.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/ItemDetails.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/vehicleDetails.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/Workshop.html",

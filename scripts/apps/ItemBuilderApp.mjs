@@ -7,7 +7,7 @@ import { BasketService } from "../services/basketService.mjs";
 import { ActorSelectionService } from "../services/ActorSelectionService.mjs";
 import { AppTestFlagService } from '../services/AppTestFlagService.mjs';
 import { AppDialogBuilder } from '../apps/documents/dialog/AppDialogBuilder.mjs';
-import { BuildTestApp } from "./BuildTestApp.mjs";
+import { BuildTestApp } from "./documents/dialog/BuildTestApp.mjs";
 // We will create this service later to handle the builder logic.
 // import { BuilderService } from '../services/builderService.mjs'; 
 

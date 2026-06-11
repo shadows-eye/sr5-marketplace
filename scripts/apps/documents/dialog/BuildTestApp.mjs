@@ -1,6 +1,6 @@
-import { AppTestFlagService } from '../services/AppTestFlagService.mjs';
-import { AppDialogBuilder } from './documents/dialog/AppDialogBuilder.mjs';
-import { BuilderStateService } from "../services/builderStateService.mjs";
+import { AppTestFlagService } from '../../../services/AppTestFlagService.mjs';
+import { AppDialogBuilder } from './AppDialogBuilder.mjs';
+import { BuilderStateService } from "../../../services/builderStateService.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -54,7 +54,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
     static PARTS = {
         main: {
             id: "body",
-            template: "modules/sr5-marketplace/templates/apps/itemBuilder/partials/BuildTestDialog.html"
+            template: "modules/sr5-marketplace/templates/documents/tests/BuildTestDialog.html"
         }
     };
 
