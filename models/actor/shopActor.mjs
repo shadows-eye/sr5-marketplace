@@ -141,10 +141,10 @@ export function defineShopActorClass() {
         }
 
         /** @override */
-        isType(type) {
-            if (this.type !== "sr5-marketplace.shop") return super.isType(type);
-            if (type === "character") return true;
-            return super.isType(type);
+        isType(...types) {
+            if (this.type !== "sr5-marketplace.shop") return super.isType(...types);
+            if (types.includes("character")) return true;
+            return super.isType(...types);
         }
 
         /** @override */
