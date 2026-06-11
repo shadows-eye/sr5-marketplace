@@ -549,6 +549,29 @@
                 }
             }
         },
+        "Factory": {
+            "ChangeVehicle": "Change Vehicle",
+            "SelectorTitle": "Select Vehicle / Drone",
+            "SelectorSubtitle": "Select a vehicle or drone in range of the factory to modify or repair it.",
+            "NoVehiclesInRadius": "No vehicles or drones detected in range.",
+            "Repair": {
+                "Title": "Repair Vehicle",
+                "DamageTrack": "Physical Damage Track",
+                "RollButton": "Roll Repair"
+            },
+            "Shelf": {
+                "Title": "Factory Shelf",
+                "Empty": "No modifications available on shelf."
+            },
+            "Category": {
+                "Drive": "Drive",
+                "Protection": "Protection",
+                "Weapons": "Weapons",
+                "Hull": "Hull",
+                "Electronics": "Electronics",
+                "Cosmetic": "Cosmetic"
+            }
+        },
         "ItemBuilder": {
             "Title": "Build Item",
             "SelectAsBase": "Select as Base Item",
@@ -562,7 +585,8 @@
                 "builder": "Builder",
                 "effects": "Effects",
                 "dialog": "Dialog",
-                "vehicle": "Vehicle/Drone"
+                "vehicle": "Vehicle/Drone",
+                "workshop": "Workshop"
             },
             "Items": {
                 "Header": "Base Items",
@@ -614,6 +638,7 @@
             "SearchPlaceholder": "Search items...",
             "ClearEntireBuild": "Clear entire build",
             "RemoveMod": "Remove Mod",
+            "InstalledModifications": "Installed Modifications",
             "ItemBuild": "Item Build",
             "ActiveEffects": "Active Effects",
             "SelectAnItem": "Select an Item",
@@ -664,7 +689,8 @@
                 "Seats": "Seats",
                 "Availability": "Avail.",
                 "Cost": "Cost",
-                "Description": "Description"
+                "Description": "Description",
+                "Stats": "Vehicle Stats"
             }
         }
     },

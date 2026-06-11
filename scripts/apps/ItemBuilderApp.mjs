@@ -54,6 +54,11 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.itemSearchTags = [];
         this.modSearchQuery = "";
         this.modSearchTags = [];
+        this.workshopSearchQuery = "";
+        this.workshopSearchTags = [];
+        this.workshopSearchService = null;
+        this.workshopShelfEntries = [];
+        this.filteredWorkshopShelfEntries = [];
 
         this.hoverTimeout = null; 
         // To hold a reference to the active tooltip application
@@ -80,11 +85,12 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     // Handler 2: Base Items -> Bottom Slots
                     dragSelector: ".item-selector-section .item-card[draggable='true']",
                     dropSelector: ".bottom-slots .mod-slot[data-slot-id]"
+
                 },
                 {
                     // Handler 3: Workshop Modifications -> Category Boxes
                     dragSelector: ".workshop-shelf [draggable='true']",
-                    dropSelector: ".workshop-layout .category-box.drop-target"
+                    dropSelector: ".workshop-layout-three-columns .category-box.drop-target"
                 }
             ],
             actions: {
@@ -118,7 +124,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 // Workshop Tab
                 selectVehicleActor: this.#onSelectVehicleActor,
                 deselectVehicleActor: this.#onDeselectVehicleActor,
-                runWorkshopRepair: this.#onRunWorkshopRepair
+                runWorkshopRepair: this.#onRunWorkshopRepair,
+                toggleBuiltIn: this.#onToggleBuiltIn
             }
         }, { inplace: false });
     }
@@ -144,10 +151,28 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const card = event.currentTarget;
         const data = {
             uuid: card.dataset.itemUuid,
-            mountPoint: card.dataset.mountPoint
+            mountPoint: card.dataset.mountPoint,
+            isFromOwner: card.dataset.isFromOwner === "true",
+            entryId: card.dataset.entryId
         };
         this.draggedModData = { mountPoint: data.mountPoint };
         event.dataTransfer.setData("text/plain", JSON.stringify(data));
+
+        // If dragging from workshop shelf, highlight correct workshop category boxes
+        if (card.closest(".workshop-shelf")) {
+            this.draggedItemType = "workshop-mod";
+            const draggedMountPoint = (data.mountPoint || "").toLowerCase();
+            const categoryBoxes = this.element.querySelectorAll(".category-box.drop-target");
+            categoryBoxes.forEach(box => {
+                const targetCategory = (box.dataset.category || "").toLowerCase();
+                if (targetCategory === draggedMountPoint) {
+                    box.classList.add("initial-valid");
+                } else {
+                    box.classList.add("initial-invalid");
+                }
+            });
+            return;
+        }
 
         const allSlots = this.element.querySelectorAll(".mod-slot[data-slot-id]");
 
@@ -229,8 +254,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.draggedItemType = null;
         this.element.classList.remove("dragging-mod");
         
-        // Clean up ALL drag-related classes from ALL slots
-        this.element.querySelectorAll(".mod-slot[data-slot-id]").forEach(s => {
+        // Clean up ALL drag-related classes from ALL slots and workshop category boxes
+        this.element.querySelectorAll(".mod-slot[data-slot-id], .category-box.drop-target").forEach(s => {
             s.classList.remove(
                 "valid-drop", "invalid-drop", "override-drop", "drag-hover",
                 "initial-valid", "initial-invalid", "initial-override"
@@ -241,6 +266,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     async _onDrop(event) {
         const data = JSON.parse(event.dataTransfer.getData("text/plain"));
         const slot = event.currentTarget;
+
         
         // Check if dropping onto a workshop category box
         const isWorkshopDrop = slot.classList.contains("category-box");
@@ -272,7 +298,20 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             };
 
             const max = getSlotLimit(targetCategory);
-            const installedMods = vehicle.items.filter(i => i.type === "modification" && (i.system.category || "cosmetic").toLowerCase() === targetCategory);
+            const installedMods = vehicle.items.filter(i => {
+                if (i.type !== "modification") return false;
+                if ((i.system.category || "cosmetic").toLowerCase() !== targetCategory) return false;
+                
+                const isPreinstalled = i.getFlag?.("sr5-marketplace", "isPreinstalled") ||
+                                       i.system.preInstalled || 
+                                       i.system.preinstalled || 
+                                       i.system.isPreInstalled || 
+                                       i.system.isPreinstalled || 
+                                       i.flags?.shadowrun5e?.preInstalled || 
+                                       i.flags?.shadowrun5e?.preinstalled || 
+                                       false;
+                return !isPreinstalled;
+            });
             const used = installedMods.reduce((sum, m) => sum + (Number(m.system.rating ?? m.system.technology?.rating ?? 1) || 1), 0);
             const newModRating = Number(item.system.rating ?? item.system.technology?.rating ?? 1) || 1;
 
@@ -303,6 +342,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             });
             return;
         }
+
 
         const slotId = slot.dataset.slotId;
         const isBottomSlot = !!slot.closest(".bottom-slots");
@@ -366,6 +406,9 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     _onRender(context, options) {
         super._onRender(context, options);
 
+        // Prevent native form submission within this window (e.g. Enter key in search input fields)
+        this.element.addEventListener("submit", (e) => e.preventDefault());
+
         // --- BIND DRAG & DROP HANDLERS ---
         this.#dragDrop.forEach(d => d.bind(this.element));
 
@@ -423,9 +466,48 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 target.addEventListener("mouseleave", this.#onItemHoverOut.bind(this));
             });
         }
-        else {
-            this.itemSearchService = null;
-            this.modSearchService = null;
+
+        if (this.tabGroups.main === "workshop") {
+            this.workshopShelfEntries = this.workshopShelfEntries || [];
+            this.filteredWorkshopShelfEntries = [...this.workshopShelfEntries];
+
+            const workshopContainer = this.element.querySelector(".workshop-container");
+            const shelfContainer = this.element.querySelector(".workshop-shelf");
+
+            if (shelfContainer) {
+                shelfContainer.addEventListener("scroll", this._onScrollWorkshopShelf.bind(this), { passive: true });
+            }
+
+            if (workshopContainer) {
+                this.workshopSearchService = new itemSearchService(workshopContainer, (tags, query) => {
+                    this.workshopSearchQuery = query;
+                    this.workshopSearchTags = tags;
+
+                    const queryTerm = query.trim().toLowerCase();
+                    const tagTerms = tags.map(t => t.trim().toLowerCase());
+
+                    this.filteredWorkshopShelfEntries = this.workshopShelfEntries.filter(item => {
+                        const name = item.name.toLowerCase();
+                        const category = item.category.toLowerCase();
+                        const matchesQuery = !queryTerm || name.includes(queryTerm) || category.includes(queryTerm);
+                        const matchesTags = tagTerms.every(tag => name.includes(tag) || category.includes(tag));
+                        return matchesQuery && matchesTags;
+                    });
+
+                    if (shelfContainer) shelfContainer.scrollTop = 0;
+                    this._updateWorkshopShelfScroll();
+                });
+                this.workshopSearchService.initialize();
+
+                if (this.workshopSearchTags.length > 0 || this.workshopSearchQuery) {
+                    this.workshopSearchService.activeFilters = [...this.workshopSearchTags];
+                    const sBox = workshopContainer.querySelector("#search-box");
+                    if (sBox) sBox.value = this.workshopSearchQuery;
+                    this.workshopSearchService.applyFilters();
+                } else {
+                    this._updateWorkshopShelfScroll();
+                }
+            }
         }
 
         if (this.activeDialogId && !Object.values(ui.windows).some(w => w.constructor.name === "BuildTestApp")) {
@@ -491,6 +573,68 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         });
     }
 
+    _onScrollWorkshopShelf(event) {
+        if (this._workshopScrollThrottle) return;
+        this._workshopScrollThrottle = true;
+        this._updateWorkshopShelfScroll();
+        setTimeout(() => {
+            this._workshopScrollThrottle = false;
+        }, 15);
+    }
+
+    _updateWorkshopShelfScroll() {
+        const container = this.element.querySelector(".workshop-shelf");
+        if (!container) return;
+
+        const scrollTop = container.scrollTop;
+        const clientHeight = container.clientHeight;
+        const rowHeight = 50;
+
+        const entries = this.filteredWorkshopShelfEntries || [];
+        const visibleRows = Math.ceil(clientHeight / rowHeight);
+        const startRow = Math.max(0, Math.floor(scrollTop / rowHeight) - 3);
+        const endRow = Math.min(entries.length, startRow + visibleRows + 10);
+
+        const toRender = [];
+
+        const topPad = document.createElement("div");
+        topPad.style.height = `${startRow * rowHeight}px`;
+        toRender.push(topPad);
+
+        const slice = entries.slice(startRow, endRow);
+        for (const item of slice) {
+            const card = document.createElement("div");
+            card.className = `mod-card ${item.isFromOwner ? 'owner-mod' : ''}`;
+            card.setAttribute("draggable", "true");
+            card.dataset.itemUuid = item.uuid;
+            card.dataset.isFromOwner = item.isFromOwner;
+            card.dataset.entryId = item.entryId;
+            card.dataset.mountPoint = item.category;
+            card.innerHTML = `
+                <img src="${item.img}" />
+                <div class="mod-card-details">
+                    <div class="mod-card-name" title="${item.name}">${item.name}</div>
+                    <div class="mod-card-sub">
+                        <span>R${item.rating} &bull; ${item.category}</span>
+                        ${item.isFromOwner ? '<span class="owner-indicator-badge">Owner</span>' : `<span style="font-size: 0.9em; opacity: 0.7;">Qty: ${item.qty}</span>`}
+                    </div>
+                </div>
+            `;
+            toRender.push(card);
+        }
+
+        const bottomPad = document.createElement("div");
+        bottomPad.style.height = `${Math.max(0, entries.length - endRow) * rowHeight}px`;
+        toRender.push(bottomPad);
+
+        container.replaceChildren(...toRender);
+
+        container.querySelectorAll("[draggable='true']").forEach(el => {
+            el.addEventListener("dragstart", (e) => this._onDragStart(e));
+            el.addEventListener("dragend", (e) => this._onDragEnd(e));
+        });
+    }
+
     /** @override */
     async _prepareContext(options) {
         // At the start of every render, get the latest state from the flag.
@@ -544,6 +688,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 foundry.utils.mergeObject(partialContext, effectsContext);
                 tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/Effects.html", partialContext);
                 break;
+
             case "workshop":
                 this.tabGroups.main = "workshop";
                 try {
@@ -556,14 +701,17 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
  
                             const tokensInRadius = await workshopActor.getTokensInRadius() || [];
                             
-                            const vehiclesInRadius = tokensInRadius.filter(t => t.actor?.type === "vehicle").map(t => ({
-                                uuid: t.actor.uuid,
-                                tokenId: t.id,
-                                name: t.name,
-                                img: t.actor.img || "systems/shadowrun5e/dist/icons/importer/equipment/vehicle.svg",
-                                body: t.actor.system.attributes?.body?.value ?? 0,
-                                physicalTrack: t.actor.system.physical_track
-                            }));
+                            const vehiclesInRadius = tokensInRadius.filter(t => t.actor?.type === "vehicle").map(t => {
+                                const pTrack = t.actor.system.track?.physical || t.actor.system.physical_track || {};
+                                return {
+                                    uuid: t.actor.uuid,
+                                    tokenId: t.id,
+                                    name: t.name,
+                                    img: t.actor.img || "systems/shadowrun5e/dist/icons/importer/equipment/vehicle.svg",
+                                    body: t.actor.system.attributes?.body?.value ?? 0,
+                                    physicalTrack: pTrack
+                                };
+                            });
                             partialContext.vehiclesInRadius = vehiclesInRadius;
      
                             let activeVehicle = null;
@@ -599,17 +747,35 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                 for (const mod of installedMods) {
                                     const cat = (mod.system.category || "cosmetic").toLowerCase();
                                     const rating = mod.system.rating ?? mod.system.technology?.rating ?? 1;
+                                    const isPreinstalled = mod.getFlag?.("sr5-marketplace", "isPreinstalled") ||
+                                                           mod.system.preInstalled || 
+                                                           mod.system.preinstalled || 
+                                                           mod.system.isPreInstalled || 
+                                                           mod.system.isPreinstalled || 
+                                                           mod.flags?.shadowrun5e?.preInstalled || 
+                                                           mod.flags?.shadowrun5e?.preinstalled || 
+                                                           false;
+
+                                    const modData = mod.toObject();
+                                    modData.uuid = mod.uuid;
+                                    modData.id = mod.id;
+                                    modData.isPreinstalled = isPreinstalled;
+
                                     if (categories[cat]) {
-                                        categories[cat].items.push(mod);
-                                        categories[cat].used += Number(rating) || 1;
+                                        categories[cat].items.push(modData);
+                                        if (!isPreinstalled) {
+                                            categories[cat].used += Number(rating) || 1;
+                                        }
                                     } else {
-                                        categories.cosmetic.items.push(mod);
-                                        categories.cosmetic.used += Number(rating) || 1;
+                                        categories.cosmetic.items.push(modData);
+                                        if (!isPreinstalled) {
+                                            categories.cosmetic.used += Number(rating) || 1;
+                                        }
                                     }
                                 }
                                 partialContext.categories = categories;
                                 
-                                const pTrack = activeVehicle.system.physical_track || {};
+                                const pTrack = activeVehicle.system.track?.physical || activeVehicle.system.physical_track || {};
                                 partialContext.physicalTrack = {
                                     value: pTrack.value ?? 0,
                                     max: pTrack.max ?? 0,
@@ -619,11 +785,15 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                 };
                             }
  
+                            const allGlobalItems = game.sr5marketplace.api.itemData.getItems() || [];
                             const shopInv = workshopActor.system.shop.inventory || {};
                             const shopInvEntries = Object.entries(shopInv);
                             
                             const shopModsPromises = shopInvEntries.map(async ([entryId, itemData]) => {
-                                const sourceItem = await fromUuid(itemData.itemUuid);
+                                let sourceItem = allGlobalItems.find(i => i.uuid === itemData.itemUuid);
+                                if (!sourceItem) {
+                                    sourceItem = await fromUuid(itemData.itemUuid);
+                                }
                                 if (sourceItem && sourceItem.type === "modification") {
                                     return {
                                         uuid: sourceItem.uuid,
@@ -659,6 +829,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                 }
                             }
                             partialContext.modsOnShelf = modsOnShelf;
+                            this.workshopShelfEntries = modsOnShelf;
                         }
                     }
                     tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/Workshop.html", partialContext);
@@ -667,6 +838,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     throw workshopError;
                 }
                 break;
+
             case "builder":
             case "vehicle":
             default: // "builder" or "vehicle" tab
@@ -1666,6 +1838,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      */
     #dragDrop = this.#createDragDropHandlers();
 
+
     static async #onSelectVehicleActor(event, target) {
         const uuid = target.dataset.uuid;
         if (uuid) {
@@ -1708,4 +1881,15 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         });
     }
 
+    static async #onToggleBuiltIn(event, target) {
+        const itemUuid = target.dataset.itemUuid;
+        if (!itemUuid) return;
+        const item = await fromUuid(itemUuid);
+        if (!item) return;
+
+        const currentVal = item.getFlag("sr5-marketplace", "isPreinstalled") || false;
+        await item.setFlag("sr5-marketplace", "isPreinstalled", !currentVal);
+        
+        this.render();
+    }
 }

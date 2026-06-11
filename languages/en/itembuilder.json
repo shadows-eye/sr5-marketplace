@@ -11,7 +11,8 @@
         "builder": "Builder",
         "effects": "Effects",
         "dialog": "Dialog",
-        "vehicle": "Vehicle/Drone"
+        "vehicle": "Vehicle/Drone",
+        "workshop": "Workshop"
     },
     "Items": {
         "Header": "Base Items",
@@ -63,6 +64,7 @@
     "SearchPlaceholder": "Search items...",
     "ClearEntireBuild": "Clear entire build",
     "RemoveMod": "Remove Mod",
+    "InstalledModifications": "Installed Modifications",
     "ItemBuild": "Item Build",
     "ActiveEffects": "Active Effects",
     "SelectAnItem": "Select an Item",
@@ -113,6 +115,7 @@
         "Seats": "Seats",
         "Availability": "Avail.",
         "Cost": "Cost",
-        "Description": "Description"
+        "Description": "Description",
+        "Stats": "Vehicle Stats"
     }
 }

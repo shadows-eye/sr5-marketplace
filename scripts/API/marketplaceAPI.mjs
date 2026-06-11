@@ -292,12 +292,64 @@ class ItemBuilderAPI {
      * @returns {Promise<void>}
      */
     async open() {
+        let workshopActorUuid = null;
+        if (canvas.ready && canvas.tokens?.controlled?.length) {
+            // Check regions first
+            if (canvas.scene?.regions) {
+                for (const controlledToken of canvas.tokens.controlled) {
+                    const tokenDoc = controlledToken.document || controlledToken;
+                    const shopRegion = canvas.scene.regions.find(r => {
+                        const shopUuid = r.flags?.["sr5-marketplace"]?.shopActorUuid;
+                        if (!shopUuid) return false;
+                        return r.tokens?.has(tokenDoc);
+                    });
+                    if (shopRegion) {
+                        const shopUuid = shopRegion.flags["sr5-marketplace"].shopActorUuid;
+                        const shopActor = await fromUuid(shopUuid);
+                        if (shopActor?.system?.shop?.isFactory) {
+                            workshopActorUuid = shopUuid;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Check token distance if not found via region
+            if (!workshopActorUuid) {
+                const factoryTokens = canvas.tokens.placeables.filter(t => 
+                    t.actor?.type === "sr5-marketplace.shop" && 
+                    t.actor?.system?.shop?.isFactory
+                );
+                for (const controlledToken of canvas.tokens.controlled) {
+                    for (const factoryToken of factoryTokens) {
+                        const radius = factoryToken.actor.system.shop.shopRadius.value ?? 0;
+                        const p1 = controlledToken.center || { x: controlledToken.x, y: controlledToken.y };
+                        const p2 = factoryToken.center || { x: factoryToken.x, y: factoryToken.y };
+                        const distance = canvas.grid.measurePath([p1, p2]).distance;
+                        if (distance <= radius) {
+                            workshopActorUuid = factoryToken.actor.uuid;
+                            break;
+                        }
+                    }
+                    if (workshopActorUuid) break;
+                }
+            }
+        }
 
         let itemBuilder = foundry.applications.instances.get("itemBuilder");
-        if (!itemBuilder) {
-            itemBuilder = new ItemBuilderApp();
+        if (itemBuilder) {
+            if (workshopActorUuid) {
+                itemBuilder.workshopActorUuid = workshopActorUuid;
+            }
+            itemBuilder.render(true);
+        } else {
+            const options = {};
+            if (workshopActorUuid) {
+                options.workshopActorUuid = workshopActorUuid;
+            }
+            itemBuilder = new ItemBuilderApp(options);
+            itemBuilder.render(true);
         }
-        itemBuilder.render(true);
     }
 
     /**

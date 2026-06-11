@@ -549,5 +549,28 @@
                 }
             }
         }
+    },
+    "Factory": {
+        "ChangeVehicle": "Fahrzeug wechseln",
+        "SelectorTitle": "Fahrzeug / Drohne auswählen",
+        "SelectorSubtitle": "Wählen Sie ein Fahrzeug oder eine Drohne in Reichweite der Werkstatt aus, um es zu modifizieren oder zu reparieren.",
+        "NoVehiclesInRadius": "Keine Fahrzeuge oder Drohnen in Reichweite gefunden.",
+        "Repair": {
+            "Title": "Fahrzeug reparieren",
+            "DamageTrack": "Körperlicher Schadensmonitor",
+            "RollButton": "Reparatur würfeln"
+        },
+        "Shelf": {
+            "Title": "Werkstattregal",
+            "Empty": "Keine Modifikationen im Regal verfügbar."
+        },
+        "Category": {
+            "Drive": "Antrieb",
+            "Protection": "Panzerung",
+            "Weapons": "Waffen",
+            "Hull": "Rumpf",
+            "Electronics": "Elektronik",
+            "Cosmetic": "Kosmetik"
+        }
     }
 }

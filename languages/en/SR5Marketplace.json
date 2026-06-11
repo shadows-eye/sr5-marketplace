@@ -548,5 +548,28 @@
                 }
             }
         }
+    },
+    "Factory": {
+        "ChangeVehicle": "Change Vehicle",
+        "SelectorTitle": "Select Vehicle / Drone",
+        "SelectorSubtitle": "Select a vehicle or drone in range of the factory to modify or repair it.",
+        "NoVehiclesInRadius": "No vehicles or drones detected in range.",
+        "Repair": {
+            "Title": "Repair Vehicle",
+            "DamageTrack": "Physical Damage Track",
+            "RollButton": "Roll Repair"
+        },
+        "Shelf": {
+            "Title": "Factory Shelf",
+            "Empty": "No modifications available on shelf."
+        },
+        "Category": {
+            "Drive": "Drive",
+            "Protection": "Protection",
+            "Weapons": "Weapons",
+            "Hull": "Hull",
+            "Electronics": "Electronics",
+            "Cosmetic": "Cosmetic"
+        }
     }
 }

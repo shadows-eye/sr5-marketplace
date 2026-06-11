@@ -13,6 +13,7 @@ export class SearchService {
         this.activeFilters = [];
 
         this._onSearch = this._onSearch.bind(this);
+        this._onKeyDown = this._onKeyDown.bind(this);
         this._onTagRemoveClick = this._onTagRemoveClick.bind(this);
     }
 
@@ -23,6 +24,8 @@ export class SearchService {
         if (this.searchBox) {
             this.searchBox.removeEventListener("keyup", this._onSearch);
             this.searchBox.addEventListener("keyup", this._onSearch);
+            this.searchBox.removeEventListener("keydown", this._onKeyDown);
+            this.searchBox.addEventListener("keydown", this._onKeyDown);
         }
 
         if (this.tagsContainer) {
@@ -32,6 +35,12 @@ export class SearchService {
 
         // Initial render of tags
         this.applyFilters();
+    }
+
+    _onKeyDown(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+        }
     }
 
     _onSearch(event) {

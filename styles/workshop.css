@@ -6,6 +6,7 @@
     color: var(--text-color-primary, #fff);
     font-family: 'Inter', sans-serif;
     padding: 10px;
+    overflow: hidden;
 }
 
 .workshop-main {
@@ -15,6 +16,7 @@
     gap: 15px;
     height: 100%;
     min-height: 0;
+    overflow: hidden;
 }
 
 .workshop-header-bar {
@@ -73,83 +75,350 @@
     opacity: 0.7;
 }
 
-.workshop-layout {
+.workshop-layout-three-columns {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 20px;
+    grid-template-columns: 320px 1fr 340px;
+    gap: 15px;
     flex: 1;
     min-height: 0;
-}
-
-.workshop-visualizer {
+    width: 100%;
     position: relative;
-    background: radial-gradient(circle, rgba(20, 24, 30, 0.9) 0%, rgba(10, 12, 15, 0.95) 100%);
     border-radius: 12px;
     border: 1px solid var(--border-color-medium, #444);
-    display: flex;
-    justify-content: center;
-    align-items: center;
     overflow: hidden;
-    height: 100%;
-    min-height: 500px;
+    padding: 15px;
 }
 
-.workshop-visualizer-bg {
+.workshop-layout-three-columns::before {
+    content: '';
     position: absolute;
-    width: 90%;
-    height: 90%;
-    opacity: 0.15;
-    background-size: contain;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('/modules/sr5-marketplace/assets/images/workshop.jpeg');
+    background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    opacity: 0.7;
+    filter: brightness(0.65) contrast(1.1);
+    z-index: 0;
     pointer-events: none;
 }
 
-.center-vehicle {
-    position: relative;
-    width: 180px;
-    height: 180px;
-    border-radius: 50%;
-    border: 4px solid rgba(255, 170, 0, 0.6);
-    box-shadow: 0 0 20px rgba(255, 170, 0, 0.4);
-    background: rgba(0, 0, 0, 0.6);
+.workshop-sidebar-left {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    gap: 15px;
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 5px;
+    position: relative;
+    z-index: 1;
+}
+
+.workshop-sidebar-right {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.vehicle-details-card {
+    background: rgba(15, 20, 25, 0.6);
+    border-radius: 12px;
+    border: 1px solid var(--border-color-medium, #444);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.vehicle-details-card .details-header {
+    font-weight: bold;
+    font-size: 1.1em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 6px;
+    color: var(--color-yellow-dark, #ffaa00);
+    display: flex;
     align-items: center;
-    z-index: 10;
+    gap: 6px;
 }
 
-.center-vehicle img {
-    width: 90%;
-    height: 90%;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-/* Slot categories positioned around vehicle */
-.category-box {
-    position: absolute;
-    width: 145px;
-    background: rgba(15, 20, 25, 0.85);
-    border: 1px dashed rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
+.vehicle-details-card .stats-row-layout {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.25);
     padding: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-    transition: all 0.2s ease;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.vehicle-details-card .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+    gap: 2px;
+}
+
+.vehicle-details-card .stat-icon {
+    font-size: 1.3em;
+    color: var(--color-yellow-dark, #ffaa00);
+}
+
+.vehicle-details-card .stat-value {
+    font-size: 0.85em;
+    font-weight: bold;
+    color: #fff;
+}
+
+.installed-mods-summary-card {
+    background: rgba(15, 20, 25, 0.6);
+    border-radius: 12px;
+    border: 1px solid var(--border-color-medium, #444);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    min-height: 200px;
+}
+
+.installed-mods-summary-card .summary-header {
+    font-weight: bold;
+    font-size: 1.1em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 6px;
+    color: var(--color-yellow-dark, #ffaa00);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.installed-mods-summary-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 4px;
+}
+
+.installed-mods-category-group {
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
 
+.installed-mods-category-group .category-group-header {
+    font-size: 0.8em;
+    font-weight: bold;
+    color: #00ffcc;
+    opacity: 0.9;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+    padding-bottom: 2px;
+    margin-bottom: 2px;
+}
+
+.installed-mods-summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 4px 8px;
+    padding-left: 12px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    position: relative;
+    transition: background-color 0.2s ease;
+}
+
+.installed-mods-summary-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    border-radius: 4px 0 0 4px;
+    background: #00ffcc; /* fallback */
+    transition: background 0.2s ease;
+}
+
+/* Category Specific Sidebar Indicators */
+.installed-mods-category-group.drive .installed-mods-summary-item::before {
+    background: linear-gradient(to bottom, #00f0ff, #0044ff);
+}
+.installed-mods-category-group.protection .installed-mods-summary-item::before {
+    background: linear-gradient(to bottom, #ffaa00, #b27a00);
+}
+.installed-mods-category-group.weapons .installed-mods-summary-item::before {
+    background: linear-gradient(to bottom, #cc0000, #7a00cc);
+}
+.installed-mods-category-group.electronics .installed-mods-summary-item::before {
+    background: linear-gradient(to bottom, #00ff66, #ffea00);
+}
+.installed-mods-category-group.body .installed-mods-summary-item::before {
+    background: linear-gradient(to bottom, #777777, #ffffff);
+}
+.installed-mods-category-group.cosmetic .installed-mods-summary-item::before {
+    background: linear-gradient(to bottom, #ff00ff, #ffb6c1);
+}
+
+.installed-mods-summary-item .mod-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 80%;
+}
+
+.installed-mods-summary-item .mod-rating {
+    font-weight: bold;
+    opacity: 0.8;
+}
+
+.shelf-search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 4px 8px;
+}
+
+.shelf-search-wrap:focus-within {
+    border-color: var(--color-yellow-dark, #ffaa00);
+    box-shadow: 0 0 5px rgba(255, 170, 0, 0.3);
+}
+
+.shelf-search-icon {
+    font-size: 0.9em;
+    opacity: 0.5;
+    margin-right: 8px;
+}
+
+.shelf-search-bar {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    color: #fff !important;
+    font-size: 0.9em !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 24px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.shelf-search-bar:focus,
+.shelf-search-bar:active,
+.shelf-search-bar:focus-visible {
+    outline: none !important;
+    outline-width: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.shelf-search-bar::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.workshop-header-bar .shelf-search-wrap {
+    margin-bottom: 0;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+}
+
+.workshop-header-bar .shelf-search-wrap:focus-within {
+    border-color: var(--color-yellow-dark, #ffaa00);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 8px rgba(255, 170, 0, 0.2);
+}
+
+.workshop-visualizer {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    height: 100%;
+}
+
+.center-vehicle {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 170, 0, 0.8);
+    box-shadow: 0 0 25px rgba(255, 170, 0, 0.5), inset 0 0 15px rgba(255, 170, 0, 0.2);
+    background: rgba(10, 12, 15, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    backdrop-filter: blur(4px);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.center-vehicle img {
+    width: 92%;
+    height: 92%;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+.center-vehicle:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 35px rgba(255, 170, 0, 0.7), inset 0 0 20px rgba(255, 170, 0, 0.3);
+    border-color: #ffaa00;
+}
+
+.category-box {
+    position: absolute;
+    width: 145px;
+    border-radius: 8px;
+    padding: 8px;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: hidden;
+    border: 1.5px solid transparent;
+    background: linear-gradient(rgba(20, 24, 30, 0.85), rgba(20, 24, 30, 0.85)) padding-box,
+                linear-gradient(135deg, var(--gradient-start, rgba(255,255,255,0.25)), var(--gradient-end, rgba(255,255,255,0.25))) border-box;
+    box-shadow: 0 0 10px rgba(var(--glow-color, 255, 255, 255), 0.12);
+}
+
+.category-box:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 15px rgba(var(--glow-color, 255, 255, 255), 0.3);
+}
+
 .category-box.valid-drop {
-    border-color: #00ffcc !important;
+    border: 1.5px solid #00ffcc !important;
     background: rgba(0, 255, 204, 0.1) !important;
-    box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+    box-shadow: 0 0 15px rgba(0, 255, 204, 0.4) !important;
 }
 
 .category-box.invalid-drop {
-    border-color: #ff3366 !important;
+    border: 1.5px solid #ff3366 !important;
     background: rgba(255, 51, 102, 0.1) !important;
+    box-shadow: 0 0 15px rgba(255, 51, 102, 0.4) !important;
 }
 
 .category-box.drag-hover {
@@ -157,35 +426,52 @@
     transform: scale(1.05);
 }
 
-/* Positioning boxes in a hexagon layout */
 .category-box.drive {
-    top: 10%;
-    left: 15%;
+    top: 6%;
+    left: 8%;
+    --gradient-start: #00f0ff;
+    --gradient-end: #0044ff;
+    --glow-color: 0, 240, 255;
 }
 
 .category-box.protection {
-    top: 10%;
-    right: 15%;
+    top: 6%;
+    right: 8%;
+    --gradient-start: #ffaa00;
+    --gradient-end: #b27a00;
+    --glow-color: 255, 170, 0;
 }
 
 .category-box.weapons {
-    top: 45%;
-    left: 5%;
+    top: 40%;
+    left: 3%;
+    --gradient-start: #cc0000;
+    --gradient-end: #7a00cc;
+    --glow-color: 204, 0, 0;
 }
 
 .category-box.body {
-    top: 45%;
-    right: 5%;
+    top: 40%;
+    right: 3%;
+    --gradient-start: #777777;
+    --gradient-end: #ffffff;
+    --glow-color: 150, 150, 150;
 }
 
 .category-box.electronics {
-    bottom: 10%;
-    left: 15%;
+    bottom: 6%;
+    left: 8%;
+    --gradient-start: #00ff66;
+    --gradient-end: #ffea00;
+    --glow-color: 0, 255, 102;
 }
 
 .category-box.cosmetic {
-    bottom: 10%;
-    right: 15%;
+    bottom: 6%;
+    right: 8%;
+    --gradient-start: #ff00ff;
+    --gradient-end: #ffb6c1;
+    --glow-color: 255, 0, 255;
 }
 
 .category-header {
@@ -221,8 +507,7 @@
     display: flex;
     flex-direction: column;
     gap: 3px;
-    max-height: 80px;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .installed-mod-item {
@@ -250,8 +535,9 @@
     flex-direction: column;
     padding: 15px;
     gap: 15px;
-    min-height: 250px;
+    min-height: 0;
     flex: 1;
+    overflow: hidden;
 }
 
 .workshop-shelf-header {
@@ -272,6 +558,7 @@
     flex-direction: column;
     gap: 8px;
     padding-right: 5px;
+    min-height: 0;
 }
 
 .mod-card {
@@ -443,4 +730,40 @@
     opacity: 0.5;
     font-style: italic;
     gap: 10px;
+}
+
+#filter-tags-container {
+    display: flex;
+    gap: 0.2em;
+    flex-wrap: wrap;
+    width: 100%;
+    margin-top: 5px;
+}
+
+.filter-tag {
+    display: flex;
+    align-items: center;
+    background-color: var(--color-red-dark);
+    color: var(--bg-item-card);
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+.filter-tag .remove-tag {
+    margin-left: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1.2em;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.filter-tag .remove-tag:hover {
+    color: var(--color-red-base);
+    background-color: var(--color-gold-base);
+    border-radius: 50%;
+    min-width: 0.8em;
+    padding-left: 0.16em;
 }

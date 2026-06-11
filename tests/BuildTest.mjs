@@ -390,14 +390,18 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
 
             if (this.data.isRepair) {
                 const healCompletely = game.settings.get("sr5-marketplace", "healCompletelyOnRepairSuccess");
+                const isVehicleTrack = !!vehicle.system.track?.physical;
+                const updatePath = isVehicleTrack ? "system.track.physical.value" : "system.physical_track.value";
+                
                 if (healCompletely) {
-                    await vehicle.update({ "system.physical_track.value": 0 });
+                    await vehicle.update({ [updatePath]: 0 });
                     ui.notifications.info(game.i18n.localize("SR5Marketplace.ItemBuilder.RepairHealedComplete"));
                 } else {
-                    const currentDamage = vehicle.system.physical_track?.value ?? 0;
+                    const pTrack = vehicle.system.track?.physical || vehicle.system.physical_track || {};
+                    const currentDamage = pTrack.value ?? 0;
                     const netHits = this.calculateNetHits().value;
                     const newDamage = Math.max(0, currentDamage - netHits);
-                    await vehicle.update({ "system.physical_track.value": newDamage });
+                    await vehicle.update({ [updatePath]: newDamage });
                     ui.notifications.info(game.i18n.format("SR5Marketplace.ItemBuilder.RepairHealedHits", { hits: netHits, damage: newDamage }));
                 }
             } else {

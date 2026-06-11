@@ -11,7 +11,8 @@
         "builder": "Builder",
         "effects": "Effekte",
         "dialog": "Dialog",
-        "vehicle": "Fahrzeug/Drohne"
+        "vehicle": "Fahrzeug/Drohne",
+        "workshop": "Werkstatt"
     },
     "Items": {
         "Header": "Basisartikel",
@@ -63,6 +64,7 @@
     "SearchPlaceholder": "Suchen...",
     "ClearEntireBuild": "Gesamten Entwurf löschen",
     "RemoveMod": "Modifikation entfernen",
+    "InstalledModifications": "Installierte Modifikationen",
     "ItemBuild": "Gegenstandsentwurf",
     "ActiveEffects": "Aktive Effekte",
     "SelectAnItem": "Wähle einen Gegenstand",
@@ -113,6 +115,7 @@
         "Seats": "Sitze",
         "Availability": "Verf.",
         "Cost": "Kosten",
-        "Description": "Beschreibung"
+        "Description": "Beschreibung",
+        "Stats": "Fahrzeugwerte"
     }
 }
