@@ -158,9 +158,8 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
         console.log(`[selectBuildTestCondition] BEFORE: key = "${key}", label = "${label}", appliedModifiers =`, JSON.parse(JSON.stringify(this.activeTestState.appliedModifiers || [])));
         let currentModifiers = this.activeTestState.appliedModifiers ?? [];
         let newModifiers = currentModifiers.filter(m => m.label !== label);
-        if (value !== 0) {
-            newModifiers.push({ label, value });
-        }
+        // Always push the selected condition modifier, even if value is 0, to explicitly override workshop defaults
+        newModifiers.push({ label, value });
 
         // Auto-handle logic memory penalty on plansInstructions change
         if (key === "plansInstructions") {
@@ -277,14 +276,26 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
             workshop: workshop,
             rollCount: 1
         };
+        console.log("Marketplace Builder | Sending data to BuildTest (Run):", JSON.parse(JSON.stringify(data)), "options:", JSON.parse(JSON.stringify(options)));
         try {
             const test = new game.shadowrun5e.tests.BuildTest(data, { actor }, options);
             await test.execute();
+            console.log("Marketplace Builder | Received test object back (Run):", test);
 
             let finalStatus = 'extended-inprogress';
-            if (test.success || test.pool.value <= 0) {
+            const targetThreshold = this.activeTestState?.threshold ?? test.data.threshold?.value ?? 12;
+            if (test.success || test.data.values.extendedHits.value >= targetThreshold || test.pool.value <= 0) {
                 finalStatus = 'resolved';
             }
+            console.log("Marketplace Builder | Run Build Test Threshold check:", {
+                extendedHits: test.data.values.extendedHits?.value,
+                targetThreshold: targetThreshold,
+                poolValue: test.pool.value,
+                isSuccess: test.success,
+                isHitsMet: test.data.values.extendedHits?.value >= targetThreshold,
+                isPoolExhausted: test.pool.value <= 0,
+                finalStatus: finalStatus
+            });
 
             // Check if crit glitched on last roll
             const roll = test.rolls[test.rolls.length - 1];
@@ -321,6 +332,13 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
         if (!actor) return;
 
         const rollCount = (this.activeTestState.rollCount || 0) + 1;
+        const penalty = { 
+            label: "SR5.ExtendedTestStep", 
+            value: -(rollCount - 1),
+            isStepPenalty: true 
+        };
+        let baseModifiers = (this.activeTestState.appliedModifiers || []).filter(m => !m.isStepPenalty);
+        const newAppliedModifiers = [...baseModifiers, penalty];
 
         if (!actor.isOwner && !game.user.isGM) {
             console.log("Marketplace Builder | Player does not own the test actor. Requesting GM to continue build test via socket.");
@@ -329,7 +347,8 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 userId: game.user.id,
                 dialogId: this.activeDialogId,
                 actorUuid: actor.uuid,
-                rollCount: rollCount
+                rollCount: rollCount,
+                newAppliedModifiers: newAppliedModifiers
             });
             return;
         }
@@ -341,7 +360,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
             action: {
                 skill: this.activeTestState.skill,
                 attribute: this.activeTestState.attribute,
-                modifiers: this.activeTestState.appliedModifiers,
+                modifiers: newAppliedModifiers,
                 threshold: this.activeTestState.threshold,
                 buildData: this.activeTestState.buildData,
                 dialogId: this.activeDialogId
@@ -364,9 +383,11 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
             workshop: workshop,
             rollCount: rollCount
         };
+        console.log("Marketplace Builder | Sending data to BuildTest (Continue):", JSON.parse(JSON.stringify(data)), "options:", JSON.parse(JSON.stringify(options)));
         try {
             const test = new game.shadowrun5e.tests.BuildTest(data, { actor }, options);
             await test.execute();
+            console.log("Marketplace Builder | Received test object back (Continue):", test);
 
             test.data.values.extendedHits.value += previousHits;
             if (test.data.values.extendedHits.mod) {
@@ -383,9 +404,19 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
 
             let finalStatus = 'extended-inprogress';
-            if (test.data.values.extendedHits.value >= test.data.threshold.value || test.pool.value <= 0) {
+            const targetThreshold = this.activeTestState?.threshold ?? test.data.threshold?.value ?? 12;
+            if (test.success || test.data.values.extendedHits.value >= targetThreshold || test.pool.value <= 0) {
                 finalStatus = 'resolved';
             }
+            console.log("Marketplace Builder | Continue Build Test Threshold check:", {
+                extendedHits: test.data.values.extendedHits?.value,
+                targetThreshold: targetThreshold,
+                poolValue: test.pool.value,
+                isSuccess: test.success,
+                isHitsMet: test.data.values.extendedHits?.value >= targetThreshold,
+                isPoolExhausted: test.pool.value <= 0,
+                finalStatus: finalStatus
+            });
 
             // Check if crit glitched
             const roll = test.rolls[test.rolls.length - 1];
@@ -404,7 +435,8 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 result: test.data,
                 rolls: test.rolls,
                 status: finalStatus,
-                rollCount: rollCount
+                rollCount: rollCount,
+                appliedModifiers: newAppliedModifiers
             });
 
             this.render();
@@ -415,6 +447,18 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     static async #onResolveBuildTest(event, target) {
         if (!this.activeTestState || this.activeTestState.status !== 'resolved') return;
+
+        if (this.activeTestState.isWorkshopMod) {
+            await AppTestFlagService.deleteState(game.user.id);
+            this.activeTestState = null;
+            this.activeDialogId = null;
+            if (BuildTestApp._resolve) {
+                BuildTestApp._resolve(true);
+                BuildTestApp._resolve = null;
+            }
+            this.close();
+            return;
+        }
 
         if (this.activeTestState.isRepair) {
             const vehicleUuid = this.activeTestState.vehicleUuid || this.activeTestState.actorUuid;

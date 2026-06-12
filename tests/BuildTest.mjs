@@ -20,6 +20,11 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
     }
 
     /** @override */
+    get pool() {
+        return this.data.pool;
+    }
+
+    /** @override */
     get code() {
         if (!this.data?.pool || !Array.isArray(this.data.pool.mod) || this.data.pool.mod.length === 0) {
             return "";
@@ -35,6 +40,7 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
 
     /** @override */
     _prepareData(data, options) {
+        const originalModifiers = data?.action?.modifiers;
         data = super._prepareData(data, options);
         
         // Merge with default action_roll data
@@ -42,7 +48,11 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
         data.action = foundry.utils.mergeObject(defaultAction, data.action || {}, { inplace: false });
         
         data.action.categories = ["active"];
-        data.action.modifiers = data.action.modifiers || [];
+        if (originalModifiers !== undefined) {
+            data.action.modifiers = originalModifiers;
+        } else {
+            data.action.modifiers = data.action.modifiers || [];
+        }
         
         data.selectedSkill = data.selectedSkill || data.action.skill || 'AutomotiveMechanic';
         data.selectedAttribute = 'logic';
@@ -91,6 +101,25 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
     async showDialog() {
         if (!this.data.options?.showDialog) return true;
 
+        const initialModifiers = [...(this.data.action?.modifiers || [])];
+        if (this.options?.workshop) {
+            const workshop = this.options.workshop;
+            const rating = workshop.system.shop?.factoryRating ?? 5;
+            const cond = rating - 5;
+            let tools = 0;
+            if (rating === 6) tools = 1;
+            else if (rating === 5) tools = 0;
+            else if (rating === 3 || rating === 4) tools = -2;
+            else if (rating === 1 || rating === 2) tools = -4;
+
+            if (cond !== 0 && !initialModifiers.some(m => m.label === "SR5Marketplace.ItemBuilder.WorkingConditions")) {
+                initialModifiers.push({ label: "SR5Marketplace.ItemBuilder.WorkingConditions", value: cond });
+            }
+            if (tools !== 0 && !initialModifiers.some(m => m.label === "SR5Marketplace.ItemBuilder.ToolsParts")) {
+                initialModifiers.push({ label: "SR5Marketplace.ItemBuilder.ToolsParts", value: tools });
+            }
+        }
+
         const initialData = {
             testType: "BuildTest",
             actorUuid: this.actor.uuid,
@@ -100,10 +129,11 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
             threshold: this.options?.threshold ?? this.data.threshold?.base ?? this.data.threshold?.value ?? this.data.thresholdBase ?? 12,
             skill: this.data.selectedSkill || 'AutomotiveMechanic',
             attribute: this.data.selectedAttribute || 'logic',
-            appliedModifiers: this.data.action?.modifiers || [],
+            appliedModifiers: initialModifiers,
             isRepair: this.data.isRepair || false,
             installSource: this.data.installSource || null,
-            installSourceId: this.data.installSourceId || null
+            installSourceId: this.data.installSourceId || null,
+            isWorkshopMod: this.options?.isWorkshopMod || false
         };
 
         const buildTestApp = Object.values(ui.windows).find(w => w.constructor.name === "BuildTestApp");
@@ -117,34 +147,7 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
         return false;
     }
 
-    /** @override */
-    prepareBaseValues() {
-        for (const field of ['pool', 'limit', 'threshold', 'manualHits', 'manualGlitches']) {
-            let val = this.data[field];
-            const currentBase = (field === 'threshold') 
-                ? (this.data.thresholdBase || (val && typeof val === 'object' ? val.base : null) || 0)
-                : (val && typeof val === 'object' ? val.base : 0);
-
-            if (typeof val === 'number' || (typeof val === 'string' && val.trim() !== '')) {
-                const num = Number(val);
-                if (!isNaN(num)) {
-                    this.data[field] = game.shadowrun5e.data.createData('value_field', {
-                        base: currentBase,
-                        override: { value: num, label: "SR5.ManualOverride" }
-                    });
-                } else {
-                    this.data[field] = game.shadowrun5e.data.createData('value_field', { base: currentBase, override: { value: null, label: "SR5.ManualOverride" } });
-                }
-            } else if (!val || val === null || typeof val.value === 'undefined') {
-                this.data[field] = game.shadowrun5e.data.createData('value_field', { base: currentBase, override: { value: null, label: "SR5.ManualOverride" } });
-            } else if (val && typeof val === 'object' && val.override) {
-                if (val.override.value === undefined || val.override.value === null || val.override.value === "") {
-                    val.override.value = null;
-                }
-            }
-        }
-
-        super.prepareBaseValues();
+    _rebuildPool() {
         if (!this.actor) return;
 
         const skillId = this.data.selectedSkill;
@@ -213,19 +216,19 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
         }
 
         let skillValue = 0;
-        if (ref !== undefined && ref !== null) {
-            if (typeof ref === "number") {
-                skillValue = ref;
-            } else if (typeof ref === "object") {
-                skillValue = ref.value ?? ref.base ?? ref.rating ?? 0;
-            }
-        } else if (skillItem) {
+        if (skillItem) {
             skillValue = skillItem.system.skill?.rating ?? 
                          skillItem.system.skill?.value ?? 
                          skillItem.system.rating?.value ?? 
                          skillItem.system.value ?? 
                          skillItem.system.rating ?? 
                          0;
+        } else if (ref !== undefined && ref !== null) {
+            if (typeof ref === "number") {
+                skillValue = ref;
+            } else if (typeof ref === "object") {
+                skillValue = ref.value ?? ref.base ?? ref.rating ?? 0;
+            }
         }
 
         const attribute = this.actor.system.attributes[attributeId];
@@ -253,34 +256,55 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
         pool.addPart(skillLabel, skillValue);
         pool.addPart(attributeLabel, attributeValue);
 
-        // Add RAW Table Modifiers (from GM dialog if present)
-        const condVal = Number(this.data.workingConditions || 0);
-        if (condVal !== 0) {
-            const label = game.i18n.localize("SR5Marketplace.ItemBuilder.WorkingConditions");
-            pool.addPart(label, condVal);
+        // 3. Add Modifiers first
+        let modifiers = [];
+        if (Array.isArray(this.data.action.modifiers)) {
+            modifiers = this.data.action.modifiers;
+        } else if (typeof this.data.action.modifiers === "number" && this.data.action.modifiers !== 0) {
+            const label = game.i18n.localize("SR5.Labels.Action.Modifiers") || "Modifiers";
+            pool.addPart(label, this.data.action.modifiers);
+        }
+        console.log("BuildTest _rebuildPool | modifiers:", JSON.stringify(modifiers));
+
+        const hasWorkingConditionsMod = modifiers.some(m => m.label === "SR5Marketplace.ItemBuilder.WorkingConditions");
+        const hasToolsPartsMod = modifiers.some(m => m.label === "SR5Marketplace.ItemBuilder.ToolsParts");
+        const hasPlansInstructionsMod = modifiers.some(m => m.label === "SR5Marketplace.ItemBuilder.PlansInstructions");
+        const hasLogicMemoryPenaltyMod = modifiers.some(m => m.label === "SR5Marketplace.ItemBuilder.LogicMemoryPenalty");
+
+        // Add RAW Table Modifiers (from GM dialog if present and NOT already in custom modifiers)
+        if (!hasWorkingConditionsMod) {
+            const condVal = Number(this.data.workingConditions || 0);
+            if (condVal !== 0) {
+                const label = game.i18n.localize("SR5Marketplace.ItemBuilder.WorkingConditions");
+                pool.addPart(label, condVal);
+            }
         }
 
-        const toolsVal = Number(this.data.toolsParts || 0);
-        if (toolsVal !== 0) {
-            const label = game.i18n.localize("SR5Marketplace.ItemBuilder.ToolsParts");
-            pool.addPart(label, toolsVal);
+        if (!hasToolsPartsMod) {
+            const toolsVal = Number(this.data.toolsParts || 0);
+            if (toolsVal !== 0) {
+                const label = game.i18n.localize("SR5Marketplace.ItemBuilder.ToolsParts");
+                pool.addPart(label, toolsVal);
+            }
         }
 
-        const plansVal = Number(this.data.plansInstructions || 0);
-        if (plansVal !== 0) {
-            const label = game.i18n.localize("SR5Marketplace.ItemBuilder.PlansInstructions");
-            pool.addPart(label, plansVal);
+        if (!hasPlansInstructionsMod) {
+            const plansVal = Number(this.data.plansInstructions || 0);
+            if (plansVal !== 0) {
+                const label = game.i18n.localize("SR5Marketplace.ItemBuilder.PlansInstructions");
+                pool.addPart(label, plansVal);
+            }
         }
 
-        // Logic memory check: if checked and Logic < 5, penalty is -(5 - Logic)
-        if (this.data.logicMemoryPenaltyChecked && attributeValue < 5) {
-            const penaltyVal = -(5 - attributeValue);
-            const label = game.i18n.localize("SR5Marketplace.ItemBuilder.LogicMemoryPenalty");
-            pool.addPart(label, penaltyVal);
+        if (!hasLogicMemoryPenaltyMod) {
+            // Logic memory check: if checked and Logic < 5, penalty is -(5 - Logic)
+            if (this.data.logicMemoryPenaltyChecked && attributeValue < 5) {
+                const penaltyVal = -(5 - attributeValue);
+                const label = game.i18n.localize("SR5Marketplace.ItemBuilder.LogicMemoryPenalty");
+                pool.addPart(label, penaltyVal);
+            }
         }
 
-        // 3. Add Modifiers
-        const modifiers = this.data.action.modifiers || [];
         const parseModifierValue = (val) => {
             if (typeof val === "number") return val;
             if (typeof val === "string") {
@@ -295,38 +319,70 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
             pool.addPart(displayLabel, parseModifierValue(mod.value));
         });
 
-        // 4. Limit: Mental Limit is applied to build test
-        this.data.limit.base = this.actor.system.limits.mental?.value ?? 0;
-
-        // Apply extended test subsequent roll penalty: -1 for each next roll (if rollCount > 1)
-        const rollCount = this.options?.rollCount ?? 1;
-        if (rollCount > 1) {
-            const penalty = -(rollCount - 1);
-            const label = game.i18n.localize("SR5.ExtendedTestStep") || "Subsequent Roll Penalty";
-            pool.addPart(label, penalty);
-        }
-
-        // 5. Extended test setup
-        this.data.extended = true;
-
         // 6. Finalize dice pool
         this.data.pool.base = 0;
         this.data.pool.changes = this.data.pool.mod.map(m => ({
             name: m.name,
             value: m.value,
             enabled: true,
-            mode: typeof CONST !== 'undefined' ? (CONST.ACTIVE_EFFECT_MODES?.ADD ?? 2) : 2,
+            mode: typeof CONST !== 'undefined' ? (CONST.ACTIVE_EFFECT_CHANGE_TYPES?.ADD || CONST.ACTIVE_EFFECT_MODES?.ADD || 2) : 2,
             priority: 0
         }));
         this.data.pool.value = this.constructor.calcTotal(this.data.pool);
+        console.log("BuildTest _rebuildPool | Finalized pool.value:", this.data.pool.value, "pool.mod:", JSON.stringify(this.data.pool.mod));
+    }
+
+    /** @override */
+    prepareBaseValues() {
+        for (const field of ['pool', 'limit', 'threshold', 'manualHits', 'manualGlitches']) {
+            let val = this.data[field];
+            const currentBase = (field === 'threshold') 
+                ? (this.data.thresholdBase || (val && typeof val === 'object' ? val.base : null) || 0)
+                : (val && typeof val === 'object' ? val.base : 0);
+
+            if (typeof val === 'number' || (typeof val === 'string' && val.trim() !== '')) {
+                const num = Number(val);
+                if (!isNaN(num)) {
+                    this.data[field] = game.shadowrun5e.data.createData('value_field', {
+                        base: currentBase,
+                        override: { value: num, label: "SR5.ManualOverride" }
+                    });
+                } else {
+                    this.data[field] = game.shadowrun5e.data.createData('value_field', { base: currentBase, override: { value: null, label: "SR5.ManualOverride" } });
+                }
+            } else if (!val || val === null || typeof val.value === 'undefined') {
+                this.data[field] = game.shadowrun5e.data.createData('value_field', { base: currentBase, override: { value: null, label: "SR5.ManualOverride" } });
+            } else if (val && typeof val === 'object' && val.override) {
+                if (val.override.value === undefined || val.override.value === null || val.override.value === "") {
+                    val.override.value = null;
+                }
+            }
+        }
+
+        const originalModifiers = this.data.action?.modifiers;
+        super.prepareBaseValues();
+        if (originalModifiers !== undefined && this.data.action) {
+            this.data.action.modifiers = originalModifiers;
+        }
+        this._rebuildPool();
+
+        // 4. Limit: Mental Limit is applied to build test
+        if (this.actor) {
+            this.data.limit.base = this.actor.system.limits.mental?.value ?? 0;
+        }
+
+        // 5. Extended test setup
+        this.data.extended = true;
     }
 
     /** @override */
     calculateBaseValues() {
+        const originalModifiers = this.data.action?.modifiers;
         super.calculateBaseValues();
-        if (this.data?.pool) {
-            this.data.pool.value = this.constructor.calcTotal(this.data.pool);
+        if (originalModifiers !== undefined && this.data.action) {
+            this.data.action.modifiers = originalModifiers;
         }
+        this._rebuildPool();
     }
 
     /** @override */
@@ -349,7 +405,9 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
 
     /** @override */
     get success() {
-        return this.extendedHits.value >= this.threshold.value;
+        const thresholdVal = this.threshold?.value ?? this.data.threshold?.value ?? this.options?.threshold ?? this.data.thresholdBase ?? 12;
+        const currentHits = this.extendedHits?.value ?? this.data?.values?.extendedHits?.value ?? 0;
+        return currentHits >= thresholdVal;
     }
 
     /** @override */
@@ -389,8 +447,8 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
     /** @override */
     async afterTestComplete() {
         // If this is an inline app call, do not perform standard document creation/cleanup here.
-        if (this.data.action?.dialogId) {
-            console.debug("BuildTest | Inline app call detected, skipping default completion handlers.");
+        if (this.data.action?.dialogId || this.options?.isWorkshopMod) {
+            console.debug("BuildTest | Inline app call or workshop mod test detected, skipping default completion handlers.");
             return;
         }
 
@@ -478,11 +536,31 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
                             console.log(`SR5 Marketplace | Deleted installed modification ${this.data.installSourceId} from owner ${ownerActor.name}`);
                         }
                     }
-                } else if (this.data.installSource === "workshop" && this.data.installSourceId) {
+                } else if (this.data.installSource === "workshop") {
                     const workshopActor = this.options?.workshop;
                     if (workshopActor) {
-                        await workshopActor.removeItemFromInventory(this.data.installSourceId);
-                        console.log(`SR5 Marketplace | Deleted installed modification ${this.data.installSourceId} from workshop inventory`);
+                        let entryId = this.data.installSourceId;
+                        if (!entryId && this.data.buildData?.uuid) {
+                            const entry = typeof workshopActor.findInventoryItem === "function" ? workshopActor.findInventoryItem(this.data.buildData.uuid) : null;
+                            if (entry) entryId = entry[0];
+                        }
+                        if (entryId) {
+                            const entryObj = workshopActor.system.shop?.inventory?.[entryId];
+                            if (entryObj) {
+                                const newQty = (entryObj.qty || 1) - 1;
+                                if (newQty <= 0) {
+                                    await workshopActor.removeItemFromInventory(entryId);
+                                    console.log(`SR5 Marketplace | Removed installed modification ${entryId} from workshop inventory`);
+                                } else {
+                                    if (typeof workshopActor.updateInventoryItem === "function") {
+                                        await workshopActor.updateInventoryItem(entryId, { qty: newQty });
+                                    } else {
+                                        await workshopActor.update({ [`system.shop.inventory.${entryId}.qty`]: newQty });
+                                    }
+                                    console.log(`SR5 Marketplace | Decremented installed modification ${entryId} quantity to ${newQty}`);
+                                }
+                            }
+                        }
                     }
                 }
             }

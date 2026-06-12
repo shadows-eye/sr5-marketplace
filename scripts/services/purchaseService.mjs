@@ -405,9 +405,31 @@ export class PurchaseService {
         await actor.update({ "system.nuyen": currentNuyen - basket.totalCost, "system.karma.value": currentKarma - basket.totalKarma });
 
         const itemsToCreate = [];
+        const workshopModsAdded = [];
         const userId = game.user.id;
         for (const basketItem of basketItems) {
-            if (basketItem.isCustomBuild) {
+            if (basketItem.isWorkshopMod) {
+                const factoryActor = basketItem.factoryActorUuid ? await fromUuid(basketItem.factoryActorUuid) : null;
+                const sourceItem = await fromUuid(basketItem.itemUuid);
+                if (factoryActor && sourceItem) {
+                    const existingEntry = typeof factoryActor.findInventoryItem === "function" ? factoryActor.findInventoryItem(sourceItem.uuid) : null;
+                    if (existingEntry) {
+                        const [entryId, entry] = existingEntry;
+                        await factoryActor.updateInventoryItem(entryId, { qty: (entry.qty || 0) + basketItem.buyQuantity });
+                    } else {
+                        const shopData = {
+                            qty: basketItem.buyQuantity,
+                            itemPrice: basketItem.cost,
+                            sellPrice: basketItem.cost,
+                            buyPrice: basketItem.cost,
+                            availability: basketItem.availability,
+                            buyTime: { value: 24, unit: "hours" }
+                        };
+                        await factoryActor.addItemToInventory(sourceItem, shopData);
+                    }
+                    workshopModsAdded.push(basketItem);
+                }
+            } else if (basketItem.isCustomBuild) {
                 const buildData = basketItem.customData;
                 if (buildData.type === "vehicle") {
                     await this._createVehicleActor(buildData, userId);
@@ -453,6 +475,13 @@ export class PurchaseService {
                     name: d.name,
                     uuid: d.uuid
                 }));
+                for (const wm of workshopModsAdded) {
+                    chatItems.push({
+                        _id: wm.basketItemUuid,
+                        name: wm.name,
+                        uuid: wm.itemUuid
+                    });
+                }
 
                 const statusMessages = [];
                 if (userName) {
@@ -463,10 +492,15 @@ export class PurchaseService {
                     karma: basket.totalKarma,
                     actor: actor.name
                 }));
-                statusMessages.push(game.i18n.format("SR5Marketplace.Marketplace.Notifications.ItemsAdded", {
-                    count: itemsToCreate.length,
-                    actor: actor.name
-                }));
+                if (itemsToCreate.length > 0) {
+                    statusMessages.push(game.i18n.format("SR5Marketplace.Marketplace.Notifications.ItemsAdded", {
+                        count: itemsToCreate.length,
+                        actor: actor.name
+                    }));
+                }
+                for (const wm of workshopModsAdded) {
+                    statusMessages.push(game.i18n.format("SR5Marketplace.Marketplace.Notifications.WorkshopArrival", { name: wm.name }));
+                }
                 
                 const confirmData = {
                     actorId: actor.id,

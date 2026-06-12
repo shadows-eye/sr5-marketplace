@@ -18,7 +18,8 @@ export class AppTestFlagService {
         }
         const user = game.users.get(userId);
         if (!user) return {};
-        return user.getFlag(MODULE_ID, FLAG_KEY_AppTest) || {};
+        const state = user.getFlag(MODULE_ID, FLAG_KEY_AppTest);
+        return state ? foundry.utils.deepClone(state) : {};
     }
 
     /**

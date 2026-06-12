@@ -1197,9 +1197,19 @@ async function handleGMRunBuildTest({ userId, dialogId, actorUuid, data }) {
         await test.execute();
 
         let finalStatus = 'extended-inprogress';
-        if (test.success || test.pool.value <= 0) {
+        const targetThreshold = activeTestState?.threshold ?? test.data.threshold?.value ?? 12;
+        if (test.success || test.data.values.extendedHits.value >= targetThreshold || test.pool.value <= 0) {
             finalStatus = 'resolved';
         }
+        console.log("Marketplace Builder | GM Run Build Test Threshold check:", {
+            extendedHits: test.data.values.extendedHits?.value,
+            targetThreshold: targetThreshold,
+            poolValue: test.pool.value,
+            isSuccess: test.success,
+            isHitsMet: test.data.values.extendedHits?.value >= targetThreshold,
+            isPoolExhausted: test.pool.value <= 0,
+            finalStatus: finalStatus
+        });
 
         // Check if crit glitched on last roll
         const roll = test.rolls[test.rolls.length - 1];
@@ -1235,7 +1245,7 @@ async function handleGMRunBuildTest({ userId, dialogId, actorUuid, data }) {
     }
 }
 
-async function handleGMContinueBuildTest({ userId, dialogId, actorUuid, rollCount }) {
+async function handleGMContinueBuildTest({ userId, dialogId, actorUuid, rollCount, newAppliedModifiers }) {
     try {
         const doc = await fromUuid(actorUuid);
         const actor = doc instanceof Actor ? doc : doc?.actor || null;
@@ -1252,7 +1262,7 @@ async function handleGMContinueBuildTest({ userId, dialogId, actorUuid, rollCoun
             action: {
                 skill: activeTestState.skill,
                 attribute: activeTestState.attribute,
-                modifiers: activeTestState.appliedModifiers,
+                modifiers: newAppliedModifiers || activeTestState.appliedModifiers,
                 workingConditions: activeTestState.workingConditions,
                 toolsParts: activeTestState.toolsParts,
                 plansInstructions: activeTestState.plansInstructions,
@@ -1296,9 +1306,19 @@ async function handleGMContinueBuildTest({ userId, dialogId, actorUuid, rollCoun
         }
 
         let finalStatus = 'extended-inprogress';
-        if (test.data.values.extendedHits.value >= test.data.threshold.value || test.pool.value <= 0) {
+        const targetThreshold = activeTestState?.threshold ?? test.data.threshold?.value ?? 12;
+        if (test.success || test.data.values.extendedHits.value >= targetThreshold || test.pool.value <= 0) {
             finalStatus = 'resolved';
         }
+        console.log("Marketplace Builder | GM Continue Build Test Threshold check:", {
+            extendedHits: test.data.values.extendedHits?.value,
+            targetThreshold: targetThreshold,
+            poolValue: test.pool.value,
+            isSuccess: test.success,
+            isHitsMet: test.data.values.extendedHits?.value >= targetThreshold,
+            isPoolExhausted: test.pool.value <= 0,
+            finalStatus: finalStatus
+        });
 
         // Check if crit glitched
         const roll = test.rolls[test.rolls.length - 1];
@@ -1317,7 +1337,8 @@ async function handleGMContinueBuildTest({ userId, dialogId, actorUuid, rollCoun
             result: test.data,
             rolls: test.rolls,
             status: finalStatus,
-            rollCount: rollCount
+            rollCount: rollCount,
+            appliedModifiers: newAppliedModifiers || activeTestState.appliedModifiers
         }, userId);
 
         game.socket.emit("module.sr5-marketplace", { type: "request_resolved", userId });

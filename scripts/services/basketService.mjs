@@ -80,14 +80,16 @@ export class BasketService {
      * Adds an item to the current user's active shopping cart.
      * @param {string} itemUuid The UUID of the item to add.
      * @param {string} actorUuid The UUID of the actor this basket is for.
+     * @param {string|null} [userId=null] Optional user ID to get the basket for.
+     * @param {object} [options={}] Additional options for the basket item.
      */
-    async addToBasket(itemUuid, actorUuid) {
+    async addToBasket(itemUuid, actorUuid, userId = null, options = {}) {
         if (!itemUuid || !actorUuid) {
             ui.notifications.error("Cannot add item to cart without a purchasing actor.");
             return;
         }
 
-        const basket = await this.getBasket();
+        const basket = await this.getBasket(userId);
         // This is the fix: The createdForActor is now always set from the actorUuid passed by the application.
         basket.createdForActor = actorUuid;
 
@@ -96,7 +98,7 @@ export class BasketService {
 
         const itemBehaviors = game.settings.get("sr5-marketplace", "itemTypeBehaviors") || {};
         const behavior = itemBehaviors[item.type] || 'single';
-        const existingItemInCart = basket.shoppingCartItems.find(i => i.itemUuid === item.uuid);
+        const existingItemInCart = basket.shoppingCartItems.find(i => i.itemUuid === item.uuid && (!i.isWorkshopMod || i.vehicleActorUuid === options.vehicleActorUuid));
 
         if (behavior === 'unique') {
             if (existingItemInCart) {
@@ -125,7 +127,7 @@ export class BasketService {
                 .filter(i => i.itemUuid === item.uuid)
                 .reduce((sum, i) => sum + i.buyQuantity, 0);
             if (totalInBasket + 1 > shopItem.qty) {
-                ui.notifications.warn(game.i18n.format("SR5Marketplace.Marketplace.Basket.OutOfStockWarning", { name: item.name, qty: shopItem.qty }));
+                ui.notifications.warn(game.i18n.format("SR5Marketplace.Marketplace.Notifications.OutOfStockWarning", { name: item.name, qty: shopItem.qty }));
                 return;
             }
         }
@@ -191,12 +193,15 @@ export class BasketService {
                 itemQuantity: behavior === 'stack' ? 10 : (item.system.quantity || 1),
                 rating: defaultRating, 
                 selectedRating: defaultRating,
+                isWorkshopMod: !!options.isWorkshopMod,
+                vehicleActorUuid: options.vehicleActorUuid || null,
+                factoryActorUuid: options.factoryActorUuid || null
             };
             basket.shoppingCartItems.push(basketItem);
         }
         
         const updatedBasket = this._recalculateTotals(basket);
-        await this.saveBasket(updatedBasket);
+        await this.saveBasket(updatedBasket, userId);
         //ui.notifications.info(`'${item.name}' added to basket.`);
     }
 

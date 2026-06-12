@@ -3,7 +3,7 @@
 
     {{#if activeTestState}}
 
-        {{#if (eq activeTestState.status "initial")}}
+        {{#if activeTestState.showConfig}}
             <form class="availability-dialog-form">
                 <input type="hidden" name="dialogId" value="{{activeTestState.id}}" />
                 <header class="marketplace-header flex flex-row items-center gap-4 shrink-0 rounded mb-4">
@@ -42,6 +42,26 @@
                         <div class="header-stat-value">{{activeTestState.threshold}}</div>
                     </div>
                 </div>
+
+                {{#if activeTestState.isInProgress}}
+                    <div class="extended-progress-container mb-3 p-3 bg-[var(--attribute-group-bg)] rounded border border-[var(--border-color-medium)]">
+                        <div class="flex justify-between items-center text-xs font-bold mb-2">
+                            <span class="text-[var(--color-green-button)]"><i class="fas fa-tasks"></i> {{localize "SR5Marketplace.Marketplace.Tests.Progress"}}: <strong>{{activeTestState.cumulativeHits}} / {{activeTestState.threshold}}</strong> {{localize "SR5Marketplace.AppDialogItem.Hits"}}</span>
+                            <span class="text-[var(--color-white)]"><i class="fas fa-redo"></i> {{localize "SR5.ExtendedTestStep"}} {{activeTestState.nextRollNumber}}</span>
+                        </div>
+                        
+                        {{#if activeTestState.renderedDice.length}}
+                            <div class="result-subtitle text-[10px] font-bold uppercase tracking-wider mb-1 opacity-70">{{localize "SR5Marketplace.Marketplace.Tests.LastRollResults"}}</div>
+                            <div class="MarketAppDialog-dice-tray flex flex-wrap gap-1.5 p-2 bg-[var(--color-black-transparent-20)] rounded min-h-[35px]">
+                                {{#each activeTestState.renderedDice as |die|}}
+                                    <div class="MarketAppDialog-die-result {{die.cssClass}} w-6 h-6 flex items-center justify-center rounded text-[10px] font-bold">
+                                        <span class="MarketAppDialog-die-text">{{die.text}}</span>
+                                    </div>
+                                {{/each}}
+                            </div>
+                        {{/if}}
+                    </div>
+                {{/if}}
 
                 {{!-- Skill selection --}}
                 <div class="form-group mb-3 p-2 bg-[var(--Form-background-group)] rounded">
@@ -154,9 +174,15 @@
                 <hr class="my-3 border-t border-[var(--border-color-medium)]" />
 
                 <div class="flex gap-2">
-                    <button type="button" class="roll-button flex-grow" data-action="runBuildTest">
-                        <i class="fas fa-dice-six"></i> {{localize "SR5Marketplace.UI.Roll"}}
-                    </button>
+                    {{#if activeTestState.isInProgress}}
+                        <button type="button" class="roll-button flex-grow" data-action="continueBuildTest">
+                            <i class="fas fa-dice-six"></i> {{localize "SR5Marketplace.Marketplace.Tests.ContinueTest"}}
+                        </button>
+                    {{else}}
+                        <button type="button" class="roll-button flex-grow" data-action="runBuildTest">
+                            <i class="fas fa-dice-six"></i> {{localize "SR5Marketplace.UI.Roll"}}
+                        </button>
+                    {{/if}}
                     <button type="button" class="px-4 py-2 border border-[var(--color-red-bright)] text-[var(--color-red-bright)] hover:bg-[var(--color-red-bright)] hover:text-white rounded font-bold text-xs transition-colors" data-action="clearBuildTest">
                         {{localize "Cancel"}}
                     </button>
@@ -206,7 +232,14 @@
             <div class="MarketAppDialog-final-result-container">
                 <div class="MarketAppDialog-final-summary p-3 bg-[var(--attribute-group-bg)] rounded border border-[var(--border-color-medium)]">
                     {{#if activeTestState.isSuccess}}
-                        {{#if activeTestState.isRepair}}
+                        {{#if activeTestState.isWorkshopMod}}
+                            <h3 class="success text-sm font-bold text-[var(--color-green-button)] flex items-center justify-center gap-1.5 mb-2">
+                                <i class="fas fa-check-circle"></i> {{localize "SR5Marketplace.ItemBuilder.SuccessModInstalled" name=activeTestState.buildData.name}}
+                            </h3>
+                            <p class="text-xs text-center opacity-85 mt-2 mb-3">
+                                {{localize "SR5Marketplace.ItemBuilder.SuccessModInstalledDesc" name=activeTestState.buildData.name}}
+                            </p>
+                        {{else if activeTestState.isRepair}}
                             <h3 class="success text-sm font-bold text-[var(--color-green-button)] flex items-center justify-center gap-1.5 mb-2">
                                 <i class="fas fa-check-circle"></i> {{localize "SR5Marketplace.ItemBuilder.SuccessRepairCreated"}}
                             </h3>
@@ -216,7 +249,7 @@
                             </h3>
                         {{/if}}
                         
-                        {{#unless activeTestState.isRepair}}
+                        {{#unless (or activeTestState.isRepair activeTestState.isWorkshopMod)}}
                         <div class="form-group flex flex-row items-center justify-center gap-2 mb-3 p-2 bg-[var(--Form-background-group)] rounded border border-[var(--border-color-medium)]">
                             <label class="font-bold text-xs opacity-80 mb-0 flex items-center gap-1.5 shrink-0">
                                 {{localize "SR5Marketplace.UI.Name"}}:
@@ -232,10 +265,10 @@
                             {{#if activeTestState.isRepair}}
                                 {{localize "SR5Marketplace.Marketplace.Tests.Progress"}}: <strong>{{activeTestState.cumulativeHits}} / {{activeTestState.threshold}}</strong> {{localize "SR5Marketplace.AppDialogItem.Hits"}} ({{activeTestState.totalRolls}} {{localize "SR5Marketplace.UI.Roll"}})
                             {{else}}
-                                {{localize "SR5Marketplace.AppDialogItem.ExtendedSuccessDetails" 
+                                {{localize "SR5Marketplace.ItemBuilder.BuildSuccessDetails" 
                                     rolls=activeTestState.totalRolls 
-                                    connection=activeTestState.cumulativeHits 
-                                    timeValue=activeTestState.totalRolls
+                                    hits=activeTestState.cumulativeHits 
+                                    threshold=activeTestState.threshold
                                 }}
                             {{/if}}
                         </div>
@@ -249,7 +282,11 @@
                             {{/each}}
                         </div>
 
-                        {{#if activeTestState.isRepair}}
+                        {{#if activeTestState.isWorkshopMod}}
+                            <button type="button" class="roll-button mt-3" data-action="resolveBuildTest">
+                                <i class="fas fa-plus"></i> {{localize "SR5Marketplace.ItemBuilder.AddToVehicle"}}
+                            </button>
+                        {{else if activeTestState.isRepair}}
                             <button type="button" class="roll-button mt-3" data-action="resolveBuildTest">
                                 <i class="fas fa-check"></i> {{localize "Close"}}
                             </button>

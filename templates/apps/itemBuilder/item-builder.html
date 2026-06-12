@@ -1,17 +1,93 @@
 <form class="item-builder-container" autocomplete="off">
     {{!-- The header now contains the navigation tabs, just like your marketplace app --}}
-    <header class="builder-header">
+    <header class="builder-header {{#if (eq activeTab 'workshop')}}workshop-header{{/if}}">
+        {{#if (eq activeTab "workshop")}}
+        {{#if activeVehicle}}
+        <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+            <img src="{{activeVehicle.img}}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+            <h3 style="margin: 0; font-weight: bold;">{{activeVehicle.name}}</h3>
+        </div>
+
+        <div class="workshop-search-filter-section">
+            <div class="shelf-search-wrap">
+                <div class="input-wrapper">
+                    <i class="fas fa-search shelf-search-icon" style="margin: 0; opacity: 0.6;"></i>
+                    <input id="search-box" type="search" class="shelf-search-bar" placeholder="Search factory items..."
+                        autocomplete="off" style="flex: 1; width: 100%;">
+                </div>
+                <div id="filter-tags-container" class="flex flex-wrap gap-1 w-full mt-0.5 empty:hidden"></div>
+            </div>
+
+            <div class="workshop-quick-filters">
+                <button type="button" class="quick-filter-btn drive {{#ifin 'drive' workshopSearchTags}}active{{/ifin}}"
+                    data-action="toggleWorkshopFilter" data-category="drive" title="Filter Drive">
+                    <i class="fas fa-cogs"></i>
+                </button>
+                <button type="button"
+                    class="quick-filter-btn protection {{#ifin 'protection' workshopSearchTags}}active{{/ifin}}"
+                    data-action="toggleWorkshopFilter" data-category="protection" title="Filter Protection">
+                    <i class="fas fa-shield-alt"></i>
+                </button>
+                <button type="button"
+                    class="quick-filter-btn weapons {{#ifin 'weapons' workshopSearchTags}}active{{/ifin}}"
+                    data-action="toggleWorkshopFilter" data-category="weapons" title="Filter Weapons">
+                    <i class="fas fa-crosshairs"></i>
+                </button>
+                <button type="button" class="quick-filter-btn body {{#ifin 'body' workshopSearchTags}}active{{/ifin}}"
+                    data-action="toggleWorkshopFilter" data-category="body" title="Filter Hull/Body">
+                    <i class="fas fa-car"></i>
+                </button>
+                <button type="button"
+                    class="quick-filter-btn electronics {{#ifin 'electronics' workshopSearchTags}}active{{/ifin}}"
+                    data-action="toggleWorkshopFilter" data-category="electronics" title="Filter Electronics">
+                    <i class="fas fa-microchip"></i>
+                </button>
+                <button type="button"
+                    class="quick-filter-btn cosmetic {{#ifin 'cosmetic' workshopSearchTags}}active{{/ifin}}"
+                    data-action="toggleWorkshopFilter" data-category="cosmetic" title="Filter Cosmetic">
+                    <i class="fas fa-paint-brush"></i>
+                </button>
+                <button type="button" class="quick-filter-btn reset" data-action="resetWorkshopFilters"
+                    title="Reset Filters">
+                    <i class="fas fa-undo"></i>
+                </button>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+            {{> 'modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/marketplaceUserActor.html'
+                actor=purchasingActorData ownedActors=ownedActors}}
+
+            <button type="button" class="modify-vehicle-btn {{#if canModifyVehicle}}ready{{/if}}" data-action="modifyVehicle"
+                style="padding: 4px 10px; font-size: 0.9em; flex-shrink: 0;"
+                {{#unless canModifyVehicle}}disabled title="{{#if hasVirtualMods}}Some queued modifications have not been purchased yet{{else}}No modifications queued in virtual slots{{/if}}"{{/unless}}>
+                <i class="fas fa-tools"></i> {{localize "SR5Marketplace.Factory.ModifyVehicle"}}
+            </button>
+            <button type="button" class="button" data-action="deselectVehicleActor"
+                style="padding: 4px 10px; font-size: 0.9em; flex-shrink: 0;">
+                <i class="fas fa-exchange-alt"></i> {{localize "SR5Marketplace.Factory.ChangeVehicle"}}
+            </button>
+        </div>
+        {{else}}
         <div class="header-left">
-            <img class="item-type-icon" src="{{builder.itemTypeImage}}" alt="{{localize 'SR5Marketplace.UI.Type'}}" width="32" height="32"/>
-        </div> 
+            <i class="fas fa-warehouse"
+                style="font-size: 1.5em; margin-right: 10px; color: var(--color-yellow-dark, #ffaa00);"></i>
+        </div>
+        <div class="builderTitle" style="font-size: 20px; font-weight: bold; flex: 1;">
+            {{localize "SR5Marketplace.Factory.SelectorTitle"}}
+        </div>
+        {{/if}}
+        {{else}}
+        <div class="header-left">
+            <img class="item-type-icon" src="{{builder.itemTypeImage}}" alt="{{localize 'SR5Marketplace.UI.Type'}}"
+                width="32" height="32" />
+        </div>
         <div class="builderTitle">
-            {{#if (neq activeTab "workshop")}}
-                {{builder.title}}
-            {{/if}}
+            {{builder.title}}
         </div>
         <div class="header-right">
-            {{!-- Add this new button --}}
-            <button type="button" class="clear-build-btn" data-action="clearBuild" title="{{localize 'SR5Marketplace.ItemBuilder.ClearEntireBuild'}}">
+            <button type="button" class="clear-build-btn" data-action="clearBuild"
+                title="{{localize 'SR5Marketplace.ItemBuilder.ClearEntireBuild'}}">
                 <i class="fas fa-times-circle"></i>
             </button>
             <button type="button" class="build-test-btn" data-action="startBuildTest">
@@ -25,36 +101,41 @@
             </button>
             {{#if purchasingActor}}
             <div class="actor-display" title="{{purchasingActor.name}}">
-                <img src="{{purchasingActor.img}}" alt="{{purchasingActor.name}}" width="36" height="36"/>
+                <img src="{{purchasingActor.img}}" alt="{{purchasingActor.name}}" width="36" height="36" />
             </div>
             {{/if}}
         </div>
+        {{/if}}
     </header>
     <nav class="builder-nav tabs" data-group="primary">
-    
-        <a class="builder-tabs item{{#if (eq activeTab 'builder')}} active{{/if}}" data-tab="builder" data-action="changeTab">
+
+        <a class="builder-tabs item{{#if (eq activeTab 'builder')}} active{{/if}}" data-tab="builder"
+            data-action="changeTab">
             <div class="tab-icon-wrapper">
                 <i class="fa-solid fa-wrench"></i>
             </div>
             <span>{{localize "SR5Marketplace.ItemBuilder.nav.builder"}}</span>
         </a>
-        
-        <a class="builder-tabs item{{#if (eq activeTab 'vehicle')}} active{{/if}}" data-tab="vehicle" data-action="changeTab">
+
+        <a class="builder-tabs item{{#if (eq activeTab 'vehicle')}} active{{/if}}" data-tab="vehicle"
+            data-action="changeTab">
             <div class="tab-icon-wrapper">
                 <i class="fa-solid fa-car"></i>
             </div>
             <span>{{localize "SR5Marketplace.ItemBuilder.nav.vehicle"}}</span>
         </a>
-        
-        <a class="builder-tabs item{{#if (eq activeTab 'effects')}} active{{/if}}" data-tab="effects" data-action="changeTab">
+
+        <a class="builder-tabs item{{#if (eq activeTab 'effects')}} active{{/if}}" data-tab="effects"
+            data-action="changeTab">
             <div class="tab-icon-wrapper">
                 <i class="fa-solid fa-bolt"></i>
             </div>
             <span>{{localize "SR5Marketplace.ItemBuilder.nav.effects"}}</span>
         </a>
-        
+
         {{#if workshopActorUuid}}
-        <a class="builder-tabs item{{#if (eq activeTab 'workshop')}} active{{/if}}" data-tab="workshop" data-action="changeTab">
+        <a class="builder-tabs item{{#if (eq activeTab 'workshop')}} active{{/if}}" data-tab="workshop"
+            data-action="changeTab">
             <div class="tab-icon-wrapper">
                 <i class="fa-solid fa-warehouse"></i>
             </div>
@@ -62,7 +143,7 @@
         </a>
         {{/if}}
     </nav>
-    
+
     {{!-- The main content area renders the correct partial based on the active tab --}}
     <main class="builder-body">
         {{{tabContent}}}

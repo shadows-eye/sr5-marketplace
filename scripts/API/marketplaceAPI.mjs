@@ -33,9 +33,9 @@ class inGameMarketplaceAPI {
      */
     async addItem(itemUuid, actorUuid, options = {}) {
         if (!itemUuid || !actorUuid) return;
-        const { userId = null } = options;
-        // Pass the (potentially null) userId to the basket service
-        await this.basketService.addToBasket(itemUuid, actorUuid, userId);
+        const { userId = null, ...rest } = options;
+        // Pass the (potentially null) userId and options to the basket service
+        await this.basketService.addToBasket(itemUuid, actorUuid, userId, rest);
     }
 
     /**

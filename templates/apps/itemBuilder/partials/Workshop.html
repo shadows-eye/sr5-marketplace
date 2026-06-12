@@ -2,24 +2,6 @@
     {{#if activeVehicle}}
     {{!-- RENDER ACTIVE WORKSHOP VISUALIZER --}}
     <div class="workshop-main">
-        <div class="workshop-header-bar">
-            <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
-                <img src="{{activeVehicle.img}}"
-                    style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
-                <h3 style="margin: 0; font-weight: bold;">{{activeVehicle.name}}</h3>
-            </div>
-            <div class="shelf-search-wrap" style="flex: 1; max-width: 400px; margin-bottom: 0; margin-left: 20px; margin-right: 20px;">
-                <i class="fas fa-search shelf-search-icon"></i>
-                <input id="search-box" type="search" class="shelf-search-bar" placeholder="Search factory items..." autocomplete="off" />
-                <div id="filter-tags-container" class="flex flex-wrap gap-1 w-full mt-0.5 empty:hidden"></div>
-            </div>
-
-            <button type="button" class="button" data-action="deselectVehicleActor"
-                style="padding: 4px 10px; font-size: 0.9em; flex-shrink: 0;">
-                <i class="fas fa-exchange-alt"></i> {{localize "SR5Marketplace.Factory.ChangeVehicle"}}
-            </button>
-        </div>
-
         <div class="workshop-layout-three-columns">
             <!-- Left Sidebar: Vehicle Details, Repair, Installed mods -->
             <div class="workshop-sidebar-left">
@@ -128,19 +110,31 @@
                         {{#each categories}}
                             {{#if this.items.length}}
                             <div class="installed-mods-category-group {{@key}}">
-                                <div class="category-group-header">{{localize this.label}} ({{this.used}}/{{this.max}})</div>
+                                <div class="category-group-header"><i class="{{this.icon}}"></i> {{localize this.label}} ({{this.used}}/{{this.max}})</div>
                                 {{#each this.items}}
-                                <div class="installed-mods-summary-item" title="{{this.name}}">
-                                    <span class="mod-name" data-action="clickItemName" data-item-uuid="{{this.uuid}}" style="cursor: pointer;">{{this.name}}</span>
-                                    <div class="installed-mod-actions" style="display: flex; align-items: center; gap: 8px;">
-                                        <a class="toggle-builtin-btn cursor-pointer transition-all {{#if this.isPreinstalled}}opacity-100 text-[var(--color-yellow-dark,#ffaa00)]{{else}}opacity-35 text-white hover:opacity-70{{/if}}" 
-                                           data-action="toggleBuiltIn" 
-                                           data-item-uuid="{{this.uuid}}" 
-                                           title="Toggle Built-in (Not counted in limits)">
-                                            <i class="fas fa-box"></i>
-                                        </a>
-                                    </div>
-                                </div>
+                                 <div class="installed-mods-summary-item {{#if this.isVirtual}}virtual-mod{{/if}}" title="{{this.name}}">
+                                     <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
+                                         <img src="{{this.img}}" style="width: 20px; height: 20px; border-radius: 3px; object-fit: cover; flex-shrink: 0; border: 1px solid rgba(255, 255, 255, 0.1);" />
+                                         <span class="mod-name" data-action="clickItemName" data-item-uuid="{{this.uuid}}" style="cursor: pointer; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{this.name}}</span>
+                                     </div>
+                                     <div class="installed-mod-actions" style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                                         {{#if this.isVirtual}}
+                                         <a class="remove-virtual-btn cursor-pointer" 
+                                            data-action="removeVirtualMod" 
+                                            data-virtual-id="{{this.id}}" 
+                                            title="{{localize 'SR5Marketplace.Factory.RemoveVirtualMod'}}">
+                                             <i class="fas fa-trash"></i>
+                                         </a>
+                                         {{else}}
+                                         <a class="toggle-builtin-btn cursor-pointer transition-all {{#if this.isPreinstalled}}opacity-100 text-[var(--color-yellow-dark,#ffaa00)]{{else}}opacity-35 text-white hover:opacity-70{{/if}}" 
+                                            data-action="toggleBuiltIn" 
+                                            data-item-uuid="{{this.uuid}}" 
+                                            title="Toggle Built-in (Not counted in limits)">
+                                             <i class="fas fa-box"></i>
+                                         </a>
+                                         {{/if}}
+                                     </div>
+                                 </div>
                                 {{/each}}
                             </div>
                             {{/if}}
@@ -166,21 +160,28 @@
                                               {{#if (eq @key 'cosmetic')}}cosmetic{{/if}} drop-target"
                     data-category="{{@key}}">
                     <div class="category-header">
-                        <span title="{{localize this.label}}">{{localize this.label}}</span>
+                        <span title="{{localize this.label}}"><i class="{{this.icon}}"></i> {{localize this.label}}</span>
                         <div class="slots-counter {{#if (ge this.used this.max)}}limit-reached{{/if}}">{{this.used}} /
                             {{this.max}}</div>
                     </div>
                     <div class="installed-mods-list">
                         {{#each this.items}}
-                        <div class="installed-mod-item" title="{{this.name}}" data-action="clickItemName" data-item-uuid="{{this.uuid}}" style="cursor: pointer;">
-                            <span>{{this.name}}</span>
-                            <span
-                                style="font-weight: bold; font-size: 0.85em; opacity: 0.7;">R{{this.system.rating}}</span>
+                        <div class="installed-mod-item {{#if this.isVirtual}}virtual-mod{{/if}}" 
+                             {{#if this.isVirtual}}
+                             data-action="removeVirtualMod" 
+                             data-virtual-id="{{this.id}}"
+                             {{else}}
+                             data-action="clickItemName" 
+                             data-item-uuid="{{this.uuid}}"
+                             {{/if}}
+                             style="cursor: pointer;">
+                            <img src="{{this.img}}" title="{{this.name}}{{#if this.isVirtual}} (Virtual){{/if}}" class="installed-mod-img" />
+                            {{#if this.isVirtual}}
+                            <div class="virtual-badge"><i class="fas fa-shopping-cart"></i></div>
+                            {{/if}}
                         </div>
                         {{else}}
-                        <div
-                            style="font-size: 0.75em; font-style: italic; opacity: 0.4; text-align: center; padding: 4px 0;">
-                            Empty</div>
+                        <div class="installed-mod-empty">Empty</div>
                         {{/each}}
                     </div>
                 </div>

@@ -88,6 +88,11 @@
     "RepairHealedComplete": "Fahrzeug erfolgreich repariert und vollständig geheilt.",
     "RepairHealedHits": "Fahrzeug repariert! {hits} Schadenskästchen geheilt. Verbleibender Schaden: {damage}.",
     "SuccessRepairCreated": "Fahrzeug erfolgreich repariert!",
+    "SuccessModInstalled": "Modifikation erfolgreich! {name} im Fahrzeug installiert.",
+    "SuccessModInstalledDesc": "Klicke auf die Schaltfläche unten, um das Modifikationsteil aus dem Lager/Inventar zu verbrauchen und die Modifikation im Fahrzeug zu installieren.",
+    "BuildSuccessDetails": "Der Bau/die Modifikation benötigte {rolls} Würfe und erzielte insgesamt {hits} Erfolge (Schwellenwert: {threshold}).",
+    "AddToVehicle": "Am Fahrzeug installieren",
+    "ErrorModNotAvailable": "Die Modifikation {name} befindet sich nicht im Inventar der Werkstatt oder des Käufers.",
     "WorkingConditionsOptions": {
         "excellent": "Hervorragend (+1)",
         "average": "Normal (0)",

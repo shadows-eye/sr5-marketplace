@@ -252,9 +252,11 @@
         },
         "Actor": {
             "SelectAnActor": "Select an Actor",
+            "SwitchActor": "Switch Actor",
             "SelectActorTooltip": "Please select an actor to begin shopping.",
             "RequestActor": "Request From",
-            "Funds": "Funds"
+            "Funds": "Funds",
+            "PurchasingActor": "Purchasing Actor"
         },
         "Contacts": {
             "SelectContact": "Select a contact to Order with",
@@ -446,7 +448,8 @@
             "PurchaseRequestRejected": "Purchase request for user {name} has been rejected.",
             "PurchaseApproved": "Purchase approved for user {name}.",
             "DeductedResources": "Deducted {cost} ¥ and {karma} Karma from {actor}.",
-            "ItemsAdded": "Added {count} new item(s) to {actor}'s inventory."
+            "ItemsAdded": "Added {count} new item(s) to {actor}'s inventory.",
+            "WorkshopArrival": "{name} has arrived in the workshop."
         },
         "NoContacts": "Has no Contacts"
     },
@@ -550,6 +553,7 @@
         }
     },
     "Factory": {
+        "ModifyVehicle": "Modify Vehicle",
         "ChangeVehicle": "Change Vehicle",
         "SelectorTitle": "Select Vehicle / Drone",
         "SelectorSubtitle": "Select a vehicle or drone in range of the factory to modify or repair it.",

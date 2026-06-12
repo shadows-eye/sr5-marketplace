@@ -252,9 +252,11 @@
         },
         "Actor": {
             "SelectAnActor": "Wähle einen Akteur",
+            "SwitchActor": "Akteur wechseln",
             "SelectActorTooltip": "Bitte wähle einen Akteur aus, um einzukaufen.",
             "RequestActor": "Anfrage von",
-            "Funds": "Budget"
+            "Funds": "Budget",
+            "PurchasingActor": "Käufer"
         },
         "Contacts": {
             "SelectContact": "Wählen Sie einen Kontakt der die Bestellung besorgt",
@@ -447,7 +449,8 @@
             "PurchaseRequestRejected": "Kaufanfrage für Benutzer {name} wurde abgelehnt.",
             "PurchaseApproved": "Kauf freigegeben für Benutzer {name}.",
             "DeductedResources": "{cost} ¥ und {karma} Karma von {actor} abgezogen.",
-            "ItemsAdded": "{count} neue(r) Artikel zu {actor}s Inventar hinzugefügt."
+            "ItemsAdded": "{count} neue(r) Artikel zu {actor}s Inventar hinzugefügt.",
+            "WorkshopArrival": "{name} ist in der Werkstatt eingetroffen."
         },
         "NoContacts": "Hat keine Kontakte"
     },
@@ -551,6 +554,7 @@
         }
     },
     "Factory": {
+        "ModifyVehicle": "Fahrzeug modifizieren",
         "ChangeVehicle": "Fahrzeug wechseln",
         "SelectorTitle": "Fahrzeug / Drohne auswählen",
         "SelectorSubtitle": "Wählen Sie ein Fahrzeug oder eine Drohne in Reichweite der Werkstatt aus, um es zu modifizieren oder zu reparieren.",

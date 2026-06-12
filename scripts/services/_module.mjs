@@ -10,6 +10,7 @@ import { DiceHelperService } from './DiceHelperService.mjs';
 import { ThemeService } from './themeService.mjs';
 import { SystemDataMapperService } from './SystemDataMapperService.mjs';
 import { ActorSelectionService } from './ActorSelectionService.mjs';
+import { FactoryFlow } from './factoryFlow.mjs';
 
 // 2. Instantiate and Export the Singletons (Use lowercase for instances!)
 export const actorItemServices = new ActorItemServices();
@@ -22,6 +23,7 @@ export const deliveryTimeService = new DeliveryTimeService();
 export const diceHelperService = new DiceHelperService();
 export const themeService = new ThemeService();
 export const systemDataMapperService = new SystemDataMapperService();
+export const factoryFlow = new FactoryFlow();
 export { InventoryRules } from './inventory-rules.mjs';
 
 // 3. Re-export classes (Export the class under its original name)
@@ -31,5 +33,6 @@ export {
  PurchaseService, 
  SystemDataMapperService,
  ItemDataServicesClass as ItemDataServices, // Aliased back so marketHooks.js can use `new ItemDataServices()`
- ActorSelectionService
+ ActorSelectionService,
+ FactoryFlow
 };

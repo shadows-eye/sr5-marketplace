@@ -247,7 +247,8 @@
     bottom: 0;
     width: 3px;
     border-radius: 4px 0 0 4px;
-    background: #00ffcc; /* fallback */
+    background: #00ffcc;
+    /* fallback */
     transition: background 0.2s ease;
 }
 
@@ -255,18 +256,23 @@
 .installed-mods-category-group.drive .installed-mods-summary-item::before {
     background: linear-gradient(to bottom, #00f0ff, #0044ff);
 }
+
 .installed-mods-category-group.protection .installed-mods-summary-item::before {
     background: linear-gradient(to bottom, #ffaa00, #b27a00);
 }
+
 .installed-mods-category-group.weapons .installed-mods-summary-item::before {
     background: linear-gradient(to bottom, #cc0000, #7a00cc);
 }
+
 .installed-mods-category-group.electronics .installed-mods-summary-item::before {
     background: linear-gradient(to bottom, #00ff66, #ffea00);
 }
+
 .installed-mods-category-group.body .installed-mods-summary-item::before {
     background: linear-gradient(to bottom, #777777, #ffffff);
 }
+
 .installed-mods-category-group.cosmetic .installed-mods-summary-item::before {
     background: linear-gradient(to bottom, #ff00ff, #ffb6c1);
 }
@@ -283,15 +289,33 @@
     opacity: 0.8;
 }
 
+.workshop-search-filter-section {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: 12px;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+}
+
 .shelf-search-wrap {
     position: relative;
     display: flex;
-    align-items: center;
-    margin-bottom: 10px;
+    align-items: stretch;
+    margin-bottom: 0;
+    flex-direction: column;
     background: rgba(0, 0, 0, 0.2);
     border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.15);
     padding: 4px 8px;
+    min-height: 40px;
 }
 
 .shelf-search-wrap:focus-within {
@@ -400,7 +424,7 @@
     overflow: hidden;
     border: 1.5px solid transparent;
     background: linear-gradient(rgba(20, 24, 30, 0.85), rgba(20, 24, 30, 0.85)) padding-box,
-                linear-gradient(135deg, var(--gradient-start, rgba(255,255,255,0.25)), var(--gradient-end, rgba(255,255,255,0.25))) border-box;
+        linear-gradient(135deg, var(--gradient-start, rgba(255, 255, 255, 0.25)), var(--gradient-end, rgba(255, 255, 255, 0.25))) border-box;
     box-shadow: 0 0 10px rgba(var(--glow-color, 255, 255, 255), 0.12);
 }
 
@@ -505,26 +529,46 @@
 
 .installed-mods-list {
     display: flex;
-    flex-direction: column;
-    gap: 3px;
-    overflow: hidden;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    padding: 4px 0;
+    min-height: 28px;
+    align-items: center;
 }
 
 .installed-mod-item {
-    font-size: 0.75em;
-    padding: 3px 6px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
+    background: transparent;
+    border: none;
+    padding: 0;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    border-left: 2px solid var(--color-yellow-dark, #ffaa00);
+    justify-content: center;
+    transition: transform 0.2s ease;
 }
 
-.installed-mod-item span {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.installed-mod-item:hover {
+    transform: scale(1.1);
+}
+
+.installed-mod-img {
+    width: 26px;
+    height: 26px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    object-fit: cover;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.installed-mod-empty {
+    font-size: 0.75em;
+    font-style: italic;
+    opacity: 0.4;
+    text-align: center;
+    padding: 4px 0;
+    width: 100%;
 }
 
 .workshop-shelf-sidebar {
@@ -839,4 +883,320 @@
 
 .repair-panel .sr5v2 .horizontal-cell-input .cell:hover {
     border-color: #00ff66 !important;
+}
+
+/* Quick Filter Buttons Section */
+.workshop-quick-filters {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.quick-filter-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    padding: 0;
+}
+
+.quick-filter-btn i {
+    font-size: 1em;
+    color: rgba(255, 255, 255, 0.5);
+    transition: all 0.2s ease;
+}
+
+/* Base Hover for Buttons */
+.quick-filter-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Category Specific Colors and Glows */
+.quick-filter-btn.drive i {
+    color: rgba(0, 240, 255, 0.7);
+}
+
+.quick-filter-btn.drive:hover {
+    border-color: #00f0ff;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+}
+
+.quick-filter-btn.drive:hover i,
+.quick-filter-btn.drive.active i {
+    color: #00f0ff;
+}
+
+.quick-filter-btn.drive.active {
+    background: rgba(0, 240, 255, 0.15);
+    border-color: #00f0ff;
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
+}
+
+.quick-filter-btn.protection i {
+    color: rgba(255, 170, 0, 0.7);
+}
+
+.quick-filter-btn.protection:hover {
+    border-color: #ffaa00;
+    box-shadow: 0 0 10px rgba(255, 170, 0, 0.4);
+}
+
+.quick-filter-btn.protection:hover i,
+.quick-filter-btn.protection.active i {
+    color: #ffaa00;
+}
+
+.quick-filter-btn.protection.active {
+    background: rgba(255, 170, 0, 0.15);
+    border-color: #ffaa00;
+    box-shadow: 0 0 12px rgba(255, 170, 0, 0.5);
+}
+
+.quick-filter-btn.weapons i {
+    color: rgba(204, 0, 0, 0.7);
+}
+
+.quick-filter-btn.weapons:hover {
+    border-color: #cc0000;
+    box-shadow: 0 0 10px rgba(204, 0, 0, 0.4);
+}
+
+.quick-filter-btn.weapons:hover i,
+.quick-filter-btn.weapons.active i {
+    color: #cc0000;
+}
+
+.quick-filter-btn.weapons.active {
+    background: rgba(204, 0, 0, 0.15);
+    border-color: #cc0000;
+    box-shadow: 0 0 12px rgba(204, 0, 0, 0.5);
+}
+
+.quick-filter-btn.body i {
+    color: rgba(150, 150, 150, 0.7);
+}
+
+.quick-filter-btn.body:hover {
+    border-color: #ffffff;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.quick-filter-btn.body:hover i,
+.quick-filter-btn.body.active i {
+    color: #ffffff;
+}
+
+.quick-filter-btn.body.active {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: #ffffff;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+}
+
+.quick-filter-btn.electronics i {
+    color: rgba(0, 255, 102, 0.7);
+}
+
+.quick-filter-btn.electronics:hover {
+    border-color: #00ff66;
+    box-shadow: 0 0 10px rgba(0, 255, 102, 0.4);
+}
+
+.quick-filter-btn.electronics:hover i,
+.quick-filter-btn.electronics.active i {
+    color: #00ff66;
+}
+
+.quick-filter-btn.electronics.active {
+    background: rgba(0, 255, 102, 0.15);
+    border-color: #00ff66;
+    box-shadow: 0 0 12px rgba(0, 255, 102, 0.5);
+}
+
+.quick-filter-btn.cosmetic i {
+    color: rgba(255, 0, 255, 0.7);
+}
+
+.quick-filter-btn.cosmetic:hover {
+    border-color: #ff00ff;
+    box-shadow: 0 0 10px rgba(255, 0, 255, 0.4);
+}
+
+.quick-filter-btn.cosmetic:hover i,
+.quick-filter-btn.cosmetic.active i {
+    color: #ff00ff;
+}
+
+.quick-filter-btn.cosmetic.active {
+    background: rgba(255, 0, 255, 0.15);
+    border-color: #ff00ff;
+    box-shadow: 0 0 12px rgba(255, 0, 255, 0.5);
+}
+
+.quick-filter-btn.reset {
+    margin-left: 4px;
+}
+
+.quick-filter-btn.reset i {
+    color: rgba(255, 85, 85, 0.7);
+}
+
+.quick-filter-btn.reset:hover {
+    border-color: #ff5555;
+    box-shadow: 0 0 10px rgba(255, 85, 85, 0.4);
+}
+
+.quick-filter-btn.reset:hover i {
+    color: #ff5555;
+}
+
+.quick-filter-btn.reset:active {
+    background: rgba(255, 85, 85, 0.15);
+}
+
+/* Category Header Icon Styles in Left Sidebar */
+.installed-mods-category-group .category-group-header i {
+    margin-right: 6px;
+    font-size: 1.1em;
+}
+
+.installed-mods-category-group.drive .category-group-header i {
+    color: #00f0ff;
+}
+
+.installed-mods-category-group.protection .category-group-header i {
+    color: #ffaa00;
+}
+
+.installed-mods-category-group.weapons .category-group-header i {
+    color: #cc0000;
+}
+
+.installed-mods-category-group.electronics .category-group-header i {
+    color: #00ff66;
+}
+
+.installed-mods-category-group.body .category-group-header i {
+    color: #969696;
+}
+
+.installed-mods-category-group.cosmetic .category-group-header i {
+    color: #ff00ff;
+}
+
+/* Category Header Icon Styles in Visualizer Category Boxes */
+.category-header span i {
+    color: var(--gradient-start);
+    margin-right: 6px;
+    font-size: 1.1em;
+}
+
+/* Workshop Header Overrides inside ItemBuilder */
+.itemBuilder .builder-header.workshop-header {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4) !important;
+    padding: 8px 15px !important;
+    border-bottom: 1px solid var(--border-color-medium, #444) !important;
+    min-height: 52px;
+    /* Stable height to match two-row minimum */
+}
+
+/* Styling for Modify Vehicle Button */
+.modify-vehicle-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.4);
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: not-allowed;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.modify-vehicle-btn.ready {
+    background: rgba(0, 255, 102, 0.12);
+    border: 1px solid rgba(0, 255, 102, 0.5);
+    color: #00ff66;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0, 255, 102, 0.2);
+    text-shadow: 0 0 5px rgba(0, 255, 102, 0.4);
+}
+
+.modify-vehicle-btn.ready:hover {
+    background: rgba(0, 255, 102, 0.22);
+    border-color: #00ff66;
+    box-shadow: 0 0 15px rgba(0, 255, 102, 0.5);
+    color: #ffffff;
+}
+
+/* Styling for virtual mod items */
+.installed-mod-item.virtual-mod {
+    position: relative;
+    border: 1.5px dashed rgba(255, 170, 0, 0.7) !important;
+    border-radius: 5px;
+    padding: 0;
+    box-shadow: 0 0 6px rgba(255, 170, 0, 0.15);
+}
+
+.installed-mod-item.virtual-mod .installed-mod-img {
+    opacity: 0.55;
+    border: none;
+    transition: opacity 0.2s ease;
+}
+
+.installed-mod-item.virtual-mod:hover .installed-mod-img {
+    opacity: 0.9;
+}
+
+/* Virtual shopping cart badge */
+.virtual-badge {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    background: #ffaa00;
+    color: #111111;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    pointer-events: none;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+/* Styled virtual summary item on left side */
+.installed-mods-summary-item.virtual-mod {
+    border-left: 2px dashed #ffaa00 !important;
+    background: rgba(255, 170, 0, 0.05);
+}
+
+.installed-mods-summary-item.virtual-mod .mod-name {
+    color: #ffaa00 !important;
+    font-style: italic;
+}
+
+.installed-mods-summary-item.virtual-mod .remove-virtual-btn {
+    color: rgba(255, 85, 85, 0.6);
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.installed-mods-summary-item.virtual-mod .remove-virtual-btn:hover {
+    color: #ff5555;
+    transform: scale(1.15);
 }

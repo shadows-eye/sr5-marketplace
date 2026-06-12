@@ -88,6 +88,11 @@
     "RepairHealedComplete": "Vehicle successfully repaired and fully healed.",
     "RepairHealedHits": "Vehicle repaired! Recovered {hits} boxes of damage. Remaining damage: {damage}.",
     "SuccessRepairCreated": "Vehicle successfully repaired!",
+    "SuccessModInstalled": "Modification successful! Installed {name} on vehicle.",
+    "SuccessModInstalledDesc": "Click the button below to consume the item from inventory and install it on the vehicle.",
+    "BuildSuccessDetails": "The build/modification took {rolls} rolls, achieving a total of {hits} hits (Threshold: {threshold}).",
+    "AddToVehicle": "Add to Vehicle",
+    "ErrorModNotAvailable": "The modification {name} is not in the factory or purchasing actor's inventory.",
     "WorkingConditionsOptions": {
         "excellent": "Excellent (+1)",
         "average": "Average (0)",

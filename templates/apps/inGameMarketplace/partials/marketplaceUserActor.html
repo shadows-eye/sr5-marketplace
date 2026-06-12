@@ -16,6 +16,19 @@
                 <span><i class="fa-duotone fa-solid fa-circle-yen"></i> {{actor.nuyen}}</span>
                 <span><i class="fa-duotone fa-solid fa-circle-star"></i> {{actor.karma}}</span>
             </div>
+            {{#ifgt ownedActors.length 1}}
+                <div class="actor-divider" style="border-top: 1px solid var(--color-grey-medium, #555); margin: 8px 0;"></div>
+                <h4 class="actor-selection-title" style="margin: 0 0 5px 0; font-size: 0.9em; color: var(--color-grey-light, #bbb);">{{localize "SR5Marketplace.Marketplace.Actor.SwitchActor"}}</h4>
+                <div class="actor-selection-grid">
+                    {{#each ownedActors as |ownedActor|}}
+                        {{#ifne ownedActor.uuid ../actor.uuid}}
+                            <div class="selectable-actor" data-action="selectActor" data-actor-uuid="{{ownedActor.uuid}}" title="{{ownedActor.name}}">
+                                <img src="{{ownedActor.img}}" alt="{{ownedActor.name}}" class="selectable-actor-img">
+                            </div>
+                        {{/ifne}}
+                    {{/each}}
+                </div>
+            {{/ifgt}}
         {{else}}
             <h4 class="actor-selection-title">{{localize "SR5Marketplace.Marketplace.Actor.SelectAnActor"}}</h4>
             <div class="actor-selection-grid">
