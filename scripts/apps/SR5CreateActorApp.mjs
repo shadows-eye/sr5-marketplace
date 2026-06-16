@@ -30,17 +30,19 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
         this.actorName = "";
         this.actorImg = "icons/svg/mystery-man.svg";
         this.selectedActorType = "character";
+        this.selectedArchetype = "";
+        this.selectedMetatype = "random";
         this.shopMarkup = 0;
         this.shopRadius = 1;
         this.shopDescription = "";
-        
+
         this.isFactory = false;
         this.factoryRating = 5;
         this.existingActorUuid = null;
-        
+
         // Collapsible sections state tracking (Shop details open by default)
         this.expandedSections = new Set(["shop-details"]);
-        
+
         // Host & Employees Selections
         this.selectedHostUuid = null;
         this.selectedEmployeeUuids = new Set();
@@ -54,8 +56,8 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
 
         // Seed all types by default
         this.selectedItemTypes = new Set([
-            "weapon", "armor", "equipment", "device", 
-            "cyberware", "bioware", "spell", "program", 
+            "weapon", "armor", "equipment", "device",
+            "cyberware", "bioware", "spell", "program",
             "modification", "adept_power", "complex_form"
         ]);
         this.selectedItemUuids = new Set();
@@ -66,7 +68,7 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
     static PARTS = {
         main: {
             id: "body",
-            template: "modules/sr5-marketplace/templates/apps/create-actor.html"
+            template: "modules/sr5-marketplace/templates/apps/createActor/create-actor.html"
         }
     };
 
@@ -76,7 +78,7 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
             id: "sr5-marketplace-create-actor-dialog",
             position: { width: 800, height: 750 },
             window: {
-                title: "SR5Marketplace.UI.CreateActor", 
+                title: "SR5Marketplace.UI.CreateActor",
                 resizable: true,
                 minimizable: true
             }
@@ -114,6 +116,10 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
                 selected: type === this.selectedActorType
             };
         }
+        types["sr5-marketplace.workshop"] = {
+            label: game.i18n.localize("SR5Marketplace.ItemBuilder.nav.workshop") || "Workshop",
+            selected: this.selectedActorType === "sr5-marketplace.workshop"
+        };
 
         // 2. Gather parent folders
         const folders = game.folders.filter(f => f.type === "Actor").map(f => ({
@@ -123,7 +129,12 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
         }));
 
         // 3. Populate default name and labels
-        const typeLabel = game.i18n.localize(CONFIG.Actor.typeLabels?.[this.selectedActorType] || `TYPES.Actor.${this.selectedActorType}`) || this.selectedActorType;
+        let typeLabel = "";
+        if (this.selectedActorType === "sr5-marketplace.workshop") {
+            typeLabel = game.i18n.localize("SR5Marketplace.ItemBuilder.nav.workshop") || "Workshop";
+        } else {
+            typeLabel = game.i18n.localize(CONFIG.Actor.typeLabels?.[this.selectedActorType] || `TYPES.Actor.${this.selectedActorType}`) || this.selectedActorType;
+        }
         const newPrefix = game.i18n.localize("SR5Marketplace.UI.New");
         const defaultName = this.actorName || `${newPrefix} ${typeLabel}`;
         let createLabel = game.i18n.format("SR5Marketplace.UI.CreateType", { type: typeLabel });
@@ -135,8 +146,13 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
         context.createLabel = createLabel;
         context.actorImg = this.actorImg;
 
+        const isShopActor = this.selectedActorType === "sr5-marketplace.shop" || this.selectedActorType === "sr5-marketplace.workshop";
+        if (this.selectedActorType === "sr5-marketplace.workshop") {
+            this.isFactory = true;
+        }
+
         // 4. Shop specific configuration
-        if (this.selectedActorType === "sr5-marketplace.shop") {
+        if (isShopActor) {
             // Pass collapsed/expanded section flags
             context.shopDetailsExpanded = this.expandedSections.has("shop-details");
             context.hostEmployeesExpanded = this.expandedSections.has("host-employees");
@@ -184,7 +200,7 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
             context.itemsLoading = !isLoaded;
 
             if (!isLoaded) {
-                // Pre-fetch in background without halting render
+                // Pro-fetch in background without halting render
                 if (!this._indexLoadingPromise) {
                     this._indexLoadingPromise = game.sr5marketplace.api.itemData.buildIndex().then(() => {
                         this._indexLoadingPromise = null;
@@ -298,12 +314,25 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
                 });
             }
         } else {
-            Object.assign(context, {
+            const extraCtx = {
                 isShopActor: false,
                 defaultName,
                 types,
                 folders
-            });
+            };
+            if (this.selectedActorType === "character") {
+                const archetypes = {
+                    streetSamurai: { label: "Street Samurai", selected: this.selectedArchetype === "streetSamurai" },
+                    decker: { label: "Decker", selected: this.selectedArchetype === "decker" },
+                    technomancer: { label: "Technomancer", selected: this.selectedArchetype === "technomancer" },
+                    magician: { label: "Magician", selected: this.selectedArchetype === "magician" },
+                    aspected: { label: "Aspected Magician", selected: this.selectedArchetype === "aspected" },
+                    adept: { label: "Adept", selected: this.selectedArchetype === "adept" }
+                };
+                extraCtx.isCharacterActor = true;
+                extraCtx.archetypes = archetypes;
+            }
+            Object.assign(context, extraCtx);
         }
 
         return context;
@@ -343,6 +372,8 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
                 this.filterTags = [];
                 this.searchQuery = "";
                 this.actorName = ""; // Reset custom name to trigger the new type's default name
+                this.selectedArchetype = "";
+                this.selectedMetatype = "random";
                 this.render(false);
             });
         }
@@ -363,8 +394,26 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
             });
         }
 
+        // character quick build archetype listeners
+        if (this.selectedActorType === "character") {
+            const archetypeSelect = this.element.querySelector(".archetype-select");
+            if (archetypeSelect) {
+                archetypeSelect.addEventListener("change", (e) => {
+                    this.selectedArchetype = e.target.value;
+                });
+            }
+            const metatypeSelect = this.element.querySelector(".metatype-select");
+            if (metatypeSelect) {
+                metatypeSelect.addEventListener("change", (e) => {
+                    this.selectedMetatype = e.target.value;
+                });
+            }
+        }
+
+        const isShopOrWorkshop = this.selectedActorType === "sr5-marketplace.shop" || this.selectedActorType === "sr5-marketplace.workshop";
+
         // 4. Shop Seeding controls
-        if (this.selectedActorType === "sr5-marketplace.shop") {
+        if (isShopOrWorkshop) {
             const loadExistingBtn = this.element.querySelector('.load-existing-shop-btn');
             if (loadExistingBtn) {
                 loadExistingBtn.addEventListener("click", () => this._onLoadExistingShop());
@@ -502,8 +551,8 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
             if (selectAllTypes) {
                 selectAllTypes.addEventListener("click", () => {
                     const allAvailableTypes = [
-                        "weapon", "armor", "equipment", "device", 
-                        "cyberware", "bioware", "spell", "program", 
+                        "weapon", "armor", "equipment", "device",
+                        "cyberware", "bioware", "spell", "program",
                         "modification", "adept_power", "complex_form"
                     ];
                     this.selectedItemTypes = new Set(allAvailableTypes);
@@ -661,20 +710,44 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
     /**
      * Triggers the actual Actor document creation and seeding.
      */
+    /**
+     * Triggers the actual Actor document creation and seeding.
+     */
     async _onCreate() {
         const nameInput = this.element.querySelector(".name-input");
         const name = nameInput?.value?.trim() || "Unknown";
 
+        // Check if character archetype is chosen
+        if (this.selectedActorType === "character" && this.selectedArchetype) {
+            try {
+                ui.notifications.info(`Building character template for archetype: ${this.selectedArchetype}...`);
+                const actor = await this._buildArchetypeCharacter(name);
+                if (this.resolve) {
+                    this.resolve(actor);
+                    this.resolve = null;
+                }
+                this.close();
+                return;
+            } catch (err) {
+                console.error("SR5 Marketplace | Failed to build archetype character:", err);
+                ui.notifications.error("Failed to build archetype character. See console for details.");
+                return;
+            }
+        }
+
+        const isShopOrWorkshop = this.selectedActorType === "sr5-marketplace.shop" || this.selectedActorType === "sr5-marketplace.workshop";
+        const actualActorType = isShopOrWorkshop ? "sr5-marketplace.shop" : this.selectedActorType;
+
         // 1. Build initial document creation payload
         const createData = {
             name: name,
-            type: this.selectedActorType,
+            type: actualActorType,
             folder: this.folder || null,
             img: this.actorImg
         };
 
         // If it is a shop actor, initialize basic values
-        if (this.selectedActorType === "sr5-marketplace.shop") {
+        if (isShopOrWorkshop) {
             createData.system = {
                 shop: {
                     itemMarkup: this.shopMarkup,
@@ -701,7 +774,7 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
             if (this.existingActorUuid) {
                 actor = await fromUuid(this.existingActorUuid);
                 if (!actor) throw new Error("Existing actor not found.");
-                
+
                 const updateData = {
                     name: name,
                     img: this.actorImg,
@@ -716,7 +789,7 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
                 };
                 await actor.update(updateData);
 
-                if (this.selectedActorType === "sr5-marketplace.shop") {
+                if (isShopOrWorkshop) {
                     const currentHostItem = actor.hostItem;
                     if (this.selectedHostUuid) {
                         const selectedHostItem = await fromUuid(this.selectedHostUuid);
@@ -740,8 +813,8 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
             } else {
                 // 2. Create the document in the database
                 actor = await Actor.create(createData, { renderSheet: true });
-                
-                if (this.selectedActorType === "sr5-marketplace.shop") {
+
+                if (isShopOrWorkshop) {
                     // 3. Clone Matrix Host item into the newly created Shop Actor
                     if (this.selectedHostUuid) {
                         const hostItem = await fromUuid(this.selectedHostUuid);
@@ -755,11 +828,11 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
                 }
             }
 
-            if (this.selectedActorType === "sr5-marketplace.shop") {
+            if (isShopOrWorkshop) {
                 // 4. Batch seed inventory using fast synchronous index calculations
                 if (this.selectedItemUuids.size > 0) {
                     ui.notifications.info(`Seeding ${this.selectedItemUuids.size} items into shop inventory...`);
-                    
+
                     const updates = {};
                     const allItems = game.sr5marketplace.api.itemData.getItems();
 
@@ -844,6 +917,345 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
         }
     }
 
+    /**
+     * Builds a character using Chummer attributes and system CharacterImporter
+     */
+    async _buildArchetypeCharacter(name) {
+        const ARCHETYPES = {
+            streetSamurai: "Street Samurai",
+            decker: "Decker",
+            technomancer: "Technomancer",
+            magician: "Magician",
+            aspected: "Aspected Magician",
+            adept: "Adept"
+        };
+
+        const METATYPES = {
+            human: { label: "Human" },
+            elf: { label: "Elf" },
+            dwarf: { label: "Dwarf" },
+            ork: { label: "Ork" },
+            troll: { label: "Troll" }
+        };
+
+        const FIRST_NAMES = ["Ash", "Rook", "Mika", "Jax", "Echo", "Vex", "Kestrel", "Nova", "Grimm", "Cipher", "Knox", "Talon", "Wren", "Ghost", "Hex", "Raven", "Torque", "Zero"];
+        const LAST_NAMES = ["Black", "Stone", "Cross", "Crow", "Wells", "Frost", "Vale", "Mason", "Reed", "Wolf", "Chrome", "Spire", "Knight", "Rain", "Wire", "Hawk"];
+
+        const BUILDS = {
+            streetSamurai: {
+                magicType: "mundane", metatypes: ["human","ork","dwarf"], nuyen: 140000,
+                attrs: { body:5, agility:6, reaction:5, strength:4, willpower:3, logic:2, intuition:4, charisma:2, edge:3, magic:0, resonance:0 },
+                skills: [["automatics","Automatics",6,"Submachine Guns"],["pistols","Pistols",4,"Semi-Automatics"],["blades","Blades",4,"Knives"],["unarmed_combat","Unarmed Combat",3,"Cyber Implants"],["sneaking","Sneaking",4,"Urban"],["perception","Perception",4,"Visual"],["gymnastics","Gymnastics",3,""],["etiquette","Etiquette",2,"Street"]],
+                qualities: [["Toughness","positive",9],["Distinctive Style","negative",-5],["Code of Honor","negative",-15]],
+                equipment: ["armor-jacket","ares-predator","smg","commlink","fake-sin","licenses","medkit"],
+                cyber: [["Wired Reflexes 1",2.0,39000,1],["Smartlink",0.2,4000,1],["Cybereyes 2",0.3,6000,2],["Muscle Replacement 1",1.0,25000,1]]
+            },
+            decker: {
+                magicType: "mundane", metatypes: ["human","elf","dwarf"], nuyen: 275000,
+                attrs: { body:3, agility:3, reaction:4, strength:2, willpower:4, logic:6, intuition:5, charisma:2, edge:3, magic:0, resonance:0 },
+                skills: [["hacking","Hacking",6,"Hosts"],["cybercombat","Cybercombat",5,"Devices"],["computer","Computer",6,"Matrix Search"],["electronic_warfare","Electronic Warfare",5,"Encryption"],["hardware","Hardware",4,"Cyberdecks"],["software","Software",4,"Edit File"],["pistols","Pistols",3,"Semi-Automatics"],["sneaking","Sneaking",3,"Urban"],["perception","Perception",3,"Matrix"]],
+                qualities: [["Codeslinger","positive",10],["Analytical Mind","positive",5],["Records on File","negative",-10]],
+                equipment: ["armor-clothes","ares-predator","cyberdeck","commlink","fake-sin","licenses","toolkit"]
+            },
+            technomancer: {
+                magicType: "technomancer", metatypes: ["human","elf","dwarf"], nuyen: 50000,
+                attrs: { body:3, agility:3, reaction:4, strength:2, willpower:5, logic:5, intuition:5, charisma:4, edge:3, magic:0, resonance:6 },
+                skills: [["compiling","Compiling",6,"Fault Sprites"],["registering","Registering",5,"Machine Sprites"],["decompiling","Decompiling",4,""],["computer","Computer",5,"Matrix Search"],["hacking","Hacking",5,"Hosts"],["software","Software",5,"Complex Forms"],["electronic_warfare","Electronic Warfare",4,""],["pistols","Pistols",2,""],["perception","Perception",3,""]],
+                qualities: [["Analytical Mind","positive",5],["Codeslinger","positive",10],["Distinctive Style","negative",-5]],
+                equipment: ["armor-clothes","ares-predator","commlink","fake-sin","licenses"]
+            },
+            magician: {
+                magicType: "magician", metatypes: ["human","elf","dwarf"], nuyen: 50000,
+                attrs: { body:3, agility:3, reaction:4, strength:2, willpower:5, logic:3, intuition:5, charisma:6, edge:2, magic:6, resonance:0 },
+                skills: [["spellcasting","Spellcasting",6,"Combat"],["counterspelling","Counterspelling",5,"Combat"],["summoning","Summoning",5,"Spirits of Man"],["binding","Binding",4,""],["banishing","Banishing",3,""],["assensing","Assensing",5,"Auras"],["arcana","Arcana",3,""],["perception","Perception",3,""],["etiquette","Etiquette",3,"Magical"]],
+                qualities: [["Magician","positive",15],["Mentor Spirit","positive",5],["Spirit Bane","negative",-7]],
+                spells: [["Stunbolt","combat","mana","los","instant",-3,"direct"],["Manabolt","combat","mana","los","instant",-3,"direct"],["Heal","health","mana","touch","permanent",-4,""],["Increase Reflexes","health","physical","touch","sustained",-2,""],["Improved Invisibility","illusion","physical","touch","sustained",-1,""],["Detect Enemies","detection","mana","los","sustained",-2,""]],
+                equipment: ["armor-clothes","ares-predator","commlink","fake-sin","licenses","lodge","reagents","fetish"]
+            },
+            aspected: {
+                magicType: "aspected", metatypes: ["human","elf","ork"], nuyen: 50000,
+                attrs: { body:3, agility:3, reaction:4, strength:2, willpower:5, logic:3, intuition:5, charisma:6, edge:3, magic:5, resonance:0 },
+                skills: [["summoning","Summoning",6,"Spirits of Air"],["binding","Binding",5,"Spirits of Man"],["banishing","Banishing",4,""],["assensing","Assensing",5,"Auras"],["arcana","Arcana",3,""],["perception","Perception",4,"Astral"],["etiquette","Etiquette",3,"Magical"],["pistols","Pistols",2,""]],
+                qualities: [["Aspected Magician","positive",5],["Mentor Spirit","positive",5],["Spirit Bane","negative",-7]],
+                equipment: ["armor-clothes","ares-predator","commlink","fake-sin","licenses","lodge","reagents"]
+            },
+            adept: {
+                magicType: "adept", metatypes: ["human","elf","ork"], nuyen: 50000,
+                attrs: { body:4, agility:6, reaction:5, strength:4, willpower:4, logic:2, intuition:5, charisma:3, edge:3, magic:6, resonance:0 },
+                skills: [["unarmed_combat","Unarmed Combat",6,"Martial Arts"],["blades","Blades",5,"Swords"],["gymnastics","Gymnastics",5,"Parkour"],["sneaking","Sneaking",5,"Urban"],["perception","Perception",4,"Visual"],["running","Running",3,""],["etiquette","Etiquette",2,"Street"],["pistols","Pistols",2,""]],
+                qualities: [["Adept","positive",5],["Agile Defender","positive",3],["Distinctive Style","negative",-5]],
+                powers: [["Improved Reflexes 2",1,2.5],["Combat Sense 2",2,1.0],["Improved Ability: Unarmed Combat",2,1.0],["Killing Hands",1,0.5],["Improved Physical Attribute: Agility",1,1.0]],
+                equipment: ["armor-jacket","katana","ares-predator","commlink","fake-sin","licenses"]
+            }
+        };
+
+        const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+        const randomName = `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`;
+
+        const build = BUILDS[this.selectedArchetype];
+        const archetypeLabel = ARCHETYPES[this.selectedArchetype];
+
+        let metatype = this.selectedMetatype;
+        if (metatype === "random") {
+            metatype = pick(build.metatypes);
+        }
+        const metaLabel = METATYPES[metatype]?.label || metatype.charAt(0).toUpperCase() + metatype.slice(1);
+
+        const defaultCharName = game.i18n.localize("SR5Marketplace.UI.New") + " " + (game.i18n.localize("TYPES.Actor.character") || "character");
+        const finalName = name === defaultCharName || name === "Unknown" || !name ? `${randomName} (${archetypeLabel})` : name;
+
+        // Map equipment keys to Chummer format
+        const mapEquipmentToChummerGear = (key) => {
+            if (key === "armor-jacket") {
+                return { type: "armor", data: { name: "Armor Jacket", name_english: "Armor Jacket", armor: "12" } };
+            }
+            if (key === "armor-clothes") {
+                return { type: "armor", data: { name: "Actioneer Business Clothes", name_english: "Actioneer Business Clothes", armor: "8" } };
+            }
+            if (key === "ares-predator") {
+                return { type: "weapon", data: { name: "Ares Predator V", name_english: "Ares Predator V", type: "Ranged", rawap: "-1", rawaccuracy: "5", ammo_english: "15", damage_noammo_english: "8P", rawrc: "0", mode: "SA", mode_noammo: "SA", mode_english_noammo: "SA", availableammo: "15", currentammo: "15" } };
+            }
+            if (key === "smg") {
+                return { type: "weapon", data: { name: "HK-227", name_english: "HK-227", type: "Ranged", rawap: "0", rawaccuracy: "5", ammo_english: "28", damage_noammo_english: "7P", rawrc: "0", mode: "SA/BF/FA", mode_noammo: "SA/BF/FA", mode_english_noammo: "SA/BF/FA", availableammo: "28", currentammo: "28" } };
+            }
+            if (key === "katana") {
+                return { type: "weapon", data: { name: "Katana", name_english: "Katana", type: "Melee", rawap: "-3", rawaccuracy: "7", rawreach: "1", damage_noammo_english: "3P", rawrc: "0" } };
+            }
+            if (key === "commlink") {
+                return { type: "gear", data: { name: "Hermes Ikon", name_english: "Hermes Ikon", iscommlink: "True", category_english: "Commlinks", devicerating: "5", qty: "1" } };
+            }
+            if (key === "cyberdeck") {
+                return { type: "gear", data: { name: "Renraku Tsurugi", name_english: "Renraku Tsurugi", iscommlink: "True", category_english: "Cyberdecks", devicerating: "3", attack: "6", sleaze: "5", dataprocessing: "5", firewall: "3", qty: "1" } };
+            }
+            if (key === "fake-sin") {
+                return { type: "gear", data: { name: "Fake SIN", name_english: "Fake SIN", issin: "True", rating: "4", qty: "1" } };
+            }
+            if (key === "licenses") {
+                return { type: "gear", data: { name: "Fake License", name_english: "Fake License", rating: "4", qty: "1" } };
+            }
+            if (key === "medkit") {
+                return { type: "gear", data: { name: "Medkit", name_english: "Medkit", rating: "6", qty: "1" } };
+            }
+            if (key === "toolkit") {
+                return { type: "gear", data: { name: "Hardware Toolkit", name_english: "Hardware Toolkit", qty: "1" } };
+            }
+            if (key === "lodge") {
+                return { type: "gear", data: { name: "Magical Lodge Materials", name_english: "Magical Lodge Materials", rating: "6", qty: "1" } };
+            }
+            if (key === "reagents") {
+                return { type: "gear", data: { name: "Reagents", name_english: "Reagents", qty: "50" } };
+            }
+            if (key === "fetish") {
+                return { type: "gear", data: { name: "Fetish", name_english: "Fetish", qty: "1" } };
+            }
+            return null;
+        };
+
+        const chummerCharacter = {
+            alias: finalName,
+            name: finalName,
+            critter: "False",
+            metatype: metatype,
+            metatype_english: metatype.charAt(0).toUpperCase() + metatype.slice(1),
+            karma: "0",
+            totalkarma: "0",
+            nuyen: String(build.nuyen),
+            technomancer: build.magicType === "technomancer" ? "True" : "False",
+            magician: build.magicType === "magician" ? "True" : "False",
+            adept: build.magicType === "adept" ? "True" : "False",
+            description: `
+              <h2>Random Character Builder</h2>
+              <p><strong>Archetype:</strong> ${archetypeLabel}</p>
+              <p><strong>Metatype:</strong> ${metaLabel}</p>
+              <p><strong>Build Note:</strong> This is a fast random archetype build, intended as a playable starting template or NPC-quality PC draft. Review gear legality, priorities, karma totals, contacts, lifestyle, and final derived values before play.</p>
+            `,
+            background: "",
+            concept: "",
+            notes: "",
+            attributes: [
+                null,
+                {
+                    attribute: [
+                        { name_english: "bod", name: "bod", base: String(build.attrs.body), total: String(build.attrs.body) },
+                        { name_english: "agi", name: "agi", base: String(build.attrs.agility), total: String(build.attrs.agility) },
+                        { name_english: "rea", name: "rea", base: String(build.attrs.reaction), total: String(build.attrs.reaction) },
+                        { name_english: "str", name: "str", base: String(build.attrs.strength), total: String(build.attrs.strength) },
+                        { name_english: "wil", name: "wil", base: String(build.attrs.willpower), total: String(build.attrs.willpower) },
+                        { name_english: "log", name: "log", base: String(build.attrs.logic), total: String(build.attrs.logic) },
+                        { name_english: "int", name: "int", base: String(build.attrs.intuition), total: String(build.attrs.intuition) },
+                        { name_english: "cha", name: "cha", base: String(build.attrs.charisma), total: String(build.attrs.charisma) },
+                        { name_english: "edg", name: "edg", base: String(build.attrs.edge), total: String(build.attrs.edge) },
+                        { name_english: "mag", name: "mag", base: String(build.attrs.magic), total: String(build.attrs.magic) },
+                        { name_english: "res", name: "res", base: String(build.attrs.resonance), total: String(build.attrs.resonance) }
+                    ]
+                }
+            ],
+            initbonus: "0",
+            initdice: "1",
+            astralinitdice: "2",
+            matrixarinitdice: "3",
+            skills: {
+                skill: (build.skills || []).map(([id, label, rating, spec]) => {
+                    const skillData = {
+                        name: label,
+                        name_english: label,
+                        rating: String(rating),
+                        attribute: id === "unarmed_combat" ? "agi" : (id === "hacking" || id === "electronic_warfare" || id === "hardware" || id === "software" || id === "cybercombat" ? "log" : (id === "spellcasting" || id === "counterspelling" || id === "summoning" || id === "binding" || id === "banishing" || id === "compiling" || id === "registering" || id === "decompiling" ? "mag" : "agi")),
+                        default: "True",
+                        islanguage: "False",
+                        knowledge: "False"
+                    };
+                    if (spec) {
+                        skillData.skillspecializations = {
+                            skillspecialization: [
+                                { name: spec }
+                            ]
+                        };
+                    }
+                    return skillData;
+                })
+            },
+            qualities: {
+                quality: (build.qualities || []).map(([qname, qtype, karma]) => ({
+                    name: qname,
+                    name_english: qname,
+                    qualitytype_english: qtype,
+                    extra: "0",
+                    bp: String(karma)
+                }))
+            },
+            weapons: {
+                weapon: []
+            },
+            armors: {
+                armor: []
+            },
+            cyberwares: {
+                cyberware: []
+            },
+            powers: {
+                power: []
+            },
+            spells: {
+                spell: []
+            },
+            gears: {
+                gear: []
+            }
+        };
+
+        if (build.spells) {
+            chummerCharacter.spells.spell = build.spells.map(([sname, category, spellType, range, duration, drain, combatType]) => ({
+                name: sname,
+                name_english: sname,
+                category_english: category.charAt(0).toUpperCase() + category.slice(1),
+                type_english: spellType === "mana" ? "M" : "P",
+                range_english: range === "los" ? "LOS" : (range === "touch" ? "T" : "LOS"),
+                duration_english: duration === "sustained" ? "S" : (duration === "instant" ? "I" : (duration === "permanent" ? "P" : "S")),
+                dv_english: String(drain),
+                alchemy: "False",
+                descriptors_english: combatType || "",
+                damage_english: "0"
+            }));
+        }
+
+        if (build.powers) {
+            chummerCharacter.powers.power = build.powers.map(([pname, rating, totalpoints]) => ({
+                name: pname.split(" ")[0],
+                name_english: pname.split(" ")[0],
+                rating: String(rating),
+                totalpoints: String(totalpoints)
+            }));
+        }
+
+        if (build.cyber) {
+            chummerCharacter.cyberwares.cyberware = build.cyber.map(([cname, ess, cost, rating]) => ({
+                name: cname,
+                name_english: cname,
+                ess: String(ess),
+                cost: String(cost),
+                rating: String(rating),
+                grade: "standard",
+                improvementsource: "Cyberware"
+            }));
+        }
+
+        if (build.equipment) {
+            for (const eqKey of build.equipment) {
+                const mapped = mapEquipmentToChummerGear(eqKey);
+                if (!mapped) continue;
+                if (mapped.type === "armor") {
+                    chummerCharacter.armors.armor.push(mapped.data);
+                } else if (mapped.type === "weapon") {
+                    chummerCharacter.weapons.weapon.push(mapped.data);
+                } else if (mapped.type === "gear") {
+                    chummerCharacter.gears.gear.push(mapped.data);
+                }
+            }
+        }
+
+        const importOptions = {
+            folderId: this.folder || null,
+            armor: true,
+            contacts: true,
+            cyberware: true,
+            equipment: true,
+            lifestyles: true,
+            metamagics: true,
+            powers: true,
+            qualities: true,
+            rituals: true,
+            spells: true,
+            vehicles: true,
+            weapons: true,
+            mugshots: false
+        };
+
+        // Temporarily configure compendium search order so the importer searches all item compendiums
+        const originalOrder = game.settings.get("shadowrun5e", "ImporterCompendiumOrder") || [];
+        const itemPacks = game.packs.filter(p => p.metadata.type === "Item").map(p => p.collection);
+        if (itemPacks.length > 0) {
+            await game.settings.set("shadowrun5e", "ImporterCompendiumOrder", itemPacks);
+        }
+
+        let actor;
+        try {
+            const [importedActor] = await game.shadowrun5e.CharacterImporter.import(chummerCharacter, importOptions);
+            actor = importedActor;
+        } finally {
+            if (itemPacks.length > 0) {
+                await game.settings.set("shadowrun5e", "ImporterCompendiumOrder", originalOrder);
+            }
+        }
+
+        actor.sheet?.render(true);
+
+        const attrRows = Object.entries(build.attrs)
+            .filter(([k]) => ["body","agility","reaction","strength","willpower","logic","intuition","charisma","edge","magic","resonance"].includes(k))
+            .map(([k,v]) => `<tr><td>${k[0].toUpperCase() + k.slice(1)}</td><td>${v}</td></tr>`).join("");
+
+        const itemRows = actor.items.map(i => `<tr><td>${i.name}</td><td>${game.i18n.localize("TYPES.Item." + i.type) || i.type}</td></tr>`).join("");
+
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({ actor }),
+            content: `
+        <div style="background:#0b0a13;color:#efe6d8;border:1px solid #5d142b;border-radius:4px;padding:8px;font-family:Signika, sans-serif;">
+          <div style="color:#f3d58a;font-size:14px;font-weight:bold;border-bottom:1px solid #5d142b;margin-bottom:6px;padding-bottom:4px;">Random SR5 Character Created</div>
+          <p><strong>Actor:</strong> ${actor.name}</p>
+          <p><strong>Archetype:</strong> ${archetypeLabel}</p>
+          <p><strong>Metatype:</strong> ${metaLabel}</p>
+          <p><strong>Starting Nuyen:</strong> ${Number(build.nuyen).toLocaleString()}¥</p>
+          <h3 style="color:#f3d58a;font-size:11px;">Attributes</h3>
+          <table style="width:100%;border-collapse:collapse;"><tr><th>Attribute</th><th>Rating</th></tr>${attrRows}</table>
+          <h3 style="color:#f3d58a;font-size:11px;">Created Items</h3>
+          <table style="width:100%;border-collapse:collapse;"><tr><th>Name</th><th>Type</th></tr>${itemRows}</table>
+          <p><em>Review the sheet before play. This is a generated template, not a rules-audited final legal character.</em></p>
+        </div>`
+        });
+
+        return actor;
+    }
+
     /** @override */
     async close(options = {}) {
         if (this.resolve) {
@@ -895,7 +1307,7 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
                     this.isFactory = actor.system.shop?.isFactory ?? false;
                     this.factoryRating = actor.system.shop?.factoryRating ?? 5;
                     this.selectedEmployeeUuids = new Set(actor.system.shop?.employees || []);
-                    
+
                     const hostItem = actor.hostItem;
                     this.selectedHostUuid = hostItem ? hostItem.uuid : null;
 

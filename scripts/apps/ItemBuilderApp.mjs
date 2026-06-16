@@ -324,8 +324,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             });
             const used = installedMods.reduce((sum, m) => sum + Number(m.system.slots ?? 0), 0);
             const baseVehicle = game.actors.get(vehicle.id) || vehicle;
-            const virtualMods = vehicle.getFlag("sr5-marketplace", "virtualModifications") || 
-                                baseVehicle.getFlag("sr5-marketplace", "virtualModifications") || [];
+            const virtualMods = vehicle.getFlag("sr5-marketplace", "virtualModifications") ||
+                baseVehicle.getFlag("sr5-marketplace", "virtualModifications") || [];
             const virtualUsed = virtualMods
                 .filter(m => m.category === targetCategory)
                 .reduce((sum, m) => sum + Number(m.system?.slots ?? 0), 0);
@@ -363,7 +363,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 installSourceId: data.entryId || null
             };
             virtualMods.push(virtualMod);
-            
+
             if (vehicle.isOwner) await vehicle.setFlag("sr5-marketplace", "virtualModifications", virtualMods);
             if (baseVehicle !== vehicle && baseVehicle.isOwner) {
                 await baseVehicle.setFlag("sr5-marketplace", "virtualModifications", virtualMods);
@@ -542,28 +542,28 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     const queryTerm = query.trim().toLowerCase();
                     const tagTerms = tags.map(t => t.trim().toLowerCase());
 
-                     const categoriesList = ["drive", "protection", "weapons", "body", "electronics", "cosmetic"];
-                     const categoryTags = tagTerms.filter(t => categoriesList.includes(t));
-                     const textTags = tagTerms.filter(t => !categoriesList.includes(t));
+                    const categoriesList = ["drive", "protection", "weapons", "body", "electronics", "cosmetic"];
+                    const categoryTags = tagTerms.filter(t => categoriesList.includes(t));
+                    const textTags = tagTerms.filter(t => !categoriesList.includes(t));
 
-                     this.filteredWorkshopShelfEntries = this.workshopShelfEntries.filter(item => {
-                         const name = item.name.toLowerCase();
-                         const category = item.category.toLowerCase();
-                         
-                         // 1. Live search query
-                         const matchesQuery = !queryTerm || name.includes(queryTerm) || category.includes(queryTerm);
-                         if (!matchesQuery) return false;
-                         
-                         // 2. Category tags (logical OR)
-                         const matchesCategory = categoryTags.length === 0 || categoryTags.includes(category);
-                         if (!matchesCategory) return false;
-                         
-                         // 3. Regular text tags (logical AND)
-                         const matchesTextTags = textTags.every(tag => name.includes(tag) || category.includes(tag));
-                         if (!matchesTextTags) return false;
-                         
-                         return true;
-                     });
+                    this.filteredWorkshopShelfEntries = this.workshopShelfEntries.filter(item => {
+                        const name = item.name.toLowerCase();
+                        const category = item.category.toLowerCase();
+
+                        // 1. Live search query
+                        const matchesQuery = !queryTerm || name.includes(queryTerm) || category.includes(queryTerm);
+                        if (!matchesQuery) return false;
+
+                        // 2. Category tags (logical OR)
+                        const matchesCategory = categoryTags.length === 0 || categoryTags.includes(category);
+                        if (!matchesCategory) return false;
+
+                        // 3. Regular text tags (logical AND)
+                        const matchesTextTags = textTags.every(tag => name.includes(tag) || category.includes(tag));
+                        if (!matchesTextTags) return false;
+
+                        return true;
+                    });
 
                     const buttons = this.element.querySelectorAll(".quick-filter-btn[data-category]");
                     buttons.forEach(btn => {
@@ -911,8 +911,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                 }
 
                                 const baseVehicle = game.actors.get(activeVehicle.id) || activeVehicle;
-                                const virtualMods = activeVehicle.getFlag("sr5-marketplace", "virtualModifications") || 
-                                                    baseVehicle.getFlag("sr5-marketplace", "virtualModifications") || [];
+                                const virtualMods = activeVehicle.getFlag("sr5-marketplace", "virtualModifications") ||
+                                    baseVehicle.getFlag("sr5-marketplace", "virtualModifications") || [];
                                 for (const vMod of virtualMods) {
                                     const cat = vMod.category || "cosmetic";
                                     const slots = vMod.system?.slots ?? 0;
@@ -1630,7 +1630,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         }
 
         this.activeDialogId = await AppTestFlagService.createTest(initialData);
-        
+
         console.log("SR5 Marketplace | Starting item build test...");
         await new Promise((resolve) => {
             BuildTestApp._resolve = resolve;
@@ -2212,8 +2212,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         if (!vehicle) return;
 
         const baseVehicle = game.actors.get(vehicle.id) || vehicle;
-        const virtualMods = vehicle.getFlag("sr5-marketplace", "virtualModifications") || 
-                            baseVehicle.getFlag("sr5-marketplace", "virtualModifications") || [];
+        const virtualMods = vehicle.getFlag("sr5-marketplace", "virtualModifications") ||
+            baseVehicle.getFlag("sr5-marketplace", "virtualModifications") || [];
         const modToRemove = virtualMods.find(m => m.id === virtualId);
         if (!modToRemove) return;
 

@@ -1,5 +1,6 @@
 import { ActorSelectionService } from "./ActorSelectionService.mjs";
 import { BasketService } from "./basketService.mjs";
+import { BuilderStateService } from "./builderStateService.mjs";
 
 /**
  * Service to handle internal workshop modification and installation flow logic.
@@ -227,6 +228,27 @@ export class FactoryFlow {
                 await baseVehicle.createEmbeddedDocuments("Item", [item.toObject()]);
             }
             ui.notifications.info(game.i18n.format("SR5Marketplace.ItemBuilder.SuccessBuildCreated", { name: item.name }));
+
+            // Update the ItemBuilder state if this vehicle is currently loaded as the builder's base item
+            try {
+                const builderState = await BuilderStateService.getState();
+                if (builderState.baseItem && (builderState.baseItem.uuid === vehicle.uuid || builderState.baseItem.uuid === baseVehicle.uuid)) {
+                    const freshVehicle = game.actors.get(baseVehicle.id) || baseVehicle;
+                    const cleanItemData = {
+                        uuid: freshVehicle.uuid,
+                        name: freshVehicle.name,
+                        img: freshVehicle.img,
+                        type: freshVehicle.type,
+                        system: freshVehicle.system,
+                        technology: freshVehicle.technology,
+                        effects: freshVehicle.effects?.map(e => e.toObject(false)) ?? []
+                    };
+                    await BuilderStateService.updateState({ baseItem: cleanItemData });
+                    console.log(`SR5 Marketplace | Updated builderState baseItem for modified vehicle: ${freshVehicle.name}`);
+                }
+            } catch (err) {
+                console.error("SR5 Marketplace | Failed to update builderState baseItem:", err);
+            }
 
             // Remove virtual mod from flags of the vehicle and base actor
             const updatedMods = virtualMods.filter(m => m.id !== vMod.id);
