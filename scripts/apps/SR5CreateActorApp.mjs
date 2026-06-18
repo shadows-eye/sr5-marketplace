@@ -101,6 +101,14 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
         }
     }
 
+    /**
+     * Checks if the character importer API is available.
+     * @returns {boolean}
+     */
+    static isImporterAvailable() {
+        return typeof game !== "undefined" && typeof game.shadowrun5e?.CharacterImporter?.import === "function";
+    }
+
     /** @override */
     async _prepareContext(options) {
         const context = await super._prepareContext(options);
@@ -329,7 +337,7 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
                     aspected: { label: "Aspected Magician", selected: this.selectedArchetype === "aspected" },
                     adept: { label: "Adept", selected: this.selectedArchetype === "adept" }
                 };
-                extraCtx.isCharacterActor = true;
+                extraCtx.isCharacterActor = SR5CreateActorApp.isImporterAvailable();
                 extraCtx.archetypes = archetypes;
             }
             Object.assign(context, extraCtx);
@@ -718,7 +726,7 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
         const name = nameInput?.value?.trim() || "Unknown";
 
         // Check if character archetype is chosen
-        if (this.selectedActorType === "character" && this.selectedArchetype) {
+        if (this.selectedActorType === "character" && this.selectedArchetype && SR5CreateActorApp.isImporterAvailable()) {
             try {
                 ui.notifications.info(`Building character template for archetype: ${this.selectedArchetype}...`);
                 const actor = await this._buildArchetypeCharacter(name);
