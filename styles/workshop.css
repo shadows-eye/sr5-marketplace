@@ -1,0 +1,1314 @@
+.workshop-container {
+    display: flex;
+    gap: 20px;
+    height: 100%;
+    width: 100%;
+    color: var(--text-color-primary, #fff);
+    font-family: 'Inter', sans-serif;
+    padding: 10px;
+    overflow: hidden;
+}
+
+.workshop-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.workshop-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 10px 15px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color-medium, #444);
+}
+
+.vehicle-selector-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 15px;
+    padding: 10px;
+}
+
+.vehicle-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.vehicle-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--color-yellow-dark, #ffaa00);
+    box-shadow: 0 0 10px rgba(255, 170, 0, 0.2);
+    transform: translateY(-2px);
+}
+
+.vehicle-card img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color-medium, #444);
+    object-fit: cover;
+}
+
+.vehicle-card .vehicle-name {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.vehicle-card .vehicle-info {
+    font-size: 0.9em;
+    opacity: 0.7;
+}
+
+.workshop-layout-three-columns {
+    display: grid;
+    grid-template-columns: 320px 1fr 340px;
+    gap: 15px;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    position: relative;
+    border-radius: 12px;
+    border: 1px solid var(--border-color-medium, #444);
+    overflow: hidden;
+    padding: 15px;
+}
+
+.workshop-layout-three-columns::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('/modules/sr5-marketplace/assets/images/workshop.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.7;
+    filter: brightness(0.65) contrast(1.1);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.workshop-sidebar-left {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 100%;
+    overflow-y: hidden;
+    padding-right: 5px;
+    position: relative;
+    z-index: 1;
+}
+
+.workshop-sidebar-right {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.vehicle-details-card {
+    background: rgba(15, 20, 25, 0.6);
+    border-radius: 12px;
+    border: 1px solid var(--border-color-medium, #444);
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.vehicle-details-card .details-header {
+    font-weight: bold;
+    font-size: 1.1em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 6px;
+    color: var(--color-yellow-dark, #ffaa00);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.vehicle-details-card .stats-row-layout {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.vehicle-details-card .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+    gap: 2px;
+}
+
+.vehicle-details-card .stat-icon {
+    font-size: 1.3em;
+    color: var(--color-yellow-dark, #ffaa00);
+}
+
+.vehicle-details-card .stat-value {
+    font-size: 0.85em;
+    font-weight: bold;
+    color: #fff;
+}
+
+.installed-mods-summary-card {
+    background: rgba(15, 20, 25, 0.6);
+    border-radius: 12px;
+    border: 1px solid var(--border-color-medium, #444);
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-height: 120px;
+}
+
+.installed-mods-summary-card .summary-header {
+    font-weight: bold;
+    font-size: 1.1em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 6px;
+    color: var(--color-yellow-dark, #ffaa00);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.installed-mods-summary-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 4px;
+}
+
+.installed-mods-category-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.installed-mods-category-group .category-group-header {
+    font-size: 0.8em;
+    font-weight: bold;
+    color: #00ffcc;
+    opacity: 0.9;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+    padding-bottom: 2px;
+    margin-bottom: 2px;
+}
+
+.installed-mods-summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 4px 8px;
+    padding-left: 12px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    position: relative;
+    transition: background-color 0.2s ease;
+}
+
+.installed-mods-summary-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    border-radius: 4px 0 0 4px;
+    background: #00ffcc;
+    /* fallback */
+    transition: background 0.2s ease;
+}
+
+/* Category Specific Sidebar Indicators */
+.installed-mods-category-group.drive .installed-mods-summary-item::before {
+    background: linear-gradient(to bottom, #00f0ff, #0044ff);
+}
+
+.installed-mods-category-group.protection .installed-mods-summary-item::before {
+    background: linear-gradient(to bottom, #ffaa00, #b27a00);
+}
+
+.installed-mods-category-group.weapons .installed-mods-summary-item::before {
+    background: linear-gradient(to bottom, #cc0000, #7a00cc);
+}
+
+.installed-mods-category-group.electronics .installed-mods-summary-item::before {
+    background: linear-gradient(to bottom, #00ff66, #ffea00);
+}
+
+.installed-mods-category-group.body .installed-mods-summary-item::before {
+    background: linear-gradient(to bottom, #777777, #ffffff);
+}
+
+.installed-mods-category-group.cosmetic .installed-mods-summary-item::before {
+    background: linear-gradient(to bottom, #ff00ff, #ffb6c1);
+}
+
+.installed-mods-summary-item .mod-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 80%;
+}
+
+.installed-mods-summary-item .mod-rating {
+    font-weight: bold;
+    opacity: 0.8;
+}
+
+.workshop-search-filter-section {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: 12px;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+}
+
+.shelf-search-wrap {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    margin-bottom: 0;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 4px 8px;
+    min-height: 40px;
+}
+
+.shelf-search-wrap:focus-within {
+    border-color: var(--color-yellow-dark, #ffaa00);
+    box-shadow: 0 0 5px rgba(255, 170, 0, 0.3);
+}
+
+.shelf-search-icon {
+    font-size: 0.9em;
+    opacity: 0.5;
+    margin-right: 8px;
+}
+
+.shelf-search-bar {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    color: #fff !important;
+    font-size: 0.9em !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 24px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.shelf-search-bar:focus,
+.shelf-search-bar:active,
+.shelf-search-bar:focus-visible {
+    outline: none !important;
+    outline-width: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.shelf-search-bar::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.workshop-header-bar .shelf-search-wrap {
+    margin-bottom: 0;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+}
+
+.workshop-header-bar .shelf-search-wrap:focus-within {
+    border-color: var(--color-yellow-dark, #ffaa00);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 8px rgba(255, 170, 0, 0.2);
+}
+
+.workshop-visualizer {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    height: 100%;
+}
+
+.center-vehicle {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 170, 0, 0.8);
+    box-shadow: 0 0 25px rgba(255, 170, 0, 0.5), inset 0 0 15px rgba(255, 170, 0, 0.2);
+    background: rgba(10, 12, 15, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    backdrop-filter: blur(4px);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.center-vehicle img {
+    width: 92%;
+    height: 92%;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+.center-vehicle:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 35px rgba(255, 170, 0, 0.7), inset 0 0 20px rgba(255, 170, 0, 0.3);
+    border-color: #ffaa00;
+}
+
+.category-box {
+    position: absolute;
+    width: 145px;
+    border-radius: 8px;
+    padding: 8px;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: hidden;
+    border: 1.5px solid transparent;
+    background: linear-gradient(rgba(20, 24, 30, 0.85), rgba(20, 24, 30, 0.85)) padding-box,
+        linear-gradient(135deg, var(--gradient-start, rgba(255, 255, 255, 0.25)), var(--gradient-end, rgba(255, 255, 255, 0.25))) border-box;
+    box-shadow: 0 0 10px rgba(var(--glow-color, 255, 255, 255), 0.12);
+}
+
+.category-box:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 15px rgba(var(--glow-color, 255, 255, 255), 0.3);
+}
+
+.category-box.valid-drop {
+    border: 1.5px solid #00ffcc !important;
+    background: rgba(0, 255, 204, 0.1) !important;
+    box-shadow: 0 0 15px rgba(0, 255, 204, 0.4) !important;
+}
+
+.category-box.invalid-drop {
+    border: 1.5px solid #ff3366 !important;
+    background: rgba(255, 51, 102, 0.1) !important;
+    box-shadow: 0 0 15px rgba(255, 51, 102, 0.4) !important;
+}
+
+.category-box.drag-hover {
+    border-style: solid;
+    transform: scale(1.05);
+}
+
+.category-box.drive {
+    top: 6%;
+    left: 8%;
+    --gradient-start: #00f0ff;
+    --gradient-end: #0044ff;
+    --glow-color: 0, 240, 255;
+}
+
+.category-box.protection {
+    top: 6%;
+    right: 8%;
+    --gradient-start: #ffaa00;
+    --gradient-end: #b27a00;
+    --glow-color: 255, 170, 0;
+}
+
+.category-box.weapons {
+    top: 40%;
+    left: 3%;
+    --gradient-start: #cc0000;
+    --gradient-end: #7a00cc;
+    --glow-color: 204, 0, 0;
+}
+
+.category-box.body {
+    top: 40%;
+    right: 3%;
+    --gradient-start: #777777;
+    --gradient-end: #ffffff;
+    --glow-color: 150, 150, 150;
+}
+
+.category-box.electronics {
+    bottom: 6%;
+    left: 8%;
+    --gradient-start: #00ff66;
+    --gradient-end: #ffea00;
+    --glow-color: 0, 255, 102;
+}
+
+.category-box.cosmetic {
+    bottom: 6%;
+    right: 8%;
+    --gradient-start: #ff00ff;
+    --gradient-end: #ffb6c1;
+    --glow-color: 255, 0, 255;
+}
+
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+    font-size: 0.85em;
+    font-weight: bold;
+}
+
+.category-header span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.category-header .slots-counter {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 0.85em;
+}
+
+.category-header .slots-counter.limit-reached {
+    background: rgba(255, 51, 102, 0.3);
+    color: #ff3366;
+}
+
+.installed-mods-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    padding: 4px 0;
+    min-height: 28px;
+    align-items: center;
+}
+
+.installed-mod-item {
+    background: transparent;
+    border: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.installed-mod-item:hover {
+    transform: scale(1.1);
+}
+
+.installed-mod-img {
+    width: 26px;
+    height: 26px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    object-fit: cover;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.installed-mod-empty {
+    font-size: 0.75em;
+    font-style: italic;
+    opacity: 0.4;
+    text-align: center;
+    padding: 4px 0;
+    width: 100%;
+}
+
+.workshop-shelf-sidebar {
+    background: rgba(15, 20, 25, 0.6);
+    border-radius: 12px;
+    border: 1px solid var(--border-color-medium, #444);
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    gap: 15px;
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
+}
+
+.workshop-shelf-header {
+    font-weight: bold;
+    font-size: 1.2em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 8px;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.shelf-counters {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.shelf-count-badge.sort-badge {
+    font-size: 0.65em;
+    font-weight: normal;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    opacity: 0.6;
+    color: rgba(255, 255, 255, 0.8);
+    user-select: none;
+}
+
+.shelf-count-badge.sort-badge:hover {
+    opacity: 0.9;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.shelf-count-badge.sort-badge.active {
+    opacity: 1;
+    background: rgba(255, 170, 0, 0.15);
+    border-color: var(--color-yellow-dark, #ffaa00);
+    color: var(--color-yellow-dark, #ffaa00);
+    box-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
+}
+
+.shelf-items-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-right: 5px;
+    min-height: 0;
+}
+
+.mod-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 8px;
+    cursor: grab;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.mod-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-1px);
+}
+
+.mod-card.owner-mod {
+    border-color: #ffb700;
+    box-shadow: inset 0 0 5px rgba(255, 183, 0, 0.1);
+}
+
+.mod-card.owner-mod::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: #ffb700;
+    border-radius: 3px 0 0 3px;
+}
+
+.mod-card img {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+.mod-card-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.mod-card-name {
+    font-weight: bold;
+    font-size: 0.9em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mod-card-sub {
+    font-size: 0.75em;
+    opacity: 0.6;
+    display: flex;
+    justify-content: space-between;
+}
+
+.owner-indicator-badge {
+    background: rgba(255, 183, 0, 0.15);
+    color: #ffb700;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-weight: bold;
+    font-size: 0.85em;
+}
+
+.repair-panel {
+    background: rgba(15, 20, 25, 0.6);
+    border-radius: 12px;
+    border: 1px solid var(--border-color-medium, #444);
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.repair-header {
+    font-weight: bold;
+    font-size: 1.1em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 6px;
+}
+
+.damage-track-grid {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin: 5px 0;
+}
+
+.damage-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.damage-box.filled {
+    border-color: #8b0000;
+    background: linear-gradient(to bottom, #aa0000, #660000);
+    box-shadow: 0 0 5px rgba(139, 0, 0, 0.6);
+}
+
+.damage-box.filled::after {
+    content: 'X';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.repair-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.repair-stats {
+    font-size: 0.85em;
+    opacity: 0.8;
+}
+
+.repair-button {
+    background-color: var(--color-green-button, #15aa5a);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.repair-button:hover {
+    background-color: #1cc66b;
+    box-shadow: 0 0 10px rgba(28, 198, 107, 0.3);
+}
+
+.repair-button:disabled {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.3);
+    cursor: not-allowed;
+}
+
+.no-vehicles-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    text-align: center;
+    opacity: 0.5;
+    font-style: italic;
+    gap: 10px;
+}
+
+#filter-tags-container {
+    display: flex;
+    gap: 0.2em;
+    flex-wrap: wrap;
+    width: 100%;
+    margin-top: 5px;
+}
+
+.filter-tag {
+    display: flex;
+    align-items: center;
+    background-color: var(--color-red-dark);
+    color: var(--bg-item-card);
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+.filter-tag .remove-tag {
+    margin-left: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1.2em;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.filter-tag .remove-tag:hover {
+    color: var(--color-red-base);
+    background-color: var(--color-gold-base);
+    border-radius: 50%;
+    min-width: 0.8em;
+    padding-left: 0.16em;
+}
+
+/* Workshop Custom Styling for Matrix Condition Monitor */
+.repair-panel .sr5v2.condition-monitor-container {
+    background: transparent !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.repair-panel .sr5v2 .horizontal-cell-input,
+.repair-panel .sr5v2 .horizontal-cell-input.matrix {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: 4px;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    background: transparent !important;
+}
+
+.repair-panel .sr5v2 .horizontal-cell-input .icon-container a,
+.repair-panel .sr5v2 .horizontal-cell-input .clear-container a {
+    color: #00ffcc;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.repair-panel .sr5v2 .horizontal-cell-input .icon-container a:hover,
+.repair-panel .sr5v2 .horizontal-cell-input .clear-container a:hover {
+    opacity: 1;
+}
+
+.repair-panel .sr5v2 .horizontal-cell-input .cell-container {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 2px;
+    max-width: 160px;
+}
+
+.repair-panel .sr5v2 .horizontal-cell-input .cell {
+    cursor: pointer;
+    border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 3px !important;
+    background: rgba(0, 0, 0, 0.3) !important;
+    width: 14px !important;
+    height: 14px !important;
+    margin: 0 !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+}
+
+.repair-panel .sr5v2 .horizontal-cell-input .cell.filled {
+    border-color: #00ff66 !important;
+    background: linear-gradient(to bottom, #00ff66, #ffea00) !important;
+    box-shadow: 0 0 6px rgba(0, 255, 102, 0.5) !important;
+    position: relative !important;
+}
+
+.repair-panel .sr5v2 .horizontal-cell-input .cell.filled::after {
+    content: 'X' !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    color: #0d121d !important;
+    font-size: 8px !important;
+    font-weight: bold !important;
+}
+
+.repair-panel .sr5v2 .horizontal-cell-input .cell:hover {
+    border-color: #00ff66 !important;
+}
+
+/* Quick Filter Buttons Section */
+.workshop-quick-filters {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.quick-filter-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    padding: 0;
+}
+
+.quick-filter-btn i {
+    font-size: 1em;
+    color: rgba(255, 255, 255, 0.5);
+    transition: all 0.2s ease;
+}
+
+/* Base Hover for Buttons */
+.quick-filter-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Category Specific Colors and Glows */
+.quick-filter-btn.drive i {
+    color: rgba(0, 240, 255, 0.7);
+}
+
+.quick-filter-btn.drive:hover {
+    border-color: #00f0ff;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+}
+
+.quick-filter-btn.drive:hover i,
+.quick-filter-btn.drive.active i {
+    color: #00f0ff;
+}
+
+.quick-filter-btn.drive.active {
+    background: rgba(0, 240, 255, 0.15);
+    border-color: #00f0ff;
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
+}
+
+.quick-filter-btn.protection i {
+    color: rgba(255, 170, 0, 0.7);
+}
+
+.quick-filter-btn.protection:hover {
+    border-color: #ffaa00;
+    box-shadow: 0 0 10px rgba(255, 170, 0, 0.4);
+}
+
+.quick-filter-btn.protection:hover i,
+.quick-filter-btn.protection.active i {
+    color: #ffaa00;
+}
+
+.quick-filter-btn.protection.active {
+    background: rgba(255, 170, 0, 0.15);
+    border-color: #ffaa00;
+    box-shadow: 0 0 12px rgba(255, 170, 0, 0.5);
+}
+
+.quick-filter-btn.weapons i {
+    color: rgba(204, 0, 0, 0.7);
+}
+
+.quick-filter-btn.weapons:hover {
+    border-color: #cc0000;
+    box-shadow: 0 0 10px rgba(204, 0, 0, 0.4);
+}
+
+.quick-filter-btn.weapons:hover i,
+.quick-filter-btn.weapons.active i {
+    color: #cc0000;
+}
+
+.quick-filter-btn.weapons.active {
+    background: rgba(204, 0, 0, 0.15);
+    border-color: #cc0000;
+    box-shadow: 0 0 12px rgba(204, 0, 0, 0.5);
+}
+
+.quick-filter-btn.body i {
+    color: rgba(150, 150, 150, 0.7);
+}
+
+.quick-filter-btn.body:hover {
+    border-color: #ffffff;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.quick-filter-btn.body:hover i,
+.quick-filter-btn.body.active i {
+    color: #ffffff;
+}
+
+.quick-filter-btn.body.active {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: #ffffff;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+}
+
+.quick-filter-btn.electronics i {
+    color: rgba(0, 255, 102, 0.7);
+}
+
+.quick-filter-btn.electronics:hover {
+    border-color: #00ff66;
+    box-shadow: 0 0 10px rgba(0, 255, 102, 0.4);
+}
+
+.quick-filter-btn.electronics:hover i,
+.quick-filter-btn.electronics.active i {
+    color: #00ff66;
+}
+
+.quick-filter-btn.electronics.active {
+    background: rgba(0, 255, 102, 0.15);
+    border-color: #00ff66;
+    box-shadow: 0 0 12px rgba(0, 255, 102, 0.5);
+}
+
+.quick-filter-btn.cosmetic i {
+    color: rgba(255, 0, 255, 0.7);
+}
+
+.quick-filter-btn.cosmetic:hover {
+    border-color: #ff00ff;
+    box-shadow: 0 0 10px rgba(255, 0, 255, 0.4);
+}
+
+.quick-filter-btn.cosmetic:hover i,
+.quick-filter-btn.cosmetic.active i {
+    color: #ff00ff;
+}
+
+.quick-filter-btn.cosmetic.active {
+    background: rgba(255, 0, 255, 0.15);
+    border-color: #ff00ff;
+    box-shadow: 0 0 12px rgba(255, 0, 255, 0.5);
+}
+
+.quick-filter-btn.reset {
+    margin-left: 4px;
+}
+
+.quick-filter-btn.reset i {
+    color: rgba(255, 85, 85, 0.7);
+}
+
+.quick-filter-btn.reset:hover {
+    border-color: #ff5555;
+    box-shadow: 0 0 10px rgba(255, 85, 85, 0.4);
+}
+
+.quick-filter-btn.reset:hover i {
+    color: #ff5555;
+}
+
+.quick-filter-btn.reset:active {
+    background: rgba(255, 85, 85, 0.15);
+}
+
+/* Category Header Icon Styles in Left Sidebar */
+.installed-mods-category-group .category-group-header i {
+    margin-right: 6px;
+    font-size: 1.1em;
+}
+
+.installed-mods-category-group.drive .category-group-header i {
+    color: #00f0ff;
+}
+
+.installed-mods-category-group.protection .category-group-header i {
+    color: #ffaa00;
+}
+
+.installed-mods-category-group.weapons .category-group-header i {
+    color: #cc0000;
+}
+
+.installed-mods-category-group.electronics .category-group-header i {
+    color: #00ff66;
+}
+
+.installed-mods-category-group.body .category-group-header i {
+    color: #969696;
+}
+
+.installed-mods-category-group.cosmetic .category-group-header i {
+    color: #ff00ff;
+}
+
+/* Category Header Icon Styles in Visualizer Category Boxes */
+.category-header span i {
+    color: var(--gradient-start);
+    margin-right: 6px;
+    font-size: 1.1em;
+}
+
+/* Workshop Header Overrides inside ItemBuilder */
+.itemBuilder .builder-header.workshop-header {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4) !important;
+    padding: 8px 15px !important;
+    border-bottom: 1px solid var(--border-color-medium, #444) !important;
+    min-height: 52px;
+    /* Stable height to match two-row minimum */
+}
+
+/* Styling for Modify Vehicle Button */
+.modify-vehicle-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.4);
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: not-allowed;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.modify-vehicle-btn.ready {
+    background: rgba(0, 255, 102, 0.12);
+    border: 1px solid rgba(0, 255, 102, 0.5);
+    color: #00ff66;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0, 255, 102, 0.2);
+    text-shadow: 0 0 5px rgba(0, 255, 102, 0.4);
+}
+
+.modify-vehicle-btn.ready:hover {
+    background: rgba(0, 255, 102, 0.22);
+    border-color: #00ff66;
+    box-shadow: 0 0 15px rgba(0, 255, 102, 0.5);
+    color: #ffffff;
+}
+
+/* Styling for virtual mod items */
+.installed-mod-item.virtual-mod {
+    position: relative;
+    border: 1.5px dashed rgba(255, 170, 0, 0.7) !important;
+    border-radius: 5px;
+    padding: 0;
+    box-shadow: 0 0 6px rgba(255, 170, 0, 0.15);
+}
+
+.installed-mod-item.virtual-mod .installed-mod-img {
+    opacity: 0.55;
+    border: none;
+    transition: opacity 0.2s ease;
+}
+
+.installed-mod-item.virtual-mod:hover .installed-mod-img {
+    opacity: 0.9;
+}
+
+/* Virtual shopping cart badge */
+.virtual-badge {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    background: #ffaa00;
+    color: #111111;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    pointer-events: none;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+/* Styled virtual summary item on left side */
+.installed-mods-summary-item.virtual-mod {
+    border-left: 2px dashed #ffaa00 !important;
+    background: rgba(255, 170, 0, 0.05);
+}
+
+.installed-mods-summary-item.virtual-mod .mod-name {
+    color: #ffaa00 !important;
+    font-style: italic;
+}
+
+.installed-mods-summary-item.virtual-mod .remove-virtual-btn {
+    color: rgba(255, 85, 85, 0.6);
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.installed-mods-summary-item.virtual-mod .remove-virtual-btn:hover {
+    color: #ff5555;
+    transform: scale(1.15);
+}
+
+/* Category Specific Borders for Shelf Modification Cards */
+.mod-card.drive:not(.owner-mod) {
+    border-color: rgba(0, 240, 255, 0.25);
+}
+.mod-card.protection:not(.owner-mod) {
+    border-color: rgba(255, 170, 0, 0.25);
+}
+.mod-card.weapons:not(.owner-mod) {
+    border-color: rgba(204, 0, 0, 0.25);
+}
+.mod-card.body:not(.owner-mod) {
+    border-color: rgba(150, 150, 150, 0.25);
+}
+.mod-card.electronics:not(.owner-mod) {
+    border-color: rgba(0, 255, 102, 0.25);
+}
+.mod-card.cosmetic:not(.owner-mod) {
+    border-color: rgba(255, 0, 255, 0.25);
+}
+
+.mod-card.drive:not(.owner-mod):hover {
+    border-color: rgba(0, 240, 255, 0.8);
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.25);
+}
+.mod-card.protection:not(.owner-mod):hover {
+    border-color: rgba(255, 170, 0, 0.8);
+    box-shadow: 0 0 8px rgba(255, 170, 0, 0.25);
+}
+.mod-card.weapons:not(.owner-mod):hover {
+    border-color: rgba(204, 0, 0, 0.8);
+    box-shadow: 0 0 8px rgba(204, 0, 0, 0.25);
+}
+.mod-card.body:not(.owner-mod):hover {
+    border-color: rgba(150, 150, 150, 0.8);
+    box-shadow: 0 0 8px rgba(150, 150, 150, 0.25);
+}
+.mod-card.electronics:not(.owner-mod):hover {
+    border-color: rgba(0, 255, 102, 0.8);
+    box-shadow: 0 0 8px rgba(0, 255, 102, 0.25);
+}
+.mod-card.cosmetic:not(.owner-mod):hover {
+    border-color: rgba(255, 0, 255, 0.8);
+    box-shadow: 0 0 8px rgba(255, 0, 255, 0.25);
+}
+
+/* Drag and Drop States for Category Boxes */
+
+/* Non-matching slots become greyed out during dragging */
+.category-box.initial-invalid {
+    filter: grayscale(80%) brightness(0.6);
+    opacity: 0.45;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    background: rgba(10, 10, 10, 0.6) !important;
+    box-shadow: none !important;
+}
+
+/* Matching slot gets a subtle pulse/glow of its category color */
+.category-box.initial-valid {
+    box-shadow: 0 0 18px rgba(var(--glow-color, 255, 255, 255), 0.6);
+    border-color: rgba(var(--glow-color, 255, 255, 255), 0.9) !important;
+    animation: pulse-glow 2s infinite ease-in-out;
+}
+
+@keyframes pulse-glow {
+    0% {
+        box-shadow: 0 0 12px rgba(var(--glow-color, 255, 255, 255), 0.4);
+    }
+    50% {
+        box-shadow: 0 0 22px rgba(var(--glow-color, 255, 255, 255), 0.7);
+    }
+    100% {
+        box-shadow: 0 0 12px rgba(var(--glow-color, 255, 255, 255), 0.4);
+    }
+}

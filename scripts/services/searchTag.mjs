@@ -13,6 +13,7 @@ export class SearchService {
         this.activeFilters = [];
 
         this._onSearch = this._onSearch.bind(this);
+        this._onKeyDown = this._onKeyDown.bind(this);
         this._onTagRemoveClick = this._onTagRemoveClick.bind(this);
     }
 
@@ -23,6 +24,8 @@ export class SearchService {
         if (this.searchBox) {
             this.searchBox.removeEventListener("keyup", this._onSearch);
             this.searchBox.addEventListener("keyup", this._onSearch);
+            this.searchBox.removeEventListener("keydown", this._onKeyDown);
+            this.searchBox.addEventListener("keydown", this._onKeyDown);
         }
 
         if (this.tagsContainer) {
@@ -32,6 +35,12 @@ export class SearchService {
 
         // Initial render of tags
         this.applyFilters();
+    }
+
+    _onKeyDown(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+        }
     }
 
     _onSearch(event) {
@@ -77,8 +86,11 @@ export class SearchService {
 
         const liveSearchTerm = this.searchBox.value.trim().toLowerCase();
 
-        // 1. Render the permanent filter tags
-        this.tagsContainer.innerHTML = this.activeFilters.map(filter => `
+        // 1. Render the permanent filter tags (excluding category filters)
+        const categoriesToOmit = ["drive", "protection", "weapons", "body", "electronics", "cosmetic"];
+        const visibleFilters = this.activeFilters.filter(f => !categoriesToOmit.includes(f));
+
+        this.tagsContainer.innerHTML = visibleFilters.map(filter => `
             <div class="filter-tag" data-filter="${filter}">
                 <span>${filter}</span>
                 <span class="remove-tag" title="Remove Filter">&times;</span>

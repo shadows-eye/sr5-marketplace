@@ -118,28 +118,28 @@ add i:hover>hint {
 }
 
 /* Main container for the entire skills list */
-.skills-list {
+.sr5-marketplace-shop .skills-list {
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
 /* Grid Layouts */
-.sr5-grid-3c {
+.sr5-marketplace-shop .sr5-grid-3c {
     display: grid;
     grid-template-columns: 40px 1fr auto;
     gap: 5px 10px;
     align-items: center;
 }
 
-.sr5-grid-c2 {
+.sr5-marketplace-shop .sr5-grid-c2 {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 15px;
     align-items: stretch;
 }
 
-.sr5-marketplace-shop-fields {
+.sr5-marketplace-shop .sr5-marketplace-shop-fields {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 10px 15px;
@@ -155,21 +155,21 @@ add i:hover>hint {
 }
 
 /* Assign grid areas to the form groups */
-.form-group.owner {
+.sr5-marketplace-shop .form-group.owner {
     grid-area: owner;
     min-height: inherit;
 }
 
-.form-group.connection {
+.sr5-marketplace-shop .form-group.connection {
     grid-area: connection;
     min-height: inherit;
 }
 
-.form-group.modifier {
+.sr5-marketplace-shop .form-group.modifier {
     grid-area: modifier;
 }
 
-.form-group.radius {
+.sr5-marketplace-shop .form-group.radius {
     grid-area: radius;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -177,12 +177,12 @@ add i:hover>hint {
     align-items: center;
 }
 
-.form-group.employees {
+.sr5-marketplace-shop .form-group.employees {
     grid-area: employees;
     min-height: inherit;
 }
 
-.form-group.inventory {
+.sr5-marketplace-shop .form-group.inventory {
     grid-area: inventory;
     border: none;
     height: 65%;
@@ -191,14 +191,14 @@ add i:hover>hint {
     overflow: hidden;
 }
 
-.form-group.subHeading,
-legend.subHeading,
-label.subHeading,
-.subHeading {
+.sr5-marketplace-shop .form-group.subHeading,
+.sr5-marketplace-shop legend.subHeading,
+.sr5-marketplace-shop label.subHeading,
+.sr5-marketplace-shop .subHeading {
     color: var(--text-color-subheader);
 }
 
-.sr5-grid.c10 {
+.sr5-marketplace-shop .sr5-grid.c10 {
     display: grid;
     grid-template-columns: 30px 2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1em;
     gap: 5px 10px;
@@ -206,12 +206,12 @@ label.subHeading,
     text-align: center;
 }
 
-.skill-group {
+.sr5-marketplace-shop .skill-group {
     border-radius: 5px;
     padding: 8px;
 }
 
-.skill-header {
+.sr5-marketplace-shop .skill-header {
     font-weight: bold;
     color: var(--skill-header-color);
     border-bottom: 1px solid var(--skill-header-border);
@@ -219,33 +219,33 @@ label.subHeading,
     margin-bottom: 5px;
 }
 
-.skill-header .skill-rating,
-.skill-entry .skill-rating {
+.sr5-marketplace-shop .skill-header .skill-rating,
+.sr5-marketplace-shop .skill-entry .skill-rating {
     text-align: right;
 }
 
 /* Inventory Item Styles */
-.inventory-header {
+.sr5-marketplace-shop .inventory-header {
     font-weight: bold;
     color: var(--inventory-header-color);
     padding-bottom: 1px;
     margin-bottom: 5px;
 }
 
-.inventory-list {
+.sr5-marketplace-shop .inventory-list {
     overflow: auto;
 }
 
-.inventory-item {
+.sr5-marketplace-shop .inventory-item {
     border-bottom: 1px solid var(--inventory-item-border);
     padding: 2px 0;
 }
 
-.inventory-item .item-name {
+.sr5-marketplace-shop .inventory-item .item-name {
     text-align: left;
 }
 
-.inventory-item .item-img img {
+.sr5-marketplace-shop .inventory-item .item-img img {
     width: 28px;
     height: 28px;
     object-fit: contain;
@@ -254,7 +254,7 @@ label.subHeading,
     border-radius: 3px;
 }
 
-.inventory-item input[type="number"] {
+.sr5-marketplace-shop .inventory-item input[type="number"] {
     width: 100%;
     text-align: center;
     background: var(--input-bg-transparent);
@@ -263,25 +263,25 @@ label.subHeading,
     border-radius: 3px;
 }
 
-.sr5 .form-group input[type="number"].radius-input {
+.sr5-marketplace-shop.sr5 .form-group input[type="number"].radius-input {
     width: 2.2em;
 }
 
 /* --- Skills Column & Collapsible Sections --- */
-.shop-column-2 {
+.sr5-marketplace-shop .shop-column-2 {
     display: flex;
     flex-direction: column;
     min-height: 0;
 }
 
-.sr5-marketplace-skills-fields {
+.sr5-marketplace-shop .sr5-marketplace-skills-fields {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
     border: none;
 }
 
-.skills-list {
+.sr5-marketplace-shop .skills-list {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -292,11 +292,11 @@ label.subHeading,
 }
 
 /* --- Collapsible Logic --- */
-.skills-list input.toggle {
+.sr5-marketplace-shop .skills-list input.toggle {
     display: none;
 }
 
-.skills-list .toggle-label {
+.sr5-marketplace-shop .skills-list .toggle-label {
     cursor: pointer;
     display: block;
     user-select: none;
@@ -306,25 +306,25 @@ label.subHeading,
     z-index: 1;
 }
 
-.skills-list .toggle-label:hover {
+.sr5-marketplace-shop .skills-list .toggle-label:hover {
     background: var(--collapsible-label-hover-bg);
 }
 
-.skills-list .toggle-content {
+.sr5-marketplace-shop .skills-list .toggle-content {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease-out;
     padding-left: 20px;
 }
 
-.skills-list input.toggle:checked~.toggle-content {
+.sr5-marketplace-shop .skills-list input.toggle:checked~.toggle-content {
     min-height: fit-content;
     max-height: none;
     transition: max-height 0.5s ease-in;
 }
 
-.sr5-marketplace-input.value-input,
-.sr5-marketplace-input.value {
+.sr5-marketplace-shop .sr5-marketplace-input.value-input,
+.sr5-marketplace-shop .sr5-marketplace-input.value {
     border: none;
     background: transparent;
     text-align: center;
@@ -333,14 +333,14 @@ label.subHeading,
     padding: 0px;
 }
 
-.marketplace-collapsible-header {
+.sr5-marketplace-shop .marketplace-collapsible-header {
     color: var(--text-color-subheader);
     padding-left: 4px;
     cursor: pointer;
     transition: color 0.2s ease;
 }
 
-.marketplace-collapsible-header:hover {
+.sr5-marketplace-shop .marketplace-collapsible-header:hover {
     color: var(--text-color-link-hover);
     background-color: var(--place-collapsible-header-hover-bg);
     padding-left: 4px;
@@ -350,7 +350,7 @@ label.subHeading,
 }
 
 /* Styling for the drop target boxes */
-.drop-target {
+.sr5-marketplace-shop .drop-target {
     border: 2px dashed var(--drop-target-border);
     border-radius: 5px;
     padding: 10px;
@@ -361,45 +361,45 @@ label.subHeading,
     transition: all 0.2s ease;
 }
 
-.drop-target.drag-over {
+.sr5-marketplace-shop .drop-target.drag-over {
     border-color: var(--drop-target-border-hover);
     background: var(--drop-target-bg-hover);
 }
 
 /* --- Employee List --- */
-.employee-list {
+.sr5-marketplace-shop .employee-list {
     list-style: none;
     padding: 0;
     margin: 0;
     display: flex;
 }
 
-.drop-target .employee-list li {
+.sr5-marketplace-shop .drop-target .employee-list li {
     display: flex;
     align-items: center;
     gap: 5px;
 }
 
-.employee-list li:not(.drop-hint) {
+.sr5-marketplace-shop .employee-list li:not(.drop-hint) {
     padding: 2px 0;
     border-bottom: 1px solid var(--border-color-dark);
 }
 
-.employee-list li:last-of-type {
+.sr5-marketplace-shop .employee-list li:last-of-type {
     border-bottom: none;
 }
 
-.employee-list .drop-hint {
+.sr5-marketplace-shop .employee-list .drop-hint {
     color: var(--color-grey-light);
     text-align: center;
     margin-top: 5px;
 }
 
-.employee-list input.toggle {
+.sr5-marketplace-shop .employee-list input.toggle {
     display: none;
 }
 
-.employee-list .toggle-label {
+.sr5-marketplace-shop .employee-list .toggle-label {
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -409,11 +409,11 @@ label.subHeading,
     transition: background 0.2s ease;
 }
 
-.employee-list .toggle-label:hover {
+.sr5-marketplace-shop .employee-list .toggle-label:hover {
     background: var(--collapsible-label-hover-bg);
 }
 
-.employee-list .toggle-content {
+.sr5-marketplace-shop .employee-list .toggle-content {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease-out;
@@ -422,29 +422,29 @@ label.subHeading,
     border-top: 1px solid var(--border-color-dark);
 }
 
-.employee-list input.toggle:checked~.toggle-content {
+.sr5-marketplace-shop .employee-list input.toggle:checked~.toggle-content {
     max-height: 100px;
     transition: max-height 0.5s ease-in;
 }
 
-.employee-details {
+.sr5-marketplace-shop .employee-details {
     display: flex;
     justify-content: space-around;
     gap: 15px;
 }
 
-.employee-detail-label {
+.sr5-marketplace-shop .employee-detail-label {
     font-weight: bold;
     color: var(--text-color-subheader);
     font-size: 0.9em;
 }
 
-.marketplace-header {
+.sr5-marketplace-shop .marketplace-header {
     display: grid;
     grid-template-columns: 1fr 6fr 20px;
 }
 
-input.marketplace.name {
+.sr5-marketplace-shop input.marketplace.name {
     width: 5em;
     height: fit-content;
     border: none;

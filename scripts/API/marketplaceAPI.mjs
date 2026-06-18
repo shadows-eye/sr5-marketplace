@@ -1,11 +1,13 @@
 // --- IMPORTS ---
-import { BuilderStateService } from "../services/builderStateService.mjs";
 import { ItemBuilderApp } from "../apps/ItemBuilderApp.mjs";
 import { inGameMarketplace } from "../apps/inGameMarketplace.mjs";
 import { BasketService } from "../services/basketService.mjs";
 import { PurchaseService } from "../services/purchaseService.mjs";
 import { MODULE_ID, SELECTED_ACTOR } from "../lib/constants.mjs";
 import { ActorSelectionService } from "../services/ActorSelectionService.mjs";
+import { BuildService } from "../services/buildService.mjs";
+import { factoryFlow } from "../services/_module.mjs";
+
 
 /**
  * Internal class holding all Marketplace-specific API functions.
@@ -33,9 +35,29 @@ class inGameMarketplaceAPI {
      */
     async addItem(itemUuid, actorUuid, options = {}) {
         if (!itemUuid || !actorUuid) return;
-        const { userId = null } = options;
-        // Pass the (potentially null) userId to the basket service
-        await this.basketService.addToBasket(itemUuid, actorUuid, userId);
+        const { userId = null, ...rest } = options;
+        // Pass the (potentially null) userId and options to the basket service
+        return await this.basketService.addToBasket(itemUuid, actorUuid, userId, rest);
+    }
+
+    /**
+     * Adds a compiled custom build to the active shopping cart.
+     * @param {object} customData - The compiled item/actor build data.
+     * @param {string} actorUuid - The UUID of the actor this basket is for.
+     * @param {object} totals - Pre-calculated totals (cost, availability, essence).
+     * @returns {Promise<void>}
+     */
+    async addCustom(customData, actorUuid, totals) {
+        return await this.basketService.addCustomToBasket(customData, actorUuid, totals);
+    }
+
+    /**
+     * Combines multiple availability strings into a single consolidated string.
+     * @param {Array<string>} availStrings - Array of availability strings.
+     * @returns {string} The combined availability.
+     */
+    combineAvailabilities(availStrings) {
+        return this.basketService._combineAvailabilities(availStrings);
     }
 
     /**
@@ -237,11 +259,313 @@ class inGameMarketplaceAPI {
 
 
 /**
+ * Internal class holding all Factory/Build-specific API functions.
+ * @private
+ */
+class FactoryAPI {
+    constructor() {
+        this.buildService = new BuildService();
+    }
+
+    /**
+     * Initializes the Factory API.
+     */
+    init() {
+        //console.log("SR5 Marketplace | Factory API Initialized.");
+    }
+
+    /**
+     * Retrieves the planned virtual modifications list from a vehicle actor.
+     * @param {Actor} vehicle - The vehicle actor document.
+     * @returns {object[]} Planned virtual modifications list.
+     */
+    getVirtualModifications(vehicle) {
+        return this.buildService.getVirtualModifications(vehicle);
+    }
+
+    /**
+     * Saves the planned virtual modifications list to a vehicle actor.
+     * @param {Actor} vehicle - The vehicle actor document.
+     * @param {object[]} virtualMods - The virtual modifications array.
+     * @returns {Promise<void>}
+     */
+    async saveVirtualModifications(vehicle, virtualMods) {
+        return await this.buildService.saveVirtualModifications(vehicle, virtualMods);
+    }
+
+    /**
+     * Appends a virtual modification to the vehicle actor.
+     * @param {Actor} vehicle - The vehicle actor document.
+     * @param {object} virtualMod - The virtual modification data.
+     * @returns {Promise<void>}
+     */
+    async addVirtualModification(vehicle, virtualMod) {
+        return await this.buildService.addVirtualModification(vehicle, virtualMod);
+    }
+
+    /**
+     * Updates an individual planned virtual modification's properties.
+     * @param {Actor} vehicle - The vehicle actor document.
+     * @param {string} virtualModId - The unique virtual modification ID.
+     * @param {object} updateData - Key/value pairs to merge.
+     * @returns {Promise<void>}
+     */
+    async updateVirtualModification(vehicle, virtualModId, updateData) {
+        return await this.buildService.updateVirtualModification(vehicle, virtualModId, updateData);
+    }
+
+    /**
+     * Removes a planned virtual modification from the vehicle actor.
+     * @param {Actor} vehicle - The vehicle actor document.
+     * @param {string} virtualModId - The virtual modification ID.
+     * @returns {Promise<void>}
+     */
+    async removeVirtualModification(vehicle, virtualModId) {
+        return await this.buildService.removeVirtualModification(vehicle, virtualModId);
+    }
+
+    /**
+     * Checks stock status and syncs source metadata.
+     * @param {Actor} vehicle - The vehicle actor document.
+     * @param {Actor} workshopActor - The workshop/factory actor document.
+     * @param {Actor} purchasingActor - The selected purchasing actor document.
+     * @returns {Promise<boolean>} Whether the flags were updated.
+     */
+    async syncVirtualModificationsStock(vehicle, workshopActor, purchasingActor) {
+        return await this.buildService.syncVirtualModificationsStock(vehicle, workshopActor, purchasingActor);
+    }
+
+    /**
+     * Checks the inventory stock status for one or more modifications.
+     * @param {Actor} vehicle - The vehicle actor document.
+     * @param {Actor} workshopActor - The workshop/factory actor document.
+     * @param {Actor} purchasingActor - The selected purchasing actor document.
+     * @param {string|null} [targetModId=null] - Optional target modification ID.
+     * @returns {object} Stock results.
+     */
+    checkInventoryStock(vehicle, workshopActor, purchasingActor, targetModId = null) {
+        return factoryFlow.checkInventoryStock(vehicle, workshopActor, purchasingActor, targetModId);
+    }
+
+    /**
+     * Starts the build test for a planned virtual modification on a vehicle.
+     * @param {Actor} vehicle - The vehicle actor document.
+     * @param {Actor} workshopActor - The workshop/factory actor document.
+     * @param {Actor} purchasingActor - The selected purchasing actor document.
+     * @param {object} vMod - The virtual modification object.
+     * @returns {Promise<string>} The active dialog ID of the created test.
+     */
+    async startModificationTest(vehicle, workshopActor, purchasingActor, vMod) {
+        return await factoryFlow.startModificationTest(vehicle, workshopActor, purchasingActor, vMod);
+    }
+
+    /**
+     * Installs a modification onto the actual vehicle document.
+     * @param {Actor} vehicle - The vehicle actor document.
+     * @param {Actor} workshopActor - The workshop/factory actor document.
+     * @param {Actor} purchasingActor - The selected purchasing actor document.
+     * @param {object} vMod - The virtual modification object.
+     * @returns {Promise<boolean>} Whether the modification was successfully installed.
+     */
+    async installModification(vehicle, workshopActor, purchasingActor, vMod) {
+        return await factoryFlow.installModification(vehicle, workshopActor, purchasingActor, vMod);
+    }
+
+    /**
+     * Resolves the list of eligible character actors owned by the vehicle's player owners.
+     * @param {Actor} vehicle - The vehicle actor document.
+     * @returns {Actor[]} List of character actors.
+     */
+    getEligiblePurchasers(vehicle) {
+        return factoryFlow.getEligiblePurchasers(vehicle);
+    }
+
+    /**
+     * Retrieves the current builder state.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<object>} The builder state.
+     */
+    async getBuilderState(userId = null) {
+        return await this.buildService.getBuilderState(userId);
+    }
+
+    /**
+     * Updates properties on the builder state.
+     * @param {object} updateData - Properties to update.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<void>}
+     */
+    async updateBuilderState(updateData, userId = null) {
+        return await this.buildService.updateBuilderState(updateData, userId);
+    }
+
+    /**
+     * Sets the base item for the builder state.
+     * @param {object|null} itemData - The base item data.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<void>}
+     */
+    async setBuilderBaseItem(itemData, userId = null) {
+        return await this.buildService.setBuilderBaseItem(itemData, userId);
+    }
+
+    /**
+     * Adds a modification to the builder state.
+     * @param {object} modData - The modification data.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<void>}
+     */
+    async addBuilderModification(modData, userId = null) {
+        return await this.buildService.addBuilderModification(modData, userId);
+    }
+
+    /**
+     * Adds a change to a specific slot in the builder state.
+     * @param {string} slotId - The slot ID.
+     * @param {object} itemData - The item data.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<void>}
+     */
+    async addBuilderChange(slotId, itemData, userId = null) {
+        return await this.buildService.addBuilderChange(slotId, itemData, userId);
+    }
+
+    /**
+     * Removes a change from a specific slot in the builder state.
+     * @param {string} slotId - The slot ID.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<void>}
+     */
+    async removeBuilderChange(slotId, userId = null) {
+        return await this.buildService.removeBuilderChange(slotId, userId);
+    }
+
+    /**
+     * Begins effect creation in the builder state.
+     * @param {string} sourceUuid - The UUID of the source item.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<object>} The updated state.
+     */
+    async startBuilderEffectCreation(sourceUuid, userId = null) {
+        return await this.buildService.startBuilderEffectCreation(sourceUuid, userId);
+    }
+
+    /**
+     * Updates the builder draft effect.
+     * @param {object} draftUpdate - Properties to merge.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<object>} The updated state.
+     */
+    async updateBuilderDraftEffect(draftUpdate, userId = null) {
+        return await this.buildService.updateBuilderDraftEffect(draftUpdate, userId);
+    }
+
+    /**
+     * Updates draft effect and state simultaneously.
+     * @param {object} draftUpdate - Draft updates.
+     * @param {object} stateUpdate - State updates.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<object>} The updated state.
+     */
+    async updateBuilderDraftAndState(draftUpdate = {}, stateUpdate = {}, userId = null) {
+        return await this.buildService.updateBuilderDraftAndState(draftUpdate, stateUpdate, userId);
+    }
+
+    /**
+     * Saves the draft effect to modifications.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<object>} The updated state.
+     */
+    async saveBuilderDraftEffect(userId = null) {
+        return await this.buildService.saveBuilderDraftEffect(userId);
+    }
+
+    /**
+     * Cancels draft effect creation.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<object>} The updated state.
+     */
+    async cancelBuilderEffectCreation(userId = null) {
+        return await this.buildService.cancelBuilderEffectCreation(userId);
+    }
+
+    /**
+     * Deletes a custom builder effect.
+     * @param {string} effectId - The effect ID.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<object>} The updated state.
+     */
+    async deleteBuilderEffect(effectId, userId = null) {
+        return await this.buildService.deleteBuilderEffect(effectId, userId);
+    }
+
+    /**
+     * Starts editing a builder effect.
+     * @param {string} sourceUuid - The source item UUID.
+     * @param {string} effectId - The effect ID.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<object>} The updated state.
+     */
+    async startBuilderEffectEdit(sourceUuid, effectId, userId = null) {
+        return await this.buildService.startBuilderEffectEdit(sourceUuid, effectId, userId);
+    }
+
+    /**
+     * Toggles derived value selector visibility.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<object>} The updated state.
+     */
+    async toggleBuilderDerivedValueSelector(userId = null) {
+        return await this.buildService.toggleBuilderDerivedValueSelector(userId);
+    }
+
+    /**
+     * Clears builder state.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<void>}
+     */
+    async clearBuilderState(userId = null) {
+        return await this.buildService.clearBuilderState(userId);
+    }
+
+    /**
+     * Helper to get effects from item UUID.
+     * @param {string} uuid - The item UUID.
+     * @returns {Promise<Array>} The effects.
+     */
+    async getEffectFromItemUuid(uuid) {
+        return await this.buildService.getEffectFromItemUuid(uuid);
+    }
+
+    /**
+     * Toggles base item editing mode.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<object>} The updated state.
+     */
+    async toggleBuilderBaseItemEdit(userId = null) {
+        return await this.buildService.toggleBuilderBaseItemEdit(userId);
+    }
+
+    /**
+     * Updates base item overrides in state.
+     * @param {object} updateData - Overrides updates.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<object>} The updated state.
+     */
+    async updateBuilderBaseItemOverrides(updateData, userId = null) {
+        return await this.buildService.updateBuilderBaseItemOverrides(updateData, userId);
+    }
+}
+
+
+/**
  * Internal class holding all ItemBuilder-specific API functions.
  * @private
  */
 class ItemBuilderAPI {
-    constructor() {}
+    constructor() {
+        this.buildService = new BuildService();
+    }
 
     /**
      * Initializes the Item Builder API.
@@ -268,7 +592,7 @@ class ItemBuilderAPI {
             effects: item.effects?.map(e => e.toObject(false)) ?? []
         };
 
-        await BuilderStateService.setBaseItem(cleanItemData);
+        await this.buildService.setBuilderBaseItem(cleanItemData);
         
         let itemBuilder = foundry.applications.instances.get("itemBuilder");
         if (itemBuilder) {
@@ -283,7 +607,7 @@ class ItemBuilderAPI {
      * @returns {Promise<object|null>} The base item data or null.
      */
     async getBaseItem() {
-        const state = await BuilderStateService.getState();
+        const state = await this.buildService.getBuilderState();
         return state.baseItem;
     }
 
@@ -292,12 +616,85 @@ class ItemBuilderAPI {
      * @returns {Promise<void>}
      */
     async open() {
+        let workshopActorUuid = null;
+        if (canvas.ready && canvas.tokens?.controlled?.length) {
+            // Check regions first
+            if (canvas.scene?.regions) {
+                for (const controlledToken of canvas.tokens.controlled) {
+                    const tokenDoc = controlledToken.document || controlledToken;
+                    const shopRegion = canvas.scene.regions.find(r => {
+                        const shopUuid = r.flags?.["sr5-marketplace"]?.shopActorUuid;
+                        if (!shopUuid) return false;
+                        return r.tokens?.has(tokenDoc);
+                    });
+                    if (shopRegion) {
+                        const shopUuid = shopRegion.flags["sr5-marketplace"].shopActorUuid;
+                        const shopActor = await fromUuid(shopUuid);
+                        if (shopActor?.system?.shop?.isFactory) {
+                            workshopActorUuid = shopUuid;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Check token distance if not found via region
+            if (!workshopActorUuid) {
+                const factoryTokens = canvas.tokens.placeables.filter(t => 
+                    t.actor?.type === "sr5-marketplace.shop" && 
+                    t.actor?.system?.shop?.isFactory
+                );
+                for (const controlledToken of canvas.tokens.controlled) {
+                    for (const factoryToken of factoryTokens) {
+                        const radius = factoryToken.actor.system.shop.shopRadius.value ?? 0;
+                        const p1 = controlledToken.center || { x: controlledToken.x, y: controlledToken.y };
+                        const p2 = factoryToken.center || { x: factoryToken.x, y: factoryToken.y };
+                        const distance = canvas.grid.measurePath([p1, p2]).distance;
+                        if (distance <= radius) {
+                            workshopActorUuid = factoryToken.actor.uuid;
+                            break;
+                        }
+                    }
+                    if (workshopActorUuid) break;
+                }
+            }
+        }
+
+        if (!workshopActorUuid && canvas.ready && canvas.tokens) {
+            const factoryTokens = canvas.tokens.placeables.filter(t => 
+                t.actor?.type === "sr5-marketplace.shop" && 
+                t.actor?.system?.shop?.isFactory
+            );
+            if (factoryTokens.length > 0) {
+                workshopActorUuid = factoryTokens[0].actor.uuid;
+            }
+        }
+
+        if (!game.user.isGM && !workshopActorUuid) {
+            ui.notifications.warn("You must be near a workshop/factory to open the Item Builder.");
+            return;
+        }
 
         let itemBuilder = foundry.applications.instances.get("itemBuilder");
-        if (!itemBuilder) {
-            itemBuilder = new ItemBuilderApp();
+        if (itemBuilder) {
+            if (workshopActorUuid) {
+                itemBuilder.workshopActorUuid = workshopActorUuid;
+            }
+            if (!game.user.isGM) {
+                itemBuilder.tabGroups.main = "workshop";
+            }
+            itemBuilder.render(true);
+        } else {
+            const options = {};
+            if (workshopActorUuid) {
+                options.workshopActorUuid = workshopActorUuid;
+            }
+            if (!game.user.isGM) {
+                options.initialTab = "workshop";
+            }
+            itemBuilder = new ItemBuilderApp(options);
+            itemBuilder.render(true);
         }
-        itemBuilder.render(true);
     }
 
     /**
@@ -305,7 +702,7 @@ class ItemBuilderAPI {
      * @returns {Promise<void>}
      */
     async clear() {
-        await BuilderStateService.clearState();
+        await this.buildService.clearBuilderState();
         
 
         const itemBuilder = foundry.applications.instances.get("itemBuilder");
@@ -324,7 +721,7 @@ class ItemBuilderAPI {
         const { clearState = false } = options;
 
         if (clearState) {
-            await this.clearBuilderState();
+            await this.clear();
         }
         
 
@@ -352,6 +749,12 @@ export class MarketplaceAPI {
      * @type {typeof ItemBuilderAPI}
      */
     static ItemBuilder = ItemBuilderAPI;
+
+    /**
+     * The API for factory, workshop, and vehicle building modification tasks.
+     * @type {typeof FactoryAPI}
+     */
+    static Factory = FactoryAPI;
 
     constructor() {}
 

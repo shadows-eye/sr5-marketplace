@@ -75,19 +75,21 @@ export class BasketService {
             return user.setFlag(MODULE_ID, FLAGKEY_Basket, basket);
         }
     }
-    
+
     /**
      * Adds an item to the current user's active shopping cart.
      * @param {string} itemUuid The UUID of the item to add.
      * @param {string} actorUuid The UUID of the actor this basket is for.
+     * @param {string|null} [userId=null] Optional user ID to get the basket for.
+     * @param {object} [options={}] Additional options for the basket item.
      */
-    async addToBasket(itemUuid, actorUuid) {
+    async addToBasket(itemUuid, actorUuid, userId = null, options = {}) {
         if (!itemUuid || !actorUuid) {
             ui.notifications.error("Cannot add item to cart without a purchasing actor.");
             return;
         }
 
-        const basket = await this.getBasket();
+        const basket = await this.getBasket(userId);
         // This is the fix: The createdForActor is now always set from the actorUuid passed by the application.
         basket.createdForActor = actorUuid;
 
@@ -96,7 +98,7 @@ export class BasketService {
 
         const itemBehaviors = game.settings.get("sr5-marketplace", "itemTypeBehaviors") || {};
         const behavior = itemBehaviors[item.type] || 'single';
-        const existingItemInCart = basket.shoppingCartItems.find(i => i.itemUuid === item.uuid);
+        const existingItemInCart = basket.shoppingCartItems.find(i => i.itemUuid === item.uuid && (!i.isWorkshopMod || i.vehicleActorUuid === options.vehicleActorUuid));
 
         if (behavior === 'unique') {
             if (existingItemInCart) {
@@ -125,7 +127,7 @@ export class BasketService {
                 .filter(i => i.itemUuid === item.uuid)
                 .reduce((sum, i) => sum + i.buyQuantity, 0);
             if (totalInBasket + 1 > shopItem.qty) {
-                ui.notifications.warn(game.i18n.format("SR5Marketplace.Marketplace.Basket.OutOfStockWarning", { name: item.name, qty: shopItem.qty }));
+                ui.notifications.warn(game.i18n.format("SR5Marketplace.Marketplace.Notifications.OutOfStockWarning", { name: item.name, qty: shopItem.qty }));
                 return;
             }
         }
@@ -136,7 +138,7 @@ export class BasketService {
             // --- NEW KARMA LOGIC ---
             // 1. Start with the item's defined karma (if any)
             let calculatedKarma = item.system.karma || 0;
-            
+
             // 2. If it's a spell/complex form and has 0 karma, pull from Settings
             if (item.type === "spell" && calculatedKarma === 0) {
                 calculatedKarma = game.settings.get("sr5-marketplace", "karmaCostForSpell");
@@ -146,7 +148,7 @@ export class BasketService {
 
             const isVehicle = item.type === "vehicle";
             const defaultRating = !isVehicle ? (item.system.technology?.rating || 0) : 0;
-            
+
             let finalCost = 0;
             if (isVehicle) {
                 finalCost = typeof item.system.cost === "object" ? (item.system.cost.value ?? 0) : (item.system.cost ?? 0);
@@ -182,22 +184,28 @@ export class BasketService {
                 basketItemUuid: "basket." + foundry.utils.randomID(),
                 itemUuid: item.uuid,
                 buyQuantity: 1,
-                name: item.name, 
-                img: item.img, 
+                name: item.name,
+                img: item.img,
                 cost: finalCost,
-                karma: calculatedKarma, 
+                karma: calculatedKarma,
                 availability: finalAvailability,
-                essence: finalEssence, 
+                essence: finalEssence,
                 itemQuantity: behavior === 'stack' ? 10 : (item.system.quantity || 1),
-                rating: defaultRating, 
+                rating: defaultRating,
                 selectedRating: defaultRating,
+                isWorkshopMod: !!options.isWorkshopMod,
+                vehicleActorUuid: options.vehicleActorUuid || null,
+                factoryActorUuid: options.factoryActorUuid || null
             };
             basket.shoppingCartItems.push(basketItem);
         }
-        
+
         const updatedBasket = this._recalculateTotals(basket);
-        await this.saveBasket(updatedBasket);
-        //ui.notifications.info(`'${item.name}' added to basket.`);
+        await this.saveBasket(updatedBasket, userId);
+
+        // Find and return the added item (either stacked or new)
+        const addedItem = updatedBasket.shoppingCartItems.find(i => i.itemUuid === item.uuid && (!i.isWorkshopMod || i.vehicleActorUuid === options.vehicleActorUuid));
+        return addedItem;
     }
 
     /**
@@ -222,14 +230,14 @@ export class BasketService {
             basketItemUuid: "basket." + foundry.utils.randomID(),
             itemUuid: customData.uuid || ("custom." + foundry.utils.randomID()),
             buyQuantity: 1,
-            name: customData.name, 
-            img: customData.img || "icons/svg/item-bag.svg", 
+            name: customData.name,
+            img: customData.img || "icons/svg/item-bag.svg",
             cost: totals.cost,
-            karma: 0, 
+            karma: 0,
             availability: totals.availability,
-            essence: totals.essence, 
+            essence: totals.essence,
             itemQuantity: 1,
-            rating: defaultRating, 
+            rating: defaultRating,
             selectedRating: defaultRating,
             isCustomBuild: true,
             customData: customData
@@ -241,7 +249,7 @@ export class BasketService {
         await this.saveBasket(updatedBasket);
         ui.notifications.info(`Custom build "${customData.name}" added to cart.`);
     }
-    
+
     /**
      * Removes an item from the active shopping cart using its unique instance ID.
      * @param {string} basketItemUuid The unique ID of the item instance in the cart.
@@ -250,7 +258,7 @@ export class BasketService {
         if (!basketItemUuid) return;
         const basket = await this.getBasket();
         const initialCount = basket.shoppingCartItems.length;
-        
+
         basket.shoppingCartItems = basket.shoppingCartItems.filter(i => i.basketItemUuid !== basketItemUuid);
 
         if (basket.shoppingCartItems.length < initialCount) {
@@ -265,12 +273,12 @@ export class BasketService {
      * @param {string} basketItemUuid The unique ID of the item instance to act upon.
      * @param {number} change The amount to change by (+1 or -1).
      */
-    async updateItemQuantity(basketItemUuid, actorUuid,change) {
+    async updateItemQuantity(basketItemUuid, actorUuid, change) {
         if (!basketItemUuid || !change) return;
 
         const basket = await this.getBasket();
         const itemBehaviors = game.settings.get("sr5-marketplace", "itemTypeBehaviors") || {};
-        
+
         const targetItem = basket.shoppingCartItems.find(i => i.basketItemUuid === basketItemUuid);
         if (!targetItem) return;
 
@@ -380,7 +388,7 @@ export class BasketService {
         basket.totalAvailability = this._combineAvailabilities(allAvailabilities);
         return basket;
     }
-    
+
     _combineAvailabilities(availStrings) {
         const priority = { "F": 3, "V": 3, "R": 2, "E": 2, "": 1 };
         let totalNumeric = 0;

@@ -79,7 +79,8 @@ export default class ItemDataServices {
                         "system.drain",
                         "system.mount_point",
                         "system.mod_weapon.mount_point",
-                        "system.slots"
+                        "system.slots",
+                        "system.modification_category"
                     ]
                 });
 

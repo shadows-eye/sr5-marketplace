@@ -12,38 +12,48 @@
             <div class="header-controls">
                 {{#if (eq activeTab "vehicle")}}
                 <div class="category-buttons">
-                    <button type="button" class="category-btn {{#if (eq selectedKey 'drones')}}active{{/if}}" data-action="selectCategory" data-category="drones" title="{{localize 'SR5.Vehicle.Drone'}}">
+                    <button type="button" class="category-btn {{#if (eq selectedKey 'drones')}}active{{/if}}"
+                        data-action="selectCategory" data-category="drones" title="{{localize 'SR5.Vehicle.Drone'}}">
                         <svg viewBox="0 0 100 100" class="category-icon drone-icon" width="20" height="20">
-                            <path d="M 20 20 L 80 80 M 80 20 L 20 80" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-                            <circle cx="20" cy="20" r="12" fill="none" stroke="#8b0000" stroke-width="3" stroke-dasharray="8,4"/>
-                            <ellipse cx="20" cy="20" rx="14" ry="3" fill="#8b0000" transform="rotate(45 20 20)"/>
-                            <ellipse cx="20" cy="20" rx="14" ry="3" fill="#8b0000" transform="rotate(135 20 20)"/>
-                            <circle cx="80" cy="20" r="12" fill="none" stroke="#8b0000" stroke-width="3" stroke-dasharray="8,4"/>
-                            <ellipse cx="80" cy="20" rx="14" ry="3" fill="#8b0000" transform="rotate(45 80 20)"/>
-                            <ellipse cx="80" cy="20" rx="14" ry="3" fill="#8b0000" transform="rotate(135 80 20)"/>
-                            <circle cx="20" cy="80" r="12" fill="none" stroke="#8b0000" stroke-width="3" stroke-dasharray="8,4"/>
-                            <ellipse cx="20" cy="80" rx="14" ry="3" fill="#8b0000" transform="rotate(45 20 80)"/>
-                            <ellipse cx="20" cy="80" rx="14" ry="3" fill="#8b0000" transform="rotate(135 20 80)"/>
-                            <circle cx="80" cy="80" r="12" fill="none" stroke="#8b0000" stroke-width="3" stroke-dasharray="8,4"/>
-                            <ellipse cx="80" cy="80" rx="14" ry="3" fill="#8b0000" transform="rotate(45 80 80)"/>
-                            <ellipse cx="80" cy="80" rx="14" ry="3" fill="#8b0000" transform="rotate(135 80 80)"/>
-                            <circle cx="50" cy="50" r="16" fill="#ffd700" stroke="#daa520" stroke-width="2"/>
-                            <circle cx="50" cy="46" r="6" fill="#333"/>
-                            <circle cx="52" cy="44" r="2" fill="#fff"/>
-                            <rect x="30" y="45" width="8" height="10" rx="2" fill="#ffd700" stroke="#daa520"/>
-                            <rect x="62" y="45" width="8" height="10" rx="2" fill="#ffd700" stroke="#daa520"/>
+                            <path d="M 20 20 L 80 80 M 80 20 L 20 80" stroke="currentColor" stroke-width="6"
+                                stroke-linecap="round" />
+                            <circle cx="20" cy="20" r="12" fill="none" stroke="#8b0000" stroke-width="3"
+                                stroke-dasharray="8,4" />
+                            <ellipse cx="20" cy="20" rx="14" ry="3" fill="#8b0000" transform="rotate(45 20 20)" />
+                            <ellipse cx="20" cy="20" rx="14" ry="3" fill="#8b0000" transform="rotate(135 20 20)" />
+                            <circle cx="80" cy="20" r="12" fill="none" stroke="#8b0000" stroke-width="3"
+                                stroke-dasharray="8,4" />
+                            <ellipse cx="80" cy="20" rx="14" ry="3" fill="#8b0000" transform="rotate(45 80 20)" />
+                            <ellipse cx="80" cy="20" rx="14" ry="3" fill="#8b0000" transform="rotate(135 80 20)" />
+                            <circle cx="20" cy="80" r="12" fill="none" stroke="#8b0000" stroke-width="3"
+                                stroke-dasharray="8,4" />
+                            <ellipse cx="20" cy="80" rx="14" ry="3" fill="#8b0000" transform="rotate(45 20 80)" />
+                            <ellipse cx="20" cy="80" rx="14" ry="3" fill="#8b0000" transform="rotate(135 20 80)" />
+                            <circle cx="80" cy="80" r="12" fill="none" stroke="#8b0000" stroke-width="3"
+                                stroke-dasharray="8,4" />
+                            <ellipse cx="80" cy="80" rx="14" ry="3" fill="#8b0000" transform="rotate(45 80 80)" />
+                            <ellipse cx="80" cy="80" rx="14" ry="3" fill="#8b0000" transform="rotate(135 80 80)" />
+                            <circle cx="50" cy="50" r="16" fill="#ffd700" stroke="#daa520" stroke-width="2" />
+                            <circle cx="50" cy="46" r="6" fill="#333" />
+                            <circle cx="52" cy="44" r="2" fill="#fff" />
+                            <rect x="30" y="45" width="8" height="10" rx="2" fill="#ffd700" stroke="#daa520" />
+                            <rect x="62" y="45" width="8" height="10" rx="2" fill="#ffd700" stroke="#daa520" />
                         </svg>
                     </button>
-                    <button type="button" class="category-btn {{#if (eq selectedKey 'vehicles')}}active{{/if}}" data-action="selectCategory" data-category="vehicles" title="{{localize 'SR5.Vehicle.Vehicle'}}">
+                    <button type="button" class="category-btn {{#if (eq selectedKey 'vehicles')}}active{{/if}}"
+                        data-action="selectCategory" data-category="vehicles"
+                        title="{{localize 'SR5.Vehicle.Vehicle'}}">
                         <svg viewBox="0 0 100 100" class="category-icon vehicle-icon" width="20" height="20">
-                            <rect x="5" y="30" width="50" height="30" fill="#cc0000" rx="2"/>
-                            <rect x="5" y="60" width="75" height="8" fill="#cc0000" rx="1"/>
-                            <path d="M 55 60 L 55 38 Q 55 36 57 36 L 72 36 Q 76 36 78 42 L 83 48 L 92 48 Q 95 48 95 52 L 95 60 Z" fill="#ffd700"/>
-                            <path d="M 60 40 L 71 40 L 75 46 L 60 46 Z" fill="#333"/>
-                            <circle cx="25" cy="68" r="12" fill="#222" stroke="#555" stroke-width="2"/>
-                            <circle cx="25" cy="68" r="4" fill="#ddd"/>
-                            <circle cx="75" cy="68" r="12" fill="#222" stroke="#555" stroke-width="2"/>
-                            <circle cx="75" cy="68" r="4" fill="#ddd"/>
+                            <rect x="5" y="30" width="50" height="30" fill="#cc0000" rx="2" />
+                            <rect x="5" y="60" width="75" height="8" fill="#cc0000" rx="1" />
+                            <path
+                                d="M 55 60 L 55 38 Q 55 36 57 36 L 72 36 Q 76 36 78 42 L 83 48 L 92 48 Q 95 48 95 52 L 95 60 Z"
+                                fill="#ffd700" />
+                            <path d="M 60 40 L 71 40 L 75 46 L 60 46 Z" fill="#333" />
+                            <circle cx="25" cy="68" r="12" fill="#222" stroke="#555" stroke-width="2" />
+                            <circle cx="25" cy="68" r="4" fill="#ddd" />
+                            <circle cx="75" cy="68" r="12" fill="#222" stroke="#555" stroke-width="2" />
+                            <circle cx="75" cy="68" r="4" fill="#ddd" />
                         </svg>
                     </button>
                 </div>
@@ -56,16 +66,16 @@
                     {{/each}}
                 </select>
                 {{/if}}
-                <input id="search-box" type="search" name="itemSearch" placeholder="{{localize 'SR5Marketplace.UI.SearchPlaceholder'}}"/>
+                <input id="search-box" type="search" placeholder="{{localize 'SR5Marketplace.UI.SearchPlaceholder'}}" />
                 <div id="filter-tags-container" class="flex flex-wrap gap-1 w-full mt-0.5 empty:hidden"></div>
             </div>
         </header>
         <div class="item-content-grid">
             {{#each selectedItems}}
             <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}"
-                 data-category="{{this.system.importFlags.category}}"
-                 data-is-drone="{{#if (or this.system.isDrone this.system.isdrone)}}true{{else}}false{{/if}}"
-                 data-hover-delay="500">
+                data-category="{{this.system.importFlags.category}}"
+                data-is-drone="{{#if (or this.system.isDrone this.system.isdrone)}}true{{else}}false{{/if}}"
+                data-hover-delay="500">
                 <img src="{{this.img}}" alt="{{this.name}}" class="item-image" loading="lazy" />
                 <a class="item-name" data-action="clickItemName" data-item-uuid="{{this.uuid}}">{{this.name}}</a>
                 <a class="select-icon" data-action="selectBaseItem" data-item-uuid="{{this.uuid}}"
@@ -86,7 +96,8 @@
         <header class="component-header">
             <h3>{{localize "SR5Marketplace.ItemBuilder.Modifications.Header"}}</h3>
             <div class="header-controls">
-                <input id="search-box" type="search" name="modSearch" class="mod-search" placeholder="{{localize 'SR5Marketplace.ItemBuilder.SearchAllMods'}}"/>
+                <input id="search-box" type="search" class="mod-search"
+                    placeholder="{{localize 'SR5Marketplace.ItemBuilder.SearchAllMods'}}" />
                 <div id="filter-tags-container" class="flex flex-wrap gap-1 w-full mt-0.5 empty:hidden"></div>
             </div>
         </header>
@@ -156,9 +167,9 @@
                 -->
             <!--<div class="item-stats-display">-->
             {{#if (eq displayItem.type "vehicle")}}
-                {{> "modules/sr5-marketplace/templates/apps/itemBuilder/partials/vehicleDetails.html"}}
+            {{> "modules/sr5-marketplace/templates/apps/itemBuilder/partials/vehicleDetails.html"}}
             {{else}}
-                {{> "modules/sr5-marketplace/templates/apps/itemBuilder/partials/ItemDetails.html"}}
+            {{> "modules/sr5-marketplace/templates/apps/itemBuilder/partials/ItemDetails.html"}}
             {{/if}}
             <!--</div>-->
             {{!-- These slots now have unique IDs and conditional mount points for weapons --}}

@@ -97,6 +97,8 @@ export function defineShopActorClass() {
                     }),
                 tokenInRadius: new foundry.data.fields.ObjectField({ initial: {}, label: "Token in Radius" }),
                 itemMarkup: new foundry.data.fields.NumberField({ initial: 0, integer: true, min: 0, label: "Item Markup Percentage" }),
+                isFactory: new foundry.data.fields.BooleanField({ initial: false, label: "Is Factory" }),
+                factoryRating: new foundry.data.fields.NumberField({ initial: 5, min: 1, max: 6, integer: true, label: "Workshop Rating" }),
 
                 // Validating the inventory as an object with dynamic keys
                 // Each key is an inventory entry ID, and each value is an inventory item object.
@@ -141,10 +143,10 @@ export function defineShopActorClass() {
         }
 
         /** @override */
-        isType(type) {
-            if (this.type !== "sr5-marketplace.shop") return super.isType(type);
-            if (type === "character") return true;
-            return super.isType(type);
+        isType(...types) {
+            if (this.type !== "sr5-marketplace.shop") return super.isType(...types);
+            if (types.includes("character")) return true;
+            return super.isType(...types);
         }
 
         /** @override */
@@ -380,9 +382,34 @@ export function defineShopActorClass() {
          * @returns {Promise<TokenDocument[]>} An array of TokenDocuments.
          */
         async getTokensInRadius() {
-            if (!this.shop.tokenInRadius) return [];
+            if (canvas.ready) {
+                let shopToken = this.token;
+                if (!shopToken) {
+                    shopToken = canvas.tokens.placeables.find(t => t.actor?.id === this.id);
+                }
+                if (shopToken) {
+                    const radius = this.system.shop.shopRadius.value;
+                    const tokensInRange = [];
+                    const otherTokens = canvas.tokens.placeables.filter(t => t.id !== shopToken.id);
+
+                    for (const token of otherTokens) {
+                        const p1 = shopToken.center || { x: shopToken.x, y: shopToken.y };
+                        const p2 = token.center || { x: token.x, y: token.y };
+                        const distance = canvas.grid.measurePath([p1, p2]).distance;
+                        if (distance <= radius) {
+                            const doc = token.document || token;
+                            if (doc) tokensInRange.push(doc);
+                        }
+                    }
+                    return tokensInRange;
+                }
+            }
+
+            // Fallback to database-persisted tokens list
+            if (!this.shop?.tokenInRadius) return [];
             const tokenUuids = Object.values(this.shop.tokenInRadius).map(data => data.uuid);
-            return fromUuid.multi(tokenUuids);
+            const tokens = await Promise.all(tokenUuids.map(uuid => fromUuid(uuid)));
+            return tokens.filter(t => t);
         }
 
         /**
@@ -397,7 +424,9 @@ export function defineShopActorClass() {
             const otherTokens = canvas.tokens.placeables.filter(t => t.id !== shopToken.id);
 
             for (const token of otherTokens) {
-                const distance = canvas.grid.measureDistance(shopToken, token);
+                const p1 = shopToken.center || { x: shopToken.x, y: shopToken.y };
+                const p2 = token.center || { x: token.x, y: token.y };
+                const distance = canvas.grid.measurePath([p1, p2]).distance;
                 if (distance <= radius) {
                     tokensInRange[token.id] = { uuid: token.uuid, x: token.x, y: token.y };
                 }
@@ -414,7 +443,16 @@ export function defineShopActorClass() {
          * @returns {[string, object]|undefined} The [inventoryId, itemObject] if found.
          */
         findInventoryItem(itemUuid) {
-            return Object.entries(this.shop.inventory).find(([id, item]) => item.itemUuid === itemUuid);
+            const clean = (u) => {
+                if (!u) return "";
+                let s = String(u).trim().toLowerCase();
+                if (s.startsWith("compendium.")) {
+                    s = s.replace(/\.(item|actor)\./g, ".");
+                }
+                return s;
+            };
+            const target = clean(itemUuid);
+            return Object.entries(this.shop.inventory).find(([id, item]) => clean(item.itemUuid) === target);
         }
 
         /**

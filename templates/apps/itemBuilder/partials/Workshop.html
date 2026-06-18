@@ -1,0 +1,299 @@
+<div class="workshop-container">
+    {{#if activeVehicle}}
+    {{!-- RENDER ACTIVE WORKSHOP VISUALIZER --}}
+    <div class="workshop-main">
+        <div class="workshop-layout-three-columns">
+            <!-- Left Sidebar: Vehicle Details, Repair, Installed mods -->
+            <div class="workshop-sidebar-left">
+                <!-- Vehicle Stats Card -->
+                <div class="vehicle-details-card">
+                    <div class="details-header">
+                        <i class="fa-duotone fa-car-side"></i> {{localize "SR5Marketplace.ItemBuilder.Vehicle.Stats"}}
+                    </div>
+                    <div class="stats-row-layout">
+                        <div class="stat-item" title="{{localize 'SR5Marketplace.ItemBuilder.Vehicle.Handling'}}">
+                            <i class="fa-duotone fa-steering-wheel stat-icon"></i>
+                            <span class="stat-value">{{statVal activeVehicle.system.vehicle_stats.handling}}</span>
+                        </div>
+                        <div class="stat-item" title="{{localize 'SR5Marketplace.ItemBuilder.Vehicle.Speed'}}">
+                            <i class="fa-duotone fa-gauge-max stat-icon"></i>
+                            <span class="stat-value">{{statVal activeVehicle.system.vehicle_stats.speed}}</span>
+                        </div>
+                        <div class="stat-item" title="{{localize 'SR5Marketplace.ItemBuilder.Vehicle.Acceleration'}}">
+                            <i class="fa-duotone fa-forward-fast stat-icon"></i>
+                            <span class="stat-value">{{statVal activeVehicle.system.vehicle_stats.acceleration}}</span>
+                        </div>
+                        <div class="stat-item" title="{{localize 'SR5Marketplace.ItemBuilder.Vehicle.Body'}}">
+                            <i class="fa-duotone fa-car stat-icon"></i>
+                            <span class="stat-value">{{statVal activeVehicle.system.attributes.body}}</span>
+                        </div>
+                        <div class="stat-item" title="{{localize 'SR5Marketplace.ItemBuilder.Vehicle.Armor'}}">
+                            <i class="fa-duotone fa-shield-halved stat-icon"></i>
+                            <span class="stat-value">{{statVal activeVehicle.system.armor.rating}}</span>
+                        </div>
+                        <div class="stat-item" title="{{localize 'SR5Marketplace.ItemBuilder.Vehicle.Pilot'}}">
+                            <i class="fa-duotone fa-robot stat-icon"></i>
+                            <span class="stat-value">{{statVal activeVehicle.system.vehicle_stats.pilot}}</span>
+                        </div>
+                        <div class="stat-item" title="{{localize 'SR5Marketplace.ItemBuilder.Vehicle.Sensor'}}">
+                            <i class="fa-duotone fa-radar stat-icon"></i>
+                            <span class="stat-value">{{statVal activeVehicle.system.vehicle_stats.sensor}}</span>
+                        </div>
+                        <div class="stat-item" title="{{localize 'SR5Marketplace.ItemBuilder.Vehicle.Seats'}}">
+                            <i class="fa-duotone fa-chair stat-icon"></i>
+                            <span class="stat-value">{{statVal activeVehicle.system.vehicle_stats.seats}}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Repair Panel -->
+                <div class="repair-panel">
+                    <div class="repair-header">
+                        <i class="fas fa-tools"></i> {{localize "SR5Marketplace.Factory.Repair.Title"}}
+                    </div>
+                    <div style="font-size: 0.85em; opacity: 0.8;">
+                        {{localize "SR5Marketplace.Factory.Repair.DamageTrack"}}
+                    </div>
+                    <div class="damage-track-grid">
+                        {{#each physicalTrack.boxes}}
+                        <div class="damage-box {{#if this.filled}}filled{{/if}}"></div>
+                        {{else}}
+                        <div style="font-size: 0.8em; font-style: italic; opacity: 0.5;">No Physical Track available</div>
+                        {{/each}}
+                    </div>
+
+                    {{#if matrixTrack.max}}
+                    <div style="font-size: 0.85em; opacity: 0.8; margin-top: 4px; margin-bottom: 2px;">
+                        {{localize "SR5.DmgTypeMatrix"}}
+                    </div>
+                    <div class="sr5v2 condition-monitor-container" style="margin-top: 0;">
+                        <div class="horizontal-cell-input matrix" data-id="matrix" style="border: none !important; box-shadow: none !important; outline: none !important;">
+                            <div class="icon-container" style="font-size: 11px !important; width: 12px !important; margin: 0 4px 0 0 !important;">
+                                <a data-tooltip="Matrix" data-action="rollConditionMonitor">
+                                    <i class="fas fa-microchip" style="font-size: 11px !important;"></i>
+                                </a>
+                            </div>
+                            <div class="clear-container" style="font-size: 9px !important; margin-left: 0 !important; margin-right: 4px !important;">
+                                <a data-tooltip="Matrix:&nbsp;0/{{matrixTrack.max}}" data-action="clearConditionMonitor" data-id="matrix">
+                                    <i class="fas fa-ban" style="font-size: 9px !important;"></i>
+                                </a>
+                            </div>
+                            <div class="cell-container" style="max-width: 160px; display: flex; flex-flow: row wrap; gap: 2px;">
+                                {{#each matrixTrack.boxes}}
+                                <div class="cell {{#if this.filled}}filled{{/if}}" data-action="modifyConditionMonitor" data-id="matrix" data-tooltip="Matrix:&nbsp;{{this.value}}/{{../matrixTrack.max}}" data-value="{{this.value}}"></div>
+                                {{/each}}
+                            </div>
+                        </div>
+                    </div>
+                    {{/if}}
+
+                    <div class="stat-block-divider" style="margin: 4px 0;"></div>
+
+                    <div class="repair-actions">
+                        <div class="repair-stats">
+                            <div>Damage: <b>{{physicalTrack.value}}</b> boxes</div>
+                            <div>Threshold: <b>{{multiply physicalTrack.value 3}}</b> hits</div>
+                        </div>
+                        <button type="button" class="repair-button" data-action="runWorkshopRepair" {{#if (eq
+                            physicalTrack.value 0)}}disabled title="Vehicle is fully repaired" {{/if}}>
+                            <i class="fas fa-wrench"></i> {{localize "SR5Marketplace.Factory.Repair.RollButton"}}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Installed Modifications List -->
+                <div class="installed-mods-summary-card">
+                    <div class="summary-header">
+                        <i class="fas fa-puzzle-piece"></i> {{localize "SR5Marketplace.ItemBuilder.InstalledModifications"}}
+                    </div>
+                    <div class="installed-mods-summary-list">
+                        {{#each categories}}
+                            {{#if this.items.length}}
+                            <div class="installed-mods-category-group {{@key}}">
+                                <div class="category-group-header"><i class="{{this.icon}}"></i> {{localize this.label}} ({{this.used}}/{{this.max}})</div>
+                                {{#each this.items}}
+                                 <div class="installed-mods-summary-item {{#if this.isVirtual}}virtual-mod{{/if}}" title="{{this.name}}">
+                                     <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
+                                         <img src="{{this.img}}" style="width: 20px; height: 20px; border-radius: 3px; object-fit: cover; flex-shrink: 0; border: 1px solid rgba(255, 255, 255, 0.1);" />
+                                         <span class="mod-name" data-action="clickItemName" data-item-uuid="{{this.uuid}}" style="cursor: pointer; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{this.name}}</span>
+                                     </div>
+                                     <div class="installed-mod-actions" style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                                         {{#if this.isVirtual}}
+                                             {{#if this.inBasket}}
+                                                 <span style="opacity: 0.6;" title="In Cart"><i class="fas fa-shopping-cart"></i></span>
+                                             {{else if (eq this.testStatus 'success')}}
+                                                 <a class="install-virtual-mod-btn cursor-pointer text-[var(--color-green-button,#00cc66)]" 
+                                                    data-action="installVirtualMod" 
+                                                    data-virtual-id="{{this.id}}" 
+                                                    title="Install Modification">
+                                                     <i class="fas fa-hammer"></i>
+                                                 </a>
+                                             {{else if (eq this.testStatus 'failed')}}
+                                                 <span style="color: var(--color-red-bright, #ff3333);" title="Test Failed"><i class="fas fa-times-circle"></i></span>
+                                             {{else if this.isTesting}}
+                                                 <a class="resume-virtual-mod-test-btn cursor-pointer text-[var(--color-yellow-dark,#ffaa00)]" 
+                                                    data-action="resumeVirtualModTest" 
+                                                    data-virtual-id="{{this.id}}" 
+                                                    title="Resume Build Test">
+                                                     <i class="fas fa-dice-d6"></i>
+                                                 </a>
+                                             {{else}}
+                                                 {{#if this.inStock}}
+                                                     {{#if @root.allPlannedModsInStock}}
+                                                         <a class="trigger-virtual-mod-test-btn cursor-pointer text-white hover:text-[var(--color-yellow-dark,#ffaa00)]" 
+                                                            data-action="triggerVirtualModTest" 
+                                                            data-virtual-id="{{this.id}}" 
+                                                            title="Start Build Test">
+                                                             <i class="fas fa-dice"></i>
+                                                         </a>
+                                                     {{else}}
+                                                         <a class="trigger-virtual-mod-test-btn opacity-35 cursor-not-allowed text-white" 
+                                                            title="All planned modifications must be in stock to test">
+                                                             <i class="fas fa-dice"></i>
+                                                         </a>
+                                                     {{/if}}
+                                                 {{else}}
+                                                     <a class="add-virtual-mod-basket-btn cursor-pointer text-white hover:text-[var(--color-yellow-dark,#ffaa00)]" 
+                                                        data-action="addVirtualModToBasket" 
+                                                        data-virtual-id="{{this.id}}" 
+                                                        title="Add to Basket">
+                                                         <i class="fas fa-cart-plus"></i>
+                                                     </a>
+                                                 {{/if}}
+                                             {{/if}}
+                                             <a class="remove-virtual-btn cursor-pointer text-white hover:text-[var(--color-red-bright,#ff3333)]" 
+                                                data-action="removeVirtualMod" 
+                                                data-virtual-id="{{this.id}}" 
+                                                title="{{localize 'SR5Marketplace.Factory.RemoveVirtualMod'}}">
+                                                 <i class="fas fa-trash"></i>
+                                             </a>
+                                         {{else}}
+                                             <a class="toggle-builtin-btn cursor-pointer transition-all {{#if this.isPreinstalled}}opacity-100 text-[var(--color-yellow-dark,#ffaa00)]{{else}}opacity-35 text-white hover:opacity-70{{/if}}" 
+                                                data-action="toggleBuiltIn" 
+                                                data-item-uuid="{{this.uuid}}" 
+                                                title="Toggle Built-in (Not counted in limits)">
+                                                 <i class="fas fa-box"></i>
+                                             </a>
+                                         {{/if}}
+                                     </div>
+                                 </div>
+                                {{/each}}
+                            </div>
+                            {{/if}}
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Column: Visualizer with token and categories around it -->
+            <div class="workshop-visualizer">
+                <!-- Center vehicle token -->
+                <div class="center-vehicle">
+                    <img src="{{activeVehicle.img}}" />
+                </div>
+
+                <!-- Surrounding Slots boxes -->
+                {{#each categories}}
+                <div class="category-box {{#if (eq @key 'drive')}}drive{{/if}}
+                                              {{#if (eq @key 'protection')}}protection{{/if}}
+                                              {{#if (eq @key 'weapons')}}weapons{{/if}}
+                                              {{#if (eq @key 'body')}}body{{/if}}
+                                              {{#if (eq @key 'electronics')}}electronics{{/if}}
+                                              {{#if (eq @key 'cosmetic')}}cosmetic{{/if}} drop-target"
+                    data-category="{{@key}}">
+                    <div class="category-header">
+                        <span title="{{localize this.label}}"><i class="{{this.icon}}"></i> {{localize this.label}}</span>
+                        <div class="slots-counter {{#if (ge this.used this.max)}}limit-reached{{/if}}">{{this.used}} /
+                            {{this.max}}</div>
+                    </div>
+                    <div class="installed-mods-list">
+                        {{#each this.items}}
+                        <div class="installed-mod-item {{#if this.isVirtual}}virtual-mod{{/if}}" 
+                             {{#if this.isVirtual}}
+                             data-action="removeVirtualMod" 
+                             data-virtual-id="{{this.id}}"
+                             {{else}}
+                             data-action="clickItemName" 
+                             data-item-uuid="{{this.uuid}}"
+                             {{/if}}
+                             style="cursor: pointer;">
+                            <img src="{{this.img}}" title="{{this.name}}{{#if this.isVirtual}} (Virtual){{/if}}" class="installed-mod-img" />
+                            {{#if this.isVirtual}}
+                            <div class="virtual-badge"><i class="fas fa-shopping-cart"></i></div>
+                            {{/if}}
+                        </div>
+                        {{else}}
+                        <div class="installed-mod-empty">Empty</div>
+                        {{/each}}
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+
+            <!-- Right Sidebar: Shelf modifications with search filter -->
+            <div class="workshop-sidebar-right">
+                <div class="workshop-shelf-sidebar">
+                    <div class="workshop-shelf-header">
+                        <span><i class="fas fa-warehouse"></i> {{localize "SR5Marketplace.Factory.Shelf.Title"}}</span>
+                        <div class="shelf-counters">
+                            <span class="shelf-count-badge sort-badge {{#if (eq workshopSortMode 'world')}}active{{/if}}" 
+                                  data-action="changeWorkshopSort" 
+                                  data-sort="world" 
+                                  title="{{localize 'SR5Marketplace.Factory.Shelf.AllItemsTooltip'}}">
+                                <i class="fas fa-globe"></i> {{modsOnShelf.length}} items
+                            </span>
+                            <span class="shelf-count-badge sort-badge {{#if (eq workshopSortMode 'factory')}}active{{/if}}" 
+                                  data-action="changeWorkshopSort" 
+                                  data-sort="factory" 
+                                  title="{{localize 'SR5Marketplace.Factory.Shelf.FactoryInventoryTooltip'}}">
+                                <i class="fas fa-warehouse"></i> {{factoryInventoryCount}} items
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Search bar relocated to header -->
+
+                    <div class="shelf-items-list workshop-shelf">
+                        <!-- Loaded dynamically via JS virtual scroll -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{else}}
+    {{!-- RENDER VEHICLE SELECTOR GRID --}}
+    <div class="workshop-main" style="flex: 1; align-items: center; justify-content: center;">
+        <div
+            style="background: rgba(15, 20, 25, 0.6); border: 1px solid var(--border-color-medium, #444); border-radius: 12px; padding: 25px; max-width: 800px; width: 100%;">
+            <h3
+                style="margin-top: 0; margin-bottom: 15px; font-weight: bold; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;">
+                <i class="fas fa-warehouse"></i> {{localize "SR5Marketplace.Factory.SelectorTitle"}}
+            </h3>
+
+            {{#if vehiclesInRadius.length}}
+            <p style="font-size: 0.95em; opacity: 0.8; margin-bottom: 20px;">
+                {{localize "SR5Marketplace.Factory.SelectorSubtitle"}}
+            </p>
+            <div class="vehicle-selector-grid">
+                {{#each vehiclesInRadius}}
+                <div class="vehicle-card" data-action="selectVehicleActor" data-uuid="{{this.uuid}}">
+                    <img src="{{this.img}}" />
+                    <div class="vehicle-name">{{this.name}}</div>
+                    <div class="vehicle-info">
+                        <div>Body/Hull: <b>{{this.body}}</b></div>
+                        <div>Damage: <b>{{this.physicalTrack.value}}</b> / {{this.physicalTrack.max}}</div>
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+            {{else}}
+            <div class="no-vehicles-placeholder">
+                <i class="fas fa-car-crash"
+                    style="font-size: 3em; color: var(--color-yellow-dark, #ffaa00); margin-bottom: 10px;"></i>
+                <p>{{localize "SR5Marketplace.Factory.NoVehiclesInRadius"}}</p>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+    {{/if}}
+</div>

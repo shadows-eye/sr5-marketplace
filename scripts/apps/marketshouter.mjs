@@ -91,9 +91,16 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         const isGM = game.user.isGM;
         const pendingCount = isGM ? game.sr5marketplace.api.marketplace.getPendingRequestCount() : 0;
 
-        // Show item builder for GM (restricted to GM for now).
-        // TODO: In the future, implement a player option (player actor on a scene meets a condition).
-        const showItemBuilder = isGM;
+        let showItemBuilder = isGM;
+        if (!isGM && canvas.ready && canvas.tokens) {
+            const hasFactoryOnScene = canvas.tokens.placeables.some(t => 
+                t.actor?.type === "sr5-marketplace.shop" && 
+                t.actor?.system?.shop?.isFactory
+            );
+            if (hasFactoryOnScene) {
+                showItemBuilder = true;
+            }
+        }
 
         return {
             itemCount,

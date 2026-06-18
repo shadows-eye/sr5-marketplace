@@ -16,10 +16,10 @@ export class CompendiumItemBrowserApp extends HandlebarsApplicationMixin(Applica
     constructor(shopActor, shopActorSheet, options = {}) {
         options.classes = [...(options.classes || []), "sr5", "themed", "sr5-marketplace", "compendium-browser-app-window"];
         super(options);
-        
+
         this.shopActor = shopActor;
         this.shopActorSheet = shopActorSheet;
-        
+
         // Find default active item compendium pack
         const itemPacks = game.packs.filter(p => p.metadata.type === "Item" && p.visible);
         this.activeCompendiumId = itemPacks[0]?.collection || null;
@@ -49,18 +49,18 @@ export class CompendiumItemBrowserApp extends HandlebarsApplicationMixin(Applica
     /** @override */
     async _prepareContext(options) {
         const context = await super._prepareContext(options);
-        
+
         // Get all visible Item compendiums
         context.compendiums = game.packs.filter(p => p.metadata.type === "Item" && p.visible).map(p => ({
             id: p.collection,
             title: p.metadata.label
         }));
-        
+
         context.activeCompendiumId = this.activeCompendiumId;
 
         if (this.activeCompendiumId) {
             const pack = game.packs.get(this.activeCompendiumId);
-            
+
             // Get all folders in the compendium
             context.folders = pack.folders ? Array.from(pack.folders.values()).map(f => ({
                 id: f.id,
@@ -105,7 +105,7 @@ export class CompendiumItemBrowserApp extends HandlebarsApplicationMixin(Applica
     _onRender(context, options) {
         super._onRender(context, options);
         ThemeService.applyTheme("#actors", this.element, this.shopActor);
-        
+
         // Listeners for Sidebar
         const sidebar = this.element.querySelector(".compendium-list");
         if (sidebar) {
@@ -142,7 +142,7 @@ export class CompendiumItemBrowserApp extends HandlebarsApplicationMixin(Applica
         const btn = event.target.closest(".compendium-tab-btn");
         if (!btn) return;
         event.preventDefault();
-        
+
         this.activeCompendiumId = btn.dataset.packId;
         this.render(false);
     }
@@ -175,7 +175,7 @@ export class CompendiumItemBrowserApp extends HandlebarsApplicationMixin(Applica
                 if (cb) cb.checked = true;
             }
         }
-        
+
         const visibleFolderRows = this.element.querySelectorAll(".folder-row");
         for (const row of visibleFolderRows) {
             if (row.style.display !== "none") {
@@ -183,7 +183,7 @@ export class CompendiumItemBrowserApp extends HandlebarsApplicationMixin(Applica
                 if (cb) cb.checked = true;
             }
         }
-        
+
         this._updateSelectedCount();
     }
 
@@ -203,18 +203,18 @@ export class CompendiumItemBrowserApp extends HandlebarsApplicationMixin(Applica
      */
     _onCheckboxChange(event) {
         const target = event.target;
-        
+
         if (target.classList.contains("folder-checkbox")) {
             const folderId = target.dataset.folderId;
             const isChecked = target.checked;
-            
+
             // Sync all items belonging to this folder
             const itemCbs = this.element.querySelectorAll(`.item-checkbox[data-folder-id="${folderId}"]`);
             for (const cb of itemCbs) {
                 cb.checked = isChecked;
             }
         }
-        
+
         this._updateSelectedCount();
     }
 
@@ -235,7 +235,7 @@ export class CompendiumItemBrowserApp extends HandlebarsApplicationMixin(Applica
     async _onSubmit() {
         const checkedCbs = this.element.querySelectorAll(".item-checkbox:checked");
         const itemIds = Array.from(checkedCbs).map(cb => cb.dataset.itemId);
-        
+
         if (!itemIds.length) {
             ui.notifications.warn("No items selected.");
             return;
@@ -266,7 +266,7 @@ export class CompendiumItemBrowserApp extends HandlebarsApplicationMixin(Applica
 
             const newItemId = foundry.utils.randomID();
             const calculatedData = await InventoryRules.getCalculatedItemData(this.shopActor, item);
-            
+
             const itemPriceVal = calculatedData.itemPrice?.value ?? calculatedData.itemPrice ?? 0;
             const sellPriceVal = calculatedData.sellPrice?.value ?? calculatedData.sellPrice ?? 0;
             const buyPriceVal = calculatedData.buyPrice?.value ?? calculatedData.buyPrice ?? 0;
@@ -295,7 +295,7 @@ export class CompendiumItemBrowserApp extends HandlebarsApplicationMixin(Applica
         } else {
             ui.notifications.warn("All selected items are already in the shop's inventory.");
         }
-        
+
         this.close();
     }
 }

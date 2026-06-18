@@ -32,7 +32,7 @@ export const registerBasicHelpers = () => {
         return item?.system?.technology?.cost || 0;  // Fallback to 0 if not found
     });
     Handlebars.registerHelper('getKarma', function(item) {
-        return item?.system?.karma || item?.flags?.sr5-marketplace?.karma ||0;  // Fallback to 0 if not found
+        return item?.system?.karma || item?.flags?.["sr5-marketplace"]?.karma || 0;  // Fallback to 0 if not found
     });
     
     Handlebars.registerHelper('getAvailability', function(item) {
@@ -94,6 +94,9 @@ export const registerBasicHelpers = () => {
     Handlebars.registerHelper('sum', function (v1, v2) {
             return v1 + v2;
         });
+    Handlebars.registerHelper('multiply', function(v1, v2) {
+            return (Number(v1) || 0) * (Number(v2) || 0);
+        });
     Handlebars.registerHelper('range', function(from, to, options) {
         let accum = '';
         for (let i = from; i < to; i++) {
@@ -115,7 +118,19 @@ export const registerBasicHelpers = () => {
     });
     Handlebars.registerHelper('neq', function(a, b) {
         return a !== b;
-      });
+    });
+    Handlebars.registerHelper('ge', function(a, b) {
+        return a >= b;
+    });
+    Handlebars.registerHelper('gt', function(a, b) {
+        return a > b;
+    });
+    Handlebars.registerHelper('le', function(a, b) {
+        return a <= b;
+    });
+    Handlebars.registerHelper('lt', function(a, b) {
+        return a < b;
+    });
     // Register a Handlebars helper called 'capitalizeFirst'
     Handlebars.registerHelper('capitalizeFirst', function (string) {
         if (typeof string !== 'string' || !string) return '';
