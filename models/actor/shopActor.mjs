@@ -443,7 +443,16 @@ export function defineShopActorClass() {
          * @returns {[string, object]|undefined} The [inventoryId, itemObject] if found.
          */
         findInventoryItem(itemUuid) {
-            return Object.entries(this.shop.inventory).find(([id, item]) => item.itemUuid === itemUuid);
+            const clean = (u) => {
+                if (!u) return "";
+                let s = String(u).trim().toLowerCase();
+                if (s.startsWith("compendium.")) {
+                    s = s.replace(/\.(item|actor)\./g, ".");
+                }
+                return s;
+            };
+            const target = clean(itemUuid);
+            return Object.entries(this.shop.inventory).find(([id, item]) => clean(item.itemUuid) === target);
         }
 
         /**

@@ -1,6 +1,6 @@
 import { AppTestFlagService } from '../../../services/AppTestFlagService.mjs';
 import { AppDialogBuilder } from './AppDialogBuilder.mjs';
-import { BuilderStateService } from "../../../services/builderStateService.mjs";
+
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -61,12 +61,27 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
     /** @override */
     async _prepareContext(options) {
         const AppUserId = game.user.id;
-        const testStates = await AppTestFlagService.readState(AppUserId);
-        const unresolvedTest = Object.values(testStates).find(t => !t.resolved && t.testType === "BuildTest");
+        const builderApp = foundry.applications.instances.get("itemBuilder");
+        const builderPurchasingActor = builderApp?.purchasingActor && builderApp.purchasingActor.type === "character"
+            ? builderApp.purchasingActor
+            : null;
+
+        const unresolvedTest = await AppTestFlagService.getActiveBuildTest(AppUserId, builderPurchasingActor);
         this.activeDialogId = unresolvedTest?.id || null;
 
+        if (!this.activeDialogId) {
+            this.close();
+            return { activeTestState: null };
+        }
+
+        const testStates = await AppTestFlagService.readState(AppUserId);
         const activeTestState = this.activeDialogId ? testStates[this.activeDialogId] : null;
         this.activeTestState = activeTestState;
+
+        if (!activeTestState) {
+            this.close();
+            return { activeTestState: null };
+        }
 
         if (activeTestState) {
             const dialogBuilder = new AppDialogBuilder();
@@ -238,8 +253,11 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         const data = {
             isRepair: this.activeTestState.isRepair ?? false,
+            isWorkshopMod: this.activeTestState.isWorkshopMod ?? false,
             installSource: this.activeTestState.installSource ?? null,
             installSourceId: this.activeTestState.installSourceId ?? null,
+            userId: game.user.id,
+            virtualModId: this.activeTestState.virtualModId ?? null,
             action: {
                 skill: this.activeTestState.skill,
                 attribute: this.activeTestState.attribute,
@@ -274,7 +292,9 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
             threshold: this.activeTestState.threshold,
             vehicle: vehicle,
             workshop: workshop,
-            rollCount: 1
+            rollCount: 1,
+            isWorkshopMod: this.activeTestState.isWorkshopMod ?? false,
+            isRepair: this.activeTestState.isRepair ?? false
         };
         console.log("Marketplace Builder | Sending data to BuildTest (Run):", JSON.parse(JSON.stringify(data)), "options:", JSON.parse(JSON.stringify(options)));
         try {
@@ -355,8 +375,11 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         const data = {
             isRepair: this.activeTestState.isRepair ?? false,
+            isWorkshopMod: this.activeTestState.isWorkshopMod ?? false,
             installSource: this.activeTestState.installSource ?? null,
             installSourceId: this.activeTestState.installSourceId ?? null,
+            userId: game.user.id,
+            virtualModId: this.activeTestState.virtualModId ?? null,
             action: {
                 skill: this.activeTestState.skill,
                 attribute: this.activeTestState.attribute,
@@ -381,7 +404,9 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
             threshold: this.activeTestState.threshold,
             vehicle: vehicle,
             workshop: workshop,
-            rollCount: rollCount
+            rollCount: rollCount,
+            isWorkshopMod: this.activeTestState.isWorkshopMod ?? false,
+            isRepair: this.activeTestState.isRepair ?? false
         };
         console.log("Marketplace Builder | Sending data to BuildTest (Continue):", JSON.parse(JSON.stringify(data)), "options:", JSON.parse(JSON.stringify(options)));
         try {
@@ -448,10 +473,25 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
     static async #onResolveBuildTest(event, target) {
         if (!this.activeTestState || this.activeTestState.status !== 'resolved') return;
 
-        if (this.activeTestState.isWorkshopMod) {
-            await AppTestFlagService.deleteState(game.user.id);
-            this.activeTestState = null;
-            this.activeDialogId = null;
+        const activeState = this.activeTestState;
+        const activeDialogId = this.activeDialogId;
+
+        // Nullify immediately to prevent double-clicks/duplicate calls
+        this.activeTestState = null;
+        this.activeDialogId = null;
+
+        // Hide dialog immediately so parent app renders won't reopen it, keeping the test state
+        await AppTestFlagService.updateTest(activeDialogId, { showDialog: false }, game.user.id);
+
+        if (activeState.isWorkshopMod) {
+            const vehicleDoc = activeState.vehicleUuid ? await fromUuid(activeState.vehicleUuid) : null;
+            const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+            if (vehicle) {
+                await game.sr5marketplace.api.factory.updateVirtualModification(vehicle, activeState.virtualModId, {
+                    testStatus: "success"
+                });
+            }
+
             if (BuildTestApp._resolve) {
                 BuildTestApp._resolve(true);
                 BuildTestApp._resolve = null;
@@ -460,15 +500,15 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
             return;
         }
 
-        if (this.activeTestState.isRepair) {
-            const vehicleUuid = this.activeTestState.vehicleUuid || this.activeTestState.actorUuid;
+        if (activeState.isRepair) {
+            const vehicleUuid = activeState.vehicleUuid || activeState.actorUuid;
             console.log("Marketplace Builder | #onResolveBuildTest: Resolving vehicle with UUID:", vehicleUuid);
             const vehicleDoc = vehicleUuid ? await fromUuid(vehicleUuid) : null;
             const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
             console.log("Marketplace Builder | Resolved vehicle actor:", vehicle?.name, vehicle);
 
             if (vehicle) {
-                const hits = this.activeTestState.result?.values?.extendedHits?.value ?? 0;
+                const hits = activeState.result?.values?.extendedHits?.value ?? 0;
                 const pTrack = vehicle.system.track?.physical || vehicle.system.physical_track || {};
                 const currentDamage = pTrack.value ?? 0;
 
@@ -506,15 +546,11 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 console.warn("Marketplace Builder | No vehicle actor resolved during resolve!");
             }
 
-            await AppTestFlagService.deleteState(game.user.id);
-            this.activeTestState = null;
-            this.activeDialogId = null;
-
             if (BuildTestApp._resolve) {
                 BuildTestApp._resolve(true);
                 BuildTestApp._resolve = null;
             } else {
-                const builderApp = Object.values(ui.windows).find(w => w.constructor.name === "ItemBuilderApp");
+                const builderApp = foundry.applications.instances.get("itemBuilder");
                 if (builderApp) {
                     builderApp.render(true);
                 }
@@ -523,7 +559,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
             return;
         }
 
-        const buildData = this.activeTestState.buildData;
+        const buildData = activeState.buildData;
         const nameInput = this.element.querySelector(".build-item-name-input");
         if (nameInput && buildData) {
             const finalName = nameInput.value.trim();
@@ -532,7 +568,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         }
 
-        const doc = await fromUuid(this.activeTestState.actorUuid);
+        const doc = await fromUuid(activeState.actorUuid);
         const actor = doc instanceof Actor ? doc : doc?.actor || null;
 
         if (buildData && actor) {
@@ -549,18 +585,14 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         }
 
-        await BuilderStateService.clearState();
-        await AppTestFlagService.deleteState(game.user.id);
-
-        this.activeTestState = null;
-        this.activeDialogId = null;
+        await game.sr5marketplace.api.factory.clearBuilderState();
 
         if (BuildTestApp._resolve) {
             BuildTestApp._resolve(true);
             BuildTestApp._resolve = null;
         } else {
             // Re-render builder if open
-            const builderApp = Object.values(ui.windows).find(w => w.constructor.name === "ItemBuilderApp");
+            const builderApp = foundry.applications.instances.get("itemBuilder");
             if (builderApp) {
                 builderApp.tabGroups.main = "builder";
                 builderApp.render(true);
@@ -571,11 +603,33 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     static async #onClearBuildTest(event, target) {
+        const activeDialogId = this.activeDialogId;
         const state = await AppTestFlagService.readState(game.user.id);
-        const activeTest = Object.values(state).find(t => t.id === this.activeDialogId);
+        const activeTest = Object.values(state).find(t => t.id === activeDialogId);
 
-        if (activeTest && activeTest.status === 'resolved' && !activeTest.result?.values?.extendedHits?.value) {
-            await BuilderStateService.clearState();
+        if (activeTest && activeTest.isWorkshopMod) {
+            const isResolved = activeTest.status === 'resolved';
+            const cumulativeHits = activeTest.result?.values?.extendedHits?.value ?? 0;
+            const threshold = activeTest.threshold ?? 12;
+            const isSuccess = cumulativeHits >= threshold;
+
+            const lastRoll = activeTest.rolls?.[activeTest.rolls.length - 1];
+            const diceResults = lastRoll?.terms?.[0]?.results || lastRoll?.dice?.[0]?.results || [];
+            const hits = diceResults.filter(d => (d?.result ?? 0) >= 5).length;
+            const ones = diceResults.filter(d => (d?.result ?? 0) === 1).length;
+            const pool = diceResults.length;
+            const isGlitch = ones > pool / 2;
+            const isCritGlitch = isGlitch && hits === 0;
+
+            if (isResolved && (!isSuccess || isCritGlitch)) {
+                const vehicleDoc = activeTest.vehicleUuid ? await fromUuid(activeTest.vehicleUuid) : null;
+                const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+                if (vehicle) {
+                    await game.sr5marketplace.api.factory.removeVirtualModification(vehicle, activeTest.virtualModId);
+                }
+            }
+        } else if (activeTest && activeTest.status === 'resolved' && !activeTest.result?.values?.extendedHits?.value) {
+            await game.sr5marketplace.api.factory.clearBuilderState();
         } else if (activeTest && activeTest.status === 'resolved') {
             const roll = activeTest.rolls?.[activeTest.rolls.length - 1];
             const dice = roll?.terms?.[0]?.results || roll?.dice?.[0]?.results || [];
@@ -586,16 +640,16 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
             const isCritGlitch = isGlitch && hits === 0;
 
             if (isCritGlitch) {
-                await BuilderStateService.clearState();
+                await game.sr5marketplace.api.factory.clearBuilderState();
             }
         }
 
-        await AppTestFlagService.deleteState(game.user.id);
+        await AppTestFlagService.deleteTest(activeDialogId, game.user.id);
         this.activeTestState = null;
         this.activeDialogId = null;
 
         // Re-render builder if open
-        const builderApp = Object.values(ui.windows).find(w => w.constructor.name === "ItemBuilderApp");
+        const builderApp = foundry.applications.instances.get("itemBuilder");
         if (builderApp) {
             builderApp.render();
         }
@@ -661,11 +715,87 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     async close(options = {}) {
+        if (this.activeDialogId) {
+            const activeDialogId = this.activeDialogId;
+            const activeState = this.activeTestState;
+
+            // Avoid double processing
+            this.activeTestState = null;
+            this.activeDialogId = null;
+
+            // Hide dialog immediately so parent app renders won't reopen it, keeping the test state
+            await AppTestFlagService.updateTest(activeDialogId, { showDialog: false }, game.user.id);
+
+            try {
+                if (activeState && activeState.status === 'resolved') {
+                    if (activeState.isWorkshopMod) {
+                        const cumulativeHits = activeState.result?.values?.extendedHits?.value ?? 0;
+                        const threshold = activeState.threshold ?? 12;
+                        const isSuccess = cumulativeHits >= threshold;
+
+                        const lastRoll = activeState.rolls?.[activeState.rolls.length - 1];
+                        const diceResults = lastRoll?.terms?.[0]?.results || lastRoll?.dice?.[0]?.results || [];
+                        const hits = diceResults.filter(d => (d?.result ?? 0) >= 5).length;
+                        const ones = diceResults.filter(d => (d?.result ?? 0) === 1).length;
+                        const pool = diceResults.length;
+                        const isGlitch = ones > pool / 2;
+                        const isCritGlitch = isGlitch && hits === 0;
+
+                        const vehicleDoc = activeState.vehicleUuid ? await fromUuid(activeState.vehicleUuid) : null;
+                        const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+                        if (vehicle) {
+                            if (isSuccess && !isCritGlitch) {
+                                await game.sr5marketplace.api.factory.updateVirtualModification(vehicle, activeState.virtualModId, {
+                                    testStatus: "success"
+                                });
+                            } else {
+                                await game.sr5marketplace.api.factory.removeVirtualModification(vehicle, activeState.virtualModId);
+                            }
+                        }
+                    } else if (activeState.isRepair) {
+                        const vehicleUuid = activeState.vehicleUuid || activeState.actorUuid;
+                        const vehicleDoc = vehicleUuid ? await fromUuid(vehicleUuid) : null;
+                        const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+                        if (vehicle) {
+                            const hits = activeState.result?.values?.extendedHits?.value ?? 0;
+                            const pTrack = vehicle.system.track?.physical || vehicle.system.physical_track || {};
+                            const currentDamage = pTrack.value ?? 0;
+                            const healed = Math.floor(hits / 3);
+                            const newDamage = Math.max(0, currentDamage - healed);
+                            const isVehicleTrack = !!vehicle.system.track?.physical;
+                            const updatePath = isVehicleTrack ? "system.track.physical.value" : "system.physical_track.value";
+                            const updateData = { [updatePath]: newDamage };
+
+                            if (vehicle.isOwner || game.user.isGM) {
+                                await vehicle.update(updateData);
+                            } else {
+                                game.socket.emit("module.sr5-marketplace", {
+                                    action: "update_actor_field",
+                                    actorUuid: vehicle.uuid,
+                                    updateData: updateData
+                                });
+                            }
+                        }
+                    } else {
+                        await game.sr5marketplace.api.factory.clearBuilderState();
+                    }
+                } else if (activeState && activeState.status === 'extended-inprogress' && activeState.isWorkshopMod) {
+                    const vehicleDoc = activeState.vehicleUuid ? await fromUuid(activeState.vehicleUuid) : null;
+                    const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+                    if (vehicle) {
+                        await game.sr5marketplace.api.factory.removeVirtualModification(vehicle, activeState.virtualModId);
+                    }
+                }
+            } catch (err) {
+                console.error("SR5 Marketplace | Error resolving test during close:", err);
+            }
+        }
+
         if (BuildTestApp._resolve) {
             BuildTestApp._resolve(false);
             BuildTestApp._resolve = null;
         } else {
-            const builderApp = Object.values(ui.windows).find(w => w.constructor.name === "ItemBuilderApp");
+            const builderApp = foundry.applications.instances.get("itemBuilder");
             if (builderApp) {
                 builderApp.render(true);
             }

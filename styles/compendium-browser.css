@@ -8,11 +8,6 @@
     height: 100%;
 }
 
-.compendium-sidebar {
-    background-color: var(--color-black-transparent-20);
-    border-color: var(--border-color-medium) !important;
-}
-
 .compendium-sidebar h4 {
     color: var(--text-color-header);
     margin: 0;
@@ -38,8 +33,8 @@
     background: var(--header-gradient-bar);
     border-color: var(--border-color-highlight) !important;
     color: var(--header-gradient-text) !important;
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.2), 0 1px 3px rgba(0,0,0,0.3);
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), 0 1px 3px rgba(0, 0, 0, 0.3);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .browser-main {
@@ -78,21 +73,24 @@
 }
 
 /* Rows Styling */
-.folder-row, .item-row {
+.folder-row,
+.item-row {
     transition: all 0.2s ease;
     border: 1px solid transparent;
     background-color: var(--color-black-transparent-15) !important;
 }
 
-.folder-row:hover, .item-row:hover {
+.folder-row:hover,
+.item-row:hover {
     background-color: var(--color-black-transparent-20) !important;
     border-color: var(--border-color-medium) !important;
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 /* Section styling */
-.folders-section h3, .items-section h3 {
+.folders-section h3,
+.items-section h3 {
     color: var(--color-yellow-base) !important;
     border-bottom: 1px solid var(--border-color-medium) !important;
 }
@@ -111,14 +109,18 @@
 }
 
 /* Buttons */
-.select-all-btn, .deselect-all-btn, .cancel-btn {
+.select-all-btn,
+.deselect-all-btn,
+.cancel-btn {
     background-color: var(--tab-inactive-bg) !important;
     color: var(--text-color-primary) !important;
     border: 1px solid var(--border-color-medium) !important;
     transition: all 0.2s ease !important;
 }
 
-.select-all-btn:hover, .deselect-all-btn:hover, .cancel-btn:hover {
+.select-all-btn:hover,
+.deselect-all-btn:hover,
+.cancel-btn:hover {
     background-color: var(--bg-dark-section-hover) !important;
     filter: brightness(1.1);
 }
@@ -127,11 +129,11 @@
     background-color: var(--color-green-button) !important;
     color: var(--color-white) !important;
     transition: all 0.2s ease !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
 }
 
 .submit-btn:hover {
     filter: brightness(1.1);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
     transform: translateY(-1px);
 }

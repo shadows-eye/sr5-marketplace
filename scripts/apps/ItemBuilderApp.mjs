@@ -1,14 +1,15 @@
 import { ItemPreviewApp } from "../apps/documents/items/ItemPreviewApp.mjs";
 import { SearchService as itemSearchService } from '../services/searchTag.mjs';
 import { VehicleSearchService } from "../services/vehicleSearchService.mjs";
-import { BuilderStateService } from "../services/builderStateService.mjs";
 import { AppEffectsBuilderDialog } from '../apps/documents/dialog/AppEffectsBuilderDialog.mjs';
-import { BasketService } from "../services/basketService.mjs";
+import { BuildService } from "../services/buildService.mjs";
+
+const buildService = new BuildService();
+
 import { ActorSelectionService } from "../services/ActorSelectionService.mjs";
 import { AppTestFlagService } from '../services/AppTestFlagService.mjs';
 import { AppDialogBuilder } from '../apps/documents/dialog/AppDialogBuilder.mjs';
 import { BuildTestApp } from "./documents/dialog/BuildTestApp.mjs";
-import { factoryFlow } from "../services/_module.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -131,7 +132,12 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 toggleWorkshopFilter: this.#onToggleWorkshopFilter,
                 resetWorkshopFilters: this.#onResetWorkshopFilters,
                 removeVirtualMod: this.#onRemoveVirtualMod,
-                modifyVehicle: this.#onModifyVehicle,
+                triggerVirtualModTest: this.#onTriggerVirtualModTest,
+                resumeVirtualModTest: this.#onResumeVirtualModTest,
+                addVirtualModToBasket: this.#onAddVirtualModToBasket,
+                installVirtualMod: this.#onInstallVirtualMod,
+                addAllToBasket: this.#onAddAllToBasket,
+                buildTestAll: this.#onBuildTestAll,
                 toggleActorList: this.#onToggleActorList,
                 selectActor: this.#onSelectActor,
                 clearActor: this.#onClearActor
@@ -308,24 +314,48 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             };
 
             const max = getSlotLimit(targetCategory);
+            // Build the compendium modification map
+            const compendiumModsCount = await ItemBuilderApp.getCompendiumModificationsMap(vehicle, this.itemData);
+
             const installedMods = vehicle.items.filter(i => {
                 if (i.type !== "modification") return false;
                 if (ItemBuilderApp._getModificationCategory(i) !== targetCategory) return false;
 
-                const isPreinstalled = i.getFlag?.("sr5-marketplace", "isPreinstalled") ||
-                    i.system.preInstalled ||
+                const isSystemPreinstalled = i.system.preInstalled ||
                     i.system.preinstalled ||
                     i.system.isPreInstalled ||
-                    i.system.isPreinstalled ||
+                    i.system.ispreinstalled ||
                     i.flags?.shadowrun5e?.preInstalled ||
                     i.flags?.shadowrun5e?.preinstalled ||
                     false;
+                const isGMMarked = i.getFlag?.("sr5-marketplace", "isPreinstalled") === true;
+                const ignoreDefault = i.getFlag?.("sr5-marketplace", "ignoreCompendiumDefault") === true;
+
+                let isPreinstalled = false;
+                if (isGMMarked || isSystemPreinstalled) {
+                    isPreinstalled = true;
+                    const name = i.name.toLowerCase().trim();
+                    if (compendiumModsCount[name] > 0) {
+                        compendiumModsCount[name]--;
+                    }
+                } else if (ignoreDefault) {
+                    isPreinstalled = false;
+                } else {
+                    const name = i.name.toLowerCase().trim();
+                    if (compendiumModsCount[name] > 0) {
+                        isPreinstalled = true;
+                        compendiumModsCount[name]--;
+                    }
+                }
+
                 return !isPreinstalled;
             });
             const used = installedMods.reduce((sum, m) => sum + Number(m.system.slots ?? 0), 0);
             const baseVehicle = game.actors.get(vehicle.id) || vehicle;
+            const isLinked = vehicle.token ? vehicle.token.actorLink : true;
+            const shouldUpdateBase = isLinked && (baseVehicle !== vehicle);
             const virtualMods = vehicle.getFlag("sr5-marketplace", "virtualModifications") ||
-                baseVehicle.getFlag("sr5-marketplace", "virtualModifications") || [];
+                (shouldUpdateBase ? baseVehicle.getFlag("sr5-marketplace", "virtualModifications") : []) || [];
             const virtualUsed = virtualMods
                 .filter(m => m.category === targetCategory)
                 .reduce((sum, m) => sum + Number(m.system?.slots ?? 0), 0);
@@ -338,7 +368,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
 
             const isFromOwner = !!data.isFromOwner;
-            const isFromShelf = !!data.entryId;
+            const isFromShelf = !!data.entryId && data.entryId !== "null";
             const isCompendium = !isFromOwner && !isFromShelf;
 
             const workshopDoc = await fromUuid(this.workshopActorUuid);
@@ -360,28 +390,30 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 category: modCategory,
                 isVirtual: true,
                 installSource: isFromOwner ? "owner" : "workshop",
-                installSourceId: data.entryId || null
+                installSourceId: data.entryId || null,
+                inStock: !isCompendium
             };
             virtualMods.push(virtualMod);
 
-            if (vehicle.isOwner) await vehicle.setFlag("sr5-marketplace", "virtualModifications", virtualMods);
-            if (baseVehicle !== vehicle && baseVehicle.isOwner) {
-                await baseVehicle.setFlag("sr5-marketplace", "virtualModifications", virtualMods);
-            }
-
-            if (isCompendium) {
-                if (!purchaser) {
-                    ui.notifications.error("Please select a purchasing actor in the Marketplace first.");
+            if (vehicle.isOwner) {
+                await vehicle.setFlag("sr5-marketplace", "virtualModifications", virtualMods);
+            } else {
+                if (!game.users.activeGM) {
+                    ui.notifications.warn("No active GM online to save the queued modification.");
                     return;
                 }
-                // Add to shopping cart via BasketService
-                const basketService = new BasketService();
-                await basketService.addToBasket(item.uuid, purchaser.uuid, null, {
-                    isWorkshopMod: true,
-                    vehicleActorUuid: baseVehicle.uuid,
-                    factoryActorUuid: this.workshopActorUuid
+                game.socket.emit("module.sr5-marketplace", {
+                    action: "update_actor_field",
+                    actorUuid: vehicle.uuid,
+                    updateData: {
+                        "flags.sr5-marketplace.virtualModifications": virtualMods
+                    }
                 });
-                ui.notifications.info(`Queued "${item.name}" virtually and added it to the shopping cart.`);
+            }
+
+
+            if (isCompendium) {
+                ui.notifications.info(`Queued "${item.name}" virtually. You can add it to the basket to purchase.`);
             } else {
                 ui.notifications.info(`Queued "${item.name}" virtually from ${isFromOwner ? "owner inventory" : "workshop shelf"}.`);
             }
@@ -440,7 +472,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 }
             }
 
-            await BuilderStateService.addChange(slotId, droppedItemData);
+            await game.sr5marketplace.api.factory.addBuilderChange(slotId, droppedItemData);
             this.render();
         }
         else if (dragType === "item") {
@@ -449,7 +481,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 return;
             }
 
-            await BuilderStateService.addChange(slotId, droppedItemData);
+            await game.sr5marketplace.api.factory.addBuilderChange(slotId, droppedItemData);
             this.render();
         }
     }
@@ -591,7 +623,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         }
 
-        if (this.activeDialogId && !Object.values(ui.windows).some(w => w.constructor.name === "BuildTestApp")) {
+        const buildTestApp = foundry.applications.instances.get("build-test-dialog-app");
+        if (this.activeDialogId && (!buildTestApp || !buildTestApp.rendered)) {
             new BuildTestApp().render(true);
         }
     }
@@ -685,11 +718,11 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const slice = entries.slice(startRow, endRow);
         for (const item of slice) {
             const card = document.createElement("div");
-            card.className = `mod-card ${item.isFromOwner ? 'owner-mod' : ''}`;
+            card.className = `mod-card ${item.isFromOwner ? 'owner-mod' : ''} ${item.category || ''}`;
             card.setAttribute("draggable", "true");
             card.dataset.itemUuid = item.uuid;
             card.dataset.isFromOwner = item.isFromOwner;
-            card.dataset.entryId = item.entryId;
+            card.dataset.entryId = item.entryId || "";
             card.dataset.mountPoint = item.category;
             card.innerHTML = `
                 <img src="${item.img}" />
@@ -697,7 +730,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     <div class="mod-card-name" title="${item.name}">${item.name}</div>
                     <div class="mod-card-sub">
                         <span>Slots: ${item.slots} &bull; R${item.rating} &bull; ${item.category}</span>
-                        ${item.isFromOwner ? '<span class="owner-indicator-badge">Owner</span>' : `<span style="font-size: 0.9em; opacity: 0.7;">Qty: ${item.qty}</span>`}
+                        ${item.isFromOwner ? '<span class="owner-indicator-badge">Owner</span>' : (item.entryId ? `<span style="font-size: 0.9em; opacity: 0.7;">Qty: ${item.qty}</span>` : `<span style="font-size: 0.9em; opacity: 0.7; color: var(--color-red-bright, #ff3333);">${game.i18n.localize("SR5Marketplace.UI.OutOfStock")}</span>`)}
                     </div>
                 </div>
             `;
@@ -718,8 +751,11 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     /** @override */
     async _prepareContext(options) {
+        if (!game.user.isGM) {
+            this.tabGroups.main = "workshop";
+        }
         // At the start of every render, get the latest state from the flag.
-        const builderData = options.builderData ?? await BuilderStateService.getState();
+        const builderData = options.builderData ?? await game.sr5marketplace.api.factory.getBuilderState();
 
         // Automatically switch tabs if the selected base item type demands it
         if (builderData.baseItem) {
@@ -735,7 +771,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         const AppUserId = game.user.id;
         const testStates = await AppTestFlagService.readState(AppUserId);
-        const unresolvedTest = Object.values(testStates).find(t => !t.resolved && t.testType === "BuildTest");
+        const unresolvedTest = await AppTestFlagService.getActiveBuildTest(AppUserId, this.purchasingActor);
         this.activeDialogId = unresolvedTest?.id || null;
 
         const activeTestState = this.activeDialogId ? testStates[this.activeDialogId] : null;
@@ -765,6 +801,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         let tabContent = null;
         const render = foundry.applications.handlebars.renderTemplate;
         const partialContext = {
+            isGM: game.user.isGM,
             purchasingActor: this.purchasingActor,
             purchasingActorData: purchasingActorData,
             ownedActors: ownedActors,
@@ -825,13 +862,18 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                 }
                             }
 
+
+
                             partialContext.activeVehicle = activeVehicle;
 
-                            // Find eligible purchasers using factoryFlow service
-                            if (activeVehicle) {
-                                const characters = factoryFlow.getEligiblePurchasers(activeVehicle);
-
-                                // If no actor is selected globally (or the selected one is not in the eligible list), default to first eligible character
+                            // Determine the purchasing actor:
+                            // 1. If the factory has an owner defined (player rigger), the purchasing actor is the factory owner.
+                            // 2. If it is an NPC workshop (no owner defined), fall back to the player's eligible characters.
+                            const factoryOwner = await workshopActor.getOwner();
+                            if (factoryOwner) {
+                                this.purchasingActor = factoryOwner;
+                            } else if (activeVehicle) {
+                                const characters = game.sr5marketplace.api.factory.getEligiblePurchasers(activeVehicle);
                                 const validUuids = characters.map(c => c.uuid);
                                 if (!this.purchasingActor || !validUuids.includes(this.purchasingActor.uuid)) {
                                     const defaultChar = characters.find(c => c.id === game.user.character?.id) || characters[0];
@@ -841,27 +883,26 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                     }
                                 }
 
-                                // Update template data for actor selection dropdown next to Modify Vehicle
-                                if (this.purchasingActor) {
-                                    purchasingActorData = {
-                                        uuid: this.purchasingActor.uuid,
-                                        name: this.purchasingActor.name,
-                                        img: this.purchasingActor.img,
-                                        nuyen: this.purchasingActor.system.nuyen,
-                                        karma: this.purchasingActor.system.karma?.value ?? 0
-                                    };
-                                }
-
                                 ownedActors = characters.map(c => ({
                                     uuid: c.uuid,
                                     name: c.name,
                                     img: c.img
                                 }));
-
-                                partialContext.purchasingActor = this.purchasingActor;
-                                partialContext.purchasingActorData = purchasingActorData;
-                                partialContext.ownedActors = ownedActors;
                             }
+
+                            if (this.purchasingActor) {
+                                purchasingActorData = {
+                                    uuid: this.purchasingActor.uuid,
+                                    name: this.purchasingActor.name,
+                                    img: this.purchasingActor.img,
+                                    nuyen: this.purchasingActor.system.nuyen,
+                                    karma: this.purchasingActor.system.karma?.value ?? 0
+                                };
+                            }
+
+                            partialContext.purchasingActor = this.purchasingActor;
+                            partialContext.purchasingActorData = purchasingActorData;
+                            partialContext.ownedActors = factoryOwner ? [] : (ownedActors || []);
 
                             if (activeVehicle) {
                                 const installedMods = activeVehicle.items.filter(i => i.type === "modification");
@@ -880,17 +921,38 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                     cosmetic: { label: "SR5Marketplace.Factory.Category.Cosmetic", icon: "fas fa-paint-brush", items: [], max: getSlotLimit("cosmetic"), used: 0 }
                                 };
 
+                                const compendiumModsCount = await ItemBuilderApp.getCompendiumModificationsMap(activeVehicle, this.itemData);
+
                                 for (const mod of installedMods) {
                                     const cat = ItemBuilderApp._getModificationCategory(mod);
                                     const slots = mod.system.slots ?? 0;
-                                    const isPreinstalled = mod.getFlag?.("sr5-marketplace", "isPreinstalled") ||
-                                        mod.system.preInstalled ||
+
+                                    const isSystemPreinstalled = mod.system.preInstalled ||
                                         mod.system.preinstalled ||
                                         mod.system.isPreInstalled ||
-                                        mod.system.isPreinstalled ||
+                                        mod.system.ispreinstalled ||
                                         mod.flags?.shadowrun5e?.preInstalled ||
                                         mod.flags?.shadowrun5e?.preinstalled ||
                                         false;
+                                    const isGMMarked = mod.getFlag?.("sr5-marketplace", "isPreinstalled") === true;
+                                    const ignoreDefault = mod.getFlag?.("sr5-marketplace", "ignoreCompendiumDefault") === true;
+
+                                    let isPreinstalled = false;
+                                    if (isGMMarked || isSystemPreinstalled) {
+                                        isPreinstalled = true;
+                                        const name = mod.name.toLowerCase().trim();
+                                        if (compendiumModsCount[name] > 0) {
+                                            compendiumModsCount[name]--;
+                                        }
+                                    } else if (ignoreDefault) {
+                                        isPreinstalled = false;
+                                    } else {
+                                        const name = mod.name.toLowerCase().trim();
+                                        if (compendiumModsCount[name] > 0) {
+                                            isPreinstalled = true;
+                                            compendiumModsCount[name]--;
+                                        }
+                                    }
 
                                     const modData = mod.toObject();
                                     modData.uuid = mod.uuid;
@@ -910,20 +972,52 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                     }
                                 }
 
-                                const baseVehicle = game.actors.get(activeVehicle.id) || activeVehicle;
-                                const virtualMods = activeVehicle.getFlag("sr5-marketplace", "virtualModifications") ||
-                                    baseVehicle.getFlag("sr5-marketplace", "virtualModifications") || [];
+                                 // Sync the virtual modifications stock flags via Factory API
+                                 await game.sr5marketplace.api.factory.syncVirtualModificationsStock(activeVehicle, workshopActor, this.purchasingActor);
+
+                                 const virtualMods = game.sr5marketplace.api.factory.getVirtualModifications(activeVehicle);
+
+                                 let anyMissingAndNotInBasket = false;
+                                 let allInStock = true;
+                                 let anyUntestedInStock = false;
+
+                                 console.log("SR5 Marketplace | Workshop Render Evaluation - Virtual Mods:", virtualMods.map(m => {
+                                     const stockResult = game.sr5marketplace.api.factory.checkInventoryStock(activeVehicle, workshopActor, this.purchasingActor, m.id);
+                                     return {
+                                         name: m.name,
+                                         inStockFlag: m.inStock,
+                                         allInStockCheck: stockResult.allInStock,
+                                         resolvedInStock: m.inStock || stockResult.allInStock
+                                     };
+                                 }));
+
+
                                 for (const vMod of virtualMods) {
                                     const cat = vMod.category || "cosmetic";
                                     const slots = vMod.system?.slots ?? 0;
+
+                                    const stockResult = game.sr5marketplace.api.factory.checkInventoryStock(activeVehicle, workshopActor, this.purchasingActor, vMod.id);
+                                    const inStock = vMod.inStock || stockResult.allInStock;
+                                    const inBasket = vMod.inBasket || false;
+
+                                    const activeTest = Object.values(testStates).find(t => {
+                                        return !t.resolved && t.testType === "BuildTest" && t.virtualModId === vMod.id;
+                                    });
+
                                     const modData = {
                                         uuid: vMod.uuid,
                                         id: vMod.id,
                                         name: vMod.name,
                                         img: vMod.img,
                                         system: vMod.system,
-                                        isVirtual: true
+                                        isVirtual: true,
+                                        inStock: inStock,
+                                        inBasket: inBasket,
+                                        basketItemId: vMod.basketItemId || null,
+                                        isTesting: !!activeTest,
+                                        testStatus: vMod.testStatus || (activeTest ? "in_progress" : "not_started")
                                     };
+
                                     if (categories[cat]) {
                                         categories[cat].items.push(modData);
                                         categories[cat].used += Number(slots) || 0;
@@ -931,17 +1025,26 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                         categories.cosmetic.items.push(modData);
                                         categories.cosmetic.used += Number(slots) || 0;
                                     }
+
+                                    if (!inStock) {
+                                        allInStock = false;
+                                        if (!inBasket) {
+                                            anyMissingAndNotInBasket = true;
+                                        }
+                                    } else {
+                                        if (vMod.testStatus !== "success" && vMod.testStatus !== "failed" && !activeTest) {
+                                            anyUntestedInStock = true;
+                                        }
+                                    }
                                 }
 
-                                let hasVirtualMods = virtualMods.length > 0;
-                                let canModifyVehicle = false;
-                                if (hasVirtualMods) {
-                                    const baseVehicle = game.actors.get(activeVehicle.id) || activeVehicle;
-                                    const { allInStock } = factoryFlow.checkInventoryStock(baseVehicle, workshopActor, this.purchasingActor, true);
-                                    canModifyVehicle = allInStock;
-                                }
+                                const hasVirtualMods = virtualMods.length > 0;
+                                const hasActiveTest = Object.values(testStates).some(t => !t.resolved && t.testType === "BuildTest" && t.vehicleUuid === activeVehicle.uuid);
+
                                 partialContext.hasVirtualMods = hasVirtualMods;
-                                partialContext.canModifyVehicle = canModifyVehicle;
+                                partialContext.canAddAllToBasket = !!this.purchasingActor && anyMissingAndNotInBasket;
+                                partialContext.canBuildTestAll = !!this.purchasingActor && allInStock && anyUntestedInStock && !hasActiveTest;
+                                partialContext.allPlannedModsInStock = allInStock;
                                 partialContext.categories = categories;
                                 partialContext.workshopSearchTags = this.workshopSearchTags || [];
 
@@ -969,8 +1072,18 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                             const shopInv = workshopActor.system.shop.inventory || {};
                             const shopInvEntries = Object.entries(shopInv);
 
+                            const normalizeUuid = (uuid) => {
+                                if (!uuid) return "";
+                                let clean = String(uuid).trim().toLowerCase();
+                                if (clean.startsWith("compendium.")) {
+                                    clean = clean.replace(/\.(item|actor)\./g, ".");
+                                }
+                                return clean;
+                            };
+
                             const shopModsPromises = shopInvEntries.map(async ([entryId, itemData]) => {
-                                let sourceItem = allGlobalItems.find(i => i.uuid === itemData.itemUuid);
+                                const targetNorm = normalizeUuid(itemData.itemUuid);
+                                let sourceItem = allGlobalItems.find(i => normalizeUuid(i.uuid) === targetNorm);
                                 if (!sourceItem) {
                                     sourceItem = await fromUuid(itemData.itemUuid);
                                 }
@@ -993,6 +1106,11 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                             const resolvedShopMods = await Promise.all(shopModsPromises);
                             const modsOnShelf = resolvedShopMods.filter(m => m !== null);
 
+                            const addedUuids = new Set();
+                            for (const m of modsOnShelf) {
+                                addedUuids.add(normalizeUuid(m.uuid));
+                            }
+
                             const ownerActor = await workshopActor.getOwner();
                             if (ownerActor) {
                                 const ownerMods = ownerActor.items.filter(i => i.type === "modification");
@@ -1008,8 +1126,31 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                         slots: mod.system.slots ?? 0,
                                         isFromOwner: true
                                     });
+                                    addedUuids.add(normalizeUuid(mod.uuid));
+                                    if (mod.flags?.core?.sourceId) {
+                                        addedUuids.add(normalizeUuid(mod.flags.core.sourceId));
+                                    }
                                 }
                             }
+
+                            for (const item of allGlobalItems) {
+                                const norm = normalizeUuid(item.uuid);
+                                if (item.type === "modification" && !addedUuids.has(norm)) {
+                                    modsOnShelf.push({
+                                        uuid: item.uuid,
+                                        entryId: null,
+                                        name: item.name,
+                                        img: item.img || "systems/shadowrun5e/dist/icons/importer/equipment/modification.svg",
+                                        qty: 0,
+                                        category: ItemBuilderApp._getModificationCategory(item),
+                                        rating: item.system?.rating ?? item.system?.technology?.rating ?? 1,
+                                        slots: item.system?.slots ?? 0,
+                                        isFromOwner: false
+                                    });
+                                    addedUuids.add(norm);
+                                }
+                            }
+
                             partialContext.modsOnShelf = modsOnShelf;
                             this.workshopShelfEntries = modsOnShelf;
                         }
@@ -1161,11 +1302,14 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         };
 
         return {
+            isGM: game.user.isGM,
             tabContent,
             purchasingActor: this.purchasingActor,
             purchasingActorData: partialContext.purchasingActorData,
             ownedActors: partialContext.ownedActors,
-            canModifyVehicle: partialContext.canModifyVehicle,
+            canAddAllToBasket: partialContext.canAddAllToBasket,
+            canBuildTestAll: partialContext.canBuildTestAll,
+            allPlannedModsInStock: partialContext.allPlannedModsInStock,
             hasVirtualMods: partialContext.hasVirtualMods,
             builder: builderContext,
             activeTab: this.tabGroups.main,
@@ -1173,6 +1317,55 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             activeVehicle: partialContext.activeVehicle || null,
             workshopSearchTags: this.workshopSearchTags || []
         };
+    }
+
+    /**
+     * Resolves the compendium vehicle and returns a map of modification names to their counts.
+     * @param {Actor} vehicle
+     * @param {object} itemDataService
+     * @returns {Promise<Record<string, number>>}
+     */
+    static async getCompendiumModificationsMap(vehicle, itemDataService) {
+        if (!vehicle) return {};
+
+        let compendiumVehicle = null;
+        const baseActor = game.actors.get(vehicle.id) || vehicle;
+        const sourceId = vehicle.getFlag("core", "sourceId") ||
+            vehicle.flags?.shadowrun5e?.compendiumUuid ||
+            baseActor.getFlag("core", "sourceId") ||
+            baseActor.flags?.shadowrun5e?.compendiumUuid;
+        if (sourceId) {
+            compendiumVehicle = await fromUuid(sourceId);
+        }
+        if (!compendiumVehicle && itemDataService) {
+            const baseItemsByType = await itemDataService.fetchGlobalItems('base') || {};
+            const allCompendiumVehicles = [
+                ...(baseItemsByType.vehicles?.items || []),
+                ...(baseItemsByType.drones?.items || [])
+            ];
+            const namesToMatch = new Set([
+                vehicle.name?.toLowerCase().trim(),
+                baseActor?.name?.toLowerCase().trim()
+            ].filter(Boolean));
+
+            const matched = allCompendiumVehicles.find(v => namesToMatch.has(v.name?.toLowerCase().trim()));
+            if (matched) {
+                compendiumVehicle = await fromUuid(matched.uuid);
+            }
+        }
+
+        if (!compendiumVehicle) return {};
+
+        const compendiumItems = compendiumVehicle.items || compendiumVehicle.toObject?.().items || [];
+        const compendiumMods = compendiumItems.filter(i => i.type === "modification");
+
+        const compendiumModsCount = {};
+        for (const mod of compendiumMods) {
+            const name = mod.name.toLowerCase().trim();
+            compendiumModsCount[name] = (compendiumModsCount[name] || 0) + 1;
+        }
+
+        return compendiumModsCount;
     }
 
 
@@ -1205,6 +1398,9 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     static #onChangeTab(event, target) {
         const tabId = target.dataset.tab;
+        if (!game.user.isGM && tabId !== "workshop") {
+            return;
+        }
         if (this.tabGroups.main !== tabId) {
             this.tabGroups.main = tabId;
             this.render();
@@ -1245,7 +1441,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         };
 
         // 3. Set the base item. This clears the builder state (which is what we want).
-        await BuilderStateService.setBaseItem(cleanItemData);
+        await game.sr5marketplace.api.factory.setBuilderBaseItem(cleanItemData);
 
         // --- 4. NEW: Check for and load linked items ---
         const linkedItems = item.getFlag("sr5-marketplace", "linkedItems");
@@ -1268,7 +1464,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                         effects: linkedItem.effects?.map(e => e.toObject(false)) ?? []
                     };
                     // Add this item to the correct slot in the state
-                    await BuilderStateService.addChange(slotId, linkedItemData);
+                    await game.sr5marketplace.api.factory.addBuilderChange(slotId, linkedItemData);
                 } else {
                     console.warn(`Marketplace Builder | Could not find linked item with UUID: ${uuid}`);
                 }
@@ -1289,7 +1485,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     static async #onEditEffects(event, target) {
         const uuid = target.dataset.uuid;
         if (!uuid) return;
-        let effects = await BuilderStateService.getEffectFromItemUuid(uuid)
+        let effects = await game.sr5marketplace.api.factory.getEffectFromItemUuid(uuid)
         return effects
     }
 
@@ -1303,7 +1499,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         // 1. Tell the service to update the persistent flag.
         //    The 'await' ensures this operation completes before we proceed.
-        await BuilderStateService.removeChange(slotId);
+        await game.sr5marketplace.api.factory.removeBuilderChange(slotId);
 
         // 2. Trigger a re-render. 
         //    The _prepareContext method will now run again and fetch the new state from the flag.
@@ -1317,7 +1513,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      * @private
      */
     static async #onToggleBaseItemEdit(event, target) {
-        const state = await BuilderStateService.getState();
+        const state = await game.sr5marketplace.api.factory.getBuilderState();
 
         if (state.isEditingBaseItem) {
             // We are CLICKING THE CHECKMARK (finishing the edit)
@@ -1334,12 +1530,12 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
                 // 3. Save all overrides in one go
                 // We await this to ensure it's saved before we toggle
-                await BuilderStateService.updateBaseItemOverrides(updateData);
+                await game.sr5marketplace.api.factory.updateBuilderBaseItemOverrides(updateData);
             }
         }
 
         // 4. Toggle the edit state (for both starting and finishing)
-        const newState = await BuilderStateService.toggleBaseItemEdit();
+        const newState = await game.sr5marketplace.api.factory.toggleBuilderBaseItemEdit();
 
         // 5. Re-render
         this.render(false, { builderData: newState });
@@ -1356,10 +1552,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             current: target.src,
             callback: (path) => {
                 // We update the override immediately for the image
-                BuilderStateService.updateBaseItemOverrides({ "img": path }).then(async () => {
+                game.sr5marketplace.api.factory.updateBuilderBaseItemOverrides({ "img": path }).then(async () => {
                     // Re-render to show the new image right away
                     // We need to fetch the state again to pass it to render
-                    const newState = await BuilderStateService.getState();
+                    const newState = await game.sr5marketplace.api.factory.getBuilderState();
                     this.render(false, { builderData: newState });
                 });
             }
@@ -1433,7 +1629,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         baseItemData.effects = allEffects.map(effect => {
             const cleanEffect = { ...effect };
             if (cleanEffect.changes) {
-                cleanEffect.changes = BuilderStateService._changesToArray(cleanEffect.changes);
+                cleanEffect.changes = buildService._changesToArray(cleanEffect.changes);
             }
             return cleanEffect;
         });
@@ -1502,7 +1698,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      * Handles building the item and physical document creation.
      */
     static async #onBuildItem(event, target) {
-        const state = await BuilderStateService.getState();
+        const state = await game.sr5marketplace.api.factory.getBuilderState();
         if (!state.baseItem) {
             ui.notifications.warn("Please select a base item before building.");
             return;
@@ -1536,7 +1732,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      * Triggers the custom extended build test.
      */
     static async #onStartBuildTest(event, target) {
-        const state = await BuilderStateService.getState();
+        const state = await game.sr5marketplace.api.factory.getBuilderState();
         if (!state.baseItem) {
             ui.notifications.warn("Please select a base item before performing a build test.");
             return;
@@ -1620,11 +1816,13 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             threshold,
             skill: defaultSkill,
             attribute: "logic",
-            appliedModifiers: initialModifiers
+            appliedModifiers: initialModifiers,
+            itemName: buildData?.name || null,
+            itemUuid: buildData?.uuid || null
         };
 
         // Close any existing build test dialogs
-        const buildTestApp = Object.values(ui.windows).find(w => w.constructor.name === "BuildTestApp");
+        const buildTestApp = foundry.applications.instances.get("build-test-dialog-app");
         if (buildTestApp) {
             buildTestApp.close();
         }
@@ -1644,7 +1842,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      * Adds the compiled build data to the active shopping cart.
      */
     static async #onAddToCart(event, target) {
-        const state = await BuilderStateService.getState();
+        const state = await game.sr5marketplace.api.factory.getBuilderState();
         if (!state.baseItem) {
             ui.notifications.warn("Please select a base item before adding to cart.");
             return;
@@ -1698,8 +1896,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             totalEssence += Number(modEssence) || 0;
         }
 
-        const basketService = new BasketService();
-        const combinedAvailability = basketService._combineAvailabilities(allAvails);
+        const combinedAvailability = game.sr5marketplace.api.marketplace.combineAvailabilities(allAvails);
 
         const totals = {
             cost: totalCost,
@@ -1708,7 +1905,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         };
 
         // Add custom item/actor to cart
-        await basketService.addCustomToBasket(buildData, actor.uuid, totals);
+        await game.sr5marketplace.api.marketplace.addCustom(buildData, actor.uuid, totals);
     }
 
     /**
@@ -1716,10 +1913,13 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      * @private
      */
     static async #onClearBuild(event, target) {
-        await BuilderStateService.clearState();
-        await AppTestFlagService.deleteState(game.user.id);
+        await game.sr5marketplace.api.factory.clearBuilderState();
+        if (this.activeDialogId) {
+            await AppTestFlagService.deleteTest(this.activeDialogId, game.user.id);
+            this.activeDialogId = null;
+        }
 
-        const buildTestApp = Object.values(ui.windows).find(w => w.constructor.name === "BuildTestApp");
+        const buildTestApp = foundry.applications.instances.get("build-test-dialog-app");
         if (buildTestApp) {
             buildTestApp.close();
         }
@@ -1734,7 +1934,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         if (!sourceUuid) return;
 
         ItemBuilderApp.#handleStateUpdate(this, "#onCreateEffect", () => {
-            return BuilderStateService.startEffectCreation(sourceUuid);
+            return game.sr5marketplace.api.factory.startBuilderEffectCreation(sourceUuid);
         });
     }
 
@@ -1750,7 +1950,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         ItemBuilderApp.#handleStateUpdate(this, "#onUpdateDraftField", () => {
             const updates = foundry.utils.expandObject({ [name]: value });
-            return BuilderStateService.updateDraftEffect(updates);
+            return game.sr5marketplace.api.factory.updateBuilderDraftEffect(updates);
         });
     }
 
@@ -1759,7 +1959,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         ItemBuilderApp.#handleStateUpdate(this, "#onSelectDraftKey", () => {
             const updates = foundry.utils.expandObject({ "changes.0.key": key });
-            return BuilderStateService.updateDraftEffect(updates);
+            return game.sr5marketplace.api.factory.updateBuilderDraftEffect(updates);
         });
     }
 
@@ -1773,7 +1973,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         ItemBuilderApp.#handleStateUpdate(this, "#onSetEffectTargetType", () => {
             const updates = { system: { applyTo: targetType } };
-            return BuilderStateService.updateDraftEffect(updates);
+            return game.sr5marketplace.api.factory.updateBuilderDraftEffect(updates);
         });
     }
 
@@ -1784,22 +1984,22 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         ItemBuilderApp.#handleStateUpdate(this, "#onSaveDraftEffect", async () => {
             const updates = new foundry.applications.ux.FormDataExtended(form).object;
-            await BuilderStateService.updateDraftEffect(updates);
+            await game.sr5marketplace.api.factory.updateBuilderDraftEffect(updates);
             // The final state is the result of the save operation
-            return BuilderStateService.saveDraftEffect();
+            return game.sr5marketplace.api.factory.saveBuilderDraftEffect();
         });
     }
 
     static async #onCancelDraftEffect(event, target) {
         ItemBuilderApp.#handleStateUpdate(this, "#onCancelDraftEffect", () => {
-            return BuilderStateService.cancelEffectCreation();
+            return game.sr5marketplace.api.factory.cancelBuilderEffectCreation();
         });
     }
 
     static async #onEditEffect(event, target) {
         const { sourceUuid, effectId } = target.dataset;
         ItemBuilderApp.#handleStateUpdate(this, "#onEditEffect", () => {
-            return BuilderStateService.startEffectEdit(sourceUuid, effectId);
+            return game.sr5marketplace.api.factory.startBuilderEffectEdit(sourceUuid, effectId);
         });
     }
 
@@ -1811,7 +2011,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         });
         if (confirmed) {
             ItemBuilderApp.#handleStateUpdate(this, "#onDeleteEffect", () => {
-                return BuilderStateService.deleteEffect(effectId);
+                return game.sr5marketplace.api.factory.deleteBuilderEffect(effectId);
             });
         }
     }
@@ -1891,7 +2091,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
 
             const updates = foundry.utils.expandObject({ [name]: currentObjects });
-            return BuilderStateService.updateDraftEffect(updates);
+            return game.sr5marketplace.api.factory.updateBuilderDraftEffect(updates);
         });
     }
 
@@ -1901,7 +2101,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      */
     static async #onToggleDerivedValueSelector(event, target) {
         ItemBuilderApp.#handleStateUpdate(this, "#onToggleDerivedValueSelector", () => {
-            return BuilderStateService.toggleDerivedValueSelector();
+            return game.sr5marketplace.api.factory.toggleBuilderDerivedValueSelector();
         });
     }
 
@@ -1926,7 +2126,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             };
 
             // Call the new service method that handles both updates correctly
-            return BuilderStateService.updateDraftAndState(draftUpdate, stateUpdate);
+            return game.sr5marketplace.api.factory.updateBuilderDraftAndState(draftUpdate, stateUpdate);
         });
     }
 
@@ -1941,7 +2141,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const scrollable = app.element.querySelector(".effect-creator-steps");
         const scrollTop = scrollable ? scrollable.scrollTop : 0;
 
-        const oldState = await BuilderStateService.getState();
+        const oldState = await game.sr5marketplace.api.factory.getBuilderState();
         console.log(`Marketplace Builder | draftEffect BEFORE ${handlerName}:`, foundry.utils.deepClone(oldState.draftEffect));
 
         const newState = await stateChangeFn(oldState);
@@ -2084,7 +2284,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const threshold = damage * 3;
 
         // Close any existing build test dialogs
-        const buildTestApp = Object.values(ui.windows).find(w => w.constructor.name === "BuildTestApp");
+        const buildTestApp = foundry.applications.instances.get("build-test-dialog-app");
         if (buildTestApp) {
             buildTestApp.close();
         }
@@ -2117,10 +2317,57 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const item = await fromUuid(itemUuid);
         if (!item) return;
 
-        const currentVal = item.getFlag("sr5-marketplace", "isPreinstalled") || false;
-        await item.setFlag("sr5-marketplace", "isPreinstalled", !currentVal);
+        const builderApp = foundry.applications.instances.get("itemBuilder");
+        const activeVehicle = builderApp?.activeVehicle;
+        if (!activeVehicle) return;
 
-        this.render();
+        // Check if this modification matches the compendium vehicle
+        let isCompendiumMod = false;
+        let compendiumVehicle = null;
+        const baseActor = game.actors.get(activeVehicle.id) || activeVehicle;
+        const sourceId = activeVehicle.getFlag("core", "sourceId") ||
+            activeVehicle.flags?.shadowrun5e?.compendiumUuid ||
+            baseActor.getFlag("core", "sourceId") ||
+            baseActor.flags?.shadowrun5e?.compendiumUuid;
+        if (sourceId) {
+            compendiumVehicle = await fromUuid(sourceId);
+        }
+        if (!compendiumVehicle && builderApp.itemData) {
+            const baseItemsByType = await builderApp.itemData.fetchGlobalItems('base') || {};
+            const allCompendiumVehicles = [
+                ...(baseItemsByType.vehicles?.items || []),
+                ...(baseItemsByType.drones?.items || [])
+            ];
+            const namesToMatch = new Set([
+                activeVehicle.name?.toLowerCase().trim(),
+                baseActor?.name?.toLowerCase().trim()
+            ].filter(Boolean));
+
+            const matched = allCompendiumVehicles.find(v => namesToMatch.has(v.name?.toLowerCase().trim()));
+            if (matched) {
+                compendiumVehicle = await fromUuid(matched.uuid);
+            }
+        }
+
+        if (compendiumVehicle) {
+            const compendiumItems = compendiumVehicle.items || compendiumVehicle.toObject?.().items || [];
+            const cleanName = item.name.toLowerCase().trim();
+            isCompendiumMod = compendiumItems.some(i => i.type === "modification" && i.name.toLowerCase().trim() === cleanName);
+        }
+
+        if (isCompendiumMod) {
+            const currentIgnore = item.getFlag("sr5-marketplace", "ignoreCompendiumDefault") || false;
+            await item.setFlag("sr5-marketplace", "ignoreCompendiumDefault", !currentIgnore);
+            await item.unsetFlag("sr5-marketplace", "isPreinstalled");
+            console.log(`SR5 Marketplace | Toggled ignoreCompendiumDefault flag for compendium modification: ${item.name} to ${!currentIgnore}`);
+        } else {
+            const currentPreinstalled = item.getFlag("sr5-marketplace", "isPreinstalled") || false;
+            await item.setFlag("sr5-marketplace", "isPreinstalled", !currentPreinstalled);
+            await item.unsetFlag("sr5-marketplace", "ignoreCompendiumDefault");
+            console.log(`SR5 Marketplace | Toggled isPreinstalled flag for custom modification: ${item.name} to ${!currentPreinstalled}`);
+        }
+
+        builderApp.render(true);
     }
 
     static async #onClearConditionMonitor(event, target) {
@@ -2211,37 +2458,131 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
         if (!vehicle) return;
 
-        const baseVehicle = game.actors.get(vehicle.id) || vehicle;
-        const virtualMods = vehicle.getFlag("sr5-marketplace", "virtualModifications") ||
-            baseVehicle.getFlag("sr5-marketplace", "virtualModifications") || [];
+        const virtualMods = game.sr5marketplace.api.factory.getVirtualModifications(vehicle);
         const modToRemove = virtualMods.find(m => m.id === virtualId);
         if (!modToRemove) return;
 
-        const updatedMods = virtualMods.filter(m => m.id !== virtualId);
-        if (updatedMods.length > 0) {
-            if (vehicle.isOwner) await vehicle.setFlag("sr5-marketplace", "virtualModifications", updatedMods);
-            if (baseVehicle !== vehicle && baseVehicle.isOwner) {
-                await baseVehicle.setFlag("sr5-marketplace", "virtualModifications", updatedMods);
-            }
-        } else {
-            if (vehicle.isOwner) await vehicle.unsetFlag("sr5-marketplace", "virtualModifications");
-            if (baseVehicle !== vehicle && baseVehicle.isOwner) {
-                await baseVehicle.unsetFlag("sr5-marketplace", "virtualModifications");
-            }
-        }
+        await game.sr5marketplace.api.factory.removeVirtualModification(vehicle, virtualId);
 
         // Also remove from user's active shopping cart
-        const basketService = new BasketService();
-        const basket = await basketService.getBasket();
-        const basketItem = basket.shoppingCartItems.find(i => i.itemUuid === modToRemove.uuid && i.isWorkshopMod && i.vehicleActorUuid === baseVehicle.uuid);
+        const baseVehicle = game.actors.get(vehicle.id) || vehicle;
+        const cartItems = await game.sr5marketplace.api.marketplace.getBasket();
+        const basketItem = cartItems.find(i => i.itemUuid === modToRemove.uuid && i.isWorkshopMod && i.vehicleActorUuid === baseVehicle.uuid);
         if (basketItem) {
-            await basketService.removeFromBasket(basketItem.basketItemUuid);
+            await game.sr5marketplace.api.marketplace.remove(basketItem.basketItemUuid);
         }
 
         this.render();
     }
 
-    static async #onModifyVehicle(event, target) {
+    static async #onTriggerVirtualModTest(event, target) {
+        event.preventDefault();
+        const virtualId = target.dataset.virtualId;
+        const vehicleUuid = this.selectedVehicleActorUuid;
+        if (!vehicleUuid || !virtualId) return;
+
+        if (!this.purchasingActor) {
+            ui.notifications.error("No purchasing actor defined. Cannot perform tests.");
+            return;
+        }
+
+        const vehicleDoc = await fromUuid(vehicleUuid);
+        const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+        if (!vehicle) return;
+
+        const virtualMods = game.sr5marketplace.api.factory.getVirtualModifications(vehicle);
+        const vMod = virtualMods.find(m => m.id === virtualId);
+        if (!vMod) return;
+
+        const workshopActorDoc = await fromUuid(this.workshopActorUuid);
+        const workshopActor = workshopActorDoc instanceof Actor ? workshopActorDoc : workshopActorDoc?.actor || null;
+        if (!workshopActor) return;
+
+        await game.sr5marketplace.api.factory.startModificationTest(vehicle, workshopActor, this.purchasingActor, vMod);
+        this.render();
+    }
+
+    static async #onResumeVirtualModTest(event, target) {
+        event.preventDefault();
+        const virtualId = target.dataset.virtualId;
+        if (!virtualId) return;
+
+        const unresolvedTest = Object.values(await AppTestFlagService.readState(game.user.id)).find(t => {
+            return !t.resolved && t.testType === "BuildTest" && t.virtualModId === virtualId;
+        });
+
+        if (unresolvedTest) {
+            // Unsuppress the dialog so that it can be shown/rendered again
+            AppTestFlagService._suppressedDialogIds.delete(unresolvedTest.id);
+            await AppTestFlagService.updateTest(unresolvedTest.id, { showDialog: true });
+
+            const buildTestApp = foundry.applications.instances.get("build-test-dialog-app");
+            if (buildTestApp) {
+                buildTestApp.close();
+            }
+            new BuildTestApp().render(true);
+        }
+    }
+
+    static async #onAddVirtualModToBasket(event, target) {
+        event.preventDefault();
+        const virtualId = target.dataset.virtualId;
+        const vehicleUuid = this.selectedVehicleActorUuid;
+        if (!vehicleUuid || !virtualId) return;
+
+        const vehicleDoc = await fromUuid(vehicleUuid);
+        const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+        if (!vehicle) return;
+
+        const virtualMods = game.sr5marketplace.api.factory.getVirtualModifications(vehicle);
+        const vMod = virtualMods.find(m => m.id === virtualId);
+        if (!vMod) return;
+
+        if (!this.purchasingActor) {
+            ui.notifications.error("Please select a purchasing actor in the Marketplace first.");
+            return;
+        }
+
+        // Add to shopping cart via Marketplace API
+        const baseVehicle = game.actors.get(vehicle.id) || vehicle;
+        const basketItem = await game.sr5marketplace.api.marketplace.addItem(vMod.uuid, this.purchasingActor.uuid, {
+            isWorkshopMod: true,
+            vehicleActorUuid: baseVehicle.uuid,
+            factoryActorUuid: this.workshopActorUuid
+        });
+
+        if (basketItem) {
+            await game.sr5marketplace.api.factory.updateVirtualModification(vehicle, virtualId, {
+                inBasket: true,
+                basketItemId: basketItem.basketItemUuid
+            });
+            ui.notifications.info(`Added "${vMod.name}" to basket.`);
+            this.render();
+        }
+    }
+
+    static async #onInstallVirtualMod(event, target) {
+        event.preventDefault();
+        const virtualId = target.dataset.virtualId;
+        const vehicleUuid = this.selectedVehicleActorUuid;
+        if (!vehicleUuid || !virtualId) return;
+
+        const vehicleDoc = await fromUuid(vehicleUuid);
+        const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+        if (!vehicle) return;
+
+        const virtualMods = game.sr5marketplace.api.factory.getVirtualModifications(vehicle);
+        const vMod = virtualMods.find(m => m.id === virtualId);
+        if (!vMod) return;
+
+        const workshopActorDoc = await fromUuid(this.workshopActorUuid);
+        const workshopActor = workshopActorDoc instanceof Actor ? workshopActorDoc : workshopActorDoc?.actor || null;
+        if (!workshopActor) return;
+
+        await game.sr5marketplace.api.factory.installModification(vehicle, workshopActor, this.purchasingActor, vMod);
+    }
+
+    static async #onAddAllToBasket(event, target) {
         event.preventDefault();
         const vehicleUuid = this.selectedVehicleActorUuid;
         if (!vehicleUuid) return;
@@ -2250,11 +2591,72 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
         if (!vehicle) return;
 
+        const virtualMods = game.sr5marketplace.api.factory.getVirtualModifications(vehicle);
+        const workshopActorDoc = await fromUuid(this.workshopActorUuid);
+        const workshopActor = workshopActorDoc instanceof Actor ? workshopActorDoc : workshopActorDoc?.actor || null;
+
+        if (!this.purchasingActor) {
+            ui.notifications.error("Please select a purchasing actor in the Marketplace first.");
+            return;
+        }
+
+        const baseVehicle = game.actors.get(vehicle.id) || vehicle;
+        let addedAny = false;
+        for (const vMod of virtualMods) {
+            const stockResult = game.sr5marketplace.api.factory.checkInventoryStock(vehicle, workshopActor, this.purchasingActor, vMod.id);
+            if (!stockResult.allInStock && !vMod.inBasket) {
+                const basketItem = await game.sr5marketplace.api.marketplace.addItem(vMod.uuid, this.purchasingActor.uuid, {
+                    isWorkshopMod: true,
+                    vehicleActorUuid: baseVehicle.uuid,
+                    factoryActorUuid: this.workshopActorUuid
+                });
+                if (basketItem) {
+                    await game.sr5marketplace.api.factory.updateVirtualModification(vehicle, vMod.id, {
+                        inBasket: true,
+                        basketItemId: basketItem.basketItemUuid
+                    });
+                    addedAny = true;
+                }
+            }
+        }
+
+        if (addedAny) {
+            ui.notifications.info("Added missing modifications to basket.");
+            this.render();
+        }
+    }
+
+    static async #onBuildTestAll(event, target) {
+        event.preventDefault();
+        const vehicleUuid = this.selectedVehicleActorUuid;
+        if (!vehicleUuid) return;
+
+        if (!this.purchasingActor) {
+            ui.notifications.error("No purchasing actor defined. Cannot perform tests.");
+            return;
+        }
+
+        const vehicleDoc = await fromUuid(vehicleUuid);
+        const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+        if (!vehicle) return;
+
+        const virtualMods = game.sr5marketplace.api.factory.getVirtualModifications(vehicle);
         const workshopActorDoc = await fromUuid(this.workshopActorUuid);
         const workshopActor = workshopActorDoc instanceof Actor ? workshopActorDoc : workshopActorDoc?.actor || null;
         if (!workshopActor) return;
 
-        await factoryFlow.runModificationFlow(vehicle, workshopActor, this.purchasingActor);
+        // Find the first untested, in-stock virtual modification in the queue
+        const nextToTest = virtualMods.find(m => {
+            const stockResult = game.sr5marketplace.api.factory.checkInventoryStock(vehicle, workshopActor, this.purchasingActor, m.id);
+            return stockResult.allInStock && m.testStatus !== "success" && m.testStatus !== "failed";
+        });
+
+        if (nextToTest) {
+            await game.sr5marketplace.api.factory.startModificationTest(vehicle, workshopActor, this.purchasingActor, nextToTest);
+            this.render();
+        } else {
+            ui.notifications.info("No untested modifications in stock to test.");
+        }
     }
 
     static #onToggleActorList(event, target) {

@@ -58,11 +58,18 @@
             {{> 'modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/marketplaceUserActor.html'
                 actor=purchasingActorData ownedActors=ownedActors}}
 
-            <button type="button" class="modify-vehicle-btn {{#if canModifyVehicle}}ready{{/if}}" data-action="modifyVehicle"
+            {{#if hasVirtualMods}}
+            <button type="button" class="add-all-to-basket-btn {{#if canAddAllToBasket}}ready{{/if}}" data-action="addAllToBasket"
                 style="padding: 4px 10px; font-size: 0.9em; flex-shrink: 0;"
-                {{#unless canModifyVehicle}}disabled title="{{#if hasVirtualMods}}Some queued modifications have not been purchased yet{{else}}No modifications queued in virtual slots{{/if}}"{{/unless}}>
-                <i class="fas fa-tools"></i> {{localize "SR5Marketplace.Factory.ModifyVehicle"}}
+                {{#unless canAddAllToBasket}}disabled title="All modifications are already in stock or in the basket"{{/unless}}>
+                <i class="fas fa-shopping-cart"></i> {{localize "SR5Marketplace.Factory.AddAllToBasket"}}
             </button>
+            <button type="button" class="build-test-all-btn {{#if canBuildTestAll}}ready{{/if}}" data-action="buildTestAll"
+                style="padding: 4px 10px; font-size: 0.9em; flex-shrink: 0;"
+                {{#unless canBuildTestAll}}disabled title="{{#unless allPlannedModsInStock}}Some modifications are not in stock{{else}}No untested modifications in stock{{/unless}}"{{/unless}}>
+                <i class="fas fa-dice-d6"></i> {{localize "SR5Marketplace.Factory.BuildTestAll"}}
+            </button>
+            {{/if}}
             <button type="button" class="button" data-action="deselectVehicleActor"
                 style="padding: 4px 10px; font-size: 0.9em; flex-shrink: 0;">
                 <i class="fas fa-exchange-alt"></i> {{localize "SR5Marketplace.Factory.ChangeVehicle"}}
@@ -109,6 +116,7 @@
     </header>
     <nav class="builder-nav tabs" data-group="primary">
 
+        {{#if isGM}}
         <a class="builder-tabs item{{#if (eq activeTab 'builder')}} active{{/if}}" data-tab="builder"
             data-action="changeTab">
             <div class="tab-icon-wrapper">
@@ -132,6 +140,7 @@
             </div>
             <span>{{localize "SR5Marketplace.ItemBuilder.nav.effects"}}</span>
         </a>
+        {{/if}}
 
         {{#if workshopActorUuid}}
         <a class="builder-tabs item{{#if (eq activeTab 'workshop')}} active{{/if}}" data-tab="workshop"

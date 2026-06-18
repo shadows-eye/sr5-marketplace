@@ -119,19 +119,61 @@
                                      </div>
                                      <div class="installed-mod-actions" style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
                                          {{#if this.isVirtual}}
-                                         <a class="remove-virtual-btn cursor-pointer" 
-                                            data-action="removeVirtualMod" 
-                                            data-virtual-id="{{this.id}}" 
-                                            title="{{localize 'SR5Marketplace.Factory.RemoveVirtualMod'}}">
-                                             <i class="fas fa-trash"></i>
-                                         </a>
+                                             {{#if this.inBasket}}
+                                                 <span style="opacity: 0.6;" title="In Cart"><i class="fas fa-shopping-cart"></i></span>
+                                             {{else if (eq this.testStatus 'success')}}
+                                                 <a class="install-virtual-mod-btn cursor-pointer text-[var(--color-green-button,#00cc66)]" 
+                                                    data-action="installVirtualMod" 
+                                                    data-virtual-id="{{this.id}}" 
+                                                    title="Install Modification">
+                                                     <i class="fas fa-hammer"></i>
+                                                 </a>
+                                             {{else if (eq this.testStatus 'failed')}}
+                                                 <span style="color: var(--color-red-bright, #ff3333);" title="Test Failed"><i class="fas fa-times-circle"></i></span>
+                                             {{else if this.isTesting}}
+                                                 <a class="resume-virtual-mod-test-btn cursor-pointer text-[var(--color-yellow-dark,#ffaa00)]" 
+                                                    data-action="resumeVirtualModTest" 
+                                                    data-virtual-id="{{this.id}}" 
+                                                    title="Resume Build Test">
+                                                     <i class="fas fa-dice-d6"></i>
+                                                 </a>
+                                             {{else}}
+                                                 {{#if this.inStock}}
+                                                     {{#if @root.allPlannedModsInStock}}
+                                                         <a class="trigger-virtual-mod-test-btn cursor-pointer text-white hover:text-[var(--color-yellow-dark,#ffaa00)]" 
+                                                            data-action="triggerVirtualModTest" 
+                                                            data-virtual-id="{{this.id}}" 
+                                                            title="Start Build Test">
+                                                             <i class="fas fa-dice"></i>
+                                                         </a>
+                                                     {{else}}
+                                                         <a class="trigger-virtual-mod-test-btn opacity-35 cursor-not-allowed text-white" 
+                                                            title="All planned modifications must be in stock to test">
+                                                             <i class="fas fa-dice"></i>
+                                                         </a>
+                                                     {{/if}}
+                                                 {{else}}
+                                                     <a class="add-virtual-mod-basket-btn cursor-pointer text-white hover:text-[var(--color-yellow-dark,#ffaa00)]" 
+                                                        data-action="addVirtualModToBasket" 
+                                                        data-virtual-id="{{this.id}}" 
+                                                        title="Add to Basket">
+                                                         <i class="fas fa-cart-plus"></i>
+                                                     </a>
+                                                 {{/if}}
+                                             {{/if}}
+                                             <a class="remove-virtual-btn cursor-pointer text-white hover:text-[var(--color-red-bright,#ff3333)]" 
+                                                data-action="removeVirtualMod" 
+                                                data-virtual-id="{{this.id}}" 
+                                                title="{{localize 'SR5Marketplace.Factory.RemoveVirtualMod'}}">
+                                                 <i class="fas fa-trash"></i>
+                                             </a>
                                          {{else}}
-                                         <a class="toggle-builtin-btn cursor-pointer transition-all {{#if this.isPreinstalled}}opacity-100 text-[var(--color-yellow-dark,#ffaa00)]{{else}}opacity-35 text-white hover:opacity-70{{/if}}" 
-                                            data-action="toggleBuiltIn" 
-                                            data-item-uuid="{{this.uuid}}" 
-                                            title="Toggle Built-in (Not counted in limits)">
-                                             <i class="fas fa-box"></i>
-                                         </a>
+                                             <a class="toggle-builtin-btn cursor-pointer transition-all {{#if this.isPreinstalled}}opacity-100 text-[var(--color-yellow-dark,#ffaa00)]{{else}}opacity-35 text-white hover:opacity-70{{/if}}" 
+                                                data-action="toggleBuiltIn" 
+                                                data-item-uuid="{{this.uuid}}" 
+                                                title="Toggle Built-in (Not counted in limits)">
+                                                 <i class="fas fa-box"></i>
+                                             </a>
                                          {{/if}}
                                      </div>
                                  </div>

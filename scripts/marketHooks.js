@@ -20,7 +20,8 @@ import {
     systemDataMapperService,
     ItemDataServices, // <-- We import the class here because you need 'new ItemDataServices()' for your API
     PurchaseService,
-    BasketService
+    BasketService,
+    factoryFlow
 } from './services/_module.mjs';
 
 // Re-export instances/classes as well ONLY IF you need them available globally 
@@ -650,7 +651,8 @@ Hooks.once("init", () => {
 
         // 3. Instantiate your sub-APIs using the static properties
         marketplace: new MarketplaceAPI.Marketplace(),
-        itemBuilder: new MarketplaceAPI.ItemBuilder()
+        itemBuilder: new MarketplaceAPI.ItemBuilder(),
+        factory: new MarketplaceAPI.Factory()
     };
 
     // 4. Expose them directly on the root API container for backward compatibility
@@ -699,6 +701,9 @@ Hooks.on("ready", async () => {
     // Register socket listener
     game.socket.on("module.sr5-marketplace", async (data) => {
         if (game.user.isGM) {
+            // Only the primary active GM should handle the socket event to prevent duplicate operations when multiple GMs are online
+            const activeGM = game.users.activeGM;
+            if (activeGM && game.user.id !== activeGM.id) return;
             if (data.type === "run_availability_test") {
                 await handleGMRunAvailabilityTest(data);
             } else if (data.type === "continue_extended_test") {
@@ -729,6 +734,17 @@ Hooks.on("ready", async () => {
                     await actor.update(data.updateData);
                     console.log(`SR5 Marketplace | GM updated actor field for: ${actor.name}`);
                 }
+            } else if (data.action === "install_modification") {
+                const vehicleDoc = await fromUuid(data.vehicleUuid);
+                const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+                const workshopDoc = data.workshopActorUuid ? await fromUuid(data.workshopActorUuid) : null;
+                const workshopActor = workshopDoc instanceof Actor ? workshopDoc : workshopDoc?.actor || null;
+                const purchasingDoc = data.purchasingActorUuid ? await fromUuid(data.purchasingActorUuid) : null;
+                const purchasingActor = purchasingDoc instanceof Actor ? purchasingDoc : purchasingDoc?.actor || null;
+
+                if (vehicle) {
+                    await factoryFlow.installModification(vehicle, workshopActor, purchasingActor, data.vMod);
+                }
             }
         }
         if (data.type === "request_resolved" || data.type === "new_request" || data.type === "setting_updated") {
@@ -755,6 +771,11 @@ Hooks.on("updateUser", (user, changes) => {
             if (game.user.isGM || user.id === game.user.id) {
                 shouter.render();
             }
+        }
+
+        // Reactively sync basket associations for the user whose basket changed
+        if (user.id === game.user.id) {
+            AppTestFlagService.syncBasketAssociations(user);
         }
     }
 });
@@ -817,6 +838,33 @@ Hooks.on("updateToken", (token, changes) => {
         if (shouter) {
             shouter.render();
         }
+    }
+});
+
+/**
+ * Reactively refresh the MarketShouter widget when the canvas is ready (e.g., scene switch).
+ */
+Hooks.on("canvasReady", () => {
+    const shouter = foundry.applications.instances.get("marketshouter");
+    if (shouter) {
+        shouter.render();
+    }
+});
+
+/**
+ * Reactively refresh the MarketShouter widget when a token is created or deleted.
+ */
+Hooks.on("createToken", () => {
+    const shouter = foundry.applications.instances.get("marketshouter");
+    if (shouter) {
+        shouter.render();
+    }
+});
+
+Hooks.on("deleteToken", () => {
+    const shouter = foundry.applications.instances.get("marketshouter");
+    if (shouter) {
+        shouter.render();
     }
 });
 
@@ -906,6 +954,15 @@ function getShopsForAnyEmployee(actor) {
 }
 
 Hooks.on("updateActor", async (actor, changes, options, userId) => {
+    // Re-render ItemBuilderApp for any client if the active vehicle is updated
+    const builderApp = foundry.applications.instances.get("itemBuilder");
+    if (builderApp && builderApp.rendered) {
+        const selectedUuid = builderApp.selectedVehicleActorUuid;
+        if (selectedUuid && (actor.uuid === selectedUuid || actor.id === selectedUuid.split(".").pop())) {
+            builderApp.render();
+        }
+    }
+
     if (game.user.id !== userId) return;
 
     // If the Shop Actor itself is updated and its employees/serving employee changed, sync their devices to host
@@ -962,6 +1019,20 @@ Hooks.on("updateActor", async (actor, changes, options, userId) => {
 });
 
 Hooks.on("createItem", async (item, options, userId) => {
+    // Re-render ItemBuilderApp for any client if an item is created/added on the active vehicle
+    const builderApp = foundry.applications.instances.get("itemBuilder");
+    if (builderApp && builderApp.rendered && item.parent) {
+        const selectedUuid = builderApp.selectedVehicleActorUuid;
+        if (selectedUuid && (item.parent.uuid === selectedUuid || item.parent.id === selectedUuid.split(".").pop())) {
+            builderApp.render();
+        }
+    }
+
+    const buildTestApp = foundry.applications.instances.get("build-test-dialog-app");
+    if (buildTestApp && buildTestApp.rendered && item.parent) {
+        buildTestApp.render();
+    }
+
     if (game.user.id !== userId) return;
     if (!item.parent) return;
 
@@ -997,6 +1068,20 @@ Hooks.on("createItem", async (item, options, userId) => {
 });
 
 Hooks.on("updateItem", async (item, changes, options, userId) => {
+    // Re-render ItemBuilderApp for any client if an item is updated on the active vehicle
+    const builderApp = foundry.applications.instances.get("itemBuilder");
+    if (builderApp && builderApp.rendered && item.parent) {
+        const selectedUuid = builderApp.selectedVehicleActorUuid;
+        if (selectedUuid && (item.parent.uuid === selectedUuid || item.parent.id === selectedUuid.split(".").pop())) {
+            builderApp.render();
+        }
+    }
+
+    const buildTestApp = foundry.applications.instances.get("build-test-dialog-app");
+    if (buildTestApp && buildTestApp.rendered && item.parent) {
+        buildTestApp.render();
+    }
+
     if (game.user.id !== userId) return;
     if (!item.parent) return;
 
@@ -1032,6 +1117,20 @@ Hooks.on("updateItem", async (item, changes, options, userId) => {
 });
 
 Hooks.on("deleteItem", async (item, options, userId) => {
+    // Re-render ItemBuilderApp for any client if an item is deleted from the active vehicle
+    const builderApp = foundry.applications.instances.get("itemBuilder");
+    if (builderApp && builderApp.rendered && item.parent) {
+        const selectedUuid = builderApp.selectedVehicleActorUuid;
+        if (selectedUuid && (item.parent.uuid === selectedUuid || item.parent.id === selectedUuid.split(".").pop())) {
+            builderApp.render();
+        }
+    }
+
+    const buildTestApp = foundry.applications.instances.get("build-test-dialog-app");
+    if (buildTestApp && buildTestApp.rendered && item.parent) {
+        buildTestApp.render();
+    }
+
     if (game.user.id !== userId) return;
     if (!item.parent) return;
 
@@ -1180,8 +1279,10 @@ async function handleGMRunBuildTest({ userId, dialogId, actorUuid, data }) {
 
         if (activeTestState) {
             data.isRepair = activeTestState.isRepair ?? false;
+            data.isWorkshopMod = activeTestState.isWorkshopMod ?? false;
             data.installSource = activeTestState.installSource ?? null;
             data.installSourceId = activeTestState.installSourceId ?? null;
+            data.userId = userId;
         }
 
         const options = { 
@@ -1191,7 +1292,9 @@ async function handleGMRunBuildTest({ userId, dialogId, actorUuid, data }) {
             threshold: activeTestState?.threshold,
             vehicle: vehicle,
             workshop: workshop,
-            rollCount: 1
+            rollCount: 1,
+            isWorkshopMod: activeTestState?.isWorkshopMod ?? false,
+            isRepair: activeTestState?.isRepair ?? false
         };
         const test = new game.shadowrun5e.tests.BuildTest(data, { actor }, options);
         await test.execute();
@@ -1257,8 +1360,10 @@ async function handleGMContinueBuildTest({ userId, dialogId, actorUuid, rollCoun
 
         const data = {
             isRepair: activeTestState.isRepair ?? false,
+            isWorkshopMod: activeTestState.isWorkshopMod ?? false,
             installSource: activeTestState.installSource ?? null,
             installSourceId: activeTestState.installSourceId ?? null,
+            userId: userId,
             action: {
                 skill: activeTestState.skill,
                 attribute: activeTestState.attribute,
@@ -1286,7 +1391,9 @@ async function handleGMContinueBuildTest({ userId, dialogId, actorUuid, rollCoun
             threshold: activeTestState.threshold,
             vehicle: vehicle,
             workshop: workshop,
-            rollCount: rollCount
+            rollCount: rollCount,
+            isWorkshopMod: activeTestState?.isWorkshopMod ?? false,
+            isRepair: activeTestState?.isRepair ?? false
         };
         const test = new game.shadowrun5e.tests.BuildTest(data, { actor }, options);
         await test.execute();

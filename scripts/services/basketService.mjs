@@ -202,7 +202,10 @@ export class BasketService {
 
         const updatedBasket = this._recalculateTotals(basket);
         await this.saveBasket(updatedBasket, userId);
-        //ui.notifications.info(`'${item.name}' added to basket.`);
+
+        // Find and return the added item (either stacked or new)
+        const addedItem = updatedBasket.shoppingCartItems.find(i => i.itemUuid === item.uuid && (!i.isWorkshopMod || i.vehicleActorUuid === options.vehicleActorUuid));
+        return addedItem;
     }
 
     /**

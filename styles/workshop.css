@@ -1200,3 +1200,78 @@
     color: #ff5555;
     transform: scale(1.15);
 }
+
+/* Category Specific Borders for Shelf Modification Cards */
+.mod-card.drive:not(.owner-mod) {
+    border-color: rgba(0, 240, 255, 0.25);
+}
+.mod-card.protection:not(.owner-mod) {
+    border-color: rgba(255, 170, 0, 0.25);
+}
+.mod-card.weapons:not(.owner-mod) {
+    border-color: rgba(204, 0, 0, 0.25);
+}
+.mod-card.body:not(.owner-mod) {
+    border-color: rgba(150, 150, 150, 0.25);
+}
+.mod-card.electronics:not(.owner-mod) {
+    border-color: rgba(0, 255, 102, 0.25);
+}
+.mod-card.cosmetic:not(.owner-mod) {
+    border-color: rgba(255, 0, 255, 0.25);
+}
+
+.mod-card.drive:not(.owner-mod):hover {
+    border-color: rgba(0, 240, 255, 0.8);
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.25);
+}
+.mod-card.protection:not(.owner-mod):hover {
+    border-color: rgba(255, 170, 0, 0.8);
+    box-shadow: 0 0 8px rgba(255, 170, 0, 0.25);
+}
+.mod-card.weapons:not(.owner-mod):hover {
+    border-color: rgba(204, 0, 0, 0.8);
+    box-shadow: 0 0 8px rgba(204, 0, 0, 0.25);
+}
+.mod-card.body:not(.owner-mod):hover {
+    border-color: rgba(150, 150, 150, 0.8);
+    box-shadow: 0 0 8px rgba(150, 150, 150, 0.25);
+}
+.mod-card.electronics:not(.owner-mod):hover {
+    border-color: rgba(0, 255, 102, 0.8);
+    box-shadow: 0 0 8px rgba(0, 255, 102, 0.25);
+}
+.mod-card.cosmetic:not(.owner-mod):hover {
+    border-color: rgba(255, 0, 255, 0.8);
+    box-shadow: 0 0 8px rgba(255, 0, 255, 0.25);
+}
+
+/* Drag and Drop States for Category Boxes */
+
+/* Non-matching slots become greyed out during dragging */
+.category-box.initial-invalid {
+    filter: grayscale(80%) brightness(0.6);
+    opacity: 0.45;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    background: rgba(10, 10, 10, 0.6) !important;
+    box-shadow: none !important;
+}
+
+/* Matching slot gets a subtle pulse/glow of its category color */
+.category-box.initial-valid {
+    box-shadow: 0 0 18px rgba(var(--glow-color, 255, 255, 255), 0.6);
+    border-color: rgba(var(--glow-color, 255, 255, 255), 0.9) !important;
+    animation: pulse-glow 2s infinite ease-in-out;
+}
+
+@keyframes pulse-glow {
+    0% {
+        box-shadow: 0 0 12px rgba(var(--glow-color, 255, 255, 255), 0.4);
+    }
+    50% {
+        box-shadow: 0 0 22px rgba(var(--glow-color, 255, 255, 255), 0.7);
+    }
+    100% {
+        box-shadow: 0 0 12px rgba(var(--glow-color, 255, 255, 255), 0.4);
+    }
+}

@@ -70,6 +70,14 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
 
         data.buildData = data.buildData || options?.buildData || null;
 
+        // Persist key metadata directly on the data object to ensure database synchronization
+        data.isWorkshopMod = data.isWorkshopMod || options?.isWorkshopMod || false;
+        data.isRepair = data.isRepair || options?.isRepair || false;
+        data.vehicleUuid = data.vehicleUuid || options?.vehicle?.uuid || options?.vehicleUuid || null;
+        data.workshopUuid = data.workshopUuid || options?.workshop?.uuid || options?.workshopUuid || null;
+        data.userId = data.userId || options?.userId || game.user?.id || null;
+        data.virtualModId = data.virtualModId || options?.virtualModId || null;
+
         if (options?.workshop) {
             const rating = options.workshop.system.shop?.factoryRating ?? 5;
             const cond = rating - 5;
@@ -133,10 +141,13 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
             isRepair: this.data.isRepair || false,
             installSource: this.data.installSource || null,
             installSourceId: this.data.installSourceId || null,
-            isWorkshopMod: this.options?.isWorkshopMod || false
+            isWorkshopMod: this.options?.isWorkshopMod || false,
+            virtualModId: this.data.virtualModId || null,
+            itemName: this.data.buildData?.name || null,
+            itemUuid: this.data.buildData?.uuid || null
         };
 
-        const buildTestApp = Object.values(ui.windows).find(w => w.constructor.name === "BuildTestApp");
+        const buildTestApp = foundry.applications.instances.get("build-test-dialog-app");
         if (buildTestApp) {
             buildTestApp.close();
         }
@@ -446,11 +457,12 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
 
     /** @override */
     async afterTestComplete() {
-        // If this is an inline app call, do not perform standard document creation/cleanup here.
-        if (this.data.action?.dialogId || this.options?.isWorkshopMod) {
-            console.debug("BuildTest | Inline app call or workshop mod test detected, skipping default completion handlers.");
-            return;
-        }
+        console.debug("SR5 Marketplace Debug | BuildTest afterTestComplete triggered.", { 
+            isWorkshopMod: this.data?.isWorkshopMod, 
+            isRepair: this.data?.isRepair, 
+            userId: this.data?.userId, 
+            currentUserId: game.user?.id 
+        });
 
         console.debug(`SR5 Marketplace | Test ${this.constructor.name} completed.`);
 
@@ -462,118 +474,6 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
 
         if (this.autoExecuteFollowupTest) {
             await this.executeFollowUpTest();
-        }
-
-        // Check for critical glitch on the last roll
-        const roll = this.rolls[this.rolls.length - 1];
-        const dice = roll?.dice?.[0]?.results ?? [];
-        const hits = dice.filter(d => (d?.result ?? 0) >= 5).length;
-        const ones = dice.filter(d => (d?.result ?? 0) === 1).length;
-        const pool = roll?.dice?.[0]?.number ?? 0;
-        const isGlitch = ones > pool / 2;
-        const isCritGlitch = isGlitch && hits === 0;
-
-        if (isCritGlitch) {
-            ui.notifications.error(game.i18n.localize("SR5Marketplace.ItemBuilder.CriticalGlitchPartsDestroyed"));
-            
-            // Clear builder state
-            await BuilderStateService.clearState();
-            
-            // Force re-render of the builder app if open
-            const builderApp = Object.values(ui.windows).find(w => w.constructor.name === "ItemBuilderApp");
-            if (builderApp) {
-                builderApp.tabGroups.main = "builder";
-                builderApp.render();
-            }
-            return;
-        }
-
-        if (this.success) {
-            const vehicle = this.options?.vehicle || this.actor;
-
-            if (this.data.isRepair) {
-                const healCompletely = game.settings.get("sr5-marketplace", "healCompletelyOnRepairSuccess");
-                const isVehicleTrack = !!vehicle.system.track?.physical;
-                const updatePath = isVehicleTrack ? "system.track.physical.value" : "system.physical_track.value";
-                
-                if (healCompletely) {
-                    await vehicle.update({ [updatePath]: 0 });
-                    ui.notifications.info(game.i18n.localize("SR5Marketplace.ItemBuilder.RepairHealedComplete"));
-                } else {
-                    const pTrack = vehicle.system.track?.physical || vehicle.system.physical_track || {};
-                    const currentDamage = pTrack.value ?? 0;
-                    const netHits = this.calculateNetHits().value;
-                    const newDamage = Math.max(0, currentDamage - netHits);
-                    await vehicle.update({ [updatePath]: newDamage });
-                    ui.notifications.info(game.i18n.format("SR5Marketplace.ItemBuilder.RepairHealedHits", { hits: netHits, damage: newDamage }));
-                }
-            } else {
-                const buildData = this.data.buildData;
-                if (buildData) {
-                    if (buildData.type === "vehicle") {
-                        // Send socket request to GM client to create actor and grant ownership
-                        game.socket.emit(`module.sr5-marketplace`, {
-                            action: "create_actor",
-                            actorData: buildData,
-                            userId: game.user.id
-                        });
-                        ui.notifications.info(game.i18n.format("SR5Marketplace.ItemBuilder.SuccessBuildCreated", { name: buildData.name }));
-                    } else {
-                        // Item document can be created directly by player
-                        const targetActor = vehicle || this.actor;
-                        await targetActor.createEmbeddedDocuments("Item", [buildData]);
-                        ui.notifications.info(game.i18n.format("SR5Marketplace.ItemBuilder.SuccessBuildCreated", { name: buildData.name }));
-                    }
-                }
-
-                // Handle modification item removal after successful install
-                if (this.data.installSource === "owner") {
-                    const ownerActor = this.actor; // The test roller is the owner
-                    if (ownerActor && this.data.installSourceId) {
-                        const itemExists = ownerActor.items.has(this.data.installSourceId);
-                        if (itemExists) {
-                            await ownerActor.deleteEmbeddedDocuments("Item", [this.data.installSourceId]);
-                            console.log(`SR5 Marketplace | Deleted installed modification ${this.data.installSourceId} from owner ${ownerActor.name}`);
-                        }
-                    }
-                } else if (this.data.installSource === "workshop") {
-                    const workshopActor = this.options?.workshop;
-                    if (workshopActor) {
-                        let entryId = this.data.installSourceId;
-                        if (!entryId && this.data.buildData?.uuid) {
-                            const entry = typeof workshopActor.findInventoryItem === "function" ? workshopActor.findInventoryItem(this.data.buildData.uuid) : null;
-                            if (entry) entryId = entry[0];
-                        }
-                        if (entryId) {
-                            const entryObj = workshopActor.system.shop?.inventory?.[entryId];
-                            if (entryObj) {
-                                const newQty = (entryObj.qty || 1) - 1;
-                                if (newQty <= 0) {
-                                    await workshopActor.removeItemFromInventory(entryId);
-                                    console.log(`SR5 Marketplace | Removed installed modification ${entryId} from workshop inventory`);
-                                } else {
-                                    if (typeof workshopActor.updateInventoryItem === "function") {
-                                        await workshopActor.updateInventoryItem(entryId, { qty: newQty });
-                                    } else {
-                                        await workshopActor.update({ [`system.shop.inventory.${entryId}.qty`]: newQty });
-                                    }
-                                    console.log(`SR5 Marketplace | Decremented installed modification ${entryId} quantity to ${newQty}`);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Clear builder state
-            await BuilderStateService.clearState();
-            
-            // Force re-render of the builder app if open
-            const builderApp = Object.values(ui.windows).find(w => w.constructor.name === "ItemBuilderApp");
-            if (builderApp) {
-                builderApp.tabGroups.main = "builder";
-                builderApp.render();
-            }
         }
     }
 
@@ -633,8 +533,13 @@ export class BuildTest extends game.shadowrun5e.tests.SuccessTest {
 
         const data = {
             isRepair: testParams.isRepair ?? false,
+            isWorkshopMod: options.isWorkshopMod ?? false,
             installSource: testParams.installSource ?? null,
-            installSourceId: testParams.installSourceId ?? null
+            installSourceId: testParams.installSourceId ?? null,
+            userId: game.user.id,
+            vehicleUuid: testParams.vehicle?.uuid || (typeof testParams.vehicle === "string" ? testParams.vehicle : null),
+            workshopUuid: testParams.workshop?.uuid || (typeof testParams.workshop === "string" ? testParams.workshop : null),
+            virtualModId: testParams.virtualModId ?? null
         };
         const finalOptions = { 
             ...options, 

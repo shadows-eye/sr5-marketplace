@@ -690,8 +690,12 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         // 3. If the basket is now empty, clear any associated test flags.
         if (basket.shoppingCartItems.length === 0) {
-            console.log("LOG: Basket is now empty, clearing any active test state flag.");
-            await AppTestFlagService.deleteState(); // This will clear the flag for the current user.
+            console.log("LOG: Basket is now empty, clearing any active availability test state flag.");
+            const testStates = await AppTestFlagService.readState(game.user.id);
+            const availTest = Object.values(testStates).find(t => t.testType !== "BuildTest");
+            if (availTest) {
+                await AppTestFlagService.deleteTest(availTest.id, game.user.id);
+            }
 
             // Also clear the local instance state to prevent issues until the next render.
             this.activeTestState = null;
@@ -727,16 +731,18 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
     static async #onCancelRequest(event, target) {
         await this.basketService.clearBasket();
-        await AppTestFlagService.deleteState(game.user.id);
+        if (this.activeDialogId) {
+            await AppTestFlagService.deleteTest(this.activeDialogId, game.user.id);
+        }
         this.activeTestState = null;
         this.activeDialogId = null;
 
-        const buildTestApp = Object.values(ui.windows).find(w => w.constructor.name === "BuildTestApp");
+        const buildTestApp = foundry.applications.instances.get("build-test-dialog-app");
         if (buildTestApp) {
             buildTestApp.close();
         }
 
-        const builderApp = Object.values(ui.windows).find(w => w.constructor.name === "ItemBuilderApp");
+        const builderApp = foundry.applications.instances.get("itemBuilder");
         if (builderApp) {
             builderApp.render();
         }

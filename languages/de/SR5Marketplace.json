@@ -81,6 +81,7 @@
         "RemoveItem": "Gegenstand entfernen",
         "StockOrder": "Bestand / Bestellung",
         "InStock": "Auf Lager",
+        "OutOfStock": "Nicht vorrätig",
         "Compendiums": "Kompendien",
         "Folders": "Ordner",
         "Items": "Artikel",
@@ -554,6 +555,8 @@
         }
     },
     "Factory": {
+        "AddAllToBasket": "Alle in den Korb",
+        "BuildTestAll": "Alle Mod-Proben würfeln",
         "ModifyVehicle": "Fahrzeug modifizieren",
         "ChangeVehicle": "Fahrzeug wechseln",
         "SelectorTitle": "Fahrzeug / Drohne auswählen",

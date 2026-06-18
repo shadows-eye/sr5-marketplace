@@ -82,6 +82,7 @@
             "RemoveItem": "Remove Item",
             "StockOrder": "Stock / Order",
             "InStock": "In Stock",
+            "OutOfStock": "Out of Stock",
             "Compendiums": "Compendiums",
             "Folders": "Folders",
             "Items": "Items",
@@ -553,6 +554,8 @@
             }
         },
         "Factory": {
+            "AddAllToBasket": "Add All to Basket",
+            "BuildTestAll": "Build Test All",
             "ModifyVehicle": "Modify Vehicle",
             "ChangeVehicle": "Change Vehicle",
             "SelectorTitle": "Select Vehicle / Drone",
