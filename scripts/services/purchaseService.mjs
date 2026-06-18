@@ -15,7 +15,7 @@ export class PurchaseService {
      * @returns {Promise<object|null>} The valid basket object or null.
      * @private
      */
-    static async _validateAndGetBasket(userId, {resetInvalid = false} = {}) {
+    static async _validateAndGetBasket(userId, { resetInvalid = false } = {}) {
         const user = game.users.get(userId);
         if (!user) return null;
 
@@ -30,7 +30,7 @@ export class PurchaseService {
             }
             return null;
         }
-        
+
         const basketService = new BasketService();
         // Ensure the basket has all default properties.
         return foundry.utils.mergeObject(basketService._getDefaultBasketState(), basket);
@@ -53,17 +53,17 @@ export class PurchaseService {
                 for (const request of basketState.orderReviewItems) {
                     const doc = request.createdForActor ? await fromUuid(request.createdForActor) : null;
                     const actor = doc instanceof Actor ? doc : doc?.actor || null;
-                    allPendingRequests.push({ 
-                        user: user.toJSON(), 
-                        basket: request, 
-                        actor: actor ? { 
-                            name: actor.name, 
-                            uuid: actor.uuid, 
-                            img: actor.img, 
-                            nuyen: actor.system.nuyen, 
+                    allPendingRequests.push({
+                        user: user.toJSON(),
+                        basket: request,
+                        actor: actor ? {
+                            name: actor.name,
+                            uuid: actor.uuid,
+                            img: actor.img,
+                            nuyen: actor.system.nuyen,
                             karma: actor.system.karma.value,
                             essence: actor.system.attributes.essence?.value ?? 6
-                        } : null 
+                        } : null
                     });
                 }
             }
@@ -75,14 +75,14 @@ export class PurchaseService {
         if (!user) return;
 
         const basketService = new BasketService();
-        const basket = await basketService.getBasket(userId); 
+        const basket = await basketService.getBasket(userId);
 
         if (!basket.shoppingCartItems || basket.shoppingCartItems.length === 0) {
             return ui.notifications.warn("Your shopping cart is empty.");
         }
 
         const testStates = await AppTestFlagService.readState(userId);
-        const testState = Object.values(testStates)[0] || null;
+        const testState = Object.values(testStates).find(t => t.testType !== "BuildTest") || null;
 
         const newRequest = {
             basketUUID: basket.basketUUID,
@@ -100,17 +100,17 @@ export class PurchaseService {
         };
 
         basket.orderReviewItems.push(newRequest);
-        
+
         // Clear the active cart fields
         basket.shoppingCartItems = [];
         basket.createdForActor = null;
         basket.selectedContactId = null;
         this._recalculateTotals(basket); // Recalculate totals to zero them out
-        
+
         await basketService.saveBasket(basket, userId);
 
         if (testState) {
-            await AppTestFlagService.deleteState(userId);
+            await AppTestFlagService.deleteTest(testState.id, userId);
         }
 
         game.socket.emit("module.sr5-marketplace", { type: "new_request", senderId: user.id, basketUUID: newRequest.basketUUID });
@@ -155,7 +155,7 @@ export class PurchaseService {
         const user = game.users.get(userId);
         if (!user) return;
         const basketService = new BasketService();
-        
+
         // --- FIX: Pass userId as an argument instead of using .call() ---
         const basket = await basketService.getBasket(userId);
 
@@ -182,7 +182,7 @@ export class PurchaseService {
 
         const request = basket.orderReviewItems.find(r => r.basketUUID === basketUUID);
         if (!request) return;
-        
+
         const itemToReject = request.basketItems.find(i => i.basketItemUuid === basketItemUuid);
         const initialItemCount = request.basketItems.length;
         request.basketItems = request.basketItems.filter(i => i.basketItemUuid !== basketItemUuid);
@@ -197,7 +197,7 @@ export class PurchaseService {
                     const doc = request.createdForActor ? await fromUuid(request.createdForActor) : null;
                     const actor = doc instanceof Actor ? doc : doc?.actor || null;
                     const useSmartphone = !!(game.modules.get("smartphone-widget")?.active && game.settings.get("sr5-marketplace", "sendToSmartphone"));
-                    
+
                     const templatePath = useSmartphone && actor
                         ? "modules/sr5-marketplace/templates/chat/orderRejectionPhone.html"
                         : "modules/sr5-marketplace/templates/chat/orderRejection.html";
@@ -248,7 +248,7 @@ export class PurchaseService {
 
     static async rejectBasket(userId, basketUUID) {
         // Use the validator to ensure we have a good basket object.
-        const basket = await this._validateAndGetBasket(userId, {resetInvalid: true});
+        const basket = await this._validateAndGetBasket(userId, { resetInvalid: true });
         if (!basket?.orderReviewItems) return;
 
         const request = basket.orderReviewItems.find(r => r.basketUUID === basketUUID);
@@ -270,7 +270,7 @@ export class PurchaseService {
                         const doc = request.createdForActor ? await fromUuid(request.createdForActor) : null;
                         const actor = doc instanceof Actor ? doc : doc?.actor || null;
                         const useSmartphone = !!(game.modules.get("smartphone-widget")?.active && game.settings.get("sr5-marketplace", "sendToSmartphone"));
-                        
+
                         const templatePath = useSmartphone && actor
                             ? "modules/sr5-marketplace/templates/chat/orderRejectionPhone.html"
                             : "modules/sr5-marketplace/templates/chat/orderRejection.html";
@@ -327,7 +327,7 @@ export class PurchaseService {
 
         const requestIndex = basket.orderReviewItems.findIndex(r => r.basketUUID === basketUUID);
         if (requestIndex === -1) return;
-        
+
         const requestToProcess = basket.orderReviewItems[requestIndex];
         const doc = await fromUuid(requestToProcess.createdForActor);
         const actor = doc instanceof Actor ? doc : doc?.actor || null;
@@ -335,7 +335,7 @@ export class PurchaseService {
         // --- REFACTOR ---
         // Call directPurchase with the actor and the request data.
         const success = await this.directPurchase(actor, requestToProcess, { userName: game.users.get(userId)?.name });
-        
+
         if (success) {
             basket.orderReviewItems.splice(requestIndex, 1);
             await basketService.saveBasket(basket, userId);
@@ -379,7 +379,7 @@ export class PurchaseService {
 
         const basketItems = basket.basketItems || basket.shoppingCartItems;
         if (!basketItems || basketItems.length === 0) return false;
-        
+
         if (!actor) {
             const doc = await fromUuid(basket.createdForActor);
             actor = doc instanceof Actor ? doc : doc?.actor || null;
@@ -390,10 +390,10 @@ export class PurchaseService {
         }
 
         this._recalculateTotals(basket);
-        
+
         const currentNuyen = actor.system.nuyen;
         const currentKarma = actor.system.karma.value;
-        if (currentNuyen < basket.totalCost) { 
+        if (currentNuyen < basket.totalCost) {
             ui.notifications.warn(`${actor.name} cannot afford this purchase. Needs ${basket.totalCost} ¥.`);
             return false;
         }
@@ -405,9 +405,31 @@ export class PurchaseService {
         await actor.update({ "system.nuyen": currentNuyen - basket.totalCost, "system.karma.value": currentKarma - basket.totalKarma });
 
         const itemsToCreate = [];
+        const workshopModsAdded = [];
         const userId = game.user.id;
         for (const basketItem of basketItems) {
-            if (basketItem.isCustomBuild) {
+            if (basketItem.isWorkshopMod) {
+                const factoryActor = basketItem.factoryActorUuid ? await fromUuid(basketItem.factoryActorUuid) : null;
+                const sourceItem = await fromUuid(basketItem.itemUuid);
+                if (factoryActor && sourceItem) {
+                    const existingEntry = typeof factoryActor.findInventoryItem === "function" ? factoryActor.findInventoryItem(sourceItem.uuid) : null;
+                    if (existingEntry) {
+                        const [entryId, entry] = existingEntry;
+                        await factoryActor.updateInventoryItem(entryId, { qty: (entry.qty || 0) + basketItem.buyQuantity });
+                    } else {
+                        const shopData = {
+                            qty: basketItem.buyQuantity,
+                            itemPrice: basketItem.cost,
+                            sellPrice: basketItem.cost,
+                            buyPrice: basketItem.cost,
+                            availability: basketItem.availability,
+                            buyTime: { value: 24, unit: "hours" }
+                        };
+                        await factoryActor.addItemToInventory(sourceItem, shopData);
+                    }
+                    workshopModsAdded.push(basketItem);
+                }
+            } else if (basketItem.isCustomBuild) {
                 const buildData = basketItem.customData;
                 if (buildData.type === "vehicle") {
                     await this._createVehicleActor(buildData, userId);
@@ -426,11 +448,11 @@ export class PurchaseService {
 
                         // --- FIX: Only set technology properties if the technology object exists. ---
                         // This prevents errors for items like qualities, spells, and actions.
-                        if ( "technology" in itemData.system ) {
+                        if ("technology" in itemData.system) {
                             itemData.system.technology.rating = basketItem.selectedRating;
                             itemData.system.technology.cost = basketItem.cost;
                         }
-                        
+
                         itemsToCreate.push(itemData);
                     }
                 }
@@ -453,6 +475,13 @@ export class PurchaseService {
                     name: d.name,
                     uuid: d.uuid
                 }));
+                for (const wm of workshopModsAdded) {
+                    chatItems.push({
+                        _id: wm.basketItemUuid,
+                        name: wm.name,
+                        uuid: wm.itemUuid
+                    });
+                }
 
                 const statusMessages = [];
                 if (userName) {
@@ -463,11 +492,16 @@ export class PurchaseService {
                     karma: basket.totalKarma,
                     actor: actor.name
                 }));
-                statusMessages.push(game.i18n.format("SR5Marketplace.Marketplace.Notifications.ItemsAdded", {
-                    count: itemsToCreate.length,
-                    actor: actor.name
-                }));
-                
+                if (itemsToCreate.length > 0) {
+                    statusMessages.push(game.i18n.format("SR5Marketplace.Marketplace.Notifications.ItemsAdded", {
+                        count: itemsToCreate.length,
+                        actor: actor.name
+                    }));
+                }
+                for (const wm of workshopModsAdded) {
+                    statusMessages.push(game.i18n.format("SR5Marketplace.Marketplace.Notifications.WorkshopArrival", { name: wm.name }));
+                }
+
                 const confirmData = {
                     actorId: actor.id,
                     actorName: actor.name,
@@ -487,7 +521,7 @@ export class PurchaseService {
                     : "modules/sr5-marketplace/templates/chat/orderConfirmation.html";
 
                 let html = await foundry.applications.handlebars.renderTemplate(templatePath, confirmData);
-                
+
                 if (useSmartphone && actor) {
                     const phoneApi = game.modules.get("smartphone-widget")?.api;
                     const phone = await phoneApi?.getPhoneForActor(actor.id);
@@ -526,16 +560,16 @@ export class PurchaseService {
 
         return true;
     }
-    
+
     static _recalculateTotals(basket) {
         const items = basket.basketItems || basket.shoppingCartItems || [];
         basket.totalCost = items.reduce((acc, item) => acc + ((item.cost || 0) * (item.buyQuantity || 0)), 0);
         basket.totalKarma = items.reduce((acc, item) => acc + ((item.karma || 0) * (item.buyQuantity || 0)), 0);
         basket.totalEssenceCost = items.reduce((acc, item) => acc + ((item.essence || 0) * (item.buyQuantity || 0)), 0);
-        
+
         const basketService = new BasketService();
         basket.totalAvailability = basketService._combineAvailabilities(items.flatMap(item => Array(item.buyQuantity || 1).fill(item.availability)));
-        
+
         return basket;
     }
 }

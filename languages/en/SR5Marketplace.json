@@ -81,6 +81,7 @@
         "RemoveItem": "Remove Item",
         "StockOrder": "Stock / Order",
         "InStock": "In Stock",
+        "OutOfStock": "Out of Stock",
         "Compendiums": "Compendiums",
         "Folders": "Folders",
         "Items": "Items",
@@ -138,6 +139,38 @@
             "PremiumThemes": {
                 "name": "Enable Premium Themes",
                 "hint": "Make premium custom themes (Apple Silicon, Cyber Neon, Neon Light) pickable in the core Foundry UI configuration menu."
+            },
+            "AllowOverrideModLimits": {
+                "name": "Allow Override of Modification Limits",
+                "hint": "If enabled, players can drag and drop modifications beyond the vehicle's slot capacity, but doing so increases the build test threshold."
+            },
+            "OverrideModLimitsThresholdIncrease": {
+                "name": "Additional Threshold for Over-Modification",
+                "hint": "The additional threshold value added to the build test when installing modifications beyond slot limits. Allows 0 or empty."
+            },
+            "SlotOverrideDrive": {
+                "name": "Slot Override: Powertrain",
+                "hint": "Override the slot limit for Powertrain/Drive modifications. Set to 0 to use the vehicle's Body rating."
+            },
+            "SlotOverrideProtection": {
+                "name": "Slot Override: Protection",
+                "hint": "Override the slot limit for Protection/Armor modifications. Set to 0 to use the vehicle's Body rating."
+            },
+            "SlotOverrideWeapons": {
+                "name": "Slot Override: Weapons",
+                "hint": "Override the slot limit for Weapon modifications. Set to 0 to use the vehicle's Body rating."
+            },
+            "SlotOverrideBody": {
+                "name": "Slot Override: Body",
+                "hint": "Override the slot limit for Body modifications. Set to 0 to use the vehicle's Body rating."
+            },
+            "SlotOverrideElectronics": {
+                "name": "Slot Override: Electronics",
+                "hint": "Override the slot limit for Electromagnetic/Electronics modifications. Set to 0 to use the vehicle's Body rating."
+            },
+            "SlotOverrideCosmetic": {
+                "name": "Slot Override: Cosmetic",
+                "hint": "Override the slot limit for Cosmetic modifications. Set to 0 to use the vehicle's Body rating."
             },
             "title": "Marketplace Settings",
             "description": "Click on an item type in any column to assign it to that behavior category. Changes are saved instantly. Unique items can only be purchased once per character, stacking items will be stacked in the same item, and single items can be ordered multiple times per order as one Item Instance.",
@@ -252,9 +285,11 @@
         },
         "Actor": {
             "SelectAnActor": "Select an Actor",
+            "SwitchActor": "Switch Actor",
             "SelectActorTooltip": "Please select an actor to begin shopping.",
             "RequestActor": "Request From",
-            "Funds": "Funds"
+            "Funds": "Funds",
+            "PurchasingActor": "Purchasing Actor"
         },
         "Contacts": {
             "SelectContact": "Select a contact to Order with",
@@ -446,7 +481,8 @@
             "PurchaseRequestRejected": "Purchase request for user {name} has been rejected.",
             "PurchaseApproved": "Purchase approved for user {name}.",
             "DeductedResources": "Deducted {cost} ¥ and {karma} Karma from {actor}.",
-            "ItemsAdded": "Added {count} new item(s) to {actor}'s inventory."
+            "ItemsAdded": "Added {count} new item(s) to {actor}'s inventory.",
+            "WorkshopArrival": "{name} has arrived in the workshop."
         },
         "NoContacts": "Has no Contacts"
     },
@@ -547,6 +583,34 @@
                     "Content": "That concludes the Getting Started tour! You are now ready to run dynamic, lore-friendly marketplace transactions in your Shadowrun 5e games."
                 }
             }
+        }
+    },
+    "Factory": {
+        "AddAllToBasket": "Add All to Basket",
+        "BuildTestAll": "Build Test All",
+        "ModifyVehicle": "Modify Vehicle",
+        "ChangeVehicle": "Change Vehicle",
+        "SelectorTitle": "Select Vehicle / Drone",
+        "SelectorSubtitle": "Select a vehicle or drone in range of the factory to modify or repair it.",
+        "NoVehiclesInRadius": "No vehicles or drones detected in range.",
+        "Repair": {
+            "Title": "Repair Vehicle",
+            "DamageTrack": "Physical Damage Track",
+            "RollButton": "Roll Repair"
+        },
+        "Shelf": {
+            "Title": "Factory Shelf",
+            "Empty": "No modifications available on shelf.",
+            "AllItemsTooltip": "All items",
+            "FactoryInventoryTooltip": "Factory inventory"
+        },
+        "Category": {
+            "Drive": "Drive",
+            "Protection": "Protection",
+            "Weapons": "Weapons",
+            "Hull": "Hull",
+            "Electronics": "Electronics",
+            "Cosmetic": "Cosmetic"
         }
     }
 }

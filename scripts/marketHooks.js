@@ -20,7 +20,8 @@ import {
     systemDataMapperService,
     ItemDataServices, // <-- We import the class here because you need 'new ItemDataServices()' for your API
     PurchaseService,
-    BasketService
+    BasketService,
+    factoryFlow
 } from './services/_module.mjs';
 
 // Re-export instances/classes as well ONLY IF you need them available globally 
@@ -35,7 +36,8 @@ export {
     diceHelperService,
     themeService,
     systemDataMapperService,
-    ItemDataServices
+    ItemDataServices,
+    ItemBuilderApp
 };
 
 import { inGameMarketplace } from "./apps/inGameMarketplace.mjs";
@@ -46,7 +48,7 @@ import { ShopActorSheet } from "../sheets/ShopActorSheet.mjs";
 // --- 4. API IMPORTS ---
 import { MarketplaceAPI, SR5SystemAPI } from './API/_module.mjs';
 import { ItemBuilderApp } from "./apps/ItemBuilderApp.mjs";
-import { BuildTestApp } from "./apps/BuildTestApp.mjs";
+import { BuildTestApp } from "./apps/documents/dialog/BuildTestApp.mjs";
 import { SR5CreateActorApp } from "./apps/SR5CreateActorApp.mjs";
 import { AppDialogBuilder } from "./apps/documents/dialog/AppDialogBuilder.mjs";
 import { AppTestFlagService } from "./services/AppTestFlagService.mjs";
@@ -77,9 +79,10 @@ const initializeTemplates = () => {
         "modules/sr5-marketplace/templates/documents/items/itemPreviewApp/item-preview.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/AvailabilityDialog.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/Builder.html",
-        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/BuildTestDialog.html",
+        "modules/sr5-marketplace/templates/documents/tests/BuildTestDialog.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/ItemDetails.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/vehicleDetails.html",
+        "modules/sr5-marketplace/templates/apps/itemBuilder/partials/Workshop.html",
         "modules/sr5-marketplace/templates/apps/itemBuilder/partials/multi-select.html",
         "modules/sr5-marketplace/templates/apps/marketshouter/marketshouter.html",
         "modules/sr5-marketplace/templates/chat/chatMessageRequest.html",
@@ -161,6 +164,26 @@ const initializeSettings = () => {
         config: true,
         type: Boolean,
         default: true,
+        restricted: true,
+    });
+
+    game.settings.register("sr5-marketplace", "allowOverrideModLimits", {
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.AllowOverrideModLimits.name"),
+        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.AllowOverrideModLimits.hint"),
+        scope: "world",
+        config: true,
+        type: Boolean,
+        default: false,
+        restricted: true,
+    });
+
+    game.settings.register("sr5-marketplace", "overrideModLimitsThresholdIncrease", {
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.OverrideModLimitsThresholdIncrease.name"),
+        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.OverrideModLimitsThresholdIncrease.hint"),
+        scope: "world",
+        config: true,
+        type: Number,
+        default: 0,
         restricted: true,
     });
 
@@ -280,6 +303,20 @@ const initializeSettings = () => {
         type: Boolean,
         default: false,
     });
+
+    const slotCategories = ["drive", "protection", "weapons", "body", "electronics", "cosmetic"];
+    for (const cat of slotCategories) {
+        const capCat = cat.charAt(0).toUpperCase() + cat.slice(1);
+        game.settings.register("sr5-marketplace", `slotOverride_${cat}`, {
+            name: game.i18n.localize(`SR5Marketplace.Marketplace.Settings.SlotOverride${capCat}.name`),
+            hint: game.i18n.localize(`SR5Marketplace.Marketplace.Settings.SlotOverride${capCat}.hint`),
+            scope: "world",
+            config: true,
+            type: Number,
+            default: 0,
+            restricted: true,
+        });
+    }
 
     registerShopRegionHooks();
 };
@@ -624,7 +661,8 @@ Hooks.once("init", () => {
 
         // 3. Instantiate your sub-APIs using the static properties
         marketplace: new MarketplaceAPI.Marketplace(),
-        itemBuilder: new MarketplaceAPI.ItemBuilder()
+        itemBuilder: new MarketplaceAPI.ItemBuilder(),
+        factory: new MarketplaceAPI.Factory()
     };
 
     // 4. Expose them directly on the root API container for backward compatibility
@@ -673,6 +711,9 @@ Hooks.on("ready", async () => {
     // Register socket listener
     game.socket.on("module.sr5-marketplace", async (data) => {
         if (game.user.isGM) {
+            // Only the primary active GM should handle the socket event to prevent duplicate operations when multiple GMs are online
+            const activeGM = game.users.activeGM;
+            if (activeGM && game.user.id !== activeGM.id) return;
             if (data.type === "run_availability_test") {
                 await handleGMRunAvailabilityTest(data);
             } else if (data.type === "continue_extended_test") {
@@ -696,6 +737,38 @@ Hooks.on("ready", async () => {
                 const newActor = await Actor.create(actorData);
                 if (newActor) {
                     console.log(`SR5 Marketplace | GM created actor: ${newActor.name} for user ${data.userId}`);
+                }
+            } else if (data.action === "update_actor_field") {
+                const actor = await fromUuid(data.actorUuid);
+                if (actor) {
+                    await actor.update(data.updateData);
+                    console.log(`SR5 Marketplace | GM updated actor field for: ${actor.name}`);
+                }
+            } else if (data.action === "install_modification") {
+                const vehicleDoc = await fromUuid(data.vehicleUuid);
+                const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+                const workshopDoc = data.workshopActorUuid ? await fromUuid(data.workshopActorUuid) : null;
+                const workshopActor = workshopDoc instanceof Actor ? workshopDoc : workshopDoc?.actor || null;
+                const purchasingDoc = data.purchasingActorUuid ? await fromUuid(data.purchasingActorUuid) : null;
+                const purchasingActor = purchasingDoc instanceof Actor ? purchasingDoc : purchasingDoc?.actor || null;
+
+                if (vehicle) {
+                    const success = await factoryFlow.installModification(vehicle, workshopActor, purchasingActor, data.vMod);
+                    if (success) {
+                        game.socket.emit("module.sr5-marketplace", {
+                            action: "install_modification_complete",
+                            vehicleUuid: vehicle.uuid,
+                            virtualId: data.vMod.id,
+                            userId: data.userId
+                        });
+                    }
+                }
+            } else if (data.action === "install_modification_complete") {
+                if (game.user.id === data.userId) {
+                    const builderApp = foundry.applications.instances.get("itemBuilder");
+                    if (builderApp && builderApp.rendered) {
+                        await builderApp.handleInstallComplete(data.vehicleUuid, data.virtualId);
+                    }
                 }
             }
         }
@@ -723,6 +796,19 @@ Hooks.on("updateUser", (user, changes) => {
             if (game.user.isGM || user.id === game.user.id) {
                 shouter.render();
             }
+        }
+
+        // Reactively sync basket associations for the user whose basket changed
+        if (user.id === game.user.id) {
+            AppTestFlagService.syncBasketAssociations(user);
+        }
+    }
+
+    // Reactively refresh ItemBuilderApp when the user's test flags change
+    if (user.id === game.user.id && foundry.utils.hasProperty(changes, "flags.sr5-marketplace.appTestState")) {
+        const builderApp = foundry.applications.instances.get("itemBuilder");
+        if (builderApp && builderApp.rendered) {
+            builderApp.render();
         }
     }
 });
@@ -752,8 +838,12 @@ Hooks.on("canvasReady", () => {
 
             console.log(`Marketplace | Intercepted double-click on Shop Actor: ${hoveredToken.name}`);
 
-            // Open the marketplace application, passing the shop's UUID as an option.
-            new inGameMarketplace({ shopActorUuid: hoveredToken.actor.uuid }).render(true);
+            if (hoveredToken.actor.system.shop?.isFactory) {
+                new ItemBuilderApp({ workshopActorUuid: hoveredToken.actor.uuid, initialTab: "workshop" }).render(true);
+            } else {
+                // Open the marketplace application, passing the shop's UUID as an option.
+                new inGameMarketplace({ shopActorUuid: hoveredToken.actor.uuid }).render(true);
+            }
         }
     });
 
@@ -781,6 +871,33 @@ Hooks.on("updateToken", (token, changes) => {
         if (shouter) {
             shouter.render();
         }
+    }
+});
+
+/**
+ * Reactively refresh the MarketShouter widget when the canvas is ready (e.g., scene switch).
+ */
+Hooks.on("canvasReady", () => {
+    const shouter = foundry.applications.instances.get("marketshouter");
+    if (shouter) {
+        shouter.render();
+    }
+});
+
+/**
+ * Reactively refresh the MarketShouter widget when a token is created or deleted.
+ */
+Hooks.on("createToken", () => {
+    const shouter = foundry.applications.instances.get("marketshouter");
+    if (shouter) {
+        shouter.render();
+    }
+});
+
+Hooks.on("deleteToken", () => {
+    const shouter = foundry.applications.instances.get("marketshouter");
+    if (shouter) {
+        shouter.render();
     }
 });
 
@@ -870,6 +987,15 @@ function getShopsForAnyEmployee(actor) {
 }
 
 Hooks.on("updateActor", async (actor, changes, options, userId) => {
+    // Re-render ItemBuilderApp for any client if the active vehicle is updated
+    const builderApp = foundry.applications.instances.get("itemBuilder");
+    if (builderApp && builderApp.rendered) {
+        const selectedUuid = builderApp.selectedVehicleActorUuid;
+        if (selectedUuid && (actor.uuid === selectedUuid || actor.id === selectedUuid.split(".").pop())) {
+            builderApp.render();
+        }
+    }
+
     if (game.user.id !== userId) return;
 
     // If the Shop Actor itself is updated and its employees/serving employee changed, sync their devices to host
@@ -926,6 +1052,20 @@ Hooks.on("updateActor", async (actor, changes, options, userId) => {
 });
 
 Hooks.on("createItem", async (item, options, userId) => {
+    // Re-render ItemBuilderApp for any client if an item is created/added on the active vehicle
+    const builderApp = foundry.applications.instances.get("itemBuilder");
+    if (builderApp && builderApp.rendered && item.parent) {
+        const selectedUuid = builderApp.selectedVehicleActorUuid;
+        if (selectedUuid && (item.parent.uuid === selectedUuid || item.parent.id === selectedUuid.split(".").pop())) {
+            builderApp.render();
+        }
+    }
+
+    const buildTestApp = foundry.applications.instances.get("build-test-dialog-app");
+    if (buildTestApp && buildTestApp.rendered && item.parent) {
+        buildTestApp.render();
+    }
+
     if (game.user.id !== userId) return;
     if (!item.parent) return;
 
@@ -961,6 +1101,20 @@ Hooks.on("createItem", async (item, options, userId) => {
 });
 
 Hooks.on("updateItem", async (item, changes, options, userId) => {
+    // Re-render ItemBuilderApp for any client if an item is updated on the active vehicle
+    const builderApp = foundry.applications.instances.get("itemBuilder");
+    if (builderApp && builderApp.rendered && item.parent) {
+        const selectedUuid = builderApp.selectedVehicleActorUuid;
+        if (selectedUuid && (item.parent.uuid === selectedUuid || item.parent.id === selectedUuid.split(".").pop())) {
+            builderApp.render();
+        }
+    }
+
+    const buildTestApp = foundry.applications.instances.get("build-test-dialog-app");
+    if (buildTestApp && buildTestApp.rendered && item.parent) {
+        buildTestApp.render();
+    }
+
     if (game.user.id !== userId) return;
     if (!item.parent) return;
 
@@ -996,6 +1150,20 @@ Hooks.on("updateItem", async (item, changes, options, userId) => {
 });
 
 Hooks.on("deleteItem", async (item, options, userId) => {
+    // Re-render ItemBuilderApp for any client if an item is deleted from the active vehicle
+    const builderApp = foundry.applications.instances.get("itemBuilder");
+    if (builderApp && builderApp.rendered && item.parent) {
+        const selectedUuid = builderApp.selectedVehicleActorUuid;
+        if (selectedUuid && (item.parent.uuid === selectedUuid || item.parent.id === selectedUuid.split(".").pop())) {
+            builderApp.render();
+        }
+    }
+
+    const buildTestApp = foundry.applications.instances.get("build-test-dialog-app");
+    if (buildTestApp && buildTestApp.rendered && item.parent) {
+        buildTestApp.render();
+    }
+
     if (game.user.id !== userId) return;
     if (!item.parent) return;
 
@@ -1089,7 +1257,18 @@ async function handleGMContinueExtendedTest({ userId, dialogId, actorUuid, rollC
 
         const previousHits = activeTestState.result.values.extendedHits.value;
         test.data.values.extendedHits.value += previousHits;
-        test.data.values.extendedHits.mod.push({ name: "Previous Hits", value: previousHits });
+        if (test.data.values.extendedHits.mod) {
+            test.data.values.extendedHits.mod.push({ name: "Previous Hits", value: previousHits });
+        }
+        if (test.data.values.extendedHits.changes) {
+            test.data.values.extendedHits.changes.push({
+                name: "Previous Hits",
+                value: previousHits,
+                mode: typeof CONST !== 'undefined' ? (CONST.ACTIVE_EFFECT_MODES?.ADD ?? 2) : 2,
+                priority: 0,
+                enabled: true
+            });
+        }
 
         let finalStatus = 'extended-inprogress';
         if (test.data.values.extendedHits.value >= test.data.threshold.value || test.pool.value <= 0) {
@@ -1123,14 +1302,50 @@ async function handleGMRunBuildTest({ userId, dialogId, actorUuid, data }) {
         const actor = doc instanceof Actor ? doc : doc?.actor || null;
         if (!actor) return;
 
-        const options = { showDialog: false, showMessage: false };
+        const testStates = await AppTestFlagService.readState(userId);
+        const activeTestState = testStates[dialogId];
+
+        const vehicleDoc = activeTestState?.vehicleUuid ? await fromUuid(activeTestState.vehicleUuid) : null;
+        const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+        const workshopDoc = activeTestState?.workshopUuid ? await fromUuid(activeTestState.workshopUuid) : null;
+        const workshop = workshopDoc instanceof Actor ? workshopDoc : workshopDoc?.actor || null;
+
+        if (activeTestState) {
+            data.isRepair = activeTestState.isRepair ?? false;
+            data.isWorkshopMod = activeTestState.isWorkshopMod ?? false;
+            data.installSource = activeTestState.installSource ?? null;
+            data.installSourceId = activeTestState.installSourceId ?? null;
+            data.userId = userId;
+        }
+
+        const options = {
+            showDialog: false,
+            showMessage: false,
+            buildData: activeTestState?.buildData,
+            threshold: activeTestState?.threshold,
+            vehicle: vehicle,
+            workshop: workshop,
+            rollCount: 1,
+            isWorkshopMod: activeTestState?.isWorkshopMod ?? false,
+            isRepair: activeTestState?.isRepair ?? false
+        };
         const test = new game.shadowrun5e.tests.BuildTest(data, { actor }, options);
         await test.execute();
 
         let finalStatus = 'extended-inprogress';
-        if (test.success || test.pool.value <= 0) {
+        const targetThreshold = activeTestState?.threshold ?? test.data.threshold?.value ?? 12;
+        if (test.success || test.data.values.extendedHits.value >= targetThreshold || test.pool.value <= 0) {
             finalStatus = 'resolved';
         }
+        console.log("Marketplace Builder | GM Run Build Test Threshold check:", {
+            extendedHits: test.data.values.extendedHits?.value,
+            targetThreshold: targetThreshold,
+            poolValue: test.pool.value,
+            isSuccess: test.success,
+            isHitsMet: test.data.values.extendedHits?.value >= targetThreshold,
+            isPoolExhausted: test.pool.value <= 0,
+            finalStatus: finalStatus
+        });
 
         // Check if crit glitched on last roll
         const roll = test.rolls[test.rolls.length - 1];
@@ -1166,7 +1381,7 @@ async function handleGMRunBuildTest({ userId, dialogId, actorUuid, data }) {
     }
 }
 
-async function handleGMContinueBuildTest({ userId, dialogId, actorUuid, rollCount }) {
+async function handleGMContinueBuildTest({ userId, dialogId, actorUuid, rollCount, newAppliedModifiers }) {
     try {
         const doc = await fromUuid(actorUuid);
         const actor = doc instanceof Actor ? doc : doc?.actor || null;
@@ -1177,10 +1392,15 @@ async function handleGMContinueBuildTest({ userId, dialogId, actorUuid, rollCoun
         if (!activeTestState) return;
 
         const data = {
+            isRepair: activeTestState.isRepair ?? false,
+            isWorkshopMod: activeTestState.isWorkshopMod ?? false,
+            installSource: activeTestState.installSource ?? null,
+            installSourceId: activeTestState.installSourceId ?? null,
+            userId: userId,
             action: {
                 skill: activeTestState.skill,
                 attribute: activeTestState.attribute,
-                modifiers: activeTestState.appliedModifiers,
+                modifiers: newAppliedModifiers || activeTestState.appliedModifiers,
                 workingConditions: activeTestState.workingConditions,
                 toolsParts: activeTestState.toolsParts,
                 plansInstructions: activeTestState.plansInstructions,
@@ -1192,17 +1412,53 @@ async function handleGMContinueBuildTest({ userId, dialogId, actorUuid, rollCoun
         };
 
         const previousHits = activeTestState.result.values.extendedHits.value;
-        const options = { showDialog: false, showMessage: false };
+        const vehicleDoc = activeTestState.vehicleUuid ? await fromUuid(activeTestState.vehicleUuid) : null;
+        const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+        const workshopDoc = activeTestState.workshopUuid ? await fromUuid(activeTestState.workshopUuid) : null;
+        const workshop = workshopDoc instanceof Actor ? workshopDoc : workshopDoc?.actor || null;
+
+        const options = {
+            showDialog: false,
+            showMessage: false,
+            buildData: activeTestState.buildData,
+            threshold: activeTestState.threshold,
+            vehicle: vehicle,
+            workshop: workshop,
+            rollCount: rollCount,
+            isWorkshopMod: activeTestState?.isWorkshopMod ?? false,
+            isRepair: activeTestState?.isRepair ?? false
+        };
         const test = new game.shadowrun5e.tests.BuildTest(data, { actor }, options);
         await test.execute();
 
         test.data.values.extendedHits.value += previousHits;
-        test.data.values.extendedHits.mod.push({ name: "Previous Hits", value: previousHits });
+        if (test.data.values.extendedHits.mod) {
+            test.data.values.extendedHits.mod.push({ name: "Previous Hits", value: previousHits });
+        }
+        if (test.data.values.extendedHits.changes) {
+            test.data.values.extendedHits.changes.push({
+                name: "Previous Hits",
+                value: previousHits,
+                mode: typeof CONST !== 'undefined' ? (CONST.ACTIVE_EFFECT_MODES?.ADD ?? 2) : 2,
+                priority: 0,
+                enabled: true
+            });
+        }
 
         let finalStatus = 'extended-inprogress';
-        if (test.data.values.extendedHits.value >= test.data.threshold.value || test.pool.value <= 0) {
+        const targetThreshold = activeTestState?.threshold ?? test.data.threshold?.value ?? 12;
+        if (test.success || test.data.values.extendedHits.value >= targetThreshold || test.pool.value <= 0) {
             finalStatus = 'resolved';
         }
+        console.log("Marketplace Builder | GM Continue Build Test Threshold check:", {
+            extendedHits: test.data.values.extendedHits?.value,
+            targetThreshold: targetThreshold,
+            poolValue: test.pool.value,
+            isSuccess: test.success,
+            isHitsMet: test.data.values.extendedHits?.value >= targetThreshold,
+            isPoolExhausted: test.pool.value <= 0,
+            finalStatus: finalStatus
+        });
 
         // Check if crit glitched
         const roll = test.rolls[test.rolls.length - 1];
@@ -1221,7 +1477,8 @@ async function handleGMContinueBuildTest({ userId, dialogId, actorUuid, rollCoun
             result: test.data,
             rolls: test.rolls,
             status: finalStatus,
-            rollCount: rollCount
+            rollCount: rollCount,
+            appliedModifiers: newAppliedModifiers || activeTestState.appliedModifiers
         }, userId);
 
         game.socket.emit("module.sr5-marketplace", { type: "request_resolved", userId });

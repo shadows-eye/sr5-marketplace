@@ -260,6 +260,7 @@
             "RemoveItem": "Gegenstand entfernen",
             "StockOrder": "Bestand / Bestellung",
             "InStock": "Auf Lager",
+            "OutOfStock": "Nicht vorrätig",
             "Compendiums": "Kompendien",
             "Folders": "Ordner",
             "Items": "Artikel",
@@ -317,6 +318,38 @@
                 "PremiumThemes": {
                     "name": "Premium Themes Aktivieren",
                     "hint": "Macht Premium-Themes (Apple Silicon, Cyber Neon, Neon Light) im Foundry UI Konfigurationsmenü auswählbar."
+                },
+                "AllowOverrideModLimits": {
+                    "name": "Überschreiten der Modifikationslimits erlauben",
+                    "hint": "Wenn aktiviert, können Spieler Modifikationen über die Slotkapazität des Fahrzeugs hinaus hinzufügen, was jedoch den Schwellenwert der Bau-Probe erhöht."
+                },
+                "OverrideModLimitsThresholdIncrease": {
+                    "name": "Zusätzlicher Schwellenwert für Übermodifikation",
+                    "hint": "Der zusätzliche Schwellenwert, der zur Bau-Probe addiert wird, wenn Modifikationen über das Slotlimit hinaus installiert werden. Erlaubt 0 oder leer."
+                },
+                "SlotOverrideDrive": {
+                    "name": "Slot-Überschreibung: Antrieb",
+                    "hint": "Überschreibt das Slotlimit für Antriebs-Modifikationen. Auf 0 setzen, um den Rumpfwert des Fahrzeugs zu verwenden."
+                },
+                "SlotOverrideProtection": {
+                    "name": "Slot-Überschreibung: Schutz",
+                    "hint": "Überschreibt das Slotlimit für Schutz-Modifikationen. Auf 0 setzen, um den Rumpfwert des Fahrzeugs zu verwenden."
+                },
+                "SlotOverrideWeapons": {
+                    "name": "Slot-Überschreibung: Waffen",
+                    "hint": "Überschreibt das Slotlimit für Waffen-Modifikationen. Auf 0 setzen, um den Rumpfwert des Fahrzeugs zu verwenden."
+                },
+                "SlotOverrideBody": {
+                    "name": "Slot-Überschreibung: Karosserie",
+                    "hint": "Überschreibt das Slotlimit für Karosserie-Modifikationen. Auf 0 setzen, um den Rumpfwert des Fahrzeugs zu verwenden."
+                },
+                "SlotOverrideElectronics": {
+                    "name": "Slot-Überschreibung: Elektronik",
+                    "hint": "Überschreibt das Slotlimit für Elektronik-Modifikationen. Auf 0 setzen, um den Rumpfwert des Fahrzeugs zu verwenden."
+                },
+                "SlotOverrideCosmetic": {
+                    "name": "Slot-Überschreibung: Kosmetisch",
+                    "hint": "Überschreibt das Slotlimit für kosmetische Modifikationen. Auf 0 setzen, um den Rumpfwert des Fahrzeugs zu verwenden."
                 },
                 "title": "Marktplatz Einstellungen",
                 "description": "Klicke auf einen Artikeltyp in einer Spalte, um ihn der Verhaltenskategorie zuzuordnen. Änderungen werden sofort gespeichert. Einzigartige Artikel können nur einmal pro Charakter gekauft werden, stapelbare Artikel werden im selben Artikel gestapelt und einzelne Artikel können mehrmals pro Bestellung als eine Artikelinstanz bestellt werden.",
@@ -431,9 +464,11 @@
             },
             "Actor": {
                 "SelectAnActor": "Wähle einen Akteur",
+                "SwitchActor": "Akteur wechseln",
                 "SelectActorTooltip": "Bitte wähle einen Akteur aus, um einzukaufen.",
                 "RequestActor": "Anfrage von",
-                "Funds": "Budget"
+                "Funds": "Budget",
+                "PurchasingActor": "Käufer"
             },
             "Contacts": {
                 "SelectContact": "Wählen Sie einen Kontakt der die Bestellung besorgt",
@@ -626,7 +661,8 @@
                 "PurchaseRequestRejected": "Kaufanfrage für Benutzer {name} wurde abgelehnt.",
                 "PurchaseApproved": "Kauf freigegeben für Benutzer {name}.",
                 "DeductedResources": "{cost} ¥ und {karma} Karma von {actor} abgezogen.",
-                "ItemsAdded": "{count} neue(r) Artikel zu {actor}s Inventar hinzugefügt."
+                "ItemsAdded": "{count} neue(r) Artikel zu {actor}s Inventar hinzugefügt.",
+                "WorkshopArrival": "{name} ist in der Werkstatt eingetroffen."
             },
             "NoContacts": "Hat keine Kontakte"
         },
@@ -728,6 +764,34 @@
                 }
             }
         },
+        "Factory": {
+            "AddAllToBasket": "Alle in den Korb",
+            "BuildTestAll": "Alle Mod-Proben würfeln",
+            "ModifyVehicle": "Fahrzeug modifizieren",
+            "ChangeVehicle": "Fahrzeug wechseln",
+            "SelectorTitle": "Fahrzeug / Drohne auswählen",
+            "SelectorSubtitle": "Wählen Sie ein Fahrzeug oder eine Drohne in Reichweite der Werkstatt aus, um es zu modifizieren oder zu reparieren.",
+            "NoVehiclesInRadius": "Keine Fahrzeuge oder Drohnen in Reichweite gefunden.",
+            "Repair": {
+                "Title": "Fahrzeug reparieren",
+                "DamageTrack": "Körperlicher Schadensmonitor",
+                "RollButton": "Reparatur würfeln"
+            },
+            "Shelf": {
+                "Title": "Werkstattregal",
+                "Empty": "Keine Modifikationen im Regal verfügbar.",
+                "AllItemsTooltip": "Alle Artikel",
+                "FactoryInventoryTooltip": "Werkstatt-Bestand"
+            },
+            "Category": {
+                "Drive": "Antrieb",
+                "Protection": "Panzerung",
+                "Weapons": "Waffen",
+                "Hull": "Rumpf",
+                "Electronics": "Elektronik",
+                "Cosmetic": "Kosmetik"
+            }
+        },
         "ItemBuilder": {
             "Title": "Artikel bauen",
             "SelectAsBase": "Als Basisartikel auswählen",
@@ -741,7 +805,8 @@
                 "builder": "Builder",
                 "effects": "Effekte",
                 "dialog": "Dialog",
-                "vehicle": "Fahrzeug/Drohne"
+                "vehicle": "Fahrzeug/Drohne",
+                "workshop": "Werkstatt"
             },
             "Items": {
                 "Header": "Basisartikel",
@@ -793,6 +858,7 @@
             "SearchPlaceholder": "Suchen...",
             "ClearEntireBuild": "Gesamten Entwurf löschen",
             "RemoveMod": "Modifikation entfernen",
+            "InstalledModifications": "Installierte Modifikationen",
             "ItemBuild": "Gegenstandsentwurf",
             "ActiveEffects": "Aktive Effekte",
             "SelectAnItem": "Wähle einen Gegenstand",
@@ -813,6 +879,14 @@
             "MentalLimitApplied": "Das geistige Limit wird auf diese Probe angewendet.",
             "CriticalGlitchPartsDestroyed": "Kritischer Patzer! Die Teile wurden zerstört und die Bauschlange wurde geleert.",
             "SuccessBuildCreated": "Bau erfolgreich! {name} im Inventar erstellt.",
+            "RepairHealedComplete": "Fahrzeug erfolgreich repariert und vollständig geheilt.",
+            "RepairHealedHits": "Fahrzeug repariert! {hits} Schadenskästchen geheilt. Verbleibender Schaden: {damage}.",
+            "SuccessRepairCreated": "Fahrzeug erfolgreich repariert!",
+            "SuccessModInstalled": "Modifikation erfolgreich! {name} im Fahrzeug installiert.",
+            "SuccessModInstalledDesc": "Klicke auf die Schaltfläche unten, um das Modifikationsteil aus dem Lager/Inventar zu verbrauchen und die Modifikation im Fahrzeug zu installieren.",
+            "BuildSuccessDetails": "Der Bau/die Modifikation benötigte {rolls} Würfe und erzielte insgesamt {hits} Erfolge (Schwellenwert: {threshold}).",
+            "AddToVehicle": "Am Fahrzeug installieren",
+            "ErrorModNotAvailable": "Die Modifikation {name} befindet sich nicht im Inventar der Werkstatt oder des Käufers.",
             "WorkingConditionsOptions": {
                 "excellent": "Hervorragend (+1)",
                 "average": "Normal (0)",
@@ -843,7 +917,12 @@
                 "Seats": "Sitze",
                 "Availability": "Verf.",
                 "Cost": "Kosten",
-                "Description": "Beschreibung"
+                "Description": "Beschreibung",
+                "Stats": "Fahrzeugwerte"
+            },
+            "Errors": {
+                "SlotLimitExceeded": "Nicht genügend Slots in der Kategorie \"{category}\" verfügbar (Max: {max}, Gesamt: {total}).",
+                "InstallationRejectedLimit": "Installation von \"{name}\" abgelehnt: Slotlimit für Kategorie \"{category}\" überschritten (Max: {max}, Gesamt: {total})."
             }
         }
     },

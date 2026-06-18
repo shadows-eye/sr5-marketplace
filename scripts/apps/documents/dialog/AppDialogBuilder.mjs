@@ -36,19 +36,33 @@ export class AppDialogBuilder {
 
         const isBuildTest = this.testState.testType === "BuildTest";
 
+        let context = null;
         switch (this.testState.status) {
             case 'initial':
-                return isBuildTest ? this.#buildBuildTestInitialContext() : this.#buildInitialContext();
+                context = isBuildTest ? await this.#buildBuildTestInitialContext() : await this.#buildInitialContext();
+                if (context) {
+                    context.showConfig = true;
+                    context.isInitial = true;
+                }
+                break;
             case 'result':
-                return this.#buildResultContext();
+                context = await this.#buildResultContext();
+                break;
             case 'extended-inprogress':
-                return isBuildTest ? this.#buildBuildTestInProgressContext() : this.#buildExtendedInProgressContext();
+                context = isBuildTest ? await this.#buildBuildTestInProgressContext() : await this.#buildExtendedInProgressContext();
+                if (context && isBuildTest) {
+                    context.showConfig = true;
+                    context.isInProgress = true;
+                }
+                break;
             case 'resolved':
-                return isBuildTest ? await this.#buildBuildTestResolvedContext() : await this.#buildResolvedContext(basket);
+                context = isBuildTest ? await this.#buildBuildTestResolvedContext() : await this.#buildResolvedContext(basket);
+                break;
             default:
                 console.error(`Unknown test status: "${this.testState.status}"`);
                 return null;
         }
+        return context;
     }
 
     /** @private Builds context for the 'initial' state. */
@@ -526,19 +540,19 @@ export class AppDialogBuilder {
             }
         }
         let skillValue = 0;
-        if (activeSkill !== undefined && activeSkill !== null) {
-            if (typeof activeSkill === "number") {
-                skillValue = activeSkill;
-            } else if (typeof activeSkill === "object") {
-                skillValue = activeSkill.value ?? activeSkill.base ?? activeSkill.rating ?? 0;
-            }
-        } else if (skillItem) {
+        if (skillItem) {
             skillValue = skillItem.system.skill?.rating ?? 
                          skillItem.system.skill?.value ?? 
                          skillItem.system.rating?.value ?? 
                          skillItem.system.value ?? 
                          skillItem.system.rating ?? 
                          0;
+        } else if (activeSkill !== undefined && activeSkill !== null) {
+            if (typeof activeSkill === "number") {
+                skillValue = activeSkill;
+            } else if (typeof activeSkill === "object") {
+                skillValue = activeSkill.value ?? activeSkill.base ?? activeSkill.rating ?? 0;
+            }
         }
 
         console.log(`[AppDialogBuilder buildBuildTestInitialContext] skill="${skill}", normK="${normK}", matchNames=`, matchNames, `activeSkill=`, activeSkill, `skillItem=`, skillItem, `resolvedValue=${skillValue}`);
@@ -561,6 +575,7 @@ export class AppDialogBuilder {
 
         // Check and update logic memory penalty value if checked
         let workingModifiers = appliedModifiers ? JSON.parse(JSON.stringify(appliedModifiers)) : [];
+        workingModifiers = workingModifiers.filter(mod => !mod.isStepPenalty);
         let hasModified = false;
         if (attributeData) {
             const logicPenaltyIndex = workingModifiers.findIndex(mod => mod.label === "SR5Marketplace.ItemBuilder.LogicMemoryPenalty");
@@ -635,7 +650,10 @@ export class AppDialogBuilder {
     }
 
     /** @private Builds context for BuildTest extended-inprogress state. */
-    #buildBuildTestInProgressContext() {
+    async #buildBuildTestInProgressContext() {
+        const initialCtx = await this.#buildBuildTestInitialContext();
+        if (!initialCtx) return null;
+
         const resultData = this.testState.result;
         const rollsData = this.testState.rolls;
 
@@ -649,11 +667,22 @@ export class AppDialogBuilder {
         };
         const renderedDice = DiceHelperService.processDice(resultForHelper);
 
+        const nextRollNumber = (this.testState.rollCount || rollsData?.length || 1) + 1;
+        const penaltyVal = -(nextRollNumber - 1);
+
+        const penaltyLabel = game.i18n.localize("SR5.ExtendedTestStep") || "Subsequent Roll Penalty";
+        initialCtx.dicePoolBreakdown.push({ label: penaltyLabel, value: penaltyVal });
+        initialCtx.totalDicePool = Math.max(0, initialCtx.totalDicePool + penaltyVal);
+
+        const formulaParts = initialCtx.dicePoolBreakdown.map(part => `${part.label} (${part.value >= 0 ? '+' : ''}${part.value})`);
+        initialCtx.poolFormula = `${formulaParts.join(" + ")} = ${initialCtx.totalDicePool}`;
+
         return {
+            ...initialCtx,
             cumulativeHits: resultData.values?.extendedHits?.value ?? 0,
-            threshold: resultData.threshold?.value ?? 12,
-            currentPool: resultData.pool?.value ?? 0,
-            renderedDice: renderedDice
+            currentPool: initialCtx.totalDicePool,
+            renderedDice: renderedDice,
+            nextRollNumber: nextRollNumber
         };
     }
 
@@ -689,7 +718,9 @@ export class AppDialogBuilder {
             renderedDice,
             threshold,
             cumulativeHits,
-            totalRolls: this.testState.rollCount || rollsData?.length || 1
+            totalRolls: this.testState.rollCount || rollsData?.length || 1,
+            isWorkshopMod: this.testState.isWorkshopMod ?? false,
+            isRepair: this.testState.isRepair ?? false
         };
     }
 }

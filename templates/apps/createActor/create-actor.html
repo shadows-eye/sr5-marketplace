@@ -8,7 +8,7 @@
             </div>
             <!-- Name Input -->
             <div class="form-group-custom">
-                <label for="actor-name-input">{{localize "SR5Marketplace.UI.Name"}}</label>
+                <label for="actor-name-input">{{localize 'SR5Marketplace.UI.Name'}}</label>
                 <input type="text" id="actor-name-input" name="name" class="form-input-custom name-input" value="{{defaultName}}" placeholder="{{localize 'SR5Marketplace.UI.ActorCreator.NamePlaceholder'}}" required />
             </div>
         </div>
@@ -16,7 +16,7 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 5px;">
             <!-- 2. Actor Type Selection -->
             <div class="form-group-custom">
-                <label for="actor-type-select">{{localize "SR5Marketplace.UI.Type"}}</label>
+                <label for="actor-type-select">{{localize 'SR5Marketplace.UI.Type'}}</label>
                 <select id="actor-type-select" name="type" class="form-select-custom type-select">
                     {{#each types}}
                     <option value="{{@key}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
@@ -26,9 +26,9 @@
 
             <!-- 3. Folder Selection -->
             <div class="form-group-custom">
-                <label for="actor-folder-select">{{localize "SR5Marketplace.UI.Folders"}}</label>
+                <label for="actor-folder-select">{{localize 'SR5Marketplace.UI.Folders'}}</label>
                 <select id="actor-folder-select" name="folder" class="form-select-custom folder-select">
-                    <option value="">-- {{localize "SR5Marketplace.Marketplace.Actor.SelectAnActor"}} --</option>
+                    <option value="">-- {{localize 'SR5Marketplace.Marketplace.Actor.SelectAnActor'}} --</option>
                     {{#each folders}}
                     <option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>{{this.name}}</option>
                     {{/each}}
@@ -39,26 +39,56 @@
         <!-- 4. Shop Specific Configuration (Rendered only for shop actors) -->
         {{#if isShopActor}}
         
+        <!-- Load Existing Shop (Upgrade Flow) -->
+        <div class="upgrade-shop-section" style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px; border-bottom: 1px dashed var(--border-color-medium); padding-bottom: 10px;">
+            <button type="button" class="load-existing-shop-btn" style="flex-grow: 1; padding: 6px; background-color: var(--color-yellow-dark); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
+                <i class="fas fa-file-import"></i> {{#if existingActorUuid}}{{localize 'SR5Marketplace.UI.ActorCreator.LoadedExisting'}}: {{actorName}}{{else}}{{localize 'SR5Marketplace.UI.ActorCreator.LoadExistingShop'}}{{/if}}
+            </button>
+            {{#if existingActorUuid}}
+            <button type="button" class="clear-existing-shop-btn" style="padding: 6px; background-color: var(--color-red-dark); color: white; border: none; border-radius: 4px; cursor: pointer;" title="Cancel Upgrade">
+                <i class="fas fa-times"></i>
+            </button>
+            {{/if}}
+        </div>
+
         <!-- Collapsible Shop Options -->
         <div class="actor-creator-collapsible-section {{#unless shopDetailsExpanded}}collapsed{{/unless}}" data-section="shop-details">
             <div class="actor-creator-collapsible-header">
-                <h3>{{localize "SR5Marketplace.UI.ActorCreator.ShopDetailsTitle"}}</h3>
+                <h3>{{localize 'SR5Marketplace.UI.ActorCreator.ShopDetailsTitle'}}</h3>
                 <i class="fas fa-chevron-down toggle-icon"></i>
             </div>
             <div class="actor-creator-collapsible-content">
                 <div class="shop-fields-grid">
                     <div class="form-group-custom">
-                        <label for="shop-markup-input">{{localize "SR5Marketplace.Marketplace.Shop.ItemMarkup"}} (%)</label>
+                        <label for="shop-markup-input">{{localize 'SR5Marketplace.Marketplace.Shop.ItemMarkup'}} (%)</label>
                         <input type="number" id="shop-markup-input" name="markup" class="form-input-custom shop-markup-input" value="{{shopMarkup}}" min="0" step="1" />
                     </div>
                     <div class="form-group-custom">
-                        <label for="shop-radius-input">{{localize "SR5Marketplace.Marketplace.Shop.ShopRadius"}}</label>
+                        <label for="shop-radius-input">{{localize 'SR5Marketplace.Marketplace.Shop.ShopRadius'}}</label>
                         <input type="number" id="shop-radius-input" name="radius" class="form-input-custom shop-radius-input" value="{{shopRadius}}" min="1" step="1" />
                     </div>
                 </div>
 
+                <div style="display: flex; gap: 10px; align-items: center; margin: 10px 0;">
+                    <label style="display: flex; align-items: center; gap: 6px; font-weight: bold; cursor: pointer;">
+                        <input type="checkbox" id="shop-is-factory" name="isFactory" class="checkbox-custom shop-is-factory-cb" {{#if isFactory}}checked{{/if}} />
+                        <span>{{localize 'SR5Marketplace.Factory.IsFactory'}}</span>
+                    </label>
+                </div>
+
+                {{#if isFactory}}
+                <div class="factory-rating-container" style="margin-bottom: 10px; display: block;">
+                {{else}}
+                <div class="factory-rating-container" style="margin-bottom: 10px; display: none;">
+                {{/if}}
+                    <div class="form-group-custom">
+                        <label for="factory-rating">{{localize 'SR5Marketplace.Factory.Rating'}} (1-6)</label>
+                        <input type="number" id="factory-rating" name="factoryRating" class="form-input-custom factory-rating-input" value="{{factoryRating}}" min="1" max="6" step="1" />
+                    </div>
+                </div>
+
                 <div class="form-group-custom">
-                    <label for="shop-desc-textarea">{{localize "SR5Marketplace.UI.Description"}}</label>
+                    <label for="shop-desc-textarea">{{localize 'SR5Marketplace.UI.Description'}}</label>
                     <textarea id="shop-desc-textarea" name="description" class="form-input-custom shop-description-textarea" placeholder="{{localize 'SR5Marketplace.UI.ActorCreator.ShopDescPlaceholder'}}">{{shopDescription}}</textarea>
                 </div>
             </div>
@@ -67,15 +97,15 @@
         <!-- Collapsible Host & Employees Options -->
         <div class="actor-creator-collapsible-section {{#unless hostEmployeesExpanded}}collapsed{{/unless}}" data-section="host-employees">
             <div class="actor-creator-collapsible-header">
-                <h3>{{localize "SR5Marketplace.UI.ActorCreator.HostEmployeesTitle"}}</h3>
+                <h3>{{localize 'SR5Marketplace.UI.ActorCreator.HostEmployeesTitle'}}</h3>
                 <i class="fas fa-chevron-down toggle-icon"></i>
             </div>
             <div class="actor-creator-collapsible-content">
                 <!-- Matrix Host Dropdown -->
                 <div class="form-group-custom">
-                    <label for="shop-host-select">{{localize "SR5Marketplace.Marketplace.Shop.MatrixHost"}}</label>
+                    <label for="shop-host-select">{{localize 'SR5Marketplace.Marketplace.Shop.MatrixHost'}}</label>
                     <select id="shop-host-select" class="form-select-custom shop-host-select">
-                        <option value="">{{localize "SR5Marketplace.UI.ActorCreator.NoHost"}}</option>
+                        <option value="">{{localize 'SR5Marketplace.UI.ActorCreator.NoHost'}}</option>
                         {{#each worldHosts}}
                         <option value="{{this.uuid}}" {{#if this.selected}}selected{{/if}}>{{this.name}}</option>
                         {{/each}}
@@ -84,7 +114,7 @@
 
                 <!-- Select Employees Checklist -->
                 <div class="form-group-custom">
-                    <label>{{localize "SR5Marketplace.Marketplace.Shop.Employees"}}</label>
+                    <label>{{localize 'SR5Marketplace.Marketplace.Shop.Employees'}}</label>
                     <div style="border: 1px solid var(--border-color-medium); border-radius: 4px; background-color: var(--color-black-transparent-15); padding: 8px; max-height: 120px; overflow-y: auto;">
                         {{#if worldActors.length}}
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
@@ -98,7 +128,7 @@
                             </div>
                         {{else}}
                             <div style="font-style: italic; opacity: 0.5; font-size: 11.5px; text-align: center; padding: 10px;">
-                                {{localize "SR5Marketplace.UI.ActorCreator.NoActors"}}
+                                {{localize 'SR5Marketplace.UI.ActorCreator.NoActors'}}
                             </div>
                         {{/if}}
                     </div>
@@ -109,7 +139,7 @@
         <!-- Collapsible Populate Inventory -->
         <div class="actor-creator-collapsible-section {{#unless populateInventoryExpanded}}collapsed{{/unless}}" data-section="populate-inventory">
             <div class="actor-creator-collapsible-header">
-                <h3>{{localize "SR5Marketplace.UI.ActorCreator.PopulateInventoryTitle"}}</h3>
+                <h3>{{localize 'SR5Marketplace.UI.ActorCreator.PopulateInventoryTitle'}}</h3>
                 <i class="fas fa-chevron-down toggle-icon"></i>
             </div>
             <div class="actor-creator-collapsible-content" style="display: flex; flex-direction: column; gap: 10px;">
@@ -117,10 +147,10 @@
                     <!-- Left: Item Type Filters -->
                     <div class="item-types-filter-container">
                         <div class="item-types-header">
-                            <span>{{localize "SR5Marketplace.UI.ActorCreator.FilterByType"}}</span>
+                            <span>{{localize 'SR5Marketplace.UI.ActorCreator.FilterByType'}}</span>
                             <div class="item-types-quick-actions">
-                                <button type="button" class="quick-action-link select-all-types">{{localize "SR5Marketplace.UI.ActorCreator.All"}}</button>
-                                <button type="button" class="quick-action-link clear-all-types">{{localize "SR5Marketplace.UI.ActorCreator.None"}}</button>
+                                <button type="button" class="quick-action-link select-all-types">{{localize 'SR5Marketplace.UI.ActorCreator.All'}}</button>
+                                <button type="button" class="quick-action-link clear-all-types">{{localize 'SR5Marketplace.UI.ActorCreator.None'}}</button>
                             </div>
                         </div>
                         <div class="item-types-list">
@@ -136,16 +166,16 @@
                     <!-- Right: Source, Rating & Search Filters -->
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         <div class="form-group-custom">
-                            <label for="item-source-select">{{localize "SR5Marketplace.UI.ActorCreator.Source"}}</label>
+                            <label for="item-source-select">{{localize 'SR5Marketplace.UI.ActorCreator.Source'}}</label>
                             <select id="item-source-select" class="form-select-custom item-source-select" style="padding: 4px 8px !important; font-size: 12px;">
-                                <option value="both" {{#if (eq activeSource "both")}}selected{{/if}}>{{localize "SR5Marketplace.UI.ActorCreator.SourceBoth"}}</option>
-                                <option value="world" {{#if (eq activeSource "world")}}selected{{/if}}>{{localize "SR5Marketplace.UI.ActorCreator.SourceWorld"}}</option>
-                                <option value="compendium" {{#if (eq activeSource "compendium")}}selected{{/if}}>{{localize "SR5Marketplace.UI.ActorCreator.SourceCompendium"}}</option>
+                                <option value="both" {{#if (eq activeSource 'both')}}selected{{/if}}>{{localize 'SR5Marketplace.UI.ActorCreator.SourceBoth'}}</option>
+                                <option value="world" {{#if (eq activeSource 'world')}}selected{{/if}}>{{localize 'SR5Marketplace.UI.ActorCreator.SourceWorld'}}</option>
+                                <option value="compendium" {{#if (eq activeSource 'compendium')}}selected{{/if}}>{{localize 'SR5Marketplace.UI.ActorCreator.SourceCompendium'}}</option>
                             </select>
                         </div>
  
                         <div class="form-group-custom">
-                            <label for="max-rating-input">{{localize "SR5Marketplace.UI.ActorCreator.MaxRating"}}</label>
+                            <label for="max-rating-input">{{localize 'SR5Marketplace.UI.ActorCreator.MaxRating'}}</label>
                             <input type="number" id="max-rating-input" class="form-input-custom max-rating-input" value="{{maxRating}}" min="1" placeholder="{{localize 'SR5Marketplace.UI.ActorCreator.NoLimit'}}" style="padding: 4px 8px !important; font-size: 12px;" />
                         </div>
                     </div>
@@ -158,12 +188,12 @@
                     <div class="matching-items-section" style="height: 100%; display: flex; flex-direction: column; min-height: unset; max-height: unset; margin: 0;">
                         <div class="matching-items-header-row">
                             <div class="matching-items-title">
-                                {{localize "SR5Marketplace.UI.ActorCreator.AvailableItems"}}
-                                <span class="matching-items-count-badge">{{localize "SR5Marketplace.UI.ActorCreator.Matches" count=totalCount}}</span>
+                                {{localize 'SR5Marketplace.UI.ActorCreator.AvailableItems'}}
+                                <span class="matching-items-count-badge">{{localize 'SR5Marketplace.UI.ActorCreator.Matches' count=totalCount}}</span>
                             </div>
                             <div class="item-types-quick-actions">
-                                <button type="button" class="quick-action-link select-all-items">{{localize "SR5Marketplace.UI.ActorCreator.SelectAll"}}</button>
-                                <button type="button" class="quick-action-link clear-all-items">{{localize "SR5Marketplace.UI.ActorCreator.ClearAll"}}</button>
+                                <button type="button" class="quick-action-link select-all-items">{{localize 'SR5Marketplace.UI.ActorCreator.SelectAll'}}</button>
+                                <button type="button" class="quick-action-link clear-all-items">{{localize 'SR5Marketplace.UI.ActorCreator.ClearAll'}}</button>
                             </div>
                         </div>
 
@@ -184,7 +214,7 @@
                             {{#if itemsLoading}}
                                 <div class="no-items-placeholder">
                                     <i class="fas fa-spinner fa-spin"></i>
-                                    <span>{{localize "SR5Marketplace.UI.ActorCreator.LoadingDatabase"}}</span>
+                                    <span>{{localize 'SR5Marketplace.UI.ActorCreator.LoadingDatabase'}}</span>
                                 </div>
                             {{else}}
                                 {{#if matchingItems.length}}
@@ -198,7 +228,7 @@
                                         <div class="matching-item-type" title="{{this.type}}">{{this.type}}</div>
                                         <div class="matching-item-rating">
                                             {{#if this.rating}}
-                                            {{localize "SR5Marketplace.UI.ActorCreator.RatingAbbrev"}} {{this.rating}}
+                                            {{localize 'SR5Marketplace.UI.ActorCreator.RatingAbbrev'}} {{this.rating}}
                                             {{else}}
                                             -
                                             {{/if}}
@@ -209,7 +239,7 @@
                                 {{else}}
                                     <div class="no-items-placeholder">
                                         <i class="fas fa-search"></i>
-                                        <span>{{localize "SR5Marketplace.UI.ActorCreator.NoMatches"}}</span>
+                                        <span>{{localize 'SR5Marketplace.UI.ActorCreator.NoMatches'}}</span>
                                     </div>
                                 {{/if}}
                             {{/if}}
@@ -220,11 +250,11 @@
                     <div class="selected-items-section" style="height: 100%; display: flex; flex-direction: column; min-height: unset; max-height: unset; margin: 0;">
                         <div class="matching-items-header-row">
                             <div class="matching-items-title">
-                                {{localize "SR5Marketplace.UI.ActorCreator.SelectedItems"}}
-                                <span class="matching-items-count-badge" style="background-color: var(--color-green-button); color: var(--color-white);">{{localize "SR5Marketplace.UI.ActorCreator.CountItems" count=selectedCount}}</span>
+                                {{localize 'SR5Marketplace.UI.ActorCreator.SelectedItems'}}
+                                <span class="matching-items-count-badge" style="background-color: var(--color-green-button); color: var(--color-white);">{{localize 'SR5Marketplace.UI.ActorCreator.CountItems' count=selectedCount}}</span>
                             </div>
                             <div class="item-types-quick-actions">
-                                <button type="button" class="quick-action-link clear-all-selections" style="color: var(--color-red-base);">{{localize "SR5Marketplace.UI.ActorCreator.RemoveAll"}}</button>
+                                <button type="button" class="quick-action-link clear-all-selections" style="color: var(--color-red-base);">{{localize 'SR5Marketplace.UI.ActorCreator.RemoveAll'}}</button>
                             </div>
                         </div>
 
@@ -242,7 +272,7 @@
                             {{else}}
                                 <div class="no-items-placeholder">
                                     <i class="fas fa-link"></i>
-                                    <span>{{localize "SR5Marketplace.UI.ActorCreator.NoItemsSelected"}}</span>
+                                    <span>{{localize 'SR5Marketplace.UI.ActorCreator.NoItemsSelected'}}</span>
                                 </div>
                             {{/if}}
                         </div>
@@ -252,11 +282,43 @@
             </div>
         </div>
         {{/if}}
+
+        <!-- Character Specific Configuration -->
+        {{#if isCharacterActor}}
+        <div class="character-builder-section" style="margin-top: 15px; border-top: 1px dashed var(--border-color-medium); padding-top: 15px;">
+            <h3 style="margin-bottom: 8px;">Quick Build Character (Archetype)</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
+                <div class="form-group-custom">
+                    <label for="character-archetype-select">Select Archetype</label>
+                    <select id="character-archetype-select" name="archetype" class="form-select-custom archetype-select">
+                        <option value="">-- None (Create Blank Character) --</option>
+                        {{#each archetypes}}
+                        <option value="{{@key}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+                <div class="form-group-custom">
+                    <label for="character-metatype-select">Select Metatype</label>
+                    <select id="character-metatype-select" name="metatype" class="form-select-custom metatype-select">
+                        <option value="random">Random (Archetype Default)</option>
+                        <option value="human">Human</option>
+                        <option value="elf">Elf</option>
+                        <option value="dwarf">Dwarf</option>
+                        <option value="ork">Ork</option>
+                        <option value="troll">Troll</option>
+                    </select>
+                </div>
+            </div>
+            <p style="font-size: 11px; opacity: 0.7; margin-bottom: 15px;">
+                If an archetype is selected, the character will be quickly populated with archetypal attributes, skills, qualities, and starter equipment using the system importer.
+            </p>
+        </div>
+        {{/if}}
     </div>
 
     <!-- 6. Bottom Actions Bar -->
     <div class="create-actor-actions">
         <button type="button" class="create-btn" data-action="create">{{createLabel}}</button>
-        <button type="button" class="cancel-btn-custom" data-action="cancel">{{localize "SR5Marketplace.UI.Cancel"}}</button>
+        <button type="button" class="cancel-btn-custom" data-action="cancel">{{localize 'SR5Marketplace.UI.Cancel'}}</button>
     </div>
 </form>

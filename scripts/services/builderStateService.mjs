@@ -1,14 +1,10 @@
-import { MODULE_ID } from '../lib/constants.mjs';
-import { DefaultEffect } from '../lib/DefaultEffect.mjs';
-import ItemDataServices from './ItemDataServices.mjs';
+import { BuildService } from './buildService.mjs';
 
-const FLAG_SCOPE = MODULE_ID;
-const FLAG_KEY = "itemBuilderState";
-
+const buildService = new BuildService();
 
 /**
- * A service to manage the persistent state of the Item Builder's ACTIVE build. It will save the state to builder object in the flag of the usersId.
- * @returns {object} Objects - Of state for rendering the UI. FLAG used as Document Storage.
+ * A service to manage the persistent state of the Item Builder's ACTIVE build.
+ * Delegates all operations to BuildService to avoid code duplication and direct flag writes.
  */
 export class BuilderStateService {
 
@@ -18,14 +14,7 @@ export class BuilderStateService {
      * @returns {Array<object>} A normalized array.
      */
     static _changesToArray(changes) {
-        if (!changes) return [];
-        if (Array.isArray(changes)) return changes.filter(c => c !== null);
-        if (typeof changes === 'object') {
-            // Sort keys numerically to preserve order
-            const keys = Object.keys(changes).sort((a, b) => Number(a) - Number(b));
-            return keys.map(k => changes[k]).filter(c => c !== null);
-        }
-        return [];
+        return buildService._changesToArray(changes);
     }
 
     /**
@@ -34,388 +23,181 @@ export class BuilderStateService {
      * @returns {object} An indexed object.
      */
     static _changesToObject(changes) {
-        if (!changes) return {};
-        if (typeof changes === 'object' && !Array.isArray(changes)) return changes;
-        const obj = {};
-        if (Array.isArray(changes)) {
-            changes.forEach((c, idx) => {
-                if (c !== null) obj[String(idx)] = c;
-            });
-        }
-        return obj;
-    }
-
-    /**
-     * Gets the default, empty state for the builder.
-     * @returns {object} The default state object.
-     * @private
-     */
-    static _getDefaultState() {
-        return {
-            title: null,
-            baseItem: null,
-            modifications: [],
-            changes: {}, // later a {object with changes.modslot1 to modslot5 and changes.bottomSlot1 to 4 but can be expanded}
-            itemTypeImage: null,
-            draftEffect: null,
-            isDerivedValueSelectorVisible: false,
-            isEditingBaseItem: false,
-            baseItemOverrides: {}
-        };
+        return buildService._changesToObject(changes);
     }
 
     /**
      * Retrieves the current builder state from the user's flags.
+     * @param {string|null} [userId=null] - The ID of the user.
      * @returns {Promise<object>} The builder state.
      */
-    static async getState() {
-        const state = game.user.getFlag(FLAG_SCOPE, FLAG_KEY);
-        return foundry.utils.mergeObject(this._getDefaultState(), state || {});
+    static async getState(userId = null) {
+        return await buildService.getBuilderState(userId);
     }
 
     /**
      * Updates one or more properties in the builder state flag.
      * @param {object} updateData - An object with the properties to update.
+     * @param {string|null} [userId=null] - The ID of the user.
      * @returns {Promise<void>}
      */
-    static async updateState(updateData) {
-        const currentState = await this.getState();
-        const newState = foundry.utils.mergeObject(currentState, updateData);
-        await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, newState);
+    static async updateState(updateData, userId = null) {
+        return await buildService.updateBuilderState(updateData, userId);
     }
 
     /**
      * Sets the base item, its image, and the dynamic title.
-     * If the new item is DIFFERENT from the current base item, this clears any previous build state.
-     * If the new item is the SAME as the current one, the state is preserved.
      * @param {object|null} itemData - The data object for the base item.
+     * @param {string|null} [userId=null] - The ID of the user.
      * @returns {Promise<void>}
      */
-    static async setBaseItem(itemData) {
-
-        const currentState = await this.getState();
-        const newBaseItemUuid = itemData?.uuid || null;
-        const oldBaseItemUuid = currentState.baseItem?.uuid || null;
-
-        if (newBaseItemUuid === oldBaseItemUuid) {
-
-            return; 
-        }
-
-        // --- IT'S A DIFFERENT ITEM (or null) ---
-        
-        await game.user.unsetFlag(FLAG_SCOPE, FLAG_KEY);
-
-        if (itemData) {
-            const newState = this._getDefaultState();
-            newState.baseItem = itemData;
-            
-            let itemTypeImagePath = game.sr5marketplace.api.itemData.getRepresentativeImage(itemData);
-            newState.itemTypeImage = itemTypeImagePath;
-
-            const typeLabel = itemData.type.charAt(0).toUpperCase() + itemData.type.slice(1);
-            newState.title = `${typeLabel}: ${itemData.name}`;
-
-            await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, newState);
-        }
-        
+    static async setBaseItem(itemData, userId = null) {
+        return await buildService.setBuilderBaseItem(itemData, userId);
     }
 
     /**
-     * NEW: Adds a modification to the list.
+     * Adds a modification to the list.
      * @param {object} modData - The data object for the modification item.
+     * @param {string|null} [userId=null] - The ID of the user.
      * @returns {Promise<void>}
      */
-    static async addModification(modData) {
-        const state = await this.getState();
-        state.modifications.push(modData);
-        await this.updateState({ modifications: state.modifications });
+    static async addModification(modData, userId = null) {
+        return await buildService.addBuilderModification(modData, userId);
     }
 
     /**
      * Adds or updates a change for a specific mod slot.
      * @param {string} slotId - The ID of the slot (e.g., "bottomSlot1").
      * @param {object} itemData - The data object of the item being dropped.
+     * @param {string|null} [userId=null] - The ID of the user.
      */
-    static async addChange(slotId, itemData) {
-        const state = await this.getState();
-        // This will create or overwrite the key for the specific slot
-        state.changes[slotId] = itemData;
-        // Directly set the entire updated state back to the flag
-        await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, state);
+    static async addChange(slotId, itemData, userId = null) {
+        return await buildService.addBuilderChange(slotId, itemData, userId);
     }
     
     /**
      * Removes a change for a specific mod slot using a direct database update.
      * @param {string} slotId - The ID of the slot to clear (e.g., "bottomSlot1").
+     * @param {string|null} [userId=null] - The ID of the user.
      * @returns {Promise<void>}
      */
-    static async removeChange(slotId) {
-        // 1. Construct the specific path to the key we want to delete within the flag.
-        const path = `flags.${FLAG_SCOPE}.${FLAG_KEY}.changes.-=${slotId}`;
-
-        // 2. Use a direct 'update' command with a special key to remove the field.
-        //    This is the most reliable way to ensure a nested property is deleted.
-        await game.user.update({ [path]: null });
+    static async removeChange(slotId, userId = null) {
+        return await buildService.removeBuilderChange(slotId, userId);
     }
-
-    // Add the following new methods to the class...
 
     /**
      * Begins the effect creation process by creating a default draft effect in the state.
      * @param {string} sourceUuid - The UUID of the item the effect will belong to.
+     * @param {string|null} [userId=null] - The ID of the user.
      * @returns {Promise<object>} The updated state object.
      */
-    static async startEffectCreation(sourceUuid) {
-        const state = await this.getState();
-        
-        // Use our new factory to generate a complete and correct default effect object.
-        state.draftEffect = await DefaultEffect.create(sourceUuid);
-        
-        await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, state);
-        return state;
+    static async startEffectCreation(sourceUuid, userId = null) {
+        return await buildService.startBuilderEffectCreation(sourceUuid, userId);
     }
 
     /**
      * Updates the current draft effect with new data.
      * @param {object} draftUpdate - An object containing the new data for the draft effect.
+     * @param {string|null} [userId=null] - The ID of the user.
      * @returns {Promise<object>} The updated state object.
      */
-    static async updateDraftEffect(draftUpdate) {
-        const state = await this.getState();
-        if (!state.draftEffect) return state;
-
-        if (draftUpdate.changes) {
-            const currentChangesObj = this._changesToObject(state.draftEffect.changes);
-            const updateChangesObj = this._changesToObject(draftUpdate.changes);
-            const mergedChangesObj = foundry.utils.mergeObject(currentChangesObj, updateChangesObj);
-            
-            state.draftEffect.changes = this._changesToArray(mergedChangesObj);
-            delete draftUpdate.changes;
-        }
-        
-        state.draftEffect = foundry.utils.mergeObject(state.draftEffect, draftUpdate);
-        
-        await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, state);
-        return state;
+    static async updateDraftEffect(draftUpdate, userId = null) {
+        return await buildService.updateBuilderDraftEffect(draftUpdate, userId);
     }
 
     /**
      * A specialized updater that merges data into the draftEffect AND the top-level state simultaneously.
      * @param {object} draftUpdate - Data to merge into `state.draftEffect`.
      * @param {object} stateUpdate - Data to merge into the top-level `state`.
+     * @param {string|null} [userId=null] - The ID of the user.
      * @returns {Promise<object>} The fully updated state object.
      */
-    static async updateDraftAndState(draftUpdate = {}, stateUpdate = {}) {
-        const state = await this.getState();
-        if (!state.draftEffect) return state;
-
-        if (draftUpdate.changes) {
-            const currentChangesObj = this._changesToObject(state.draftEffect.changes);
-            const updateChangesObj = this._changesToObject(draftUpdate.changes);
-            const mergedChangesObj = foundry.utils.mergeObject(currentChangesObj, updateChangesObj);
-            
-            state.draftEffect.changes = this._changesToArray(mergedChangesObj);
-            delete draftUpdate.changes;
-        }
-
-        // 1. Merge updates into the draft effect first.
-        state.draftEffect = foundry.utils.mergeObject(state.draftEffect, draftUpdate);
-        
-        // 2. Merge updates into the top-level state object.
-        const newState = foundry.utils.mergeObject(state, stateUpdate);
-
-        // 3. Save and return the final, combined state.
-        await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, newState);
-        return newState;
+    static async updateDraftAndState(draftUpdate = {}, stateUpdate = {}, userId = null) {
+        return await buildService.updateBuilderDraftAndState(draftUpdate, stateUpdate, userId);
     }
 
     /**
      * Finalizes the effect by moving it from draft into the 'modifications' array.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<object>} The updated state object.
      */
-    static async saveDraftEffect() {
-        const state = await this.getState();
-        if (!state.draftEffect) return state;
-
-        const newState = foundry.utils.deepClone(state);
-        const draft = newState.draftEffect;
-        
-        // Ensure the draft changes are in array format
-        draft.changes = this._changesToArray(draft.changes);
-
-        if (!newState.modifications) newState.modifications = [];
-
-        delete draft.wasCustom; 
-        const existingIndex = newState.modifications.findIndex(m => m._id === draft._id);
-
-        if (existingIndex > -1) newState.modifications[existingIndex] = draft;
-        else newState.modifications.push(draft);
-        
-        newState.draftEffect = null; 
-        await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, newState);
-        return newState;
+    static async saveDraftEffect(userId = null) {
+        return await buildService.saveBuilderDraftEffect(userId);
     }
 
     /**
      * Cancels the effect creation. If editing a custom mod, moves it back.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<object>} The updated state object.
      */
-    static async cancelEffectCreation() {
-        const state = await this.getState();
-        if (!state.draftEffect) return state;
-        const newState = foundry.utils.deepClone(state);
-
-        if (state.draftEffect.wasCustom) {
-            delete state.draftEffect.wasCustom;
-            newState.modifications.push(state.draftEffect);
-        }
-        
-        newState.draftEffect = null;
-        await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, newState);
-        return newState;
+    static async cancelEffectCreation(userId = null) {
+        return await buildService.cancelBuilderEffectCreation(userId);
     }
 
     /**
      * Deletes a custom effect from the 'modifications' array.
+     * @param {string} effectId - The ID of the effect.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<object>} The updated state object.
      */
-    static async deleteEffect(effectId) {
-        const state = await this.getState();
-        if (state.modifications) {
-            state.modifications = state.modifications.filter(m => m._id !== effectId);
-            await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, state);
-        }
-        return state;
+    static async deleteEffect(effectId, userId = null) {
+        return await buildService.deleteBuilderEffect(effectId, userId);
     }
 
     /**
      * Prepares an effect for editing.
-     * If it's a custom mod, it's MOVED from 'modifications' to 'draftEffect'.
-     * If it's an innate effect, a COPY is created in 'draftEffect'.
+     * @param {string} sourceUuid - The UUID of the source item.
+     * @param {string} effectId - The ID of the effect.
+     * @param {string|null} [userId=null] - The ID of the user.
+     * @returns {Promise<object>} The updated state object.
      */
-    static async startEffectEdit(sourceUuid, effectId) {
-        const state = await this.getState();
-        const newState = foundry.utils.deepClone(state);
-        let effectToEdit = null;
-
-        // Check if it's a custom modification already in the list
-        const customModIndex = newState.modifications?.findIndex(m => m._id === effectId);
-        if (customModIndex > -1) {
-            // It's a custom mod, so we move it to the draft area for editing.
-            effectToEdit = newState.modifications.splice(customModIndex, 1)[0];
-            effectToEdit.wasCustom = true; // Flag to know where to return it if cancelled
-        } else {
-            // It's an innate effect from a base item or another mod.
-            // Find the source item (either the base or one of the slotted changes).
-            let itemSource = (newState.baseItem?.uuid === sourceUuid) 
-                ? newState.baseItem 
-                : Object.values(newState.changes).find(c => c.uuid === sourceUuid);
-
-            // Find the specific effect within that item.
-            const sourceEffect = itemSource?.effects?.find(e => e._id === effectId);
-
-            if (sourceEffect) {
-                // Create a deep copy to avoid modifying the original data.
-                effectToEdit = foundry.utils.deepClone(sourceEffect);
-                
-                // --- THIS IS THE KEY LOGIC FOR OVERRIDING ---
-                // Store the original ID so we can hide the innate effect later.
-                effectToEdit.originalId = sourceEffect._id; 
-                // Generate a NEW unique ID for our override copy.
-                effectToEdit._id = foundry.utils.randomID();
-            }
-        }
-
-        if (effectToEdit) {
-            const draft = effectToEdit;
-            draft.sourceUuid = sourceUuid;
-            draft.isEdit = true;
-            
-            // Ensure draft changes are in array format
-            draft.changes = this._changesToArray(draft.changes);
-            
-            // --- REFINED LOGIC: Determine targetType ---
-            if ( !draft.targetType ) {
-                // 1. Prioritize the explicit system value.
-                if ( draft.system?.applyTo ) {
-                    draft.targetType = draft.system.applyTo;
-                }
-                // 2. Fall back to inferring from the key if `applyTo` isn't present.
-                else if ( draft.changes?.[0]?.key ) {
-                    const effectKey = draft.changes[0].key;
-                    const mappableKeys = SystemDataMapperService.getMappableKeys();
-
-                    const isActorKey = Object.values(mappableKeys.actors).some(actorType => 
-                        Object.values(actorType).some(keyGroup => 
-                            keyGroup.some(keyData => keyData.path === effectKey)
-                        )
-                    );
-                    if (isActorKey) draft.targetType = 'actor';
-                }
-            }
-            // --- END REFINED LOGIC ---
-
-            newState.draftEffect = draft;
-            await game.user.setFlag(FLAG_SCOPE, FLAG_KEY, newState);
-            return newState;
-        }
-        return state;
+    static async startEffectEdit(sourceUuid, effectId, userId = null) {
+        return await buildService.startBuilderEffectEdit(sourceUuid, effectId, userId);
     }
-
-    // Add this new method to the BuilderStateService class
 
     /**
      * Toggles the visibility of the derived value selector UI.
+     * @param {string|null} [userId=null] - The ID of the user.
      * @returns {Promise<object>} The updated state object.
      */
-    static async toggleDerivedValueSelector() {
-        const state = await this.getState();
-        // Flip the boolean flag in the state
-        const newStateData = { isDerivedValueSelectorVisible: !state.isDerivedValueSelectorVisible };
-        await this.updateState(newStateData);
-        // Return the full new state so the UI can re-render
-        return foundry.utils.mergeObject(state, newStateData);
+    static async toggleDerivedValueSelector(userId = null) {
+        return await buildService.toggleBuilderDerivedValueSelector(userId);
     }
 
     /**
      * Clears the entire builder state.
+     * @param {string|null} [userId=null] - The ID of the user.
      * @returns {Promise<void>}
      */
-    static async clearState() {
-        await game.user.unsetFlag(FLAG_SCOPE, FLAG_KEY);
+    static async clearState(userId = null) {
+        return await buildService.clearBuilderState(userId);
     }
+
+    /**
+     * Retrieves effects from an item UUID.
+     * @param {string} uuid - The item UUID.
+     * @returns {Promise<Array>} The effects list.
+     */
     static async getEffectFromItemUuid(uuid) {
-        let item = fromUuid(uuid);
-        let effects = item.effects;
-        return effects;
+        return await buildService.getEffectFromItemUuid(uuid);
     }
 
     /**
      * Toggles the edit mode for the base item.
+     * @param {string|null} [userId=null] - The ID of the user.
      * @returns {Promise<object>} The updated state.
      */
-    static async toggleBaseItemEdit() {
-        const state = await this.getState();
-        const isEditing = !state.isEditingBaseItem;
-        
-        await this.updateState({ isEditingBaseItem: isEditing });
-        return foundry.utils.mergeObject(state, { isEditingBaseItem: isEditing });
+    static async toggleBaseItemEdit(userId = null) {
+        return await buildService.toggleBuilderBaseItemEdit(userId);
     }
 
     /**
      * Updates the baseItemOverrides property in the state.
-     * @param {object} updateData - An object with properties to update, e.g., { "system.technology.rating": 5 }
+     * @param {object} updateData - An object with properties to update.
+     * @param {string|null} [userId=null] - The ID of the user.
      * @returns {Promise<object>} The updated state.
      */
-    static async updateBaseItemOverrides(updateData) {
-        const state = await this.getState();
-        if (!state.baseItem) return state;
-
-        // We use expandObject to handle nested keys like "system.technology.rating"
-        const expandedUpdate = foundry.utils.expandObject(updateData);
-        
-        const newState = foundry.utils.deepClone(state);
-        newState.baseItemOverrides = foundry.utils.mergeObject(newState.baseItemOverrides, expandedUpdate);
-        
-        await this.updateState({ baseItemOverrides: newState.baseItemOverrides });
-        return newState;
+    static async updateBaseItemOverrides(updateData, userId = null) {
+        return await buildService.updateBuilderBaseItemOverrides(updateData, userId);
     }
 }

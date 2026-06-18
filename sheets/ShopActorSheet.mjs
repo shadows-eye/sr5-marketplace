@@ -18,7 +18,7 @@ const { ActorSheet } = foundry.applications.sheets;
 function findSystemSkillKey(itemName) {
     if (!itemName) return "";
     const normName = itemName.toLowerCase().replace(/[^a-z0-9]/g, '');
-    
+
     // Check key or localized labels from CONFIG.SR5.activeSkills
     for (const [key, locKey] of Object.entries(CONFIG.SR5.activeSkills || {})) {
         if (key.toLowerCase().replace(/[^a-z0-9]/g, '') === normName) {
@@ -29,7 +29,7 @@ function findSystemSkillKey(itemName) {
             return key;
         }
     }
-    
+
     // Fallback to lowercased name with spaces/dashes converted to underscores
     return itemName.toLowerCase().replace(/[\s-]+/g, '_');
 }
@@ -68,7 +68,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         if (!game.user.isGM) {
             // Spawn the marketplace specifically targeting this shop's UUID
             new inGameMarketplace({ shopActorUuid: this.document.uuid }).render(true);
-            
+
             // Abort rendering the configuration sheet
             return this;
         }
@@ -171,21 +171,21 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
      * @protected
      */
     async _prepareContext(options) {
-    const context = await super._prepareContext(options);
-    context.isPlayMode = this.isPlayMode;
-    context.isEditMode = this.isEditMode;
-    // Add common data useful for all sheets.
-    context.actor = this.document;
-    context.system = this.document.system;
-    context.flags = this.document.flags;
-    context.isOwner = this.document.isOwner;
-    context.isEditable = this.isEditable;
-    context.isGM = game.user.isGM;
-    // ADD THIS LINE: Create a shortcut to the system's data model fields.
-    context.systemFields = this.document.system.schema.fields;
+        const context = await super._prepareContext(options);
+        context.isPlayMode = this.isPlayMode;
+        context.isEditMode = this.isEditMode;
+        // Add common data useful for all sheets.
+        context.actor = this.document;
+        context.system = this.document.system;
+        context.flags = this.document.flags;
+        context.isOwner = this.document.isOwner;
+        context.isEditable = this.isEditable;
+        context.isGM = game.user.isGM;
+        // ADD THIS LINE: Create a shortcut to the system's data model fields.
+        context.systemFields = this.document.system.schema.fields;
 
-    // Group attributes for the template
-        if ( context.system.attributes ) {
+        // Group attributes for the template
+        if (context.system.attributes) {
             context.system.attributes.physicalAttributes = {
                 body: context.system.attributes.body,
                 agility: context.system.attributes.agility,
@@ -207,7 +207,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                 submersion: context.system.attributes.submersion
             };
         }
-    
+
         // Resolve employees and Matrix Host globally so they are available to both attributes and management parts
         const baseEmployees = await this.document.getEmployees();
         const employees = [];
@@ -235,8 +235,8 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             const slavedDevices = [];
             const seen = new Set();
             for (const emp of context.employees || []) {
-                const devices = emp.items.filter(i => 
-                    i.type === "device" && 
+                const devices = emp.items.filter(i =>
+                    i.type === "device" &&
                     ["commlink", "cyberdeck"].includes(i.system.category) &&
                     i.system.technology?.equipped !== false
                 );
@@ -258,7 +258,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             }
             context.slavedDevices = slavedDevices;
         }
-    
+
         return context;
     }
 
@@ -419,7 +419,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                 for (const s of [...legacyLanguage, ...embeddedLanguage]) {
                     languageMap.set(s.name.toLowerCase(), s);
                 }
-                
+
                 let languageSkillsList = Array.from(languageMap.values());
                 if (!context.isEditMode) {
                     languageSkillsList = languageSkillsList.filter(s => s.value > 0);
@@ -526,7 +526,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                 context.owner = await this.document.getOwner();
                 context.connection = await this.document.getConnection();
                 context.shopEmployees = this.document.system.shop?.employees?.join('\n') || "";
-                
+
                 // Fetch the serving employee document for layout
                 const servingEmployeeUuid = this.document.system.shop?.servingEmployee;
                 context.servingEmployeeDoc = servingEmployeeUuid ? await fromUuid(servingEmployeeUuid) : null;
@@ -576,16 +576,16 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
 
             if (skillId && category) {
                 console.log(`SR5 Marketplace | Intercepted skill input. key: ${key}, skillId: ${skillId}, value: ${value}`);
-                
+
                 // Find matching embedded item by custom key, name, or system mapped key
-                const item = this.document.items.find(i => 
-                    i.type === "skill" && 
+                const item = this.document.items.find(i =>
+                    i.type === "skill" &&
                     i.system.skill?.category === category &&
-                    (i.system.key === skillId || 
-                     i.name.toLowerCase() === skillId.toLowerCase() ||
-                     (category === "active" && findSystemSkillKey(i.name) === skillId))
+                    (i.system.key === skillId ||
+                        i.name.toLowerCase() === skillId.toLowerCase() ||
+                        (category === "active" && findSystemSkillKey(i.name) === skillId))
                 );
-                
+
                 const skillNumVal = Number(value);
 
                 if (item) {
@@ -628,7 +628,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                         }
                     });
                 }
-                
+
                 delete data[key]; // Remove original field to avoid conflicts
             }
         }
@@ -712,13 +712,13 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     static async #onOpenMatrixTab(event, target) {
         const uuid = target.dataset.uuid;
         if (!uuid) return;
-        
+
         const doc = await fromUuid(uuid);
         if (doc?.sheet) {
             const sheet = doc.sheet;
             const renderOptions = this.isEditMode ? {} : { editable: false };
             await sheet.render(true, renderOptions);
-            
+
             // Allow a tiny delay for rendering, then switch to matrix tab
             setTimeout(() => {
                 try {
@@ -743,7 +743,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     static async #onOpenDocumentLink(event, target) {
         const uuid = target.dataset.uuid;
         if (!uuid) return;
-        
+
         const doc = await fromUuid(uuid);
         if (doc?.sheet) {
             const renderOptions = this.isEditMode ? {} : { editable: false };
@@ -764,7 +764,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         const item = this.document.shop.inventory[inventoryEntryId];
         const sourceItem = await fromUuid(item.itemUuid);
         const itemName = sourceItem?.name ?? "this item";
-        
+
         const choice = await foundry.applications.api.DialogV2.wait({
             window: { title: `Remove ${itemName}` },
             content: `<p>Are you sure you want to remove <strong>${itemName}</strong> from the inventory?</p>`,
@@ -832,12 +832,12 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         let category = "active";
         let knowledgeType = "";
 
-         if (choice.type === "language") {
-             category = "language";
-         } else if (choice.type !== "active") {
-             category = "knowledge";
-             knowledgeType = choice.type;
-         }
+        if (choice.type === "language") {
+            category = "language";
+        } else if (choice.type !== "active") {
+            category = "knowledge";
+            knowledgeType = choice.type;
+        }
 
         const initialRating = (category === "knowledge" || category === "language") ? 1 : 0;
         const skillItemData = {
@@ -861,8 +861,8 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
 
         // Check duplicates: reject if any skill with the same name already exists on the actor
         const normalizeName = n => String(n ?? '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-        const alreadyExists = this.document.items.some(i => 
-            i.type === "skill" && 
+        const alreadyExists = this.document.items.some(i =>
+            i.type === "skill" &&
             normalizeName(i.name) === normalizeName(choice.name)
         );
 
@@ -907,7 +907,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     static async #onClickSkillName(event, target) {
         const skillId = target.dataset.skillId;
         const itemId = target.dataset.itemId;
-        
+
         if (this.isPlayMode) {
             // Trigger a roll using the system actor's rollSkill method
             if (typeof this.document.rollSkill === "function") {
@@ -971,7 +971,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             current: this.document.img,
             callback: path => {
                 // Update the document with the new image path
-                this.document.update({img: path});
+                this.document.update({ img: path });
             },
             top: this.position.top + 40,
             left: this.position.left + 10
@@ -985,38 +985,39 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
      * @TestCaller
      */
     static async #onRunSimpleSocial(event, target) {
-    await simpleAll(this.document, { postToChat: true });
+        await simpleAll(this.document, { postToChat: true });
     }
 
     static async #onRunOpposedSocial(event, target) {
-    let defenderUuid = target?.dataset?.defenderUuid;
-    if (!defenderUuid) {
-        // Try a targeted token first, then any controlled token (not this actor)
-        const targeted = Array.from(game.user.targets ?? [])[0]?.actor;
-        const controlled = canvas.tokens.controlled.find(t => t.actor?.id !== this.document.id)?.actor;
-        const fallback = targeted ?? controlled;
-        if (!fallback) return ui.notifications.warn("Select/target an opposing actor or set data-defender-uuid.");
-        defenderUuid = fallback.uuid;
-    }
-    await opposedAll(this.document, defenderUuid,
-        { postToChat: true });
+        let defenderUuid = target?.dataset?.defenderUuid;
+        if (!defenderUuid) {
+            // Try a targeted token first, then any controlled token (not this actor)
+            const targeted = Array.from(game.user.targets ?? [])[0]?.actor;
+            const controlled = canvas.tokens.controlled.find(t => t.actor?.id !== this.document.id)?.actor;
+            const fallback = targeted ?? controlled;
+            if (!fallback) return ui.notifications.warn("Select/target an opposing actor or set data-defender-uuid.");
+            defenderUuid = fallback.uuid;
+        }
+        await opposedAll(this.document, defenderUuid,
+            { postToChat: true });
     }
 
     static async #onRunTeamworkSocial(event, target) {
-    let helpers = [];
-    const ds = target?.dataset?.helpers;
-    if (ds) {
-        helpers = ds.split(",").map(s => s.trim()).filter(Boolean);
-    } else {
-        helpers = canvas.tokens.controlled
-        .map(t => t.actor?.uuid)
-        .filter(u => u && u !== this.document.uuid);
-        if (!helpers.length) {
-        return ui.notifications.warn("Control helper tokens or provide data-helpers on the button.");
+        let helpers = [];
+        const ds = target?.dataset?.helpers;
+        if (ds) {
+            helpers = ds.split(",").map(s => s.trim()).filter(Boolean);
+        } else {
+            helpers = canvas.tokens.controlled
+                .map(t => t.actor?.uuid)
+                .filter(u => u && u !== this.document.uuid);
+            if (!helpers.length) {
+                return ui.notifications.warn("Control helper tokens or provide data-helpers on the button.");
+            }
         }
-    }
-    await teamworkAll(this.document, helpers, { 
-        capByLeaderRating: true, postToChat: true });
+        await teamworkAll(this.document, helpers, {
+            capByLeaderRating: true, postToChat: true
+        });
     }
 
     /**
@@ -1036,7 +1037,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         // 2. Find the highest Negotiation skill rating among the candidates
         const getNegotiationRating = (act) => {
             if (!act) return 0;
-            
+
             // Check if the system has getSkill
             if (typeof act.getSkill === "function") {
                 const skill = act.getSkill("negotiation");
@@ -1045,19 +1046,19 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                     if (val > 0) return val;
                 }
             }
-            
+
             // Check embedded skill items
             const skillItem = act.items?.find(i => i.type === "skill" && (i.system?.key === "negotiation" || i.name?.toLowerCase() === "negotiation"));
             if (skillItem) {
                 return Number(skillItem.system?.rating?.value ?? skillItem.system?.value ?? 0);
             }
-            
+
             // Check system skills active fallback
             const systemSkill = act.system?.skills?.active?.negotiation;
             if (systemSkill) {
                 return Number(systemSkill.value ?? systemSkill.rating ?? systemSkill ?? 0);
             }
-            
+
             return 0;
         };
 
@@ -1112,7 +1113,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
     _onRender(context, options) {
         super._onRender(context, options);
         ThemeService.applyTheme("#actors", this.element, this.document);
-        
+
         // Initialize search service if we are on the actorShop tab
         const searchBox = this.element.querySelector("#search-box");
         if (searchBox) {
@@ -1121,7 +1122,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             } else {
                 this.searchService.appElement = this.element;
             }
-            
+
             // Restore active search query to DOM
             if (this._inventorySearchTerm) {
                 searchBox.value = this._inventorySearchTerm;
@@ -1129,7 +1130,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             if (this._inventorySearchTags) {
                 this.searchService.activeFilters = [...this._inventorySearchTags];
             }
-            
+
             this._isInitializingSearch = true;
             this.searchService.initialize();
             this._isInitializingSearch = false;
@@ -1143,10 +1144,10 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
      */
     _applyInventorySearchFilter(tags, searchTerm) {
         if (this._isInitializingSearch) return; // Prevent render loop during init
-        
+
         const tagsChanged = JSON.stringify(tags) !== JSON.stringify(this._inventorySearchTags);
         const termChanged = searchTerm !== this._inventorySearchTerm;
-        
+
         if (tagsChanged || termChanged) {
             this._inventorySearchTags = tags;
             this._inventorySearchTerm = searchTerm;
@@ -1167,7 +1168,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         console.log(`Tab switched. Active tab is now: ${active}`);
 
         super._onSwitchTab(event, group, active);
-        
+
         // --- DEBUG LOG ---
         console.log("Forcing a re-render.");
         this.render();
@@ -1224,7 +1225,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
 
                 const newItemId = foundry.utils.randomID();
                 const calculatedData = await InventoryRules.getCalculatedItemData(this.document, item);
-                
+
                 const itemPriceVal = calculatedData.itemPrice?.value ?? calculatedData.itemPrice ?? 0;
                 const sellPriceVal = calculatedData.sellPrice?.value ?? calculatedData.sellPrice ?? 0;
                 const buyPriceVal = calculatedData.buyPrice?.value ?? calculatedData.buyPrice ?? 0;
@@ -1265,9 +1266,9 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                 const category = item.system.skill?.category || "";
                 const name = item.name;
                 const normalizeName = n => String(n ?? '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-                const alreadyExists = this.document.items.some(i => 
-                    i.type === "skill" && 
-                    i.system.skill?.category === category && 
+                const alreadyExists = this.document.items.some(i =>
+                    i.type === "skill" &&
+                    i.system.skill?.category === category &&
                     normalizeName(i.name) === normalizeName(name)
                 );
                 if (alreadyExists) {
@@ -1294,16 +1295,16 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                     ui.notifications.warn("Contacts cannot be added to inventory. Drop on the 'Connection' field instead.");
                     return;
                 }
-                
+
                 // 1. Calculate dynamic properties using the Rules Engine
                 // (Make sure getCalculatedItemData is accessible on your imported InventoryRules instance/class)
                 const calculatedData = await InventoryRules.getCalculatedItemData(this.document, item);
-                
+
                 // Apply markup to sell price
                 const markup = this.document.system.shop?.itemMarkup || 0;
                 const baseSellPrice = calculatedData.sellPrice?.value ?? calculatedData.sellPrice ?? 0;
                 const markedUp = Math.round(baseSellPrice * (1 + markup / 100));
-                
+
                 calculatedData.sellPrice = {
                     value: markedUp,
                     base: baseSellPrice
@@ -1370,7 +1371,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                 foundry.utils.setProperty(itemObj, "system.technology.rating", dynamicRating);
 
                 console.log(`SR5 Marketplace | Dropping Host item "${item.name}" onto Shop Actor "${this.document.name}". Calculated dynamic rating: ${dynamicRating}`);
-                
+
                 const created = await this.document.createEmbeddedDocuments("Item", [itemObj]);
                 if (created.length > 0) {
                     ui.notifications.info(`Successfully initialized Matrix Host "${item.name}" with Rating ${dynamicRating}.`);
@@ -1391,7 +1392,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
      */
     async _getItemsFromFolder(folder) {
         let items = [];
-        
+
         const traverse = async (f) => {
             if (f.contents && f.contents.length > 0) {
                 for (const doc of f.contents) {
@@ -1400,7 +1401,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
                     }
                 }
             }
-            
+
             let childFolders = [];
             if (f.pack) {
                 const pack = game.packs.get(f.pack);
@@ -1410,12 +1411,12 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             } else {
                 childFolders = game.folders.filter(sub => sub.folder?.id === f.id);
             }
-            
+
             for (const sub of childFolders) {
                 await traverse(sub);
             }
         };
-        
+
         await traverse(folder);
         return items;
     }
@@ -1458,7 +1459,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
             for (const entryId of Object.keys(inventory)) {
                 updates[`system.shop.inventory.-=${entryId}`] = null;
             }
-            
+
             await this.document.update(updates);
             ui.notifications.info(game.i18n.localize("SR5Marketplace.Marketplace.Shop.ClearInventorySuccess"));
             this.render();

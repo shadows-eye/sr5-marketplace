@@ -112,6 +112,11 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
     }
 
     /** @override */
+    get pool() {
+        return this.data.pool;
+    }
+
+    /** @override */
     get code() {
         if (!this.data?.pool || !Array.isArray(this.data.pool.mod) || this.data.pool.mod.length === 0) {
             return "";
@@ -126,6 +131,7 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
     }
 
     _prepareData(data, options) {
+        const originalModifiers = data?.action?.modifiers;
         data = super._prepareData(data, options);
         
         // Merge with default action_roll data so we don't lose any default system properties
@@ -134,7 +140,11 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
         
         data.opposed = data.action.opposed;
         data.action.categories = ["social"];
-        data.action.modifiers = data.action.modifiers || 0;
+        if (originalModifiers !== undefined) {
+            data.action.modifiers = originalModifiers;
+        } else {
+            data.action.modifiers = data.action.modifiers || 0;
+        }
         data.action.availabilityStr = data.action.availabilityStr || options?.availability || data.availabilityStr || "";
         data.availabilityStr = data.action.availabilityStr;
         data.selectedSkill = data.selectedSkill || data.action.skill || 'negotiation';
@@ -162,33 +172,7 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
         }
     }
 
-    prepareBaseValues() {
-        for (const field of ['pool', 'limit', 'threshold', 'manualHits', 'manualGlitches']) {
-            let val = this.data[field];
-            const currentBase = (field === 'threshold') 
-                ? (this.data.thresholdBase || (val && typeof val === 'object' ? val.base : null) || 0)
-                : (val && typeof val === 'object' ? val.base : 0);
-
-            if (typeof val === 'number' || (typeof val === 'string' && val.trim() !== '')) {
-                const num = Number(val);
-                if (!isNaN(num)) {
-                    this.data[field] = game.shadowrun5e.data.createData('value_field', {
-                        base: currentBase,
-                        override: { value: num, label: "SR5.ManualOverride" }
-                    });
-                } else {
-                    this.data[field] = game.shadowrun5e.data.createData('value_field', { base: currentBase, override: { value: null, label: "SR5.ManualOverride" } });
-                }
-            } else if (!val || val === null || typeof val.value === 'undefined') {
-                this.data[field] = game.shadowrun5e.data.createData('value_field', { base: currentBase, override: { value: null, label: "SR5.ManualOverride" } });
-            } else if (val && typeof val === 'object' && val.override) {
-                if (val.override.value === undefined || val.override.value === null || val.override.value === "") {
-                    val.override.value = null;
-                }
-            }
-        }
-
-        super.prepareBaseValues();
+    _rebuildPool() {
         if (!this.actor) return;
 
         // 1. Get common data
@@ -267,19 +251,19 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
             }
 
             let skillValue = 0;
-            if (ref !== undefined && ref !== null) {
-                if (typeof ref === "number") {
-                    skillValue = ref;
-                } else if (typeof ref === "object") {
-                    skillValue = ref.value ?? ref.base ?? ref.rating ?? 0;
-                }
-            } else if (skillItem) {
+            if (skillItem) {
                 skillValue = skillItem.system.skill?.rating ?? 
                              skillItem.system.skill?.value ?? 
                              skillItem.system.rating?.value ?? 
                              skillItem.system.value ?? 
                              skillItem.system.rating ?? 
                              0;
+            } else if (ref !== undefined && ref !== null) {
+                if (typeof ref === "number") {
+                    skillValue = ref;
+                } else if (typeof ref === "object") {
+                    skillValue = ref.value ?? ref.base ?? ref.rating ?? 0;
+                }
             }
             skill = { value: skillValue };
             console.log("AvailabilityTest prepareBaseValues | Fallback skill.value is:", skill?.value);
@@ -385,16 +369,52 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
         }
 
         this.data.pool.value = this.constructor.calcTotal(this.data.pool);
-        console.log("AvailabilityTest prepareBaseValues | Finalized pool.value:", this.data.pool.value);
-        console.log("AvailabilityTest prepareBaseValues | Finalized pool.mod:", JSON.stringify(this.data.pool.mod));
+        console.log("AvailabilityTest _rebuildPool | Finalized pool.value:", this.data.pool.value);
+        console.log("AvailabilityTest _rebuildPool | Finalized pool.mod:", JSON.stringify(this.data.pool.mod));
+    }
+
+    prepareBaseValues() {
+        for (const field of ['pool', 'limit', 'threshold', 'manualHits', 'manualGlitches']) {
+            let val = this.data[field];
+            const currentBase = (field === 'threshold') 
+                ? (this.data.thresholdBase || (val && typeof val === 'object' ? val.base : null) || 0)
+                : (val && typeof val === 'object' ? val.base : 0);
+
+            if (typeof val === 'number' || (typeof val === 'string' && val.trim() !== '')) {
+                const num = Number(val);
+                if (!isNaN(num)) {
+                    this.data[field] = game.shadowrun5e.data.createData('value_field', {
+                        base: currentBase,
+                        override: { value: num, label: "SR5.ManualOverride" }
+                    });
+                } else {
+                    this.data[field] = game.shadowrun5e.data.createData('value_field', { base: currentBase, override: { value: null, label: "SR5.ManualOverride" } });
+                }
+            } else if (!val || val === null || typeof val.value === 'undefined') {
+                this.data[field] = game.shadowrun5e.data.createData('value_field', { base: currentBase, override: { value: null, label: "SR5.ManualOverride" } });
+            } else if (val && typeof val === 'object' && val.override) {
+                if (val.override.value === undefined || val.override.value === null || val.override.value === "") {
+                    val.override.value = null;
+                }
+            }
+        }
+
+        const originalModifiers = this.data.action?.modifiers;
+        super.prepareBaseValues();
+        if (originalModifiers !== undefined && this.data.action) {
+            this.data.action.modifiers = originalModifiers;
+        }
+        this._rebuildPool();
     }
 
     /** @override */
     calculateBaseValues() {
+        const originalModifiers = this.data.action?.modifiers;
         super.calculateBaseValues();
-        if (this.data?.pool) {
-            this.data.pool.value = this.constructor.calcTotal(this.data.pool);
+        if (originalModifiers !== undefined && this.data.action) {
+            this.data.action.modifiers = originalModifiers;
         }
+        this._rebuildPool();
     }
 
     /** @override */

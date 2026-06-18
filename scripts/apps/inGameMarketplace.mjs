@@ -1,12 +1,12 @@
 import ItemDataServices from '../services/ItemDataServices.mjs';
 import { AppDialogBuilder } from './documents/dialog/AppDialogBuilder.mjs';
-import { ItemPreviewApp } from "./documents/items/ItemPreviewApp.mjs"; 
+import { ItemPreviewApp } from "./documents/items/ItemPreviewApp.mjs";
 import { BasketService } from '../services/basketService.mjs';
 import { SearchService } from '../services/searchTag.mjs';
 import { DeliveryTimeService } from '../services/DeliveryTimeService.mjs';
 import { DialogTestModifierService as DialogModifierService } from '../apps/documents/dialog/DialogModifierService.mjs'; // Builder for Dialog For inline-Dialog in Apps
 import { AppTestFlagService } from '../services/AppTestFlagService.mjs';
-import{ MODULE_ID } from '../lib/constants.mjs';
+import { MODULE_ID } from '../lib/constants.mjs';
 import { ActorSelectionService } from '../services/ActorSelectionService.mjs';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -115,7 +115,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             }
         }, { inplace: false });
     }
-    
+
     /**
      * Determines whether to get all items or just a specific shop's items.
      * @returns {Promise<object>}
@@ -142,7 +142,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         if (this.tabGroups.main === "shop") {
             this.searchService = new SearchService(this.element, this._applySearchFilter.bind(this));
-            
+
             if (this.initialSearchTerm) {
                 if (this.searchService) {
                     this.searchService.activeFilters = [this.initialSearchTerm.toLowerCase()];
@@ -151,7 +151,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             }
 
             this.searchService.initialize();
-            
+
             const categorySelector = this.element.querySelector("#item-type-selector");
             if (categorySelector) categorySelector.addEventListener("change", this.onChangeCategory.bind(this));
 
@@ -172,7 +172,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         // If we are on the shopping cart tab, find the dropdowns and attach listeners.
         if (this.tabGroups.main === "shoppingCart") {
             const parameterSelects = this.element.querySelectorAll('select[data-action="changeTestParameter"]');
-            for ( const select of parameterSelects ) {
+            for (const select of parameterSelects) {
                 select.addEventListener("change", (event) => {
                     // We manually call the handler, passing the correct `this` context.
                     this._onChangeTestParameter(event, select);
@@ -224,8 +224,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         // Dynamically re-evaluate shop region context if no explicit shop context was set
         if (!this.shopActorUuid && this.purchasingActor && canvas.ready) {
-            const token = canvas.tokens.controlled.find(t => t.actor?.uuid === this.purchasingActor.uuid) 
-                          || this.purchasingActor.getActiveTokens(false, true)[0];
+            const token = canvas.tokens.controlled.find(t => t.actor?.uuid === this.purchasingActor.uuid)
+                || this.purchasingActor.getActiveTokens(false, true)[0];
             if (token) {
                 const tokenDoc = token.document || token;
                 const shopRegion = canvas.scene?.regions?.find(r => {
@@ -239,7 +239,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 }
             }
         }
-        
+
         let purchasingActorData = null;
         if (this.purchasingActor) {
             purchasingActorData = {
@@ -268,7 +268,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         const activeTestState = this.activeDialogId ? testStates[this.activeDialogId] : null;
         // Only perform the merge if an active test state actually exists.
-        if(activeTestState){
+        if (activeTestState) {
             this.testType = activeTestState.testType;
             this.availabilityStr = basket.totalAvailability;
             this.skill = activeTestState.skill;
@@ -277,36 +277,36 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             this.activeTestState = activeTestState;
         }
 
-        const tabs = [{ 
+        const tabs = [{
             id: "shop", label: game.i18n.localize("SR5Marketplace.Marketplace.Tabs.Shop"), icon: "fa-store",
-            cssClass: this.tabGroups.main === "shop" ? "active" : "" 
+            cssClass: this.tabGroups.main === "shop" ? "active" : ""
         }];
 
         if (game.user.isGM) {
-            tabs.push({ 
+            tabs.push({
                 id: "orderReview", label: game.i18n.localize("SR5Marketplace.Marketplace.Tabs.OrderReview"),
                 icon: "fa-list-check", cssClass: this.tabGroups.main === "orderReview" ? "active" : "",
-                count: game.sr5marketplace.api.marketplace.getPendingRequestCount() 
+                count: game.sr5marketplace.api.marketplace.getPendingRequestCount()
             });
         }
         if (basketItemCount > 0) {
-            tabs.push({ 
+            tabs.push({
                 id: "shoppingCart", label: "", icon: "fa-shopping-cart",
                 cssClass: this.tabGroups.main === "shoppingCart" ? "active" : "",
                 count: basketItemCount, tooltip: game.i18n.localize("SR5Marketplace.Marketplace.Basket.Title")
             });
         }
-        
+
         if (this.tabGroups.main === "shoppingCart" && basketItemCount === 0) {
             this.tabGroups.main = "shop";
         }
-    
-    let tabContent;
-    const availabilityTestRule = game.settings.get("sr5-marketplace", "availabilityTestRule");
-    let partialContext = { basket, isGM: game.user.isGM, purchasingActor: purchasingActorData, activeTestState, availabilityTestRule };
-    const render = foundry.applications.handlebars.renderTemplate;
 
-    switch (this.tabGroups.main) {
+        let tabContent;
+        const availabilityTestRule = game.settings.get("sr5-marketplace", "availabilityTestRule");
+        let partialContext = { basket, isGM: game.user.isGM, purchasingActor: purchasingActorData, activeTestState, availabilityTestRule };
+        const render = foundry.applications.handlebars.renderTemplate;
+
+        switch (this.tabGroups.main) {
             case "shoppingCart":
                 // Prepare standard shopping cart data (contacts)
                 if (this.purchasingActor) {
@@ -314,8 +314,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                     //    Prioritize the actor from a single controlled token, if one exists.
                     //    This correctly handles unlinked tokens with their own inventories.
                     const controlledToken = canvas.tokens.controlled[0];
-                    const itemSource = (controlledToken && controlledToken.actor.id === this.purchasingActor.id) 
-                        ? controlledToken.actor 
+                    const itemSource = (controlledToken && controlledToken.actor.id === this.purchasingActor.id)
+                        ? controlledToken.actor
                         : this.purchasingActor;
 
                     // 2. Get contacts from the determined source (either the token's actor or the base actor).
@@ -366,20 +366,20 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                                 const employeeActor = employeeDoc instanceof Actor ? employeeDoc : employeeDoc?.actor || null;
                                 if (employeeActor) {
                                     let employeeContactItem = null;
-                                    
+
                                     // Search employee actor items
                                     employeeContactItem = employeeActor.items.find(i => i.type === "contact" && (i.system?.linkedActor === employeeActor.uuid || i.name === employeeActor.name));
-                                    
+
                                     // Search shop actor items
                                     if (!employeeContactItem) {
                                         employeeContactItem = shopActor.items.find(i => i.type === "contact" && i.system?.linkedActor === employeeActor.uuid);
                                     }
-                                    
+
                                     // Search player items
                                     if (!employeeContactItem && itemSource) {
                                         employeeContactItem = itemSource.items.find(i => i.type === "contact" && i.system?.linkedActor === employeeActor.uuid);
                                     }
-                                    
+
                                     // Search world actors items
                                     if (!employeeContactItem && game.actors) {
                                         for (const act of game.actors) {
@@ -415,12 +415,12 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 if (activeTestState) {
                     const builder = new AppDialogBuilder();
                     const dialogContext = await builder.buildTestDialogContext(activeTestState, basket);
-                    
+
                     // --- THIS IS THE FIX (Part 2) ---
                     // Merge the results directly INTO the 'activeTestState' object.
                     if (dialogContext) {
                         Object.assign(partialContext.activeTestState, dialogContext);
-                        
+
                         // Map collapsible group states
                         if (partialContext.activeTestState.modifierGroups) {
                             partialContext.activeTestState.modifierGroups.forEach((group, index) => {
@@ -432,13 +432,13 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                     }
                 }
                 // --- END NEW FLAG-BASED WORKFLOW ---
-            console.log("LOG: Final context object passed to shoppingCart.html:", partialContext);
-            tabContent = await render("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.html", partialContext);
-            break;
-        case "orderReview": {
+                console.log("LOG: Final context object passed to shoppingCart.html:", partialContext);
+                tabContent = await render("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shoppingCart.html", partialContext);
+                break;
+            case "orderReview": {
                 const allPendingRequests = await game.sr5marketplace.api.marketplace.getAllPendingRequests();
                 const builder = new AppDialogBuilder();
-                
+
                 // Group requests by actor
                 const groupedByActor = {};
                 for (const req of allPendingRequests) {
@@ -453,7 +453,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                             allAvailabilityStrings: []
                         };
                     }
-                    
+
                     // Enrich request with enriched testContext
                     if (req.basket.testState) {
                         try {
@@ -462,7 +462,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                             console.warn("SR5 Marketplace | Failed to build test dialog context for request:", err);
                         }
                     }
-                    
+
                     // Calculate delivery time
                     if (req.basket.testContext && req.basket.testContext.deliveryTime) {
                         req.deliveryTime = req.basket.testContext.deliveryTime;
@@ -473,18 +473,18 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                             unit: baseTime.unit
                         };
                     }
-                    
+
                     groupedByActor[actorUuid].requests.push(req);
                     groupedByActor[actorUuid].totalCost += req.basket.totalCost || 0;
                     groupedByActor[actorUuid].totalKarma += req.basket.totalKarma || 0;
                     groupedByActor[actorUuid].totalEssenceCost += req.basket.totalEssenceCost || 0;
                     groupedByActor[actorUuid].allAvailabilityStrings.push(req.basket.totalAvailability || "0");
                 }
-                
+
                 // Populate tab bar groups list
                 const actorGroups = Object.values(groupedByActor).map(group => {
                     const combinedAvailability = this.basketService._combineAvailabilities(group.allAvailabilityStrings);
-                    
+
                     // Overall max delivery time calculation
                     let maxVal = 0;
                     let maxUnit = "";
@@ -498,7 +498,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                         }
                     }
                     const maxDeliveryTime = { value: maxVal, unit: maxUnit || "days" };
-                    
+
                     return {
                         uuid: group.actor.uuid,
                         name: group.actor.name,
@@ -515,14 +515,14 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                         isActive: false
                     };
                 });
-                
+
                 // Manage the selected review actor UUID
                 if (actorGroups.length > 0) {
                     const validActorUuids = actorGroups.map(g => g.uuid);
                     if (!this.selectedReviewActorUuid || !validActorUuids.includes(this.selectedReviewActorUuid)) {
                         this.selectedReviewActorUuid = validActorUuids[0];
                     }
-                    
+
                     const activeGroup = actorGroups.find(g => g.uuid === this.selectedReviewActorUuid);
                     if (activeGroup) {
                         activeGroup.isActive = true;
@@ -536,23 +536,23 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                         };
                     }
                 }
-                
+
                 partialContext.actorGroups = actorGroups;
                 tabContent = await render("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/orderReview.html", partialContext);
                 break;
-        }
-        default:
+            }
+            default:
                 // --- ADDED DEBUG LOG ---
                 //console.log(`%cRendering View:`, "color: green; font-weight: bold;", { selectedKey_for_render: this.selectedKey });
                 // --- END DEBUG LOG ---
                 this.tabGroups.main = "shop";
                 const itemsByType = await this.#getItemsForSource();
-                
+
                 if (!this.selectedKey || !itemsByType[this.selectedKey] || itemsByType[this.selectedKey].items.length === 0) {
                     const firstAvailableCategory = Object.entries(itemsByType).find(([, data]) => data.items.length > 0);
                     this.selectedKey = firstAvailableCategory ? firstAvailableCategory[0] : null;
                 }
-                
+
                 // --- UPDATED: Prepare data for the toggle switch ---
                 partialContext.shopActorUuid = this.shopActorUuid;
                 partialContext.isShopView = this.selectedSource !== "global";
@@ -565,18 +565,18 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                     }
                     partialContext.shopImg = imgPath;
                 }
-                
+
                 partialContext.itemsByType = itemsByType;
                 partialContext.selectedKey = this.selectedKey;
-                
+
                 // --- NEW: Save the items to the Virtual Scroller instead of Handlebars ---
                 const itemsToRender = this.selectedKey ? (itemsByType[this.selectedKey]?.items || []) : [];
-                this.currentCategoryItems = itemsToRender; 
+                this.currentCategoryItems = itemsToRender;
                 this.scrollState.entries = itemsToRender; // Scroller reads from this one!
-                
+
                 partialContext.selectedItems = []; // Let the scroller draw the HTML
                 tabContent = await foundry.applications.handlebars.renderTemplate("modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.html", partialContext);
-            break;
+                break;
         }
 
         // --- Determine Top-Left Display Image ---
@@ -629,7 +629,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             this.render();
         }
     }
-    
+
     static #onToggleActorList(event, target) {
         target.closest(".marketplace-user-actor")?.classList.toggle("expanded");
     }
@@ -690,9 +690,13 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         // 3. If the basket is now empty, clear any associated test flags.
         if (basket.shoppingCartItems.length === 0) {
-            console.log("LOG: Basket is now empty, clearing any active test state flag.");
-            await AppTestFlagService.deleteState(); // This will clear the flag for the current user.
-            
+            console.log("LOG: Basket is now empty, clearing any active availability test state flag.");
+            const testStates = await AppTestFlagService.readState(game.user.id);
+            const availTest = Object.values(testStates).find(t => t.testType !== "BuildTest");
+            if (availTest) {
+                await AppTestFlagService.deleteTest(availTest.id, game.user.id);
+            }
+
             // Also clear the local instance state to prevent issues until the next render.
             this.activeTestState = null;
             this.activeDialogId = null;
@@ -724,26 +728,28 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         }
         this.render();
     }
-    
+
     static async #onCancelRequest(event, target) {
         await this.basketService.clearBasket();
-        await AppTestFlagService.deleteState(game.user.id);
+        if (this.activeDialogId) {
+            await AppTestFlagService.deleteTest(this.activeDialogId, game.user.id);
+        }
         this.activeTestState = null;
         this.activeDialogId = null;
 
-        const buildTestApp = Object.values(ui.windows).find(w => w.constructor.name === "BuildTestApp");
+        const buildTestApp = foundry.applications.instances.get("build-test-dialog-app");
         if (buildTestApp) {
             buildTestApp.close();
         }
 
-        const builderApp = Object.values(ui.windows).find(w => w.constructor.name === "ItemBuilderApp");
+        const builderApp = foundry.applications.instances.get("itemBuilder");
         if (builderApp) {
             builderApp.render();
         }
 
         this.render();
     }
-    
+
     static async #onApproveRejectAll(event, target) {
         const requestBlock = target.closest(".pending-request-block");
         const userId = requestBlock.dataset.userId;
@@ -765,7 +771,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         if (target.dataset.action === "rejectItem") {
             await game.sr5marketplace.api.marketplace.rejectItemFromRequest(userId, basketUuid, itemUuid);
-            
+
             // Check if the request is now empty or has no items left, then reject/remove the basket.
             const user = game.users.get(userId);
             const basketState = user?.getFlag("sr5-marketplace", "basket");
@@ -785,7 +791,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         this.selectedReviewActorUuid = actorUuid;
         this.render();
     }
-    
+
     /**
      * Handles the change event for the item category dropdown.
      * With event listener Attached in _onRender
@@ -804,7 +810,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         await this.basketService.updateItemProperty(itemUuid, "selectedRating", newRating);
         this.render();
     }
-    
+
     static async #onUpdatePendingItem(event, target) {
         const requestBlock = target.closest(".pending-request-block");
         const itemRow = target.closest(".item-row");
@@ -835,8 +841,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             console.log("LOG: Active test found, updating contact and actor information...");
 
             // 3. Determine the new actor UUID for the test. Default to the purchasing actor.
-            let newActorForTestUuid = this.purchasingActor.uuid; 
-            
+            let newActorForTestUuid = this.purchasingActor.uuid;
+
             // If a contact is now selected, check for a linked actor.
             if (newSelectedUuid) {
                 const contactItem = await fromUuid(newSelectedUuid);
@@ -857,7 +863,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 connectionUuid: newSelectedUuid,
                 actorUuid: newActorForTestUuid
             };
-            
+
             // 5. Update the flag with the new information.
             await AppTestFlagService.updateTest(this.activeTestState.id, updateData);
         }
@@ -880,11 +886,11 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         console.log("%c--- Action: Show Availability Dialog ---", "color: green; font-weight: bold;");
         const CurrentUserId = await game.user.id;
         const basket = await this.basketService.getBasket(CurrentUserId);
-        
+
         if (basket.shoppingCartItems.length === 0) {
             return ui.notifications.warn("Your shopping cart is empty.");
         }
-        this.availabilityStr=basket.totalAvailabilityRating;
+        this.availabilityStr = basket.totalAvailabilityRating;
         // --- Check The Actor---
         // 1. Start with the purchasing actor's UUID as the default.
         let actorForTestUuid = this.purchasingActor.uuid;
@@ -892,7 +898,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         // 2. Check if a connection (contact) is selected in the basket.
         if (basket.selectedContactUuid) {
             const contactItem = await fromUuid(basket.selectedContactUuid);
-            
+
             // 3. If that connection item exists and has a linked actor, use that actor's UUID instead.
             if (contactItem?.system?.linkedActor) {
                 console.log(contactItem.system.linkedActor)
@@ -919,7 +925,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         // Create the test record in the flag. This returns the new test's ID.
         this.activeDialogId = await AppTestFlagService.createTest(initialData);
         console.log(`LOG: Created new test state with ID: ${this.activeDialogId}`);
-        
+
         this.render();
     }
 
@@ -938,7 +944,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             label: target.dataset.label,
             value: parseInt(target.dataset.value, 10)
         };
-        
+
         // 2. Get the current list of modifiers from the state.
         const currentModifiers = this.activeTestState.appliedModifiers ?? [];
 
@@ -948,7 +954,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         // 4. Update the state on the instance for the next re-render.
         this.activeTestState.appliedModifiers = newModifiers;
-        
+
         // 5. Save the complete, updated list of modifiers back to the flag.
         //    FIX: Pass the 'newModifiers' array under the 'modifier' key.
         await AppTestFlagService.updateTest(this.activeTestState.id, { appliedModifiers: newModifiers });
@@ -990,7 +996,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         // Add to applied modifiers
         const currentModifiers = this.activeTestState.appliedModifiers ?? [];
-        
+
         // Avoid duplicate labels
         if (currentModifiers.some(m => m.label === label)) {
             ui.notifications.warn(`A modifier with label "${label}" already exists.`);
@@ -1035,14 +1041,14 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         if (!this.activeTestState) return;
 
         const key = target.name;   // This will be "skill" or "attribute"
-        const value = target.value; 
-        
+        const value = target.value;
+
         // Update the state on the instance for immediate feedback
         this.activeTestState[key] = value;
         console.log(this.activeTestState)
         // Save the change to the flag for persistence
         await AppTestFlagService.updateTest(this.activeTestState.id, { [key]: value });
-        
+
         // Re-render the UI
         this.render(false);
     }
@@ -1093,7 +1099,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             type: this.activeTestState.type,
             categories: []
         };
-        const TestObject = foundry.utils.mergeObject(initialTestResult,  extraData )
+        const TestObject = foundry.utils.mergeObject(initialTestResult, extraData)
         const availabilityStr = this.activeTestState.availabilityStr;
 
         // The threshold for the resist roll is the net hits from the player's initial roll.
@@ -1123,13 +1129,13 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         };
 
         //Set options for a silent roll (no standard dialog but appDialog, no chat message but App message).
-        const options = { 
-            showDialog: false, 
-            showMessage: false 
+        const options = {
+            showDialog: false,
+            showMessage: false
         };
 
         try {
-            
+
             const test = new game.shadowrun5e.tests.AvailabilityResist(data, {}, options);
             await test.execute();
 
@@ -1151,7 +1157,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             // 10. Re-render the app to show the final result view.
             this.render();
 
-        } catch(e) {
+        } catch (e) {
             console.error("Marketplace | AvailabilityResistTest failed to run:", e);
         }
     }
@@ -1276,14 +1282,14 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
             // Complete Test Data
             const resultForFlag = test.data
-            
+
             const dialogIdToUpdate = test.data.action.dialogId;
             let userId = game.user.id;
 
             if (dialogIdToUpdate) {
-                await AppTestFlagService.updateTest(dialogIdToUpdate, { 
+                await AppTestFlagService.updateTest(dialogIdToUpdate, {
                     result: resultForFlag,
-                    rolls: test.rolls, 
+                    rolls: test.rolls,
                     status: finalStatus, // Use the correct status
                     type: "AvailabilityTest", // Keep the separate type for the resist roll
                     rollCount: 1,
@@ -1294,7 +1300,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             }
 
             this.render();
-        } catch(e) {
+        } catch (e) {
             console.log("Marketplace | AvailabilityTest failed to run:", e);
         }
     }
@@ -1342,7 +1348,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                     dialogId: this.activeDialogId
                 }
             };
-            
+
             // --- THIS IS THE FIX ---
             // Add the options object to ensure a silent roll.
             const options = { showDialog: false, showMessage: false };
@@ -1354,14 +1360,25 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             // 5. Accumulate hits from the previous total.
             const previousHits = this.activeTestState.result.values.extendedHits.value;
             test.data.values.extendedHits.value += previousHits;
-            test.data.values.extendedHits.mod.push({ name: "Previous Hits", value: previousHits });
+            if (test.data.values.extendedHits.mod) {
+                test.data.values.extendedHits.mod.push({ name: "Previous Hits", value: previousHits });
+            }
+            if (test.data.values.extendedHits.changes) {
+                test.data.values.extendedHits.changes.push({
+                    name: "Previous Hits",
+                    value: previousHits,
+                    mode: typeof CONST !== 'undefined' ? (CONST.ACTIVE_EFFECT_MODES?.ADD ?? 2) : 2,
+                    priority: 0,
+                    enabled: true
+                });
+            }
 
             // 6. Check if the test is now resolved.
             let finalStatus = 'extended-inprogress';
             if (test.data.values.extendedHits.value >= test.data.threshold.value || test.pool.value <= 0) {
                 finalStatus = 'resolved';
             }
-            
+
             // 7. Save everything back to the flag.
             await AppTestFlagService.updateTest(this.activeTestState.id, {
                 result: test.data,
@@ -1373,7 +1390,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
             this.render();
 
-        } catch(e) {
+        } catch (e) {
             console.error("Marketplace | Failed to continue extended test:", e);
         }
     }
