@@ -59,6 +59,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.workshopSearchService = null;
         this.workshopShelfEntries = [];
         this.filteredWorkshopShelfEntries = [];
+        this.workshopSortMode = "factory";
 
         this.hoverTimeout = null;
         // To hold a reference to the active tooltip application
@@ -140,7 +141,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 buildTestAll: this.#onBuildTestAll,
                 toggleActorList: this.#onToggleActorList,
                 selectActor: this.#onSelectActor,
-                clearActor: this.#onClearActor
+                clearActor: this.#onClearActor,
+                changeWorkshopSort: this.#onChangeWorkshopSort
             }
         }, { inplace: false });
     }
@@ -362,8 +364,14 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             const totalUsed = used + virtualUsed;
             const newModSlots = Number(item.system.slots ?? item.system.technology?.slots ?? 0);
 
-            if (totalUsed + newModSlots > max) {
-                ui.notifications.error(`Not enough slots available in category "${targetCategory}" (Max: ${max}, Used: ${totalUsed}, Required: ${newModSlots}).`);
+            const allowOverride = game.settings.get("sr5-marketplace", "allowOverrideModLimits");
+            if (!allowOverride && totalUsed + newModSlots > max) {
+                const errStr = game.i18n.format("SR5Marketplace.ItemBuilder.Errors.SlotLimitExceeded", {
+                    category: targetCategory,
+                    max: max,
+                    total: totalUsed + newModSlots
+                });
+                ui.notifications.error(errStr || `Not enough slots available in category "${targetCategory}" (Max: ${max}, Used: ${totalUsed}, Required: ${newModSlots}).`);
                 return;
             }
 
@@ -610,16 +618,19 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     if (shelfContainer) shelfContainer.scrollTop = 0;
                     this._updateWorkshopShelfScroll();
                 });
+                // Pre-populate the search service before initializing to preserve tags and query across renders
+                const savedTags = [...(this.workshopSearchTags || [])];
+                const savedQuery = this.workshopSearchQuery || "";
+                
+                this.workshopSearchService.activeFilters = savedTags;
+                const sBox = this.element.querySelector("#search-box");
+                if (sBox) sBox.value = savedQuery;
+
                 this.workshopSearchService.initialize();
 
-                if (this.workshopSearchTags.length > 0 || this.workshopSearchQuery) {
-                    this.workshopSearchService.activeFilters = [...this.workshopSearchTags];
-                    const sBox = this.element.querySelector("#search-box");
-                    if (sBox) sBox.value = this.workshopSearchQuery;
-                    this.workshopSearchService.applyFilters();
-                } else {
-                    this._updateWorkshopShelfScroll();
-                }
+                // Restore saved states on the app in case they were altered during initial applyFilters
+                this.workshopSearchTags = savedTags;
+                this.workshopSearchQuery = savedQuery;
             }
         }
 
@@ -1151,7 +1162,28 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                 }
                             }
 
+                            const mode = this.workshopSortMode || "factory";
+                            const isInventory = (item) => item.entryId !== null || item.isFromOwner;
+
+                            modsOnShelf.sort((a, b) => {
+                                const aInv = isInventory(a);
+                                const bInv = isInventory(b);
+
+                                if (mode === "world") {
+                                    if (!aInv && bInv) return -1;
+                                    if (aInv && !bInv) return 1;
+                                } else {
+                                    if (aInv && !bInv) return -1;
+                                    if (!aInv && bInv) return 1;
+                                }
+                                return a.name.localeCompare(b.name);
+                            });
+
+                            const factoryInventoryCount = modsOnShelf.filter(isInventory).length;
+
                             partialContext.modsOnShelf = modsOnShelf;
+                            partialContext.factoryInventoryCount = factoryInventoryCount;
+                            partialContext.workshopSortMode = mode;
                             this.workshopShelfEntries = modsOnShelf;
                         }
                     }
@@ -1315,7 +1347,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             activeTab: this.tabGroups.main,
             workshopActorUuid: this.workshopActorUuid,
             activeVehicle: partialContext.activeVehicle || null,
-            workshopSearchTags: this.workshopSearchTags || []
+            workshopSearchTags: this.workshopSearchTags || [],
+            workshopSortMode: this.workshopSortMode || "factory"
         };
     }
 
@@ -2430,6 +2463,14 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         event.preventDefault();
     }
 
+    static async #onChangeWorkshopSort(event, target) {
+        const sortMode = target.dataset.sort;
+        if (sortMode && this.workshopSortMode !== sortMode) {
+            this.workshopSortMode = sortMode;
+            this.render();
+        }
+    }
+
     static async #onToggleWorkshopFilter(event, target) {
         const category = target.dataset.category;
         if (!category || !this.workshopSearchService) return;
@@ -2579,7 +2620,46 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const workshopActor = workshopActorDoc instanceof Actor ? workshopActorDoc : workshopActorDoc?.actor || null;
         if (!workshopActor) return;
 
-        await game.sr5marketplace.api.factory.installModification(vehicle, workshopActor, this.purchasingActor, vMod);
+        if (game.user.isGM) {
+            const success = await game.sr5marketplace.api.factory.installModification(vehicle, workshopActor, this.purchasingActor, vMod);
+            if (success) {
+                await this.handleInstallComplete(vehicle.uuid, virtualId);
+            }
+        } else {
+            game.socket.emit("module.sr5-marketplace", {
+                action: "install_modification",
+                vehicleUuid: vehicle.uuid,
+                workshopActorUuid: workshopActor.uuid,
+                purchasingActorUuid: this.purchasingActor?.uuid || null,
+                vMod: vMod,
+                userId: game.user.id
+            });
+            ui.notifications.info("Installation request sent to GM.");
+        }
+    }
+
+    async handleInstallComplete(vehicleUuid, virtualId) {
+        const vehicleDoc = await fromUuid(vehicleUuid);
+        const vehicle = vehicleDoc instanceof Actor ? vehicleDoc : vehicleDoc?.actor || null;
+        if (!vehicle) return;
+
+        // Remove virtual mod from flags of the vehicle and base actor
+        await game.sr5marketplace.api.factory.removeVirtualModification(vehicle, virtualId);
+
+        // Delete any active build tests associated with this virtual modification
+        try {
+            const testStates = await AppTestFlagService.readState(game.user.id);
+            const associatedTest = Object.values(testStates).find(t => t.virtualModId === virtualId);
+            if (associatedTest) {
+                await AppTestFlagService.deleteTest(associatedTest.id, game.user.id);
+            }
+        } catch (err) {
+            console.error("SR5 Marketplace | Failed to clean up associated build test:", err);
+        }
+
+        // Force tab to workshop and render
+        this.tabGroups.main = "workshop";
+        this.render(true);
     }
 
     static async #onAddAllToBasket(event, target) {

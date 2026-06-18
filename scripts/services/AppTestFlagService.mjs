@@ -1,5 +1,4 @@
 import { MODULE_ID, FLAG_KEY_AppTest, FLAGKEY_Basket } from '../lib/constants.mjs';
-import { factoryFlow } from './_module.mjs';
 import { ActorSelectionService } from './ActorSelectionService.mjs';
 
 /**

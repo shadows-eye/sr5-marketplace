@@ -125,5 +125,9 @@
         "Cost": "Kosten",
         "Description": "Beschreibung",
         "Stats": "Fahrzeugwerte"
+    },
+    "Errors": {
+        "SlotLimitExceeded": "Nicht genügend Slots in der Kategorie \"{category}\" verfügbar (Max: {max}, Gesamt: {total}).",
+        "InstallationRejectedLimit": "Installation von \"{name}\" abgelehnt: Slotlimit für Kategorie \"{category}\" überschritten (Max: {max}, Gesamt: {total})."
     }
 }

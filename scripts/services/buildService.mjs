@@ -1,6 +1,7 @@
 import { MODULE_ID } from "../lib/constants.mjs";
 import { DefaultEffect } from "../lib/DefaultEffect.mjs";
 import { SystemDataMapperService } from "./SystemDataMapperService.mjs";
+import { FactoryFlow } from "./factoryFlow.mjs";
 
 const FLAG_SCOPE = MODULE_ID;
 const FLAG_KEY = "itemBuilderState";
@@ -45,11 +46,14 @@ export class BuildService {
     async saveVirtualModifications(vehicle, virtualMods) {
         if (!vehicle) return;
 
-        if (vehicle.isOwner) {
+        const { baseVehicle, shouldUpdateBase } = this._getVirtualModsInfo(vehicle);
+        const targetActor = shouldUpdateBase ? baseVehicle : vehicle;
+
+        if (targetActor.isOwner) {
             if (virtualMods && virtualMods.length > 0) {
-                await vehicle.setFlag(MODULE_ID, "virtualModifications", virtualMods);
+                await targetActor.setFlag(MODULE_ID, "virtualModifications", virtualMods);
             } else {
-                await vehicle.unsetFlag(MODULE_ID, "virtualModifications");
+                await targetActor.unsetFlag(MODULE_ID, "virtualModifications");
             }
         } else if (game.users.activeGM) {
             const hasMods = virtualMods && virtualMods.length > 0;
@@ -60,7 +64,7 @@ export class BuildService {
 
             game.socket.emit("module.sr5-marketplace", {
                 action: "update_actor_field",
-                actorUuid: vehicle.uuid,
+                actorUuid: targetActor.uuid,
                 updateData: {
                     [updateKey]: updateVal
                 }
@@ -124,8 +128,8 @@ export class BuildService {
         const virtualMods = this.getVirtualModifications(vehicle);
         if (virtualMods.length === 0) return false;
 
-        // Break circular dependency by dynamically importing factoryFlow
-        const { factoryFlow } = await import("./_module.mjs");
+        // Instantiate FactoryFlow statically imported to prevent dynamic import warning
+        const factoryFlow = new FactoryFlow();
 
         let flagUpdated = false;
         for (const vMod of virtualMods) {

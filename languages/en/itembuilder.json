@@ -125,5 +125,9 @@
         "Cost": "Cost",
         "Description": "Description",
         "Stats": "Vehicle Stats"
+    },
+    "Errors": {
+        "SlotLimitExceeded": "Not enough slots available in category \"{category}\" (Max: {max}, Total: {total}).",
+        "InstallationRejectedLimit": "Installation of \"{name}\" rejected: Slot limit for category \"{category}\" exceeded (Max: {max}, Total: {total})."
     }
 }

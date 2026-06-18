@@ -235,7 +235,20 @@
                 <div class="workshop-shelf-sidebar">
                     <div class="workshop-shelf-header">
                         <span><i class="fas fa-warehouse"></i> {{localize "SR5Marketplace.Factory.Shelf.Title"}}</span>
-                        <span class="shelf-count-badge" style="font-size: 0.75em; opacity: 0.6; font-weight: normal;">{{modsOnShelf.length}} items</span>
+                        <div class="shelf-counters">
+                            <span class="shelf-count-badge sort-badge {{#if (eq workshopSortMode 'world')}}active{{/if}}" 
+                                  data-action="changeWorkshopSort" 
+                                  data-sort="world" 
+                                  title="{{localize 'SR5Marketplace.Factory.Shelf.AllItemsTooltip'}}">
+                                <i class="fas fa-globe"></i> {{modsOnShelf.length}} items
+                            </span>
+                            <span class="shelf-count-badge sort-badge {{#if (eq workshopSortMode 'factory')}}active{{/if}}" 
+                                  data-action="changeWorkshopSort" 
+                                  data-sort="factory" 
+                                  title="{{localize 'SR5Marketplace.Factory.Shelf.FactoryInventoryTooltip'}}">
+                                <i class="fas fa-warehouse"></i> {{factoryInventoryCount}} items
+                            </span>
+                        </div>
                     </div>
 
                     <!-- Search bar relocated to header -->

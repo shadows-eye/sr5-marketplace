@@ -140,6 +140,38 @@
                 "name": "Premium Themes Aktivieren",
                 "hint": "Macht Premium-Themes (Apple Silicon, Cyber Neon, Neon Light) im Foundry UI Konfigurationsmenü auswählbar."
             },
+            "AllowOverrideModLimits": {
+                "name": "Überschreiten der Modifikationslimits erlauben",
+                "hint": "Wenn aktiviert, können Spieler Modifikationen über die Slotkapazität des Fahrzeugs hinaus hinzufügen, was jedoch den Schwellenwert der Bau-Probe erhöht."
+            },
+            "OverrideModLimitsThresholdIncrease": {
+                "name": "Zusätzlicher Schwellenwert für Übermodifikation",
+                "hint": "Der zusätzliche Schwellenwert, der zur Bau-Probe addiert wird, wenn Modifikationen über das Slotlimit hinaus installiert werden. Erlaubt 0 oder leer."
+            },
+            "SlotOverrideDrive": {
+                "name": "Slot-Überschreibung: Antrieb",
+                "hint": "Überschreibt das Slotlimit für Antriebs-Modifikationen. Auf 0 setzen, um den Rumpfwert des Fahrzeugs zu verwenden."
+            },
+            "SlotOverrideProtection": {
+                "name": "Slot-Überschreibung: Schutz",
+                "hint": "Überschreibt das Slotlimit für Schutz-Modifikationen. Auf 0 setzen, um den Rumpfwert des Fahrzeugs zu verwenden."
+            },
+            "SlotOverrideWeapons": {
+                "name": "Slot-Überschreibung: Waffen",
+                "hint": "Überschreibt das Slotlimit für Waffen-Modifikationen. Auf 0 setzen, um den Rumpfwert des Fahrzeugs zu verwenden."
+            },
+            "SlotOverrideBody": {
+                "name": "Slot-Überschreibung: Karosserie",
+                "hint": "Überschreibt das Slotlimit für Karosserie-Modifikationen. Auf 0 setzen, um den Rumpfwert des Fahrzeugs zu verwenden."
+            },
+            "SlotOverrideElectronics": {
+                "name": "Slot-Überschreibung: Elektronik",
+                "hint": "Überschreibt das Slotlimit für Elektronik-Modifikationen. Auf 0 setzen, um den Rumpfwert des Fahrzeugs zu verwenden."
+            },
+            "SlotOverrideCosmetic": {
+                "name": "Slot-Überschreibung: Kosmetisch",
+                "hint": "Überschreibt das Slotlimit für kosmetische Modifikationen. Auf 0 setzen, um den Rumpfwert des Fahrzeugs zu verwenden."
+            },
             "title": "Marktplatz Einstellungen",
             "description": "Klicke auf einen Artikeltyp in einer Spalte, um ihn der Verhaltenskategorie zuzuordnen. Änderungen werden sofort gespeichert. Einzigartige Artikel können nur einmal pro Charakter gekauft werden, stapelbare Artikel werden im selben Artikel gestapelt und einzelne Artikel können mehrmals pro Bestellung als eine Artikelinstanz bestellt werden.",
             "CategoryUnique": "Einzigartige Artikel",
@@ -569,7 +601,9 @@
         },
         "Shelf": {
             "Title": "Werkstattregal",
-            "Empty": "Keine Modifikationen im Regal verfügbar."
+            "Empty": "Keine Modifikationen im Regal verfügbar.",
+            "AllItemsTooltip": "Alle Artikel",
+            "FactoryInventoryTooltip": "Werkstatt-Bestand"
         },
         "Category": {
             "Drive": "Antrieb",

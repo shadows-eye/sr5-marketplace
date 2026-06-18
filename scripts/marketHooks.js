@@ -167,6 +167,26 @@ const initializeSettings = () => {
         restricted: true,
     });
 
+    game.settings.register("sr5-marketplace", "allowOverrideModLimits", {
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.AllowOverrideModLimits.name"),
+        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.AllowOverrideModLimits.hint"),
+        scope: "world",
+        config: true,
+        type: Boolean,
+        default: false,
+        restricted: true,
+    });
+
+    game.settings.register("sr5-marketplace", "overrideModLimitsThresholdIncrease", {
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.OverrideModLimitsThresholdIncrease.name"),
+        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.OverrideModLimitsThresholdIncrease.hint"),
+        scope: "world",
+        config: true,
+        type: Number,
+        default: 0,
+        restricted: true,
+    });
+
     game.settings.register("sr5-marketplace", "chatRequestEnabled", {
         name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.ChatRequestEnabled.name"),
         hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.ChatRequestEnabled.hint"),
@@ -284,22 +304,12 @@ const initializeSettings = () => {
         default: false,
     });
 
-    game.settings.register("sr5-marketplace", "healCompletelyOnRepairSuccess", {
-        name: "SR5Marketplace.Marketplace.Settings.HealCompletely.name",
-        hint: "SR5Marketplace.Marketplace.Settings.HealCompletely.hint",
-        scope: "world",
-        config: true,
-        type: Boolean,
-        default: false,
-        restricted: true,
-    });
-
     const slotCategories = ["drive", "protection", "weapons", "body", "electronics", "cosmetic"];
     for (const cat of slotCategories) {
         const capCat = cat.charAt(0).toUpperCase() + cat.slice(1);
         game.settings.register("sr5-marketplace", `slotOverride_${cat}`, {
-            name: `SR5Marketplace.Marketplace.Settings.SlotOverride${capCat}.name`,
-            hint: `SR5Marketplace.Marketplace.Settings.SlotOverride${capCat}.hint`,
+            name: game.i18n.localize(`SR5Marketplace.Marketplace.Settings.SlotOverride${capCat}.name`),
+            hint: game.i18n.localize(`SR5Marketplace.Marketplace.Settings.SlotOverride${capCat}.hint`),
             scope: "world",
             config: true,
             type: Number,
@@ -743,7 +753,22 @@ Hooks.on("ready", async () => {
                 const purchasingActor = purchasingDoc instanceof Actor ? purchasingDoc : purchasingDoc?.actor || null;
 
                 if (vehicle) {
-                    await factoryFlow.installModification(vehicle, workshopActor, purchasingActor, data.vMod);
+                    const success = await factoryFlow.installModification(vehicle, workshopActor, purchasingActor, data.vMod);
+                    if (success) {
+                        game.socket.emit("module.sr5-marketplace", {
+                            action: "install_modification_complete",
+                            vehicleUuid: vehicle.uuid,
+                            virtualId: data.vMod.id,
+                            userId: data.userId
+                        });
+                    }
+                }
+            } else if (data.action === "install_modification_complete") {
+                if (game.user.id === data.userId) {
+                    const builderApp = foundry.applications.instances.get("itemBuilder");
+                    if (builderApp && builderApp.rendered) {
+                        await builderApp.handleInstallComplete(data.vehicleUuid, data.virtualId);
+                    }
                 }
             }
         }
@@ -776,6 +801,14 @@ Hooks.on("updateUser", (user, changes) => {
         // Reactively sync basket associations for the user whose basket changed
         if (user.id === game.user.id) {
             AppTestFlagService.syncBasketAssociations(user);
+        }
+    }
+
+    // Reactively refresh ItemBuilderApp when the user's test flags change
+    if (user.id === game.user.id && foundry.utils.hasProperty(changes, "flags.sr5-marketplace.appTestState")) {
+        const builderApp = foundry.applications.instances.get("itemBuilder");
+        if (builderApp && builderApp.rendered) {
+            builderApp.render();
         }
     }
 });
@@ -1285,8 +1318,8 @@ async function handleGMRunBuildTest({ userId, dialogId, actorUuid, data }) {
             data.userId = userId;
         }
 
-        const options = { 
-            showDialog: false, 
+        const options = {
+            showDialog: false,
             showMessage: false,
             buildData: activeTestState?.buildData,
             threshold: activeTestState?.threshold,
@@ -1384,8 +1417,8 @@ async function handleGMContinueBuildTest({ userId, dialogId, actorUuid, rollCoun
         const workshopDoc = activeTestState.workshopUuid ? await fromUuid(activeTestState.workshopUuid) : null;
         const workshop = workshopDoc instanceof Actor ? workshopDoc : workshopDoc?.actor || null;
 
-        const options = { 
-            showDialog: false, 
+        const options = {
+            showDialog: false,
             showMessage: false,
             buildData: activeTestState.buildData,
             threshold: activeTestState.threshold,

@@ -1,8 +1,8 @@
 import { ActorSelectionService } from "./ActorSelectionService.mjs";
 import { BasketService } from "./basketService.mjs";
 import { BuildService } from "./buildService.mjs";
-
-const buildService = new BuildService();
+import { AppTestFlagService } from "./AppTestFlagService.mjs";
+import { BuildTestApp } from "../apps/documents/dialog/BuildTestApp.mjs";
 
 
 /**
@@ -68,6 +68,7 @@ export class FactoryFlow {
      * @returns {object} { allInStock: boolean, details: Array }
      */
     checkInventoryStock(vehicle, workshopActor, purchasingActor, targetModId = null) {
+        const buildService = new BuildService();
         const virtualMods = buildService.getVirtualModifications(vehicle);
         if (virtualMods.length === 0) return { allInStock: false, details: [] };
 
@@ -196,9 +197,6 @@ export class FactoryFlow {
     async startModificationTest(vehicle, workshopActor, purchasingActor, vMod) {
         if (!vehicle || !vMod) return null;
 
-        const { AppTestFlagService } = await import("./AppTestFlagService.mjs");
-        const { BuildTestApp } = await import("../apps/documents/dialog/BuildTestApp.mjs");
-
         const item = await fromUuid(vMod.uuid);
         if (!item) {
             ui.notifications.error("Could not resolve source modification item.");
@@ -254,8 +252,28 @@ export class FactoryFlow {
             defaultSkill = "AutomotiveMechanic";
         }
 
+        const targetCategory = _getModificationCategory(item);
+        const usage = await _checkCategorySlotUsage(vehicle, targetCategory);
+        const allowOverride = game.settings.get("sr5-marketplace", "allowOverrideModLimits");
+
+        if (!allowOverride && usage.total > usage.max) {
+            const errStr = game.i18n.format("SR5Marketplace.ItemBuilder.Errors.SlotLimitExceeded", {
+                category: targetCategory,
+                max: usage.max,
+                total: usage.total
+            });
+            ui.notifications.error(errStr || `Not enough slots available in category "${targetCategory}" (Max: ${usage.max}, Total: ${usage.total}).`);
+            return null;
+        }
+
         const rating = Number(item.system.rating ?? item.system.technology?.rating ?? 1);
-        const threshold = rating > 0 ? rating * 2 : 12;
+        let threshold = rating > 0 ? rating * 2 : 12;
+
+        if (usage.total > usage.max) {
+            const increase = Number(game.settings.get("sr5-marketplace", "overrideModLimitsThresholdIncrease") ?? 0) || 0;
+            threshold += increase;
+            console.log(`SR5 Marketplace | Over-modification! Increased threshold by ${increase} to ${threshold}`);
+        }
 
         const logicVal = purchasingActor?.system?.attributes?.logic?.value ?? 0;
         const initialModifiers = [];
@@ -319,14 +337,33 @@ export class FactoryFlow {
      * @returns {Promise<boolean>} Whether the modification was successfully installed.
      */
     async installModification(vehicle, workshopActor, purchasingActor, vMod) {
+        const buildService = new BuildService();
         if (!vehicle || !vMod) return false;
 
         const baseVehicle = game.actors.get(vehicle.id) || vehicle;
         const isLinked = vehicle.token ? vehicle.token.actorLink : true;
         const shouldUpdateBase = isLinked && (baseVehicle !== vehicle);
+        const targetVehicle = shouldUpdateBase ? baseVehicle : vehicle;
         const item = await fromUuid(vMod.uuid);
         if (!item) {
             console.error("SR5 Marketplace | Could not resolve source modification item.");
+            return false;
+        }
+
+        // Validate slot limit (if override is not allowed)
+        const targetCategory = _getModificationCategory(item);
+        const usage = await _checkCategorySlotUsage(vehicle, targetCategory);
+        const allowOverride = game.settings.get("sr5-marketplace", "allowOverrideModLimits");
+
+        if (!allowOverride && usage.total > usage.max) {
+            const errStr = game.i18n.format("SR5Marketplace.ItemBuilder.Errors.InstallationRejectedLimit", {
+                name: item.name,
+                category: targetCategory,
+                max: usage.max,
+                total: usage.total
+            });
+            ui.notifications.error(errStr || `Installation of "${item.name}" rejected: Slot limit for category "${targetCategory}" exceeded (Max: ${usage.max}, Total: ${usage.total}).`);
+            
             return false;
         }
 
@@ -398,7 +435,7 @@ export class FactoryFlow {
         }
 
         // Create modification item on the vehicle
-        const created = await vehicle.createEmbeddedDocuments("Item", [item.toObject()]);
+        const created = await targetVehicle.createEmbeddedDocuments("Item", [item.toObject()]);
 
 
         // Update the ItemBuilder state if this vehicle is currently loaded as the builder's base item
@@ -422,16 +459,6 @@ export class FactoryFlow {
             console.error("SR5 Marketplace | Failed to update builderState baseItem:", err);
         }
 
-        // Remove virtual mod from flags of the vehicle and base actor
-        await buildService.removeVirtualModification(vehicle, vMod.id);
-
-        // Force re-render of the builder app if open
-        const builderApp = foundry.applications.instances.get("itemBuilder");
-        if (builderApp) {
-            builderApp.tabGroups.main = "workshop";
-            builderApp.render(true);
-        }
-
         return true;
     }
 }
@@ -443,4 +470,110 @@ function _normalizeUuid(uuid) {
         clean = clean.replace(/\.(item|actor)\./g, ".");
     }
     return clean;
+}
+
+async function _getCompendiumModificationsMap(vehicle) {
+    if (!vehicle) return {};
+
+    let compendiumVehicle = null;
+    const baseActor = game.actors.get(vehicle.id) || vehicle;
+    const sourceId = vehicle.getFlag("core", "sourceId") ||
+        vehicle.flags?.shadowrun5e?.compendiumUuid ||
+        baseActor.getFlag("core", "sourceId") ||
+        baseActor.flags?.shadowrun5e?.compendiumUuid;
+    if (sourceId) {
+        compendiumVehicle = await fromUuid(sourceId);
+    }
+    if (!compendiumVehicle) {
+        const itemDataService = game.sr5marketplace?.api?.itemData;
+        if (itemDataService) {
+            const baseItemsByType = await itemDataService.fetchGlobalItems('base') || {};
+            const allCompendiumVehicles = [
+                ...(baseItemsByType.vehicles?.items || []),
+                ...(baseItemsByType.drones?.items || [])
+            ];
+            const namesToMatch = new Set([
+                vehicle.name?.toLowerCase().trim(),
+                baseActor?.name?.toLowerCase().trim()
+            ].filter(Boolean));
+
+            const matched = allCompendiumVehicles.find(v => namesToMatch.has(v.name?.toLowerCase().trim()));
+            if (matched) {
+                compendiumVehicle = await fromUuid(matched.uuid);
+            }
+        }
+    }
+
+    if (!compendiumVehicle) return {};
+
+    const compendiumItems = compendiumVehicle.items || compendiumVehicle.toObject?.().items || [];
+    const compendiumMods = compendiumItems.filter(i => i.type === "modification");
+
+    const compendiumModsCount = {};
+    for (const mod of compendiumMods) {
+        const name = mod.name.toLowerCase().trim();
+        compendiumModsCount[name] = (compendiumModsCount[name] || 0) + 1;
+    }
+
+    return compendiumModsCount;
+}
+
+function _getModificationCategory(item) {
+    const cat = item?.system?.modification_category || item?.system?.category || "cosmetic";
+    const norm = String(cat).toLowerCase();
+    if (norm === "powertrain" || norm === "drive") return "drive";
+    if (norm === "electromagnetic" || norm === "electronics") return "electronics";
+    return norm;
+}
+
+async function _checkCategorySlotUsage(vehicle, targetCategory) {
+    const bodyRating = vehicle.system.attributes?.body?.value ?? 0;
+    const override = game.settings.get("sr5-marketplace", `slotOverride_${targetCategory}`);
+    const max = override > 0 ? override : bodyRating;
+
+    // Get non-preinstalled installed mods
+    const compendiumModsCount = await _getCompendiumModificationsMap(vehicle);
+    const installedMods = vehicle.items.filter(i => {
+        if (i.type !== "modification") return false;
+        if (_getModificationCategory(i) !== targetCategory) return false;
+
+        const isSystemPreinstalled = i.system.preInstalled ||
+            i.system.preinstalled ||
+            i.system.isPreInstalled ||
+            i.system.ispreinstalled ||
+            i.flags?.shadowrun5e?.preInstalled ||
+            i.flags?.shadowrun5e?.preinstalled ||
+            false;
+        const isGMMarked = i.getFlag?.("sr5-marketplace", "isPreinstalled") === true;
+        const ignoreDefault = i.getFlag?.("sr5-marketplace", "ignoreCompendiumDefault") === true;
+
+        let isPreinstalled = false;
+        if (isGMMarked || isSystemPreinstalled) {
+            isPreinstalled = true;
+            const name = i.name.toLowerCase().trim();
+            if (compendiumModsCount[name] > 0) {
+                compendiumModsCount[name]--;
+            }
+        } else if (ignoreDefault) {
+            isPreinstalled = false;
+        } else {
+            const name = i.name.toLowerCase().trim();
+            if (compendiumModsCount[name] > 0) {
+                isPreinstalled = true;
+                compendiumModsCount[name]--;
+            }
+        }
+
+        return !isPreinstalled;
+    });
+
+    const used = installedMods.reduce((sum, m) => sum + Number(m.system.slots ?? 0), 0);
+
+    const buildService = new BuildService();
+    const virtualMods = buildService.getVirtualModifications(vehicle);
+    const virtualUsed = virtualMods
+        .filter(m => _getModificationCategory(m) === targetCategory)
+        .reduce((sum, m) => sum + Number(m.system?.slots ?? 0), 0);
+
+    return { used, virtualUsed, total: used + virtualUsed, max };
 }

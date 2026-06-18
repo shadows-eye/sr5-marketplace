@@ -140,6 +140,38 @@
                 "name": "Enable Premium Themes",
                 "hint": "Make premium custom themes (Apple Silicon, Cyber Neon, Neon Light) pickable in the core Foundry UI configuration menu."
             },
+            "AllowOverrideModLimits": {
+                "name": "Allow Override of Modification Limits",
+                "hint": "If enabled, players can drag and drop modifications beyond the vehicle's slot capacity, but doing so increases the build test threshold."
+            },
+            "OverrideModLimitsThresholdIncrease": {
+                "name": "Additional Threshold for Over-Modification",
+                "hint": "The additional threshold value added to the build test when installing modifications beyond slot limits. Allows 0 or empty."
+            },
+            "SlotOverrideDrive": {
+                "name": "Slot Override: Powertrain",
+                "hint": "Override the slot limit for Powertrain/Drive modifications. Set to 0 to use the vehicle's Body rating."
+            },
+            "SlotOverrideProtection": {
+                "name": "Slot Override: Protection",
+                "hint": "Override the slot limit for Protection/Armor modifications. Set to 0 to use the vehicle's Body rating."
+            },
+            "SlotOverrideWeapons": {
+                "name": "Slot Override: Weapons",
+                "hint": "Override the slot limit for Weapon modifications. Set to 0 to use the vehicle's Body rating."
+            },
+            "SlotOverrideBody": {
+                "name": "Slot Override: Body",
+                "hint": "Override the slot limit for Body modifications. Set to 0 to use the vehicle's Body rating."
+            },
+            "SlotOverrideElectronics": {
+                "name": "Slot Override: Electronics",
+                "hint": "Override the slot limit for Electromagnetic/Electronics modifications. Set to 0 to use the vehicle's Body rating."
+            },
+            "SlotOverrideCosmetic": {
+                "name": "Slot Override: Cosmetic",
+                "hint": "Override the slot limit for Cosmetic modifications. Set to 0 to use the vehicle's Body rating."
+            },
             "title": "Marketplace Settings",
             "description": "Click on an item type in any column to assign it to that behavior category. Changes are saved instantly. Unique items can only be purchased once per character, stacking items will be stacked in the same item, and single items can be ordered multiple times per order as one Item Instance.",
             "CategoryUnique": "Unique Items",
@@ -568,7 +600,9 @@
         },
         "Shelf": {
             "Title": "Factory Shelf",
-            "Empty": "No modifications available on shelf."
+            "Empty": "No modifications available on shelf.",
+            "AllItemsTooltip": "All items",
+            "FactoryInventoryTooltip": "Factory inventory"
         },
         "Category": {
             "Drive": "Drive",

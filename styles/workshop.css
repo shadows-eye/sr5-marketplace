@@ -595,6 +595,43 @@
     align-items: center;
 }
 
+.shelf-counters {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.shelf-count-badge.sort-badge {
+    font-size: 0.65em;
+    font-weight: normal;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    opacity: 0.6;
+    color: rgba(255, 255, 255, 0.8);
+    user-select: none;
+}
+
+.shelf-count-badge.sort-badge:hover {
+    opacity: 0.9;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.shelf-count-badge.sort-badge.active {
+    opacity: 1;
+    background: rgba(255, 170, 0, 0.15);
+    border-color: var(--color-yellow-dark, #ffaa00);
+    color: var(--color-yellow-dark, #ffaa00);
+    box-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
+}
+
 .shelf-items-list {
     flex: 1;
     overflow-y: auto;
