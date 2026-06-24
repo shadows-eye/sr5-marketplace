@@ -40,7 +40,7 @@ export default class ItemDataServices {
         if (this._indexPromise) return this._indexPromise;
 
         this._indexPromise = (async () => {
-            const excludedTypes = ["call_in_action", "critter_power", "host", "sprite_power", "contact"];
+            const excludedTypes = ["call_in_action", "critter_power", "host", "sprite_power", "contact", "skill"];
             let allItems = [];
 
             // 1. Fetch custom items created in the local World
