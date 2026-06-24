@@ -3,7 +3,7 @@
         <!-- 1. Name & Image Row -->
         <div style="display: grid; grid-template-columns: 50px 1fr; gap: 15px; margin-bottom: 10px; align-items: end;">
             <!-- Actor Image Selection -->
-            <div class="actor-img-picker" style="width: 50px; height: 50px; border: 1px solid var(--border-color-medium); border-radius: 4px; overflow: hidden; cursor: pointer; position: relative; background-color: var(--color-black-transparent-20);" title="Click to select image">
+            <div class="actor-img-picker" style="width: 50px; height: 50px; border: 1px solid var(--border-color-medium); border-radius: 4px; overflow: hidden; cursor: pointer; position: relative; background-color: var(--color-black-transparent-20);" title="{{localize 'SR5Marketplace.UI.ActorCreator.SelectImageTooltip'}}">
                 <img src="{{actorImg}}" style="width: 100%; height: 100%; object-fit: cover;" />
             </div>
             <!-- Name Input -->
@@ -45,7 +45,7 @@
                 <i class="fas fa-file-import"></i> {{#if existingActorUuid}}{{localize 'SR5Marketplace.UI.ActorCreator.LoadedExisting'}}: {{actorName}}{{else}}{{localize 'SR5Marketplace.UI.ActorCreator.LoadExistingShop'}}{{/if}}
             </button>
             {{#if existingActorUuid}}
-            <button type="button" class="clear-existing-shop-btn" style="padding: 6px; background-color: var(--color-red-dark); color: white; border: none; border-radius: 4px; cursor: pointer;" title="Cancel Upgrade">
+            <button type="button" class="clear-existing-shop-btn" style="padding: 6px; background-color: var(--color-red-dark); color: white; border: none; border-radius: 4px; cursor: pointer;" title="{{localize 'SR5Marketplace.UI.ActorCreator.CancelUpgradeTooltip'}}">
                 <i class="fas fa-times"></i>
             </button>
             {{/if}}
@@ -286,31 +286,31 @@
         <!-- Character Specific Configuration -->
         {{#if isCharacterActor}}
         <div class="character-builder-section" style="margin-top: 15px; border-top: 1px dashed var(--border-color-medium); padding-top: 15px;">
-            <h3 style="margin-bottom: 8px;">Quick Build Character (Archetype)</h3>
+            <h3 style="margin-bottom: 8px;">{{localize 'SR5Marketplace.UI.ActorCreator.QuickBuildTitle'}}</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
                 <div class="form-group-custom">
-                    <label for="character-archetype-select">Select Archetype</label>
+                    <label for="character-archetype-select">{{localize 'SR5Marketplace.UI.ActorCreator.SelectArchetypeLabel'}}</label>
                     <select id="character-archetype-select" name="archetype" class="form-select-custom archetype-select">
-                        <option value="">-- None (Create Blank Character) --</option>
+                        <option value="">{{localize 'SR5Marketplace.UI.ActorCreator.BlankCharacterOption'}}</option>
                         {{#each archetypes}}
                         <option value="{{@key}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
                         {{/each}}
                     </select>
                 </div>
                 <div class="form-group-custom">
-                    <label for="character-metatype-select">Select Metatype</label>
+                    <label for="character-metatype-select">{{localize 'SR5Marketplace.UI.ActorCreator.SelectMetatypeLabel'}}</label>
                     <select id="character-metatype-select" name="metatype" class="form-select-custom metatype-select">
-                        <option value="random">Random (Archetype Default)</option>
-                        <option value="human">Human</option>
-                        <option value="elf">Elf</option>
-                        <option value="dwarf">Dwarf</option>
-                        <option value="ork">Ork</option>
-                        <option value="troll">Troll</option>
+                        <option value="random">{{localize 'SR5Marketplace.UI.ActorCreator.RandomMetatypeOption'}}</option>
+                        <option value="human">{{localize 'SR5Marketplace.UI.ActorCreator.MetatypeHuman'}}</option>
+                        <option value="elf">{{localize 'SR5Marketplace.UI.ActorCreator.MetatypeElf'}}</option>
+                        <option value="dwarf">{{localize 'SR5Marketplace.UI.ActorCreator.MetatypeDwarf'}}</option>
+                        <option value="ork">{{localize 'SR5Marketplace.UI.ActorCreator.MetatypeOrk'}}</option>
+                        <option value="troll">{{localize 'SR5Marketplace.UI.ActorCreator.MetatypeTroll'}}</option>
                     </select>
                 </div>
             </div>
             <p style="font-size: 11px; opacity: 0.7; margin-bottom: 15px;">
-                If an archetype is selected, the character will be quickly populated with archetypal attributes, skills, qualities, and starter equipment using the system importer.
+                {{localize 'SR5Marketplace.UI.ActorCreator.QuickBuildNote'}}
             </p>
         </div>
         {{/if}}
