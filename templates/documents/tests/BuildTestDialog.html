@@ -162,10 +162,10 @@
                                 {{/each}}
                             </div>
                             <div class="custom-modifier-inputs flex gap-2 items-center">
-                                <input type="text" class="custom-mod-label flex-[2] px-2 py-1 text-xs rounded border border-[var(--color-black-transparent-20)] bg-[var(--Form-background-group)] text-[var(--text-color-primary)]" placeholder="Label (e.g. Rush Order)" />
-                                <input type="text" class="custom-mod-value flex-[1] px-2 py-1 text-xs rounded border border-[var(--color-black-transparent-20)] bg-[var(--Form-background-group)] text-[var(--text-color-primary)] text-center" placeholder="Value (+2 / -2)" />
+                                <input type="text" class="custom-mod-label flex-[2] px-2 py-1 text-xs rounded border border-[var(--color-black-transparent-20)] bg-[var(--Form-background-group)] text-[var(--text-color-primary)]" placeholder="{{localize 'SR5Marketplace.Marketplace.Modifiers.Custom.PlaceholderLabel'}}" />
+                                <input type="text" class="custom-mod-value flex-[1] px-2 py-1 text-xs rounded border border-[var(--color-black-transparent-20)] bg-[var(--Form-background-group)] text-[var(--text-color-primary)] text-center" placeholder="{{localize 'SR5Marketplace.Marketplace.Modifiers.Custom.PlaceholderValue'}}" />
                                 <button type="button" class="add-custom-modifier-btn px-3 py-1 bg-[var(--color-green-button)] text-white border-none rounded cursor-pointer font-bold text-xs flex items-center gap-1" data-action="addCustomBuildTestModifier">
-                                    <i class="fas fa-plus"></i> Add
+                                    <i class="fas fa-plus"></i> {{localize 'SR5Marketplace.UI.Add'}}
                                 </button>
                             </div>
                         </div>
@@ -184,7 +184,7 @@
                         </button>
                     {{/if}}
                     <button type="button" class="px-4 py-2 border border-[var(--color-red-bright)] text-[var(--color-red-bright)] hover:bg-[var(--color-red-bright)] hover:text-white rounded font-bold text-xs transition-colors" data-action="clearBuildTest">
-                        {{localize "Cancel"}}
+                        {{localize "SR5Marketplace.UI.Cancel"}}
                     </button>
                 </div>
             </form>
@@ -223,7 +223,7 @@
                         <i class="fas fa-dice-six"></i> {{localize "SR5Marketplace.Marketplace.Tests.ContinueTest"}}
                     </button>
                     <button type="button" class="px-4 py-2 border border-[var(--color-red-bright)] text-[var(--color-red-bright)] hover:bg-[var(--color-red-bright)] hover:text-white rounded font-bold text-xs transition-colors" data-action="clearBuildTest">
-                        {{localize "Cancel"}}
+                        {{localize "SR5Marketplace.UI.Cancel"}}
                     </button>
                 </div>
             </div>
@@ -284,11 +284,11 @@
 
                         {{#if activeTestState.isWorkshopMod}}
                             <button type="button" class="roll-button mt-3" data-action="resolveBuildTest">
-                                <i class="fas fa-check"></i> {{localize "Close"}}
+                                <i class="fas fa-check"></i> {{localize "SR5Marketplace.UI.Close"}}
                             </button>
                         {{else if activeTestState.isRepair}}
                             <button type="button" class="roll-button mt-3" data-action="resolveBuildTest">
-                                <i class="fas fa-check"></i> {{localize "Close"}}
+                                <i class="fas fa-check"></i> {{localize "SR5Marketplace.UI.Close"}}
                             </button>
                         {{else}}
                             <button type="button" class="roll-button mt-3" data-action="resolveBuildTest">
@@ -316,7 +316,7 @@
                         </div>
 
                         <button type="button" class="roll-button mt-3 bg-[var(--color-red-darkest)] border-[var(--color-red-bright)] hover:bg-[var(--color-red-bright)] hover:text-white" data-action="clearBuildTest">
-                            <i class="fas fa-times"></i> {{localize "Close"}}
+                            <i class="fas fa-times"></i> {{localize "SR5Marketplace.UI.Close"}}
                         </button>
                     {{/if}}
                 </div>

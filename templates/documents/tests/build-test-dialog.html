@@ -99,14 +99,14 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                 <label style="font-weight: bold;">{{localize "SR5Marketplace.Marketplace.Modifiers.Custom.Title"}}</label>
                 <button type="button" class="add-modifier-row-btn" style="padding: 2px 6px; font-size: 0.9em; cursor: pointer; border-radius: 4px; border: 1px solid var(--color-black-transparent-20); background: var(--Form-background-group); color: var(--text-color-primary);">
-                    <i class="fas fa-plus"></i> Add
+                    <i class="fas fa-plus"></i> {{localize "SR5Marketplace.UI.Add"}}
                 </button>
             </div>
             <div class="custom-modifiers-list" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;">
                 {{#each test.data.action.modifiers}}
                     <div class="modifier-row" style="display: flex; gap: 6px; align-items: center;">
-                        <input type="text" name="test.data.action.modifiers.{{@index}}.label" value="{{this.label}}" placeholder="Label" style="flex: 2; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--color-black-transparent-20); background: var(--Form-background-group); color: var(--text-color-primary);"/>
-                        <input type="text" name="test.data.action.modifiers.{{@index}}.value" value="{{this.value}}" placeholder="+2 or -2" style="flex: 1; text-align: center; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--color-black-transparent-20); background: var(--Form-background-group); color: var(--text-color-primary);"/>
+                        <input type="text" name="test.data.action.modifiers.{{@index}}.label" value="{{this.label}}" placeholder="{{localize 'SR5Marketplace.Marketplace.Modifiers.Custom.LabelPlaceholder'}}" style="flex: 2; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--color-black-transparent-20); background: var(--Form-background-group); color: var(--text-color-primary);"/>
+                        <input type="text" name="test.data.action.modifiers.{{@index}}.value" value="{{this.value}}" placeholder="{{localize 'SR5Marketplace.Marketplace.Modifiers.Custom.ValuePlaceholder'}}" style="flex: 1; text-align: center; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--color-black-transparent-20); background: var(--Form-background-group); color: var(--text-color-primary);"/>
                         <button type="button" class="remove-modifier-row-btn" data-index="{{@index}}" style="padding: 2px 6px; background: none; border: none; color: var(--color-red-bright); cursor: pointer; display: flex; align-items: center; justify-content: center;">
                             <i class="fas fa-trash"></i>
                         </button>

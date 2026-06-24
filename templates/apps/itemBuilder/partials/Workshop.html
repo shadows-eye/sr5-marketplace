@@ -58,7 +58,7 @@
                         {{#each physicalTrack.boxes}}
                         <div class="damage-box {{#if this.filled}}filled{{/if}}"></div>
                         {{else}}
-                        <div style="font-size: 0.8em; font-style: italic; opacity: 0.5;">No Physical Track available</div>
+                        <div style="font-size: 0.8em; font-style: italic; opacity: 0.5;">{{localize "SR5Marketplace.Factory.Repair.NoPhysicalTrack"}}</div>
                         {{/each}}
                     </div>
 
@@ -91,11 +91,11 @@
 
                     <div class="repair-actions">
                         <div class="repair-stats">
-                            <div>Damage: <b>{{physicalTrack.value}}</b> boxes</div>
-                            <div>Threshold: <b>{{multiply physicalTrack.value 3}}</b> hits</div>
+                            <div>{{localize "SR5Marketplace.Factory.Repair.DamageLabel"}} <b>{{physicalTrack.value}}</b> {{localize "SR5Marketplace.Factory.Repair.BoxesLabel"}}</div>
+                            <div>{{localize "SR5Marketplace.Factory.Repair.ThresholdLabel"}} <b>{{multiply physicalTrack.value 3}}</b> {{localize "SR5Marketplace.Factory.Repair.HitsLabel"}}</div>
                         </div>
                         <button type="button" class="repair-button" data-action="runWorkshopRepair" {{#if (eq
-                            physicalTrack.value 0)}}disabled title="Vehicle is fully repaired" {{/if}}>
+                            physicalTrack.value 0)}}disabled title="{{localize 'SR5Marketplace.Factory.Repair.FullyRepaired'}}" {{/if}}>
                             <i class="fas fa-wrench"></i> {{localize "SR5Marketplace.Factory.Repair.RollButton"}}
                         </button>
                     </div>
@@ -120,21 +120,21 @@
                                      <div class="installed-mod-actions" style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
                                          {{#if this.isVirtual}}
                                              {{#if this.inBasket}}
-                                                 <span style="opacity: 0.6;" title="In Cart"><i class="fas fa-shopping-cart"></i></span>
+                                                 <span style="opacity: 0.6;" title="{{localize 'SR5Marketplace.Factory.Repair.InCart'}}"><i class="fas fa-shopping-cart"></i></span>
                                              {{else if (eq this.testStatus 'success')}}
                                                  <a class="install-virtual-mod-btn cursor-pointer text-[var(--color-green-button,#00cc66)]" 
                                                     data-action="installVirtualMod" 
                                                     data-virtual-id="{{this.id}}" 
-                                                    title="Install Modification">
+                                                    title="{{localize 'SR5Marketplace.Factory.Repair.InstallMod'}}">
                                                      <i class="fas fa-hammer"></i>
                                                  </a>
                                              {{else if (eq this.testStatus 'failed')}}
-                                                 <span style="color: var(--color-red-bright, #ff3333);" title="Test Failed"><i class="fas fa-times-circle"></i></span>
+                                                 <span style="color: var(--color-red-bright, #ff3333);" title="{{localize 'SR5Marketplace.Factory.Repair.TestFailed'}}"><i class="fas fa-times-circle"></i></span>
                                              {{else if this.isTesting}}
                                                  <a class="resume-virtual-mod-test-btn cursor-pointer text-[var(--color-yellow-dark,#ffaa00)]" 
                                                     data-action="resumeVirtualModTest" 
                                                     data-virtual-id="{{this.id}}" 
-                                                    title="Resume Build Test">
+                                                    title="{{localize 'SR5Marketplace.Factory.Repair.ResumeTest'}}">
                                                      <i class="fas fa-dice-d6"></i>
                                                  </a>
                                              {{else}}
@@ -143,12 +143,12 @@
                                                          <a class="trigger-virtual-mod-test-btn cursor-pointer text-white hover:text-[var(--color-yellow-dark,#ffaa00)]" 
                                                             data-action="triggerVirtualModTest" 
                                                             data-virtual-id="{{this.id}}" 
-                                                            title="Start Build Test">
+                                                            title="{{localize 'SR5Marketplace.Factory.Repair.StartTest'}}">
                                                              <i class="fas fa-dice"></i>
                                                          </a>
                                                      {{else}}
                                                          <a class="trigger-virtual-mod-test-btn opacity-35 cursor-not-allowed text-white" 
-                                                            title="All planned modifications must be in stock to test">
+                                                            title="{{localize 'SR5Marketplace.Factory.Repair.AllPlannedMustBeInStock'}}">
                                                              <i class="fas fa-dice"></i>
                                                          </a>
                                                      {{/if}}
@@ -156,7 +156,7 @@
                                                      <a class="add-virtual-mod-basket-btn cursor-pointer text-white hover:text-[var(--color-yellow-dark,#ffaa00)]" 
                                                         data-action="addVirtualModToBasket" 
                                                         data-virtual-id="{{this.id}}" 
-                                                        title="Add to Basket">
+                                                        title="{{localize 'SR5Marketplace.Factory.Repair.AddToBasket'}}">
                                                          <i class="fas fa-cart-plus"></i>
                                                      </a>
                                                  {{/if}}
@@ -171,7 +171,7 @@
                                              <a class="toggle-builtin-btn cursor-pointer transition-all {{#if this.isPreinstalled}}opacity-100 text-[var(--color-yellow-dark,#ffaa00)]{{else}}opacity-35 text-white hover:opacity-70{{/if}}" 
                                                 data-action="toggleBuiltIn" 
                                                 data-item-uuid="{{this.uuid}}" 
-                                                title="Toggle Built-in (Not counted in limits)">
+                                                title="{{localize 'SR5Marketplace.Factory.Repair.ToggleBuiltIn'}}">
                                                  <i class="fas fa-box"></i>
                                              </a>
                                          {{/if}}
@@ -223,7 +223,7 @@
                             {{/if}}
                         </div>
                         {{else}}
-                        <div class="installed-mod-empty">Empty</div>
+                        <div class="installed-mod-empty">{{localize "SR5Marketplace.Factory.Repair.Empty"}}</div>
                         {{/each}}
                     </div>
                 </div>
@@ -240,13 +240,13 @@
                                   data-action="changeWorkshopSort" 
                                   data-sort="world" 
                                   title="{{localize 'SR5Marketplace.Factory.Shelf.AllItemsTooltip'}}">
-                                <i class="fas fa-globe"></i> {{modsOnShelf.length}} items
+                                <i class="fas fa-globe"></i> {{localize "SR5Marketplace.UI.ActorCreator.CountItems" count=modsOnShelf.length}}
                             </span>
                             <span class="shelf-count-badge sort-badge {{#if (eq workshopSortMode 'factory')}}active{{/if}}" 
                                   data-action="changeWorkshopSort" 
                                   data-sort="factory" 
                                   title="{{localize 'SR5Marketplace.Factory.Shelf.FactoryInventoryTooltip'}}">
-                                <i class="fas fa-warehouse"></i> {{factoryInventoryCount}} items
+                                <i class="fas fa-warehouse"></i> {{localize "SR5Marketplace.UI.ActorCreator.CountItems" count=factoryInventoryCount}}
                             </span>
                         </div>
                     </div>
@@ -280,8 +280,8 @@
                     <img src="{{this.img}}" />
                     <div class="vehicle-name">{{this.name}}</div>
                     <div class="vehicle-info">
-                        <div>Body/Hull: <b>{{this.body}}</b></div>
-                        <div>Damage: <b>{{this.physicalTrack.value}}</b> / {{this.physicalTrack.max}}</div>
+                        <div>{{localize "SR5Marketplace.Factory.Repair.BodyHullLabel"}} <b>{{this.body}}</b></div>
+                        <div>{{localize "SR5Marketplace.Factory.Repair.DamageLabel"}} <b>{{this.physicalTrack.value}}</b> / {{this.physicalTrack.max}}</div>
                     </div>
                 </div>
                 {{/each}}

@@ -59,7 +59,8 @@
         "EffectValueLabel": "Value",
         "SelectDerivedValueTooltip": "Select a property from the base item to derive this value from.",
         "SelectDerivedValueLabel": "Select a property from the Base Item",
-        "CustomEffect": "Custom Effect"
+        "CustomEffect": "Custom Effect",
+        "SelectAttributeKeyFirst": "Please select a property/attribute key first before saving."
     },
     "SearchPlaceholder": "Search items...",
     "ClearEntireBuild": "Clear entire build",
@@ -129,5 +130,17 @@
     "Errors": {
         "SlotLimitExceeded": "Not enough slots available in category \"{category}\" (Max: {max}, Total: {total}).",
         "InstallationRejectedLimit": "Installation of \"{name}\" rejected: Slot limit for category \"{category}\" exceeded (Max: {max}, Total: {total})."
-    }
+    },
+    "SearchFactoryPlaceholder": "Search factory items...",
+    "FilterDrive": "Filter Drive",
+    "FilterProtection": "Filter Protection",
+    "FilterWeapons": "Filter Weapons",
+    "FilterHullBody": "Filter Hull/Body",
+    "FilterElectronics": "Filter Electronics",
+    "FilterCosmetic": "Filter Cosmetic",
+    "ResetFilters": "Reset Filters",
+    "AllModsInStockOrBasket": "All modifications are already in stock or in the basket",
+    "SomeModsNotInStock": "Some modifications are not in stock",
+    "NoUntestedModsInStock": "No untested modifications in stock",
+    "NoDamageToRepair": "There is no physical damage on this vehicle to repair."
 }

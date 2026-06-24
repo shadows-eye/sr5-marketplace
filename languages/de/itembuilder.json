@@ -59,7 +59,8 @@
         "EffectValueLabel": "Wert",
         "SelectDerivedValueTooltip": "Wähle eine Eigenschaft vom Basisartikel, um diesen Wert abzuleiten.",
         "SelectDerivedValueLabel": "Wähle eine Eigenschaft vom Basisartikel",
-        "CustomEffect": "Eigener Effekt"
+        "CustomEffect": "Eigener Effekt",
+        "SelectAttributeKeyFirst": "Bitte wählen Sie zuerst eine Eigenschaft/Attribut aus."
     },
     "SearchPlaceholder": "Suchen...",
     "ClearEntireBuild": "Gesamten Entwurf löschen",
@@ -129,5 +130,17 @@
     "Errors": {
         "SlotLimitExceeded": "Nicht genügend Slots in der Kategorie \"{category}\" verfügbar (Max: {max}, Gesamt: {total}).",
         "InstallationRejectedLimit": "Installation von \"{name}\" abgelehnt: Slotlimit für Kategorie \"{category}\" überschritten (Max: {max}, Gesamt: {total})."
-    }
+    },
+    "SearchFactoryPlaceholder": "Werkstatt-Artikel durchsuchen...",
+    "FilterDrive": "Antrieb filtern",
+    "FilterProtection": "Panzerung filtern",
+    "FilterWeapons": "Waffen filtern",
+    "FilterHullBody": "Rumpf/Karosserie filtern",
+    "FilterElectronics": "Elektronik filtern",
+    "FilterCosmetic": "Kosmetik filtern",
+    "ResetFilters": "Filter zurücksetzen",
+    "AllModsInStockOrBasket": "Alle Modifikationen sind bereits auf Lager oder im Warenkorb",
+    "SomeModsNotInStock": "Einige Modifikationen sind nicht auf Lager",
+    "NoUntestedModsInStock": "Keine ungeprüften Modifikationen auf Lager",
+    "NoDamageToRepair": "Dieses Fahrzeug weist keinen körperlichen Schaden auf, der repariert werden müsste."
 }

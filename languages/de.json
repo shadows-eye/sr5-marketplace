@@ -218,7 +218,23 @@
                 "RemoveAll": "Alle entfernen",
                 "RemoveItem": "Gegenstand entfernen",
                 "NoItemsSelected": "Keine Gegenstände ausgewählt. Klicke links auf die Kontrollkästchen, um sie hinzuzufügen.",
-                "RatingAbbrev": "St."
+                "RatingAbbrev": "St.",
+                "LoadedExisting": "Geladener existierender Shop",
+                "LoadExistingShop": "Existierenden Shop laden",
+                "UpgradeShop": "Shop aufwerten",
+                "SelectImageTooltip": "Klicken, um Bild auszuwählen",
+                "CancelUpgradeTooltip": "Aufwertung abbrechen",
+                "QuickBuildTitle": "Charakter schnell erstellen (Archetyp)",
+                "SelectArchetypeLabel": "Archetyp auswählen",
+                "BlankCharacterOption": "-- Keiner (Leeren Charakter erstellen) --",
+                "SelectMetatypeLabel": "Metatyp auswählen",
+                "RandomMetatypeOption": "Zufällig (Standard des Archetyps)",
+                "MetatypeHuman": "Mensch",
+                "MetatypeElf": "Elf",
+                "MetatypeDwarf": "Zwerg",
+                "MetatypeOrk": "Ork",
+                "MetatypeTroll": "Troll",
+                "QuickBuildNote": "Wenn ein Archetyp ausgewählt wird, wird der Charakter schnell mit typischen Attributen, Fertigkeiten, Vor-/Nachteilen und Startausrüstung über den Systemimporter befüllt."
             },
             "Rating": "Stufe",
             "Cost": "Kosten",
@@ -237,6 +253,8 @@
             "Save": "Speichern",
             "Edit": "Bearbeiten",
             "Delete": "Löschen",
+            "Add": "Hinzufügen",
+            "Close": "Schließen",
             "Properties": "Eigenschaften",
             "Slot": "Slot",
             "Slots": "Mod Punkte",
@@ -486,6 +504,7 @@
                 "AddToCart": "In den Warenkorb",
                 "BuyQuantity": "Kaufmenge",
                 "QuantityPerPack": "Menge / Packung",
+                "QuantityPerPackTooltip": "Menge (pro Packung)",
                 "TotalCost": "Gesamtkosten",
                 "TotalAvailability": "Gesamtverfügbarkeit",
                 "TotalKarma": "Gesamtkarma Kosten",
@@ -584,7 +603,11 @@
             },
             "Modifiers": {
                 "Custom": {
-                    "Title": "Eigene Modifikatoren"
+                    "Title": "Eigene Modifikatoren",
+                    "PlaceholderLabel": "Bezeichnung (z.B. Eilbestellung)",
+                    "PlaceholderValue": "Wert (+2 / -2)",
+                    "LabelPlaceholder": "Bezeichnung",
+                    "ValuePlaceholder": "+2 oder -2"
                 },
                 "Labels": {
                     "Friendly": "Freundlich",
@@ -772,10 +795,29 @@
             "SelectorTitle": "Fahrzeug / Drohne auswählen",
             "SelectorSubtitle": "Wählen Sie ein Fahrzeug oder eine Drohne in Reichweite der Werkstatt aus, um es zu modifizieren oder zu reparieren.",
             "NoVehiclesInRadius": "Keine Fahrzeuge oder Drohnen in Reichweite gefunden.",
+            "RemoveVirtualMod": "Geplante Modifikation entfernen",
+            "IsFactory": "Ist Werkstatt",
+            "Rating": "Stufe",
             "Repair": {
                 "Title": "Fahrzeug reparieren",
                 "DamageTrack": "Körperlicher Schadensmonitor",
-                "RollButton": "Reparatur würfeln"
+                "RollButton": "Reparatur würfeln",
+                "NoPhysicalTrack": "Kein körperlicher Monitor verfügbar",
+                "DamageLabel": "Schaden:",
+                "BoxesLabel": "Kästchen",
+                "ThresholdLabel": "Schwellenwert:",
+                "HitsLabel": "Erfolge",
+                "FullyRepaired": "Fahrzeug ist vollständig repariert",
+                "InCart": "Im Warenkorb",
+                "InstallMod": "Modifikation installieren",
+                "TestFailed": "Probe misslungene",
+                "ResumeTest": "Probe fortsetzen",
+                "StartTest": "Probe würfeln",
+                "AllPlannedMustBeInStock": "Alle geplanten Modifikationen müssen auf Lager sein, um zu würfeln",
+                "AddToBasket": "In den Warenkorb",
+                "ToggleBuiltIn": "Eingebaut umschalten (zählt nicht gegen Limit)",
+                "Empty": "Leer",
+                "BodyHullLabel": "Rumpf/Karosserie:"
             },
             "Shelf": {
                 "Title": "Werkstattregal",
@@ -853,7 +895,8 @@
                 "EffectValueLabel": "Wert",
                 "SelectDerivedValueTooltip": "Wähle eine Eigenschaft vom Basisartikel, um diesen Wert abzuleiten.",
                 "SelectDerivedValueLabel": "Wähle eine Eigenschaft vom Basisartikel",
-                "CustomEffect": "Eigener Effekt"
+                "CustomEffect": "Eigener Effekt",
+                "SelectAttributeKeyFirst": "Bitte wählen Sie zuerst eine Eigenschaft/Attribut aus."
             },
             "SearchPlaceholder": "Suchen...",
             "ClearEntireBuild": "Gesamten Entwurf löschen",
@@ -923,12 +966,46 @@
             "Errors": {
                 "SlotLimitExceeded": "Nicht genügend Slots in der Kategorie \"{category}\" verfügbar (Max: {max}, Gesamt: {total}).",
                 "InstallationRejectedLimit": "Installation von \"{name}\" abgelehnt: Slotlimit für Kategorie \"{category}\" überschritten (Max: {max}, Gesamt: {total})."
-            }
+            },
+            "SearchFactoryPlaceholder": "Werkstatt-Artikel durchsuchen...",
+            "FilterDrive": "Antrieb filtern",
+            "FilterProtection": "Panzerung filtern",
+            "FilterWeapons": "Waffen filtern",
+            "FilterHullBody": "Rumpf/Karosserie filtern",
+            "FilterElectronics": "Elektronik filtern",
+            "FilterCosmetic": "Kosmetik filtern",
+            "ResetFilters": "Filter zurücksetzen",
+            "AllModsInStockOrBasket": "Alle Modifikationen sind bereits auf Lager oder im Warenkorb",
+            "SomeModsNotInStock": "Einige Modifikationen sind nicht auf Lager",
+            "NoUntestedModsInStock": "Keine ungeprüften Modifikationen auf Lager",
+            "NoDamageToRepair": "Dieses Fahrzeug weist keinen körperlichen Schaden auf, der repariert werden müsste."
         }
     },
     "TYPES": {
         "Actor": {
-            "sr5-marketplace.shop": "Marktplatzladen"
+            "sr5-marketplace.shop": "Marktplatzladen",
+            "character": "Charakter"
+        },
+        "Item": {
+            "sr5-marketplace.basket": "Warenkorb",
+            "weapon": "Waffe",
+            "armor": "Panzerung",
+            "equipment": "Ausrüstung",
+            "device": "Gerät",
+            "cyberware": "Cyberware",
+            "bioware": "Bioware",
+            "spell": "Zauber",
+            "program": "Programm",
+            "modification": "Modifikation",
+            "adept_power": "Adeptenkraft",
+            "complex_form": "Komplexe Form",
+            "ammo": "Munition",
+            "lifestyle": "Lebensstil",
+            "sin": "SIN",
+            "action": "Handlung",
+            "echo": "Echo",
+            "ritual": "Ritual",
+            "quality": "Vor-/Nachteil"
         }
     }
 }

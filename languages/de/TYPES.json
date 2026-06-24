@@ -1,5 +1,27 @@
 {
     "Actor": {
-        "sr5-marketplace.shop": "Marktplatzladen"
+        "sr5-marketplace.shop": "Marktplatzladen",
+        "character": "Charakter"
+    },
+    "Item": {
+        "sr5-marketplace.basket": "Warenkorb",
+        "weapon": "Waffe",
+        "armor": "Panzerung",
+        "equipment": "Ausrüstung",
+        "device": "Gerät",
+        "cyberware": "Cyberware",
+        "bioware": "Bioware",
+        "spell": "Zauber",
+        "program": "Programm",
+        "modification": "Modifikation",
+        "adept_power": "Adeptenkraft",
+        "complex_form": "Komplexe Form",
+        "ammo": "Munition",
+        "lifestyle": "Lebensstil",
+        "sin": "SIN",
+        "action": "Handlung",
+        "echo": "Echo",
+        "ritual": "Ritual",
+        "quality": "Vor-/Nachteil"
     }
 }

@@ -1,5 +1,27 @@
 {
     "Actor": {
-        "sr5-marketplace.shop": "Marketplace Shop"
+        "sr5-marketplace.shop": "Marketplace Shop",
+        "character": "Character"
+    },
+    "Item": {
+        "sr5-marketplace.basket": "Shopping Basket",
+        "weapon": "Weapon",
+        "armor": "Armor",
+        "equipment": "Equipment",
+        "device": "Device",
+        "cyberware": "Cyberware",
+        "bioware": "Bioware",
+        "spell": "Spell",
+        "program": "Program",
+        "modification": "Modification",
+        "adept_power": "Adept Power",
+        "complex_form": "Complex Form",
+        "ammo": "Ammunition",
+        "lifestyle": "Lifestyle",
+        "sin": "SIN",
+        "action": "Action",
+        "echo": "Echo",
+        "ritual": "Ritual",
+        "quality": "Quality"
     }
 }
