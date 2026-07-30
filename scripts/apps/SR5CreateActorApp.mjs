@@ -1,3 +1,6 @@
+import { BUILDS, RANKS, SCHOOLS, SOCIETIES, ARCHETYPES, METATYPES, LABELS } from "./NPCTemplate.enc.mjs";
+import { MAPPING } from "./chummer-corp-mapping.enc.mjs";
+
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 /**
@@ -32,6 +35,8 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
         this.selectedActorType = "character";
         this.selectedArchetype = "";
         this.selectedMetatype = "random";
+        this.selectedCorp = "";
+        this.selectedLevel = 3;
         this.shopMarkup = 0;
         this.shopRadius = 1;
         this.shopDescription = "";
@@ -339,6 +344,8 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
                 };
                 extraCtx.isCharacterActor = SR5CreateActorApp.isImporterAvailable();
                 extraCtx.archetypes = archetypes;
+                extraCtx.selectedCorp = this.selectedCorp;
+                extraCtx.selectedLevel = this.selectedLevel;
             }
             Object.assign(context, extraCtx);
         }
@@ -382,6 +389,8 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
                 this.actorName = ""; // Reset custom name to trigger the new type's default name
                 this.selectedArchetype = "";
                 this.selectedMetatype = "random";
+                this.selectedCorp = "";
+                this.selectedLevel = 3;
                 this.render(false);
             });
         }
@@ -414,6 +423,18 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
             if (metatypeSelect) {
                 metatypeSelect.addEventListener("change", (e) => {
                     this.selectedMetatype = e.target.value;
+                });
+            }
+            const corpSelect = this.element.querySelector(".corp-select");
+            if (corpSelect) {
+                corpSelect.addEventListener("change", (e) => {
+                    this.selectedCorp = e.target.value;
+                });
+            }
+            const levelSelect = this.element.querySelector(".level-select");
+            if (levelSelect) {
+                levelSelect.addEventListener("change", (e) => {
+                    this.selectedLevel = Number(e.target.value);
                 });
             }
         }
@@ -929,177 +950,225 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
      * Builds a character using Chummer attributes and system CharacterImporter
      */
     async _buildArchetypeCharacter(name) {
-        const ARCHETYPES = {
-            streetSamurai: "Street Samurai",
-            decker: "Decker",
-            technomancer: "Technomancer",
-            magician: "Magician",
-            aspected: "Aspected Magician",
-            adept: "Adept"
-        };
-
-        const METATYPES = {
-            human: { label: "Human" },
-            elf: { label: "Elf" },
-            dwarf: { label: "Dwarf" },
-            ork: { label: "Ork" },
-            troll: { label: "Troll" }
-        };
+        const lang = game.i18n.lang === "de" ? "de" : "en";
 
         const FIRST_NAMES = ["Ash", "Rook", "Mika", "Jax", "Echo", "Vex", "Kestrel", "Nova", "Grimm", "Cipher", "Knox", "Talon", "Wren", "Ghost", "Hex", "Raven", "Torque", "Zero"];
         const LAST_NAMES = ["Black", "Stone", "Cross", "Crow", "Wells", "Frost", "Vale", "Mason", "Reed", "Wolf", "Chrome", "Spire", "Knight", "Rain", "Wire", "Hawk"];
-
-        const BUILDS = {
-            streetSamurai: {
-                magicType: "mundane", metatypes: ["human", "ork", "dwarf"], nuyen: 140000,
-                attrs: { body: 5, agility: 6, reaction: 5, strength: 4, willpower: 3, logic: 2, intuition: 4, charisma: 2, edge: 3, magic: 0, resonance: 0 },
-                skills: [["automatics", "Automatics", 6, "Submachine Guns"], ["pistols", "Pistols", 4, "Semi-Automatics"], ["blades", "Blades", 4, "Knives"], ["unarmed_combat", "Unarmed Combat", 3, "Cyber Implants"], ["sneaking", "Sneaking", 4, "Urban"], ["perception", "Perception", 4, "Visual"], ["gymnastics", "Gymnastics", 3, ""], ["etiquette", "Etiquette", 2, "Street"]],
-                qualities: [
-                    ["Toughness", "positive", 9, "00cc6499-db13-447e-8116-278d317a9e31"],
-                    ["Distinctive Style", "negative", -5, "a030d7e2-755b-4f71-b848-ad9772fba242"],
-                    ["Code of Honor", "negative", -15, "dda02333-10e3-4295-9392-691ff3a7bd4a"]
-                ],
-                equipment: ["armor-jacket", "ares-predator", "smg", "commlink", "fake-sin", "licenses", "medkit"],
-                cyber: [
-                    ["Wired Reflexes", 2.0, 39000, 1, "bea0ded3-821f-449c-9507-815088f68b86"],
-                    ["Smartlink", 0.2, 4000, 1, "35dba0e2-1d3d-4386-a657-17fedca4622d"],
-                    ["Cybereyes Basic System", 0.3, 6000, 2, "8e414ade-2764-4dc7-bdc4-83bb4a086034"],
-                    ["Muscle Replacement", 1.0, 25000, 1, "46f80a44-80ae-41d7-a7c8-a119c4cff70f"]
-                ]
-            },
-            decker: {
-                magicType: "mundane", metatypes: ["human", "elf", "dwarf"], nuyen: 275000,
-                attrs: { body: 3, agility: 3, reaction: 4, strength: 2, willpower: 4, logic: 6, intuition: 5, charisma: 2, edge: 3, magic: 0, resonance: 0 },
-                skills: [["hacking", "Hacking", 6, "Hosts"], ["cybercombat", "Cybercombat", 5, "Devices"], ["computer", "Computer", 6, "Matrix Search"], ["electronic_warfare", "Electronic Warfare", 5, "Encryption"], ["hardware", "Hardware", 4, "Cyberdecks"], ["software", "Software", 4, "Edit File"], ["pistols", "Pistols", 3, "Semi-Automatics"], ["sneaking", "Sneaking", 3, "Urban"], ["perception", "Perception", 3, "Matrix"]],
-                qualities: [
-                    ["Codeslinger", "positive", 10, "41cc3e26-ae55-4e28-bd6a-b08866c21424"],
-                    ["Analytical Mind", "positive", 5, "5b19dbcd-fb69-4a02-a25a-7ac5342ca576"],
-                    ["Records on File", "negative", -10, "ce01db25-465b-4d13-b091-055496f3a5c4"]
-                ],
-                equipment: ["armor-clothes", "ares-predator", "cyberdeck", "commlink", "fake-sin", "licenses", "toolkit"]
-            },
-            technomancer: {
-                magicType: "technomancer", metatypes: ["human", "elf", "dwarf"], nuyen: 50000,
-                attrs: { body: 3, agility: 3, reaction: 4, strength: 2, willpower: 5, logic: 5, intuition: 5, charisma: 4, edge: 3, magic: 0, resonance: 6 },
-                skills: [["compiling", "Compiling", 6, "Fault Sprites"], ["registering", "Registering", 5, "Machine Sprites"], ["decompiling", "Decompiling", 4, ""], ["computer", "Computer", 5, "Matrix Search"], ["hacking", "Hacking", 5, "Hosts"], ["software", "Software", 5, "Complex Forms"], ["electronic_warfare", "Electronic Warfare", 4, ""], ["pistols", "Pistols", 2, ""], ["perception", "Perception", 3, ""]],
-                qualities: [
-                    ["Analytical Mind", "positive", 5, "5b19dbcd-fb69-4a02-a25a-7ac5342ca576"],
-                    ["Codeslinger", "positive", 10, "41cc3e26-ae55-4e28-bd6a-b08866c21424"],
-                    ["Distinctive Style", "negative", -5, "a030d7e2-755b-4f71-b848-ad9772fba242"]
-                ],
-                equipment: ["armor-clothes", "ares-predator", "commlink", "fake-sin", "licenses"]
-            },
-            magician: {
-                magicType: "magician", metatypes: ["human", "elf", "dwarf"], nuyen: 50000,
-                attrs: { body: 3, agility: 3, reaction: 4, strength: 2, willpower: 5, logic: 3, intuition: 5, charisma: 6, edge: 2, magic: 6, resonance: 0 },
-                skills: [["spellcasting", "Spellcasting", 6, "Combat"], ["counterspelling", "Counterspelling", 5, "Combat"], ["summoning", "Summoning", 5, "Spirits of Man"], ["binding", "Binding", 4, ""], ["banishing", "Banishing", 3, ""], ["assensing", "Assensing", 5, "Auras"], ["arcana", "Arcana", 3, ""], ["perception", "Perception", 3, ""], ["etiquette", "Etiquette", 3, "Magical"]],
-                qualities: [
-                    ["Magician", "positive", 15, "0e741331-d776-4be8-abc5-4101228abdef"],
-                    ["Mentor Spirit", "positive", 5, "ced3fecf-2277-4b20-b1e0-894162ca9ae2"],
-                    ["Spirit Bane", "negative", -7, "40c06974-a85b-4f2b-9558-51c140c16d87"]
-                ],
-                spells: [
-                    ["Stunbolt", "combat", "mana", "los", "instant", -3, "direct", "47423962-6b73-4cc3-ad4e-e8d037cf9507"],
-                    ["Manabolt", "combat", "mana", "los", "instant", -3, "direct", "85c12bae-3954-483c-a211-d8ee43a1c65e"],
-                    ["Heal", "health", "mana", "touch", "permanent", -4, "", "c09e8bb5-4bed-44f9-a41c-bed6a4deb871"],
-                    ["Increase Reflexes", "health", "physical", "touch", "sustained", -2, "", "37b3d6ac-624a-42d4-bd6e-a12142dc5725"],
-                    ["Improved Invisibility", "illusion", "physical", "touch", "sustained", -1, "", "1d9430e9-3ae9-4c0a-ba60-ee92c245ee08"],
-                    ["Detect Enemies", "detection", "mana", "los", "sustained", -2, "", "e343f716-a5b6-46a7-8bff-60b6c175db60"]
-                ],
-                equipment: ["armor-clothes", "ares-predator", "commlink", "fake-sin", "licenses", "lodge", "reagents", "fetish"]
-            },
-            aspected: {
-                magicType: "aspected", metatypes: ["human", "elf", "ork"], nuyen: 50000,
-                attrs: { body: 3, agility: 3, reaction: 4, strength: 2, willpower: 5, logic: 3, intuition: 5, charisma: 6, edge: 3, magic: 5, resonance: 0 },
-                skills: [["summoning", "Summoning", 6, "Spirits of Air"], ["binding", "Binding", 5, "Spirits of Man"], ["banishing", "Banishing", 4, ""], ["assensing", "Assensing", 5, "Auras"], ["arcana", "Arcana", 3, ""], ["perception", "Perception", 4, "Astral"], ["etiquette", "Etiquette", 3, "Magical"], ["pistols", "Pistols", 2, ""]],
-                qualities: [
-                    ["Aspected Magician", "positive", 5, "4adeb2d4-e42e-4b7a-9a5d-3df325ae59a5"],
-                    ["Mentor Spirit", "positive", 5, "ced3fecf-2277-4b20-b1e0-894162ca9ae2"],
-                    ["Spirit Bane", "negative", -7, "40c06974-a85b-4f2b-9558-51c140c16d87"]
-                ],
-                equipment: ["armor-clothes", "ares-predator", "commlink", "fake-sin", "licenses", "lodge", "reagents"]
-            },
-            adept: {
-                magicType: "adept", metatypes: ["human", "elf", "ork"], nuyen: 50000,
-                attrs: { body: 4, agility: 6, reaction: 5, strength: 4, willpower: 4, logic: 2, intuition: 5, charisma: 3, edge: 3, magic: 6, resonance: 0 },
-                skills: [["unarmed_combat", "Unarmed Combat", 6, "Martial Arts"], ["blades", "Blades", 5, "Swords"], ["gymnastics", "Gymnastics", 5, "Parkour"], ["sneaking", "Sneaking", 5, "Urban"], ["perception", "Perception", 4, "Visual"], ["running", "Running", 3, ""], ["etiquette", "Etiquette", 2, "Street"], ["pistols", "Pistols", 2, ""]],
-                qualities: [
-                    ["Adept", "positive", 5, "55247bdc-c313-4614-ae15-5012308096ff"],
-                    ["Agile Defender", "positive", 3, "1d0c4278-501d-456f-ab63-69afee6fbf95"],
-                    ["Distinctive Style", "negative", -5, "a030d7e2-755b-4f71-b848-ad9772fba242"]
-                ],
-                powers: [
-                    ["Improved Reflexes 2", 2, 2.5, "fea9e769-5f2c-4bae-9610-56c0825e145a", "Improved Reflexes"],
-                    ["Combat Sense 2", 2, 1.0, "76337564-7688-497f-84f9-302c6ece10fe", "Combat Sense"],
-                    ["Improved Ability: Unarmed Combat", 2, 1.0, "75821fb7-a180-4012-aa16-daa92ac3bb63", "Improved Ability (skill)"],
-                    ["Killing Hands", 1, 0.5, "23636777-44df-44f1-8742-db29dc3c4fdf", "Killing Hands"],
-                    ["Improved Physical Attribute: Agility", 1, 1.0, "901d2af5-246a-447a-a8e2-b2e8c10593df", "Improved Physical Attribute"]
-                ],
-                equipment: ["armor-jacket", "katana", "ares-predator", "commlink", "fake-sin", "licenses"]
-            }
-        };
 
         const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
         const randomName = `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`;
 
         const build = BUILDS[this.selectedArchetype];
-        const archetypeLabel = ARCHETYPES[this.selectedArchetype];
+        const archetypeLabel = ARCHETYPES[lang]?.[this.selectedArchetype] || this.selectedArchetype;
 
         let metatype = this.selectedMetatype;
         if (metatype === "random") {
             metatype = pick(build.metatypes);
         }
-        const metaLabel = METATYPES[metatype]?.label || metatype.charAt(0).toUpperCase() + metatype.slice(1);
+        const metaLabel = METATYPES[lang]?.[metatype] || metatype.charAt(0).toUpperCase() + metatype.slice(1);
+
+        const level = this.selectedLevel || 3;
+        const corpKey = this.selectedCorp || "none";
+        let rankRole = "combat";
+        if (this.selectedArchetype === "decker" || this.selectedArchetype === "technomancer") {
+            rankRole = "matrix";
+        } else if (this.selectedArchetype === "magician" || this.selectedArchetype === "aspected") {
+            rankRole = "magic";
+        }
+        const corpRanks = RANKS[corpKey] || RANKS.none;
+        const roleRanks = corpRanks[rankRole] || RANKS.none[rankRole];
+        const localizedRank = roleRanks?.[lang]?.[String(level)] || archetypeLabel;
 
         const defaultCharName = game.i18n.localize("SR5Marketplace.UI.New") + " " + (game.i18n.localize("TYPES.Actor.character") || "character");
-        const finalName = name === defaultCharName || name === "Unknown" || !name ? `${randomName} (${archetypeLabel})` : name;
+        const finalName = name === defaultCharName || name === "Unknown" || !name ? `${randomName} (${localizedRank})` : name;
 
-        // Map equipment keys to Chummer format
-        const mapEquipmentToChummerGear = (key) => {
-            if (key === "armor-jacket") {
-                return { type: "armor", data: { name: "Armor Jacket", name_english: "Armor Jacket", armor: "12", suid: "36a4cd30-c32c-44d0-847a-0c15fb51072a" } };
-            }
-            if (key === "armor-clothes") {
-                return { type: "armor", data: { name: "Actioneer Business Clothes", name_english: "Actioneer Business Clothes", armor: "8", suid: "5a650844-8f24-48e7-829f-0443d9ff5cf7" } };
-            }
-            if (key === "ares-predator") {
-                return { type: "weapon", data: { name: "Ares Predator V", name_english: "Ares Predator V", type: "Ranged", rawap: "-1", rawaccuracy: "5", ammo_english: "15", damage_noammo_english: "8P", rawrc: "0", mode: "SA", mode_noammo: "SA", mode_english_noammo: "SA", availableammo: "15", currentammo: "15", suid: "971c711b-db32-4339-9203-865ef38f350e" } };
-            }
-            if (key === "smg") {
-                return { type: "weapon", data: { name: "HK-227", name_english: "HK-227", type: "Ranged", rawap: "0", rawaccuracy: "5", ammo_english: "28", damage_noammo_english: "7P", rawrc: "0", mode: "SA/BF/FA", mode_noammo: "SA/BF/FA", mode_english_noammo: "SA/BF/FA", availableammo: "28", currentammo: "28", suid: "f9ff7bf6-3ed4-41bd-b934-34e751ecf266" } };
-            }
-            if (key === "katana") {
-                return { type: "weapon", data: { name: "Katana", name_english: "Katana", type: "Melee", rawap: "-3", rawaccuracy: "7", rawreach: "1", damage_noammo_english: "3P", rawrc: "0", suid: "8f266b4c-4035-4ba3-aa89-3289d0f42ce1" } };
-            }
-            if (key === "commlink") {
-                return { type: "gear", data: { name: "Hermes Ikon", name_english: "Hermes Ikon", iscommlink: "True", category_english: "Commlinks", devicerating: "5", qty: "1", suid: "6de5a1b0-30e2-4c74-8646-971f698cb231" } };
-            }
-            if (key === "cyberdeck") {
-                return { type: "gear", data: { name: "Renraku Tsurugi", name_english: "Renraku Tsurugi", iscommlink: "True", category_english: "Cyberdecks", devicerating: "3", attack: "6", sleaze: "5", dataprocessing: "5", firewall: "3", qty: "1", suid: "5f4c41eb-abaa-4725-86ce-62fe11eeee0b" } };
-            }
-            if (key === "fake-sin") {
-                return { type: "gear", data: { name: "Fake SIN", name_english: "Fake SIN", issin: "True", rating: "4", qty: "1", suid: "0c800bca-e6ff-475b-a014-c2069f5e364c" } };
-            }
-            if (key === "licenses") {
-                return { type: "gear", data: { name: "Fake License", name_english: "Fake License", rating: "4", qty: "1", suid: "8a16bbb2-8028-4c74-b22b-7aad9d001073" } };
-            }
-            if (key === "medkit") {
-                return { type: "gear", data: { name: "Medkit", name_english: "Medkit", rating: "6", qty: "1", suid: "ae9c37df-6d82-44c1-aa21-6c87e45e2dc1" } };
-            }
-            if (key === "toolkit") {
-                return { type: "gear", data: { name: "Hardware Toolkit", name_english: "Hardware Toolkit", qty: "1", suid: "64fa5212-1d58-4e94-9cc1-9e3eb10773ed" } };
-            }
-            if (key === "lodge") {
-                return { type: "gear", data: { name: "Magical Lodge Materials", name_english: "Magical Lodge Materials", rating: "6", qty: "1", suid: "f8151303-b838-4af1-ba9d-d43ff0892b40" } };
-            }
-            if (key === "reagents") {
-                return { type: "gear", data: { name: "Reagents", name_english: "Reagents", qty: "50", suid: "ef37af30-1204-4918-af66-dfbdd33cd045" } };
-            }
-            if (key === "fetish") {
-                return { type: "gear", data: { name: "Fetish", name_english: "Fetish", qty: "1", suid: "dfb20beb-a64c-4d75-b606-9e4f24622e02" } };
-            }
-            return null;
+        // Level scaling modifiers
+        const attrMults = { 1: 0.7, 2: 0.85, 3: 1.0, 4: 1.1, 5: 1.25, 6: 1.4 };
+        const skillMults = { 1: 0.5, 2: 0.75, 3: 1.0, 4: 1.2, 5: 1.4, 6: 1.6 };
+        const nuyenMults = { 1: 0.5, 2: 0.75, 3: 1.0, 4: 1.3, 5: 1.7, 6: 2.2 };
+
+        const attrMult = attrMults[level];
+        const skillMult = skillMults[level];
+        const nuyenMult = nuyenMults[level];
+
+        const scaleAttr = (baseVal) => {
+            if (!baseVal || baseVal === 0) return 0;
+            return Math.max(1, Math.round(baseVal * attrMult));
         };
+
+        const scaleSkill = (rating) => {
+            return Math.max(1, Math.round(rating * skillMult));
+        };
+
+        let magicSchool = SCHOOLS.corps[corpKey] || "hermetic";
+        const schoolKeys = Object.keys(SCHOOLS.labels);
+        if (corpKey === "none") {
+            magicSchool = schoolKeys[Math.floor(Math.random() * schoolKeys.length)];
+        } else {
+            // 80% chance of standard corporate tradition, 20% chance of a random other tradition
+            if (Math.random() < 0.20) {
+                const otherSchools = schoolKeys.filter(s => s !== magicSchool);
+                magicSchool = otherSchools[Math.floor(Math.random() * otherSchools.length)];
+            }
+        }
+        const localizedSchool = SCHOOLS.labels[magicSchool]?.[lang] || magicSchool;
+        const paradigm = SCHOOLS.paradigms[magicSchool] || "hermetic";
+
+        let localizedSociety = "";
+        if (build.magicType === "magician" || build.magicType === "aspected") {
+            if (Math.random() < 0.60) {
+                let eligible = [];
+                if (this.selectedCorp && this.selectedCorp !== "none") {
+                    eligible = SOCIETIES.filter(s => s.type === "corporate" && s.corps && s.corps.includes(this.selectedCorp));
+                }
+                if (eligible.length === 0 || Math.random() < 0.50) {
+                    const byTradition = SOCIETIES.filter(s => s.traditions && s.traditions.includes(magicSchool));
+                    if (byTradition.length > 0) {
+                        eligible = byTradition;
+                    }
+                }
+                const chosenSoc = eligible.length > 0 ? pick(eligible) : null;
+                if (chosenSoc) {
+                    localizedSociety = chosenSoc.name[lang] || chosenSoc.name.en;
+                }
+            }
+        }
+
+        // Dynamic Resolver: find mapping item by generic mapping key, level, and selected corporation flavor
+        const getMappingItemByKey = (key) => {
+            // 1. First choice: matches key, level range, selected magic paradigm (if spell), and selected corp flavor (if any)
+            let choices = MAPPING.items.filter(item => {
+                if (!item.mappingKeys.includes(key)) return false;
+                if (level < item.minLevel || level > item.maxLevel) return false;
+                if (item.type === "spell" && item.schools && !item.schools.includes(paradigm)) return false;
+                if (this.selectedCorp) return item.corporations.includes(this.selectedCorp);
+                return true;
+            });
+            // 2. Fallback: match key, level range, and paradigm (if spell) - ignore corp flavor
+            if (choices.length === 0) {
+                choices = MAPPING.items.filter(item => {
+                    if (!item.mappingKeys.includes(key)) return false;
+                    if (level < item.minLevel || level > item.maxLevel) return false;
+                    if (item.type === "spell" && item.schools && !item.schools.includes(paradigm)) return false;
+                    return true;
+                });
+            }
+            // 3. Secondary fallback: match key and level range only (ignore magic school and corp flavor)
+            if (choices.length === 0) {
+                choices = MAPPING.items.filter(item => {
+                    return item.mappingKeys.includes(key) && level >= item.minLevel && level <= item.maxLevel;
+                });
+            }
+            // 4. Tertiary fallback: match key only (ignore level range, magic school, and corp flavor)
+            if (choices.length === 0) {
+                choices = MAPPING.items.filter(item => item.mappingKeys.includes(key));
+            }
+            return choices.length > 0 ? pick(choices) : null;
+        };
+
+        // Quality selector with logical randomness
+        const selectedQualities = [];
+        if (build.qualities) {
+            const pickRandomUnique = (arr, count) => {
+                const shuffled = [...arr].sort(() => 0.5 - Math.random());
+                return shuffled.slice(0, count);
+            };
+
+            if (build.qualities.mandatory) {
+                selectedQualities.push(...build.qualities.mandatory);
+            }
+            if (build.qualities.optionalPositive && build.qualities.maxOptionalPositive) {
+                selectedQualities.push(...pickRandomUnique(build.qualities.optionalPositive, build.qualities.maxOptionalPositive));
+            }
+            if (build.qualities.optionalNegative && build.qualities.maxOptionalNegative) {
+                selectedQualities.push(...pickRandomUnique(build.qualities.optionalNegative, build.qualities.maxOptionalNegative));
+            }
+        }
+
+        const tableHeader = LABELS[lang]?.overview || "Character Overview";
+        const labelArchetype = LABELS[lang]?.archetype || "Archetype";
+        const labelMetatype = LABELS[lang]?.metatype || "Metatype";
+        const labelCorp = LABELS[lang]?.corp || "Corporation";
+        const labelRank = LABELS[lang]?.rank || "Corporate Rank";
+        const labelSchool = LABELS[lang]?.school || "Magic School";
+        const labelSociety = LABELS[lang]?.society || "Magical Society";
+        const labelLevel = LABELS[lang]?.level || "Professional Level";
+
+        const displayCorp = this.selectedCorp ? this.selectedCorp.toUpperCase() : (lang === "de" ? "KEINE/STANDARD" : "NONE/STANDARD");
+
+        let magicRowHtml = "";
+        if (build.magicType === "magician" || build.magicType === "aspected") {
+            magicRowHtml = `
+        <tr>
+            <td>
+                <p><strong>${labelSchool}</strong></p>
+            </td>
+            <td>
+                <p>${localizedSchool}</p>
+            </td>
+            <td>
+                <p><strong>${labelSociety}</strong></p>
+            </td>
+            <td>
+                <p>${localizedSociety || "-"}</p>
+            </td>
+        </tr>`;
+        }
+
+        const descriptionHtml = `
+<table>
+    <tbody>
+        <tr>
+            <th colspan="4">
+                <h1>${tableHeader}</h1>
+            </th>
+        </tr>
+        <tr>
+            <td>
+                <p>${labelArchetype}</p>
+            </td>
+            <td>
+                <p>${archetypeLabel}</p>
+            </td>
+            <td>
+                <p>${labelMetatype}</p>
+            </td>
+            <td>
+                <p>${metaLabel}</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p>${labelCorp}</p>
+            </td>
+            <td>
+                <p>${displayCorp}</p>
+            </td>
+            <td>
+                <p>${labelRank}</p>
+            </td>
+            <td>
+                <p>${localizedRank}</p>
+            </td>
+        </tr>${magicRowHtml}
+        <tr>
+            <td>
+                <p><strong>${labelLevel}</strong></p>
+            </td>
+            <td>
+                <p>${level}</p>
+            </td>
+            <td>
+                <p></p>
+            </td>
+            <td>
+                <p></p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<p><br></p>
+`;
 
         const chummerCharacter = {
             alias: finalName,
@@ -1109,16 +1178,11 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
             metatype_english: metatype.charAt(0).toUpperCase() + metatype.slice(1),
             karma: "0",
             totalkarma: "0",
-            nuyen: String(build.nuyen),
+            nuyen: String(Math.round(build.nuyen * nuyenMult)),
             technomancer: build.magicType === "technomancer" ? "True" : "False",
             magician: build.magicType === "magician" ? "True" : "False",
             adept: build.magicType === "adept" ? "True" : "False",
-            description: `
-              <h2>Random Character Builder</h2>
-              <p><strong>Archetype:</strong> ${archetypeLabel}</p>
-              <p><strong>Metatype:</strong> ${metaLabel}</p>
-              <p><strong>Build Note:</strong> This is a fast random archetype build, intended as a playable starting template or NPC-quality PC draft. Review gear legality, priorities, karma totals, contacts, lifestyle, and final derived values before play.</p>
-            `,
+            description: descriptionHtml,
             background: "",
             concept: "",
             notes: "",
@@ -1126,17 +1190,17 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
                 null,
                 {
                     attribute: [
-                        { name_english: "bod", name: "bod", base: String(build.attrs.body), total: String(build.attrs.body) },
-                        { name_english: "agi", name: "agi", base: String(build.attrs.agility), total: String(build.attrs.agility) },
-                        { name_english: "rea", name: "rea", base: String(build.attrs.reaction), total: String(build.attrs.reaction) },
-                        { name_english: "str", name: "str", base: String(build.attrs.strength), total: String(build.attrs.strength) },
-                        { name_english: "wil", name: "wil", base: String(build.attrs.willpower), total: String(build.attrs.willpower) },
-                        { name_english: "log", name: "log", base: String(build.attrs.logic), total: String(build.attrs.logic) },
-                        { name_english: "int", name: "int", base: String(build.attrs.intuition), total: String(build.attrs.intuition) },
-                        { name_english: "cha", name: "cha", base: String(build.attrs.charisma), total: String(build.attrs.charisma) },
-                        { name_english: "edg", name: "edg", base: String(build.attrs.edge), total: String(build.attrs.edge) },
-                        { name_english: "mag", name: "mag", base: String(build.attrs.magic), total: String(build.attrs.magic) },
-                        { name_english: "res", name: "res", base: String(build.attrs.resonance), total: String(build.attrs.resonance) }
+                        { name_english: "bod", name: "bod", base: String(scaleAttr(build.attrs.body)), total: String(scaleAttr(build.attrs.body)) },
+                        { name_english: "agi", name: "agi", base: String(scaleAttr(build.attrs.agility)), total: String(scaleAttr(build.attrs.agility)) },
+                        { name_english: "rea", name: "rea", base: String(scaleAttr(build.attrs.reaction)), total: String(scaleAttr(build.attrs.reaction)) },
+                        { name_english: "str", name: "str", base: String(scaleAttr(build.attrs.strength)), total: String(scaleAttr(build.attrs.strength)) },
+                        { name_english: "wil", name: "wil", base: String(scaleAttr(build.attrs.willpower)), total: String(scaleAttr(build.attrs.willpower)) },
+                        { name_english: "log", name: "log", base: String(scaleAttr(build.attrs.logic)), total: String(scaleAttr(build.attrs.logic)) },
+                        { name_english: "int", name: "int", base: String(scaleAttr(build.attrs.intuition)), total: String(scaleAttr(build.attrs.intuition)) },
+                        { name_english: "cha", name: "cha", base: String(scaleAttr(build.attrs.charisma)), total: String(scaleAttr(build.attrs.charisma)) },
+                        { name_english: "edg", name: "edg", base: String(scaleAttr(build.attrs.edge)), total: String(scaleAttr(build.attrs.edge)) },
+                        { name_english: "mag", name: "mag", base: String(scaleAttr(build.attrs.magic)), total: String(scaleAttr(build.attrs.magic)) },
+                        { name_english: "res", name: "res", base: String(scaleAttr(build.attrs.resonance)), total: String(scaleAttr(build.attrs.resonance)) }
                     ]
                 }
             ],
@@ -1149,7 +1213,7 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
                     const skillData = {
                         name: label,
                         name_english: label,
-                        rating: String(rating),
+                        rating: String(scaleSkill(rating)),
                         attribute: id === "unarmed_combat" ? "agi" : (id === "hacking" || id === "electronic_warfare" || id === "hardware" || id === "software" || id === "cybercombat" ? "log" : (id === "spellcasting" || id === "counterspelling" || id === "summoning" || id === "binding" || id === "banishing" || id === "compiling" || id === "registering" || id === "decompiling" ? "mag" : "agi")),
                         default: "True",
                         islanguage: "False",
@@ -1166,7 +1230,7 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
                 })
             },
             qualities: {
-                quality: (build.qualities || []).map(([qname, qtype, karma, suid]) => ({
+                quality: selectedQualities.map(([qname, qtype, karma, suid]) => ({
                     name: qname,
                     name_english: qname,
                     qualitytype_english: qtype,
@@ -1196,19 +1260,39 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
         };
 
         if (build.spells) {
-            chummerCharacter.spells.spell = build.spells.map(([sname, category, spellType, range, duration, drain, combatType, suid]) => ({
-                name: sname,
-                name_english: sname,
-                category_english: category.charAt(0).toUpperCase() + category.slice(1),
-                type_english: spellType === "mana" ? "M" : "P",
-                range_english: range === "los" ? "LOS" : (range === "touch" ? "T" : "LOS"),
-                duration_english: duration === "sustained" ? "S" : (duration === "instant" ? "I" : (duration === "permanent" ? "P" : "S")),
-                dv_english: String(drain),
-                alchemy: "False",
-                descriptors_english: combatType || "",
-                damage_english: "0",
-                suid: suid
-            }));
+            const resolvedSpellNames = new Set();
+            for (const key of build.spells) {
+                let itemChoices = MAPPING.items.filter(item => {
+                    if (!item.mappingKeys.includes(key)) return false;
+                    if (item.type !== "spell") return false;
+                    if (item.schools && !item.schools.includes(paradigm)) return false;
+                    if (resolvedSpellNames.has(item.chummerData.name)) return false;
+                    if (this.selectedCorp) return item.corporations.includes(this.selectedCorp);
+                    return true;
+                });
+                if (itemChoices.length === 0) {
+                    itemChoices = MAPPING.items.filter(item => {
+                        if (!item.mappingKeys.includes(key)) return false;
+                        if (item.type !== "spell") return false;
+                        if (item.schools && !item.schools.includes(paradigm)) return false;
+                        if (resolvedSpellNames.has(item.chummerData.name)) return false;
+                        return true;
+                    });
+                }
+                if (itemChoices.length === 0) {
+                    itemChoices = MAPPING.items.filter(item => {
+                        if (!item.mappingKeys.includes(key)) return false;
+                        if (item.type !== "spell") return false;
+                        if (resolvedSpellNames.has(item.chummerData.name)) return false;
+                        return true;
+                    });
+                }
+                const chosenSpell = itemChoices.length > 0 ? pick(itemChoices) : null;
+                if (chosenSpell) {
+                    chummerCharacter.spells.spell.push(chosenSpell.chummerData);
+                    resolvedSpellNames.add(chosenSpell.chummerData.name);
+                }
+            }
         }
 
         if (build.powers) {
@@ -1223,29 +1307,51 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
             }));
         }
 
+        // Cyberware & Bioware selection/scaling
+        const grade = level <= 2 ? "standard" : (level <= 4 ? "alpha" : (level === 5 ? "beta" : "delta"));
+        const gradeMults = {
+            standard: { ess: 1.0, cost: 1.0 },
+            alpha: { ess: 0.8, cost: 1.2 },
+            beta: { ess: 0.7, cost: 1.5 },
+            delta: { ess: 0.5, cost: 2.5 }
+        };
+        const mults = gradeMults[grade] || { ess: 1.0, cost: 1.0 };
+
         if (build.cyber) {
-            chummerCharacter.cyberwares.cyberware = build.cyber.map(([cname, ess, cost, rating, suid]) => ({
-                name: cname,
-                name_english: cname,
-                ess: String(ess),
-                cost: String(cost),
-                rating: String(rating),
-                grade: "standard",
-                improvementsource: "Cyberware",
-                suid: suid
-            }));
+            for (const key of build.cyber) {
+                const item = getMappingItemByKey(key);
+                if (!item) continue;
+                
+                const rawEss = Number(item.chummerData.ess) || 0;
+                const rawCost = Number(item.chummerData.cost) || 0;
+                
+                chummerCharacter.cyberwares.cyberware.push({
+                    name: item.chummerData.name,
+                    name_english: item.chummerData.name_english,
+                    ess: String(rawEss * mults.ess),
+                    cost: String(rawCost * mults.cost),
+                    rating: item.chummerData.rating || "1",
+                    grade: grade,
+                    improvementsource: item.chummerData.improvementsource || "Cyberware",
+                    suid: item.chummerData.suid
+                });
+            }
         }
 
+        // Equipment / Gear selection
         if (build.equipment) {
-            for (const eqKey of build.equipment) {
-                const mapped = mapEquipmentToChummerGear(eqKey);
-                if (!mapped) continue;
-                if (mapped.type === "armor") {
-                    chummerCharacter.armors.armor.push(mapped.data);
-                } else if (mapped.type === "weapon") {
-                    chummerCharacter.weapons.weapon.push(mapped.data);
-                } else if (mapped.type === "gear") {
-                    chummerCharacter.gears.gear.push(mapped.data);
+            for (const key of build.equipment) {
+                const item = getMappingItemByKey(key);
+                if (!item) continue;
+                
+                const chData = { ...item.chummerData };
+                
+                if (item.type === "armor") {
+                    chummerCharacter.armors.armor.push(chData);
+                } else if (item.type === "weapon") {
+                    chummerCharacter.weapons.weapon.push(chData);
+                } else if (item.type === "commlink" || item.type === "deck" || item.type === "gear") {
+                    chummerCharacter.gears.gear.push(chData);
                 }
             }
         }
