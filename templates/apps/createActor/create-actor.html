@@ -309,6 +309,35 @@
                     </select>
                 </div>
             </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
+                <div class="form-group-custom">
+                    <label for="character-corp-select">Corporation Flavor</label>
+                    <select id="character-corp-select" name="corporation" class="form-select-custom corp-select">
+                        <option value="">None / Standard</option>
+                        <option value="ares" {{#if (eq selectedCorp 'ares')}}selected{{/if}}>Ares Macrotechnology</option>
+                        <option value="aztechnology" {{#if (eq selectedCorp 'aztechnology')}}selected{{/if}}>Aztechnology</option>
+                        <option value="evo" {{#if (eq selectedCorp 'evo')}}selected{{/if}}>Evo Corporation</option>
+                        <option value="horizon" {{#if (eq selectedCorp 'horizon')}}selected{{/if}}>Horizon Group</option>
+                        <option value="mct" {{#if (eq selectedCorp 'mct')}}selected{{/if}}>Mitsuhama (MCT)</option>
+                        <option value="neonet" {{#if (eq selectedCorp 'neonet')}}selected{{/if}}>NeoNET</option>
+                        <option value="renraku" {{#if (eq selectedCorp 'renraku')}}selected{{/if}}>Renraku</option>
+                        <option value="saeder-krupp" {{#if (eq selectedCorp 'saeder-krupp')}}selected{{/if}}>Saeder-Krupp</option>
+                        <option value="shiawase" {{#if (eq selectedCorp 'shiawase')}}selected{{/if}}>Shiawase</option>
+                        <option value="wuxing" {{#if (eq selectedCorp 'wuxing')}}selected{{/if}}>Wuxing</option>
+                    </select>
+                </div>
+                <div class="form-group-custom">
+                    <label for="character-level-select">Professional Level</label>
+                    <select id="character-level-select" name="professionalLevel" class="form-select-custom level-select">
+                        <option value="1" {{#if (eq selectedLevel 1)}}selected{{/if}}>Level 1 (Regular Security)</option>
+                        <option value="2" {{#if (eq selectedLevel 2)}}selected{{/if}}>Level 2 (Semi-Pro Security)</option>
+                        <option value="3" {{#if (eq selectedLevel 3)}}selected{{/if}}>Level 3 (Average Runner / Elite Security)</option>
+                        <option value="4" {{#if (eq selectedLevel 4)}}selected{{/if}}>Level 4 (Veteran Runner / High-Threat Sec)</option>
+                        <option value="5" {{#if (eq selectedLevel 5)}}selected{{/if}}>Level 5 (Prime Runner / Special Forces)</option>
+                        <option value="6" {{#if (eq selectedLevel 6)}}selected{{/if}}>Level 6 (Legendary Runner / Military Grade)</option>
+                    </select>
+                </div>
+            </div>
             <p style="font-size: 11px; opacity: 0.7; margin-bottom: 15px;">
                 {{localize 'SR5Marketplace.UI.ActorCreator.QuickBuildNote'}}
             </p>
