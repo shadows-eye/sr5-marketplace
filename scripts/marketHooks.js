@@ -662,7 +662,8 @@ Hooks.once("init", () => {
         // 3. Instantiate your sub-APIs using the static properties
         marketplace: new MarketplaceAPI.Marketplace(),
         itemBuilder: new MarketplaceAPI.ItemBuilder(),
-        factory: new MarketplaceAPI.Factory()
+        factory: new MarketplaceAPI.Factory(),
+        registerShouterButton: (id, config) => MarketShouterApp.registerButton(id, config)
     };
 
     // 4. Expose them directly on the root API container for backward compatibility
@@ -702,6 +703,7 @@ Hooks.on("ready", async () => {
     game.sr5marketplace.api.itemData.buildIndex().then(() => {
         console.log("SR5 Marketplace | Item index successfully cached in memory.");
         MarketShouterApp.initialize();
+        Hooks.callAll("sr5marketplaceReady", game.sr5marketplace.api);
     });
     if (game.user.isGM) {
         // Automatically run shop actor legacy skills migration

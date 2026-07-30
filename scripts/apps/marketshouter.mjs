@@ -102,13 +102,18 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
             }
         }
 
+        const customButtons = Array.from(MarketShouterApp.registeredButtons.values())
+            .filter(btn => typeof btn.visible === "function" ? btn.visible() : (btn.visible !== false))
+            .sort((a, b) => (a.order || 100) - (b.order || 100));
+
         return {
             itemCount,
             shopActorImg,
             shopActorName,
             isGM,
             pendingCount,
-            showItemBuilder
+            showItemBuilder,
+            customButtons
         };
     }
 
@@ -146,7 +151,13 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         buttons.forEach(btn => {
             btn.addEventListener("click", (event) => {
                 const action = btn.dataset.action;
-                if (action === "openMarketplace") {
+                const customId = btn.dataset.customId;
+                if (customId) {
+                    const customBtn = MarketShouterApp.registeredButtons.get(customId);
+                    if (customBtn && typeof customBtn.onClick === "function") {
+                        customBtn.onClick(event);
+                    }
+                } else if (action === "openMarketplace") {
                     this._openMarketplace();
                 } else if (action === "openCart") {
                     this._openMarketplace("shoppingCart");
@@ -401,6 +412,24 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
             this._sidebarObserver = null;
         }
         return super.close(options);
+    }
+
+    /** @type {Map<string, object>} */
+    static registeredButtons = new Map();
+
+    /**
+     * Registers a custom button to appear in the MarketShouter capsule bar.
+     * @param {string} id - Unique identifier for the button.
+     * @param {object} config - Button configuration.
+     */
+    static registerButton(id, config) {
+        if (!id || !config) return;
+        MarketShouterApp.registeredButtons.set(id, { id, order: 100, ...config });
+        console.log(`SR5 Marketplace | Registered MarketShouter button: ${id}`);
+        const app = foundry.applications.instances.get("marketshouter");
+        if (app && app.rendered) {
+            app.render(true);
+        }
     }
 
     /**
