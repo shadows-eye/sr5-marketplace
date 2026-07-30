@@ -41,6 +41,31 @@ jobs:
           MANIFEST: ${{ env.latest_manifest_url }}
           DOWNLOAD: ${{ env.release_module_url }}
 
+      # STEP 1.5: Extract release notes for the tag from CHANGELOG.md
+      - name: Extract Release Notes from CHANGELOG.md
+        run: |
+          python3 -c "
+          import re, os
+
+          version = '${{ steps.get_version.outputs.version-without-v }}'
+          changelog_file = 'CHANGELOG.md'
+          notes = ''
+
+          if os.path.exists(changelog_file):
+              with open(changelog_file, 'r', encoding='utf-8') as f:
+                  content = f.read()
+              
+              pattern = r'##\s*\[?' + re.escape(version) + r'\]?.*?\n(.*?)(?=\n##\s*\[|\Z)'
+              match = re.search(pattern, content, re.DOTALL)
+              if match and match.group(1).strip():
+                  notes = match.group(1).strip()
+              else:
+                  notes = content
+
+          with open('RELEASE_NOTES.md', 'w', encoding='utf-8') as f:
+              f.write(notes)
+          "
+
       # STEP 2: Install and Build with Vite
       # This will run 'vite build', which uses your config to move the modified module.json to /dist
       - name: Install Dependencies
@@ -69,4 +94,5 @@ jobs:
           # We take module.json from dist because it's the processed version
           artifacts: './dist/module.json, ./module.zip'
           tag: ${{ github.event.release.tag_name }}
-          body: ${{ github.event.release.body }}
+          bodyFile: 'RELEASE_NOTES.md'
+
