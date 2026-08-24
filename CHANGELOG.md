@@ -10,10 +10,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [14.003.1] - 2026-08-24
 
 ### Added
-- **NPC Actor Creation Toggle**:
-  - Added a dedicated "Is NPC" (`isNpc`) checkbox under the Actor Type selector for character actors.
-  - Automatically defaults to `true` when any archetype quick-build option is selected, and `false` for blank actors, while supporting full manual toggling.
-  - Sets `system.is_npc: true|false` on the created actor across both blank character creation and archetype imports.
+- **NPC Actor Creation & Archetype Smart-Default**:
+  - Added a dedicated "Is NPC" (`isNpc`) toggle under the Actor Type selector for character actors.
+  - Selecting any quick-build archetype automatically defaults `isNpc = true` (checked), while blank actor creation defaults to `false`.
+  - Sets `system.is_npc: true|false` on the created Actor document for both standard creation and archetype imports.
+- **Corporate Flavoring & NPC Generator**:
+  - Support for selecting a Corporate Flavor across 10 Megacorps (Ares, Aztechnology, Evo, Horizon, Mitsuhama, NeoNET, Renraku, Saeder-Krupp, Shiawase, Wuxing) when creating NPCs.
+  - Spells, weapons, armors, and gear adapt dynamically to match corporate paradigms and preferences.
+- **Professional Level & Cyberware Scaling**:
+  - Introduced Professional Rating Level scaling (Levels 1 through 6).
+  - Cyberware and bioware automatically scale in grade (`standard`, `alpha`, `beta`, `delta`) with dynamic essence and cost multipliers.
+- **NPC Datasets & Templates**:
+  - Integrated `NPCTemplate.enc.mjs` and `chummer-corp-mapping.enc.mjs` for template parsing and item mapping.
+- **MarketShouter Extension API & Readiness Hook**:
+  - Added `MarketplaceAPI.registerShouterButton(id, config)` and `game.sr5marketplace.api.registerShouterButton` allowing third-party modules and custom macros to inject action buttons into the MarketShouter capsule bar.
+  - Emits the `sr5marketplaceReady` hook when the module API and item index initialization complete.
 - **GM Whisper Chat Setting for Quick Build**:
   - Registered `quickBuildWhisperGM` world setting in module settings (default `false`) with English and German localizations.
   - When enabled, character quick build sends whispered summary cards directly to GM users only.
@@ -24,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **Active Effects Alignment (Shadowrun 5e System 0.37.0+)**:
-  - Aligned all active effects across the builder and marketplace applications with the latest system active effects architecture (multi-target routing, filters, and dynamic change values).
+  - Aligned all active effects across the builder and marketplace applications with the latest system active effects architecture (multi-target routing, filters, dynamic change values).
 - **ApplicationV2 Refactoring**:
   - Fully migrated `SR5CreateActorApp` to modern Foundry `ApplicationV2` with declarative static actions and form event delegation.
 - **UI & Typography Polish**:
@@ -34,30 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - **Archetype Importer Skills Metadata**:
   - Resolved `TypeError: Cannot read properties of undefined (reading 'trim')` by establishing comprehensive `SKILL_METADATA` map in `constants.mjs` ensuring attributes, English attribute names, and skill categories are always populated for character import.
-
----
-
-## [14.003.0] - 2026-07-30
-
-### Added
-- **NPC Actor Creation & Corporate Flavoring**:
-  - Support for selecting a Corporate Flavor (Ares, Aztechnology, Evo, Horizon, Mitsuhama, NeoNET, Renraku, Saeder-Krupp, Shiawase, Wuxing) when creating NPCs.
-  - Spells, weapons, armors, and gear adapt dynamically to match corporate paradigms and preferences.
-- **Professional Level & Cyberware Scaling**:
-  - Introduced Professional Rating Level scaling (Levels 1 through 6).
-  - Cyberware and bioware automatically scale in grade (`standard`, `alpha`, `beta`, `delta`) with dynamic essence and cost multipliers.
-- **NPC Datasets & Templates**:
-  - Integrated `NPCTemplate.enc.mjs` and `chummer-corp-mapping.enc.mjs` for template parsing and item mapping.
-- **MarketShouter Extension API**:
-  - Added `MarketplaceAPI.registerShouterButton(id, config)` and `game.sr5marketplace.api.registerShouterButton` allowing third-party modules and custom macros to inject buttons into the MarketShouter capsule bar.
-  - Config options support custom FontAwesome icons or inline HTML, tooltips (`title`), dynamic visibility checks (`visible`), click callbacks (`onClick`), and display ordering (`order`).
-- **Readiness Hook**:
-  - Emits the `sr5marketplaceReady` hook when the module API and item index initialization complete.
-
-### Changed
-- Updated `SR5CreateActorApp.mjs` to handle corporate spell paradigms, school filtering, duplicate spell prevention, and scaled equipment integration.
-- Updated `create-actor.html` template with corporate flavor and professional level selection controls.
-- Added comprehensive developer documentation under `documentation/marketShouter.md` and updated `documentation/sr5CreateActorApp.md`.
+- **Localization Resolution**:
+  - Fixed missing localization keys (`SR5Marketplace.Factory.Workshop`, `SR5Marketplace.Marketplace.Shop.MatrixHost`, `SR5Marketplace.Marketplace.Shop.Employees`, and `OutOfStockWarning`).
 
 ---
 
