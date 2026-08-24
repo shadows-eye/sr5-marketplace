@@ -75,6 +75,18 @@
                 </svg>
             </button>
             {{/if}}
+
+            <!-- External Module Custom Buttons -->
+            {{#each customButtons}}
+            <button type="button" class="marketshouter-icon-btn marketshouter-custom-btn" data-custom-id="{{this.id}}"
+                title="{{this.title}}">
+                {{#if this.icon}}
+                <i class="{{this.icon}}"></i>
+                {{else}}
+                {{{this.html}}}
+                {{/if}}
+            </button>
+            {{/each}}
         </div>
     </div>
 

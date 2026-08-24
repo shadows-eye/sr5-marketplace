@@ -64,7 +64,9 @@ const initializeTemplates = () => {
     registerBasicHelpers();
 
     foundry.applications.handlebars.loadTemplates([
-        "modules/sr5-marketplace/templates/apps/create-actor.html",
+        "modules/sr5-marketplace/templates/apps/createActor/create-actor.html",
+        "modules/sr5-marketplace/templates/apps/createActor/partials/character-description.html",
+        "modules/sr5-marketplace/templates/apps/createActor/partials/character-chat-card.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/shop.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/orderReview.html",
         "modules/sr5-marketplace/templates/apps/inGameMarketplace/partials/marketplaceUserActor.html",
@@ -297,6 +299,16 @@ const initializeSettings = () => {
     game.settings.register("sr5-marketplace", "enablePremiumThemes", {
         name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.PremiumThemes.name"),
         hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.PremiumThemes.hint"),
+        scope: "world",
+        config: true,
+        restricted: true,
+        type: Boolean,
+        default: false,
+    });
+
+    game.settings.register("sr5-marketplace", "quickBuildWhisperGM", {
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.QuickBuildWhisperGM.name"),
+        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.QuickBuildWhisperGM.hint"),
         scope: "world",
         config: true,
         restricted: true,
@@ -662,7 +674,8 @@ Hooks.once("init", () => {
         // 3. Instantiate your sub-APIs using the static properties
         marketplace: new MarketplaceAPI.Marketplace(),
         itemBuilder: new MarketplaceAPI.ItemBuilder(),
-        factory: new MarketplaceAPI.Factory()
+        factory: new MarketplaceAPI.Factory(),
+        registerShouterButton: (id, config) => MarketShouterApp.registerButton(id, config)
     };
 
     // 4. Expose them directly on the root API container for backward compatibility
@@ -702,6 +715,7 @@ Hooks.on("ready", async () => {
     game.sr5marketplace.api.itemData.buildIndex().then(() => {
         console.log("SR5 Marketplace | Item index successfully cached in memory.");
         MarketShouterApp.initialize();
+        Hooks.callAll("sr5marketplaceReady", game.sr5marketplace.api);
     });
     if (game.user.isGM) {
         // Automatically run shop actor legacy skills migration
@@ -1264,7 +1278,8 @@ async function handleGMContinueExtendedTest({ userId, dialogId, actorUuid, rollC
             test.data.values.extendedHits.changes.push({
                 name: "Previous Hits",
                 value: previousHits,
-                mode: typeof CONST !== 'undefined' ? (CONST.ACTIVE_EFFECT_MODES?.ADD ?? 2) : 2,
+                type: "add",
+                mode: typeof CONST !== 'undefined' ? (CONST.ACTIVE_EFFECT_CHANGE_TYPES?.ADD || CONST.ACTIVE_EFFECT_MODES?.ADD || 2) : 2,
                 priority: 0,
                 enabled: true
             });
@@ -1439,7 +1454,8 @@ async function handleGMContinueBuildTest({ userId, dialogId, actorUuid, rollCoun
             test.data.values.extendedHits.changes.push({
                 name: "Previous Hits",
                 value: previousHits,
-                mode: typeof CONST !== 'undefined' ? (CONST.ACTIVE_EFFECT_MODES?.ADD ?? 2) : 2,
+                type: "add",
+                mode: typeof CONST !== 'undefined' ? (CONST.ACTIVE_EFFECT_CHANGE_TYPES?.ADD || CONST.ACTIVE_EFFECT_MODES?.ADD || 2) : 2,
                 priority: 0,
                 enabled: true
             });

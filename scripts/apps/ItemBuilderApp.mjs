@@ -1660,11 +1660,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         // D. Finalize effects
         baseItemData.effects = allEffects.map(effect => {
-            const cleanEffect = { ...effect };
-            if (cleanEffect.changes) {
-                cleanEffect.changes = buildService._changesToArray(cleanEffect.changes);
-            }
-            return cleanEffect;
+            return buildService._normalizeEffect(foundry.utils.deepClone(effect));
         });
 
         // E. Update name
@@ -1991,21 +1987,25 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const key = target.dataset.path;
 
         ItemBuilderApp.#handleStateUpdate(this, "#onSelectDraftKey", () => {
-            const updates = foundry.utils.expandObject({ "changes.0.key": key });
+            const updates = foundry.utils.expandObject({ "system.changes.0.key": key });
             return game.sr5marketplace.api.factory.updateBuilderDraftEffect(updates);
         });
     }
 
     /**
      * Handles selecting the 'applyTo' type for the effect.
-     * It now correctly saves the value to the 'system.applyTo' property.
      * @private
      */
     static async #onSetEffectTargetType(event, target) {
         const targetType = target.dataset.targetType;
 
         ItemBuilderApp.#handleStateUpdate(this, "#onSetEffectTargetType", () => {
-            const updates = { system: { applyTo: targetType } };
+            const updates = {
+                targetType: targetType,
+                system: {
+                    applyTo: targetType
+                }
+            };
             return game.sr5marketplace.api.factory.updateBuilderDraftEffect(updates);
         });
     }
@@ -2150,7 +2150,11 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         ItemBuilderApp.#handleStateUpdate(this, "#onSelectDerivedValue", () => {
             // Define the update for the nested draftEffect object
             const draftUpdate = {
-                changes: { "0": { value: `@${path}` } }
+                system: {
+                    changes: [
+                        { value: `@${path}` }
+                    ]
+                }
             };
 
             // Define the update for the top-level state object

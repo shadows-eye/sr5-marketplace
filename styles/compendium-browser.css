@@ -41,18 +41,33 @@
     background-color: var(--app-window-content-bg);
 }
 
-/* Custom Custom checkboxes */
+/* Custom checkboxes */
 .checkbox-custom {
     appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+    min-height: 14px;
     background-color: var(--input-bg-transparent);
     border: 1px solid var(--border-color-medium);
-    padding: 6px;
     border-radius: 3px;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     position: relative;
     cursor: pointer;
     outline: none;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
     transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.checkbox-custom:hover {
+    border-color: var(--color-yellow-light);
 }
 
 .checkbox-custom:checked {
@@ -62,9 +77,10 @@
 
 .checkbox-custom:checked::after {
     content: '\f00c';
-    font-family: 'Font Awesome 6 Free';
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free', 'FontAwesome';
     font-weight: 900;
     font-size: 8px;
+    line-height: 1;
     color: var(--color-black);
     position: absolute;
     top: 50%;

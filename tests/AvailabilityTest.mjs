@@ -361,6 +361,7 @@ export class AvailabilityTest extends game.shadowrun5e.tests.SuccessTest {
             name: m.name,
             value: m.value,
             enabled: true,
+            type: "add",
             mode: typeof CONST !== 'undefined' ? (CONST.ACTIVE_EFFECT_CHANGE_TYPES?.ADD || CONST.ACTIVE_EFFECT_MODES?.ADD || 2) : 2,
             priority: 0
         }));

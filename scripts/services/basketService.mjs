@@ -127,7 +127,7 @@ export class BasketService {
                 .filter(i => i.itemUuid === item.uuid)
                 .reduce((sum, i) => sum + i.buyQuantity, 0);
             if (totalInBasket + 1 > shopItem.qty) {
-                ui.notifications.warn(game.i18n.format("SR5Marketplace.Marketplace.Notifications.OutOfStockWarning", { name: item.name, qty: shopItem.qty }));
+                ui.notifications.warn(game.i18n.format("SR5Marketplace.Marketplace.Basket.OutOfStockWarning", { name: item.name, qty: shopItem.qty }));
                 return;
             }
         }

@@ -332,6 +332,125 @@ export class BuildService {
     /**
      * Begins the effect creation process by creating a default draft effect in the state.
      * @param {string} sourceUuid - The UUID of the item the effect will belong to.
+    /**
+     * Normalizes an ActiveEffect object (innate, custom, or legacy) to the SR5 0.37.0 / Foundry v14 schema.
+     * @param {object} effect - The raw or partially updated effect object.
+     * @returns {object} The normalized effect object.
+     */
+    _normalizeEffect(effect) {
+        if (!effect || typeof effect !== 'object') return effect;
+
+        effect._id = effect._id || foundry.utils.randomID();
+        effect.type = effect.type || "base";
+        effect.name = effect.name || "New Effect";
+        effect.img = effect.img || "icons/svg/aura.svg";
+        effect.disabled = effect.disabled ?? false;
+        effect.transfer = effect.transfer ?? true;
+        effect.statuses = Array.isArray(effect.statuses) ? effect.statuses : [];
+        effect.duration = effect.duration || { startTime: null, combat: null };
+
+        effect.system = effect.system || {};
+
+        // 1. Normalize Targets
+        let targets = effect.system.targets;
+        if (!Array.isArray(targets) || targets.length === 0) {
+            const legacyApplyTo = effect.system.applyTo || effect.targetType || "actor";
+            const conditions = [];
+
+            if (Array.isArray(effect.system.selection_tests) && effect.system.selection_tests.length) {
+                conditions.push({ type: "tests", mode: "include", values: [...effect.system.selection_tests] });
+            }
+            if (Array.isArray(effect.system.selection_categories) && effect.system.selection_categories.length) {
+                conditions.push({ type: "categories", mode: "include", values: [...effect.system.selection_categories] });
+            }
+            if (Array.isArray(effect.system.selection_skills) && effect.system.selection_skills.length) {
+                conditions.push({ type: "skills", mode: "include", values: [...effect.system.selection_skills] });
+            }
+            if (Array.isArray(effect.system.selection_attributes) && effect.system.selection_attributes.length) {
+                conditions.push({ type: "attributes", mode: "include", values: [...effect.system.selection_attributes] });
+            }
+            if (Array.isArray(effect.system.selection_limits) && effect.system.selection_limits.length) {
+                conditions.push({ type: "limits", mode: "include", values: [...effect.system.selection_limits] });
+            }
+
+            const targetId = foundry.utils.randomID();
+            targets = [{
+                id: targetId,
+                name: "Target",
+                applyTo: legacyApplyTo,
+                conditions: conditions,
+                onlyForItemTest: legacyApplyTo === "modifier" ? !!effect.system.onlyForItemTest : false
+            }];
+            effect.system.targets = targets;
+        } else {
+            effect.system.targets = targets.map((t, idx) => ({
+                id: t.id || foundry.utils.randomID(),
+                name: t.name || `Target ${idx + 1}`,
+                applyTo: t.applyTo || "actor",
+                conditions: Array.isArray(t.conditions) ? t.conditions : [],
+                onlyForItemTest: !!t.onlyForItemTest
+            }));
+        }
+
+        const primaryTargetId = effect.system.targets[0]?.id || "actor";
+        const primaryApplyTo = effect.system.targets[0]?.applyTo || "actor";
+        effect.targetType = primaryApplyTo;
+
+        // 2. Normalize Changes (from system.changes or legacy top-level changes)
+        let rawChanges = effect.system.changes;
+        if (!rawChanges && effect.changes) {
+            rawChanges = effect.changes;
+        }
+
+        const changesList = this._changesToArray(rawChanges);
+        const modeMap = { 0: 'add', 1: 'multiply', 2: 'add', 3: 'downgrade', 4: 'upgrade', 5: 'override' };
+
+        if (changesList.length === 0) {
+            effect.system.changes = [{
+                key: "",
+                type: "add",
+                value: "",
+                priority: null,
+                target: primaryTargetId
+            }];
+        } else {
+            effect.system.changes = changesList.map(c => {
+                let changeType = "add";
+                if (typeof c.type === "string" && c.type) {
+                    changeType = c.type === "custom" ? "add" : c.type;
+                } else if (c.mode !== undefined && modeMap[c.mode]) {
+                    changeType = modeMap[c.mode];
+                }
+                return {
+                    key: c.key || "",
+                    type: changeType,
+                    value: c.value !== undefined && c.value !== null ? String(c.value) : "",
+                    priority: c.priority !== undefined ? c.priority : null,
+                    target: c.target || primaryTargetId
+                };
+            });
+        }
+
+        // Clean up legacy flat keys
+        delete effect.system.applyTo;
+        delete effect.system.selection_tests;
+        delete effect.system.selection_categories;
+        delete effect.system.selection_skills;
+        delete effect.system.selection_attributes;
+        delete effect.system.selection_limits;
+        delete effect.changes;
+
+        effect.system.appliedByTest = effect.system.appliedByTest ?? false;
+        effect.system.onlyForEquipped = effect.system.onlyForEquipped ?? false;
+        effect.system.onlyForWireless = effect.system.onlyForWireless ?? false;
+        effect.system.expiryAction = effect.system.expiryAction ?? "default";
+
+        return effect;
+    }
+
+    /**
+     * Begins the effect creation process by creating a default draft effect in the state.
+     * @param {string} sourceUuid - The UUID of the item the effect will belong to.
      * @param {string|null} [userId=null] - The ID of the user.
      * @returns {Promise<object>} The updated state object.
      */
@@ -358,16 +477,69 @@ export class BuildService {
         const state = await this.getBuilderState(userId);
         if (!state.draftEffect) return state;
 
+        let draft = this._normalizeEffect(state.draftEffect);
+
+        // Handle target conditions / applyTo / changes if provided in legacy or nested format
         if (draftUpdate.changes) {
-            const currentChangesObj = this._changesToObject(state.draftEffect.changes);
-            const updateChangesObj = this._changesToObject(draftUpdate.changes);
-            const mergedChangesObj = foundry.utils.mergeObject(currentChangesObj, updateChangesObj);
-            
-            state.draftEffect.changes = this._changesToArray(mergedChangesObj);
+            const rawChanges = this._changesToArray(draftUpdate.changes);
+            const targetId = draft.system?.targets?.[0]?.id || "actor";
+            const modeMap = { 0: 'add', 1: 'multiply', 2: 'add', 3: 'downgrade', 4: 'upgrade', 5: 'override' };
+            const normalizedChanges = rawChanges.map((c, i) => {
+                const prevChange = draft.system.changes[i] || draft.system.changes[0] || {};
+                return {
+                    key: c.key !== undefined ? c.key : (prevChange.key || ""),
+                    type: typeof c.type === 'string' ? c.type : (c.mode !== undefined && modeMap[c.mode] ? modeMap[c.mode] : (prevChange.type || "add")),
+                    value: c.value !== undefined ? String(c.value) : (prevChange.value ?? ""),
+                    priority: c.priority !== undefined ? c.priority : (prevChange.priority ?? null),
+                    target: c.target || prevChange.target || targetId
+                };
+            });
+            draft.system.changes = normalizedChanges;
             delete draftUpdate.changes;
         }
-        
-        state.draftEffect = foundry.utils.mergeObject(state.draftEffect, draftUpdate);
+
+        // Handle flat system condition updates if coming from multi-selects
+        if (draftUpdate.system?.selection_tests !== undefined ||
+            draftUpdate.system?.selection_categories !== undefined ||
+            draftUpdate.system?.selection_skills !== undefined ||
+            draftUpdate.system?.selection_attributes !== undefined ||
+            draftUpdate.system?.selection_limits !== undefined) {
+            
+            const target = draft.system.targets[0];
+            if (target) {
+                const conditionMap = {
+                    tests: draftUpdate.system.selection_tests,
+                    categories: draftUpdate.system.selection_categories,
+                    skills: draftUpdate.system.selection_skills,
+                    attributes: draftUpdate.system.selection_attributes,
+                    limits: draftUpdate.system.selection_limits
+                };
+                
+                target.conditions = target.conditions.filter(c => conditionMap[c.type] === undefined);
+                for (const [type, values] of Object.entries(conditionMap)) {
+                    if (Array.isArray(values) && values.length > 0) {
+                        target.conditions.push({ type, mode: "include", values: [...values] });
+                    }
+                }
+            }
+            delete draftUpdate.system.selection_tests;
+            delete draftUpdate.system.selection_categories;
+            delete draftUpdate.system.selection_skills;
+            delete draftUpdate.system.selection_attributes;
+            delete draftUpdate.system.selection_limits;
+        }
+
+        // Handle system.applyTo update
+        if (draftUpdate.system?.applyTo) {
+            if (draft.system.targets[0]) {
+                draft.system.targets[0].applyTo = draftUpdate.system.applyTo;
+            }
+            draft.targetType = draftUpdate.system.applyTo;
+            delete draftUpdate.system.applyTo;
+        }
+
+        draft = foundry.utils.mergeObject(draft, draftUpdate);
+        state.draftEffect = this._normalizeEffect(draft);
         
         await user.setFlag(FLAG_SCOPE, FLAG_KEY, state);
         return state;
@@ -386,20 +558,12 @@ export class BuildService {
         const state = await this.getBuilderState(userId);
         if (!state.draftEffect) return state;
 
-        if (draftUpdate.changes) {
-            const currentChangesObj = this._changesToObject(state.draftEffect.changes);
-            const updateChangesObj = this._changesToObject(draftUpdate.changes);
-            const mergedChangesObj = foundry.utils.mergeObject(currentChangesObj, updateChangesObj);
-            
-            state.draftEffect.changes = this._changesToArray(mergedChangesObj);
-            delete draftUpdate.changes;
-        }
+        await this.updateBuilderDraftEffect(draftUpdate, userId);
+        const updatedState = await this.getBuilderState(userId);
+        const finalState = foundry.utils.mergeObject(updatedState, stateUpdate);
 
-        state.draftEffect = foundry.utils.mergeObject(state.draftEffect, draftUpdate);
-        const newState = foundry.utils.mergeObject(state, stateUpdate);
-
-        await user.setFlag(FLAG_SCOPE, FLAG_KEY, newState);
-        return newState;
+        await user.setFlag(FLAG_SCOPE, FLAG_KEY, finalState);
+        return finalState;
     }
 
     /**
@@ -414,9 +578,7 @@ export class BuildService {
         if (!state.draftEffect) return state;
 
         const newState = foundry.utils.deepClone(state);
-        const draft = newState.draftEffect;
-        
-        draft.changes = this._changesToArray(draft.changes);
+        const draft = this._normalizeEffect(newState.draftEffect);
 
         if (!newState.modifications) newState.modifications = [];
 
@@ -445,7 +607,7 @@ export class BuildService {
 
         if (state.draftEffect.wasCustom) {
             delete state.draftEffect.wasCustom;
-            newState.modifications.push(state.draftEffect);
+            newState.modifications.push(this._normalizeEffect(state.draftEffect));
         }
         
         newState.draftEffect = null;
@@ -505,28 +667,9 @@ export class BuildService {
         }
 
         if (effectToEdit) {
-            const draft = effectToEdit;
+            const draft = this._normalizeEffect(effectToEdit);
             draft.sourceUuid = sourceUuid;
             draft.isEdit = true;
-            
-            draft.changes = this._changesToArray(draft.changes);
-            
-            if ( !draft.targetType ) {
-                if ( draft.system?.applyTo ) {
-                    draft.targetType = draft.system.applyTo;
-                }
-                else if ( draft.changes?.[0]?.key ) {
-                    const effectKey = draft.changes[0].key;
-                    const mappableKeys = SystemDataMapperService.getMappableKeys();
-
-                    const isActorKey = Object.values(mappableKeys.actors).some(actorType => 
-                        Object.values(actorType).some(keyGroup => 
-                            keyGroup.some(keyData => keyData.path === effectKey)
-                        )
-                    );
-                    if (isActorKey) draft.targetType = 'actor';
-                }
-            }
 
             newState.draftEffect = draft;
             await user.setFlag(FLAG_SCOPE, FLAG_KEY, newState);

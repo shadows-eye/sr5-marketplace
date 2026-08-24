@@ -15,12 +15,13 @@ Click on any of the sections below to access their specific documentation page, 
 | API Namespace Path | Class/Service | Description | Documentation |
 | :--- | :--- | :--- | :--- |
 | `game.sr5marketplace.inGameMarketplace` | `inGameMarketplace` | The main shop UI application (ApplicationV2) for showing/rendering the shop and GM review screen. | [inGameMarketplace.md](./inGameMarketplace.md) |
+| `game.sr5marketplace.api.registerShouterButton` | `MarketShouterApp` | Custom button registration for the MarketShouter capsule bar and module readiness hook (`sr5marketplaceReady`). | [marketShouter.md](./marketShouter.md) |
 | `game.sr5marketplace.api.itemBuilder` | `ItemBuilderAPI` | Operations for configuring base items, resetting state, and opening the Item Builder UI. | [itemBuilder.md](./itemBuilder.md) |
 | `game.sr5marketplace.api.system` | `SR5SystemAPI` | Live cached configs and localized translations bridged directly from the `shadowrun5e` system. | [system.md](./system.md) |
 | `game.sr5marketplace.itemData` | `ItemDataServices` | Direct access to global and shop-specific item databases, index builders, and category filters. | [itemData.md](./itemData.md) |
 | `game.sr5marketplace.PurchaseService` | `PurchaseService` | Backend operations managing shopping carts submissions, reviews, GM approvals, and rejections. | [purchase.md](./purchase.md) |
 | `game.sr5marketplace.BasketService` | `BasketService` | Active shopping cart operations (get/save basket, add items, set contact, clear cart). | [basket.md](./basket.md) |
-| `game.sr5marketplace.SR5CreateActorApp` | `SR5CreateActorApp` | Custom Actor Creation application that overrides default Foundry Actor dialogs for Shop initialization. | [sr5CreateActorApp.md](./sr5CreateActorApp.md) |
+| `game.sr5marketplace.SR5CreateActorApp` | `SR5CreateActorApp` | Custom Actor Creation application supporting shop initialization, corporate flavors, and professional level scaling. | [sr5CreateActorApp.md](./sr5CreateActorApp.md) |
 | `game.sr5marketplace.api.AppDialogBuilder` | `AppDialogBuilder` | Router and context builder that constructs structured test UI parameters (availability/opposed rolls). | [appDialogBuilder.md](./appDialogBuilder.md) |
 
 ---

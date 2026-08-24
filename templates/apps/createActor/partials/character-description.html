@@ -1,0 +1,36 @@
+<table>
+    <tbody>
+        <tr>
+            <th colspan="4">
+                <h1>{{tableHeader}}</h1>
+            </th>
+        </tr>
+        <tr>
+            <td><p>{{labelArchetype}}</p></td>
+            <td><p>{{archetypeLabel}}</p></td>
+            <td><p>{{labelMetatype}}</p></td>
+            <td><p>{{metaLabel}}</p></td>
+        </tr>
+        <tr>
+            <td><p>{{labelCorp}}</p></td>
+            <td><p>{{displayCorp}}</p></td>
+            <td><p>{{labelRank}}</p></td>
+            <td><p>{{localizedRank}}</p></td>
+        </tr>
+        {{#if isMagic}}
+        <tr>
+            <td><p><strong>{{labelSchool}}</strong></p></td>
+            <td><p>{{localizedSchool}}</p></td>
+            <td><p><strong>{{labelSociety}}</strong></p></td>
+            <td><p>{{#if localizedSociety}}{{localizedSociety}}{{else}}-{{/if}}</p></td>
+        </tr>
+        {{/if}}
+        <tr>
+            <td><p><strong>{{labelLevel}}</strong></p></td>
+            <td><p>{{level}}</p></td>
+            <td><p></p></td>
+            <td><p></p></td>
+        </tr>
+    </tbody>
+</table>
+<p><br></p>

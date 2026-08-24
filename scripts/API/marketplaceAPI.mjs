@@ -1,6 +1,7 @@
 // --- IMPORTS ---
 import { ItemBuilderApp } from "../apps/ItemBuilderApp.mjs";
 import { inGameMarketplace } from "../apps/inGameMarketplace.mjs";
+import { MarketShouterApp } from "../apps/marketshouter.mjs";
 import { BasketService } from "../services/basketService.mjs";
 import { PurchaseService } from "../services/purchaseService.mjs";
 import { MODULE_ID, SELECTED_ACTOR } from "../lib/constants.mjs";
@@ -755,6 +756,15 @@ export class MarketplaceAPI {
      * @type {typeof FactoryAPI}
      */
     static Factory = FactoryAPI;
+
+    /**
+     * Registers a custom button in the MarketShouter capsule bar.
+     * @param {string} id - Unique button ID.
+     * @param {object} config - Button options (title, icon, onClick, visible).
+     */
+    static registerShouterButton(id, config) {
+        MarketShouterApp.registerButton(id, config);
+    }
 
     constructor() {}
 
