@@ -1,10 +1,13 @@
 <form class="create-actor-form" autocomplete="off" onsubmit="event.preventDefault();">
     <div class="create-actor-form-body">
         <!-- 1. Name & Image Row -->
-        <div style="display: grid; grid-template-columns: 50px 1fr; gap: 15px; margin-bottom: 10px; align-items: end;">
+        <div class="grid grid-cols-[50px_1fr] gap-3 mb-2.5 items-end">
             <!-- Actor Image Selection -->
-            <div class="actor-img-picker" style="width: 50px; height: 50px; border: 1px solid var(--border-color-medium); border-radius: 4px; overflow: hidden; cursor: pointer; position: relative; background-color: var(--color-black-transparent-20);" title="{{localize 'SR5Marketplace.UI.ActorCreator.SelectImageTooltip'}}">
-                <img src="{{actorImg}}" style="width: 100%; height: 100%; object-fit: cover;" />
+            <div class="actor-img-picker" data-action="selectActorImage" title="{{localize 'SR5Marketplace.UI.ActorCreator.SelectImageTooltip'}}">
+                <img src="{{actorImg}}" alt="{{defaultName}}" />
+                <div class="img-hover-overlay">
+                    <i class="fa-solid fa-camera"></i>
+                </div>
             </div>
             <!-- Name Input -->
             <div class="form-group-custom">
@@ -13,7 +16,7 @@
             </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 5px;">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-1.5">
             <!-- 2. Actor Type Selection -->
             <div class="form-group-custom">
                 <label for="actor-type-select">{{localize 'SR5Marketplace.UI.Type'}}</label>
@@ -22,6 +25,14 @@
                     <option value="{{@key}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
                     {{/each}}
                 </select>
+                {{#if isCharacterType}}
+                <div class="flex items-center gap-2 mt-2">
+                    <label class="flex items-center gap-1.5 cursor-pointer text-xs font-semibold">
+                        <input type="checkbox" name="isNpc" class="checkbox-custom is-npc-cb" {{#if isNpc}}checked{{/if}} />
+                        <span>{{localize 'SR5Marketplace.UI.ActorCreator.IsNPC'}}</span>
+                    </label>
+                </div>
+                {{/if}}
             </div>
 
             <!-- 3. Folder Selection -->
@@ -40,12 +51,13 @@
         {{#if isShopActor}}
         
         <!-- Load Existing Shop (Upgrade Flow) -->
-        <div class="upgrade-shop-section" style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px; border-bottom: 1px dashed var(--border-color-medium); padding-bottom: 10px;">
-            <button type="button" class="load-existing-shop-btn" style="flex-grow: 1; padding: 6px; background-color: var(--color-yellow-dark); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
-                <i class="fas fa-file-import"></i> {{#if existingActorUuid}}{{localize 'SR5Marketplace.UI.ActorCreator.LoadedExisting'}}: {{actorName}}{{else}}{{localize 'SR5Marketplace.UI.ActorCreator.LoadExistingShop'}}{{/if}}
+        <div class="upgrade-shop-section">
+            <button type="button" class="load-existing-shop-btn" data-action="loadExistingShop">
+                <i class="fas fa-file-import"></i>
+                <span>{{#if existingActorUuid}}{{localize 'SR5Marketplace.UI.ActorCreator.LoadedExisting'}}: {{actorName}}{{else}}{{localize 'SR5Marketplace.UI.ActorCreator.LoadExistingShop'}}{{/if}}</span>
             </button>
             {{#if existingActorUuid}}
-            <button type="button" class="clear-existing-shop-btn" style="padding: 6px; background-color: var(--color-red-dark); color: white; border: none; border-radius: 4px; cursor: pointer;" title="{{localize 'SR5Marketplace.UI.ActorCreator.CancelUpgradeTooltip'}}">
+            <button type="button" class="clear-existing-shop-btn" data-action="clearExistingShop" title="{{localize 'SR5Marketplace.UI.ActorCreator.CancelUpgradeTooltip'}}">
                 <i class="fas fa-times"></i>
             </button>
             {{/if}}
@@ -53,7 +65,7 @@
 
         <!-- Collapsible Shop Options -->
         <div class="actor-creator-collapsible-section {{#unless shopDetailsExpanded}}collapsed{{/unless}}" data-section="shop-details">
-            <div class="actor-creator-collapsible-header">
+            <div class="actor-creator-collapsible-header" data-action="toggleSection" data-section="shop-details">
                 <h3>{{localize 'SR5Marketplace.UI.ActorCreator.ShopDetailsTitle'}}</h3>
                 <i class="fas fa-chevron-down toggle-icon"></i>
             </div>
@@ -69,18 +81,14 @@
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 10px; align-items: center; margin: 10px 0;">
-                    <label style="display: flex; align-items: center; gap: 6px; font-weight: bold; cursor: pointer;">
+                <div class="flex items-center gap-2.5 my-2">
+                    <label class="flex items-center gap-1.5 font-bold cursor-pointer">
                         <input type="checkbox" id="shop-is-factory" name="isFactory" class="checkbox-custom shop-is-factory-cb" {{#if isFactory}}checked{{/if}} />
                         <span>{{localize 'SR5Marketplace.Factory.IsFactory'}}</span>
                     </label>
                 </div>
 
-                {{#if isFactory}}
-                <div class="factory-rating-container" style="margin-bottom: 10px; display: block;">
-                {{else}}
-                <div class="factory-rating-container" style="margin-bottom: 10px; display: none;">
-                {{/if}}
+                <div class="factory-rating-container mb-2.5 {{#unless isFactory}}hidden{{/unless}}">
                     <div class="form-group-custom">
                         <label for="factory-rating">{{localize 'SR5Marketplace.Factory.Rating'}} (1-6)</label>
                         <input type="number" id="factory-rating" name="factoryRating" class="form-input-custom factory-rating-input" value="{{factoryRating}}" min="1" max="6" step="1" />
@@ -94,124 +102,134 @@
             </div>
         </div>
 
-        <!-- Collapsible Host & Employees Options -->
+        <!-- Host & Employees Collapsible Section -->
         <div class="actor-creator-collapsible-section {{#unless hostEmployeesExpanded}}collapsed{{/unless}}" data-section="host-employees">
-            <div class="actor-creator-collapsible-header">
+            <div class="actor-creator-collapsible-header" data-action="toggleSection" data-section="host-employees">
                 <h3>{{localize 'SR5Marketplace.UI.ActorCreator.HostEmployeesTitle'}}</h3>
                 <i class="fas fa-chevron-down toggle-icon"></i>
             </div>
             <div class="actor-creator-collapsible-content">
-                <!-- Matrix Host Dropdown -->
+                <!-- Host Selection -->
                 <div class="form-group-custom">
-                    <label for="shop-host-select">{{localize 'SR5Marketplace.Marketplace.Shop.MatrixHost'}}</label>
-                    <select id="shop-host-select" class="form-select-custom shop-host-select">
+                    <label for="matrix-host-select">{{localize 'SR5Marketplace.Actor.Host'}}</label>
+                    <select id="matrix-host-select" name="host" class="form-select-custom host-select">
                         <option value="">{{localize 'SR5Marketplace.UI.ActorCreator.NoHost'}}</option>
-                        {{#each worldHosts}}
+                        {{#each availableHosts}}
                         <option value="{{this.uuid}}" {{#if this.selected}}selected{{/if}}>{{this.name}}</option>
                         {{/each}}
                     </select>
                 </div>
 
-                <!-- Select Employees Checklist -->
+                <!-- Employees Selection -->
                 <div class="form-group-custom">
-                    <label>{{localize 'SR5Marketplace.Marketplace.Shop.Employees'}}</label>
-                    <div style="border: 1px solid var(--border-color-medium); border-radius: 4px; background-color: var(--color-black-transparent-15); padding: 8px; max-height: 120px; overflow-y: auto;">
-                        {{#if worldActors.length}}
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                {{#each worldActors}}
-                                <label class="type-checkbox-label" style="font-size: 12px; display: flex; align-items: center; gap: 6px;">
+                    <label>{{localize 'SR5Marketplace.Actor.Employees'}}</label>
+                    <div class="employees-list-container border border-[var(--border-color-medium)] rounded p-2 bg-[var(--color-black-transparent-15)] max-h-36 overflow-y-auto">
+                        {{#if availableEmployees.length}}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                                {{#each availableEmployees}}
+                                <label class="flex items-center gap-1.5 text-xs cursor-pointer select-none">
                                     <input type="checkbox" class="checkbox-custom employee-checkbox" data-uuid="{{this.uuid}}" {{#if this.checked}}checked{{/if}} />
-                                    <img src="{{this.img}}" style="width: 18px; height: 18px; object-fit: cover; border-radius: 50%; border: 1px solid var(--border-color-medium);" />
                                     <span>{{this.name}}</span>
                                 </label>
                                 {{/each}}
                             </div>
                         {{else}}
-                            <div style="font-style: italic; opacity: 0.5; font-size: 11.5px; text-align: center; padding: 10px;">
-                                {{localize 'SR5Marketplace.UI.ActorCreator.NoActors'}}
-                            </div>
+                            <div class="text-xs opacity-50 italic">{{localize 'SR5Marketplace.UI.ActorCreator.NoActors'}}</div>
                         {{/if}}
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Collapsible Populate Inventory -->
-        <div class="actor-creator-collapsible-section {{#unless populateInventoryExpanded}}collapsed{{/unless}}" data-section="populate-inventory">
-            <div class="actor-creator-collapsible-header">
+        <!-- Inventory Seeding Collapsible Section -->
+        <div class="actor-creator-collapsible-section {{#unless inventoryExpanded}}collapsed{{/unless}}" data-section="inventory-seeding">
+            <div class="actor-creator-collapsible-header" data-action="toggleSection" data-section="inventory-seeding">
                 <h3>{{localize 'SR5Marketplace.UI.ActorCreator.PopulateInventoryTitle'}}</h3>
                 <i class="fas fa-chevron-down toggle-icon"></i>
             </div>
-            <div class="actor-creator-collapsible-content" style="display: flex; flex-direction: column; gap: 10px;">
+            <div class="actor-creator-collapsible-content">
+                <!-- Seeding Filters Panel -->
                 <div class="seeding-filters-grid">
-                    <!-- Left: Item Type Filters -->
+                    <!-- Left Filter: Item Types Filter Box -->
                     <div class="item-types-filter-container">
                         <div class="item-types-header">
                             <span>{{localize 'SR5Marketplace.UI.ActorCreator.FilterByType'}}</span>
                             <div class="item-types-quick-actions">
-                                <button type="button" class="quick-action-link select-all-types">{{localize 'SR5Marketplace.UI.ActorCreator.All'}}</button>
-                                <button type="button" class="quick-action-link clear-all-types">{{localize 'SR5Marketplace.UI.ActorCreator.None'}}</button>
+                                <button type="button" class="quick-action-link" data-action="selectAllTypes">{{localize 'SR5Marketplace.UI.ActorCreator.All'}}</button>
+                                <span>|</span>
+                                <button type="button" class="quick-action-link" data-action="clearAllTypes">{{localize 'SR5Marketplace.UI.ActorCreator.None'}}</button>
                             </div>
                         </div>
                         <div class="item-types-list">
                             {{#each itemTypes}}
                             <label class="type-checkbox-label">
                                 <input type="checkbox" class="checkbox-custom type-filter-checkbox" data-type="{{this.key}}" {{#if this.checked}}checked{{/if}} />
-                                {{this.label}}
+                                <span>{{this.label}}</span>
                             </label>
                             {{/each}}
                         </div>
                     </div>
 
-                    <!-- Right: Source, Rating & Search Filters -->
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Right Filter: Source & Max Rating -->
+                    <div class="flex flex-col gap-2.5">
                         <div class="form-group-custom">
-                            <label for="item-source-select">{{localize 'SR5Marketplace.UI.ActorCreator.Source'}}</label>
-                            <select id="item-source-select" class="form-select-custom item-source-select" style="padding: 4px 8px !important; font-size: 12px;">
+                            <label for="seeding-source-select">{{localize 'SR5Marketplace.UI.ActorCreator.Source'}}</label>
+                            <select id="seeding-source-select" name="source" class="form-select-custom source-select">
                                 <option value="both" {{#if (eq activeSource 'both')}}selected{{/if}}>{{localize 'SR5Marketplace.UI.ActorCreator.SourceBoth'}}</option>
                                 <option value="world" {{#if (eq activeSource 'world')}}selected{{/if}}>{{localize 'SR5Marketplace.UI.ActorCreator.SourceWorld'}}</option>
                                 <option value="compendium" {{#if (eq activeSource 'compendium')}}selected{{/if}}>{{localize 'SR5Marketplace.UI.ActorCreator.SourceCompendium'}}</option>
                             </select>
                         </div>
- 
                         <div class="form-group-custom">
-                            <label for="max-rating-input">{{localize 'SR5Marketplace.UI.ActorCreator.MaxRating'}}</label>
-                            <input type="number" id="max-rating-input" class="form-input-custom max-rating-input" value="{{maxRating}}" min="1" placeholder="{{localize 'SR5Marketplace.UI.ActorCreator.NoLimit'}}" style="padding: 4px 8px !important; font-size: 12px;" />
+                            <label for="seeding-max-rating">{{localize 'SR5Marketplace.UI.ActorCreator.MaxRating'}}</label>
+                            <select id="seeding-max-rating" name="maxRating" class="form-select-custom max-rating-select">
+                                <option value="">{{localize 'SR5Marketplace.UI.ActorCreator.NoLimit'}}</option>
+                                <option value="1" {{#if (eq maxRating 1)}}selected{{/if}}>1</option>
+                                <option value="2" {{#if (eq maxRating 2)}}selected{{/if}}>2</option>
+                                <option value="3" {{#if (eq maxRating 3)}}selected{{/if}}>3</option>
+                                <option value="4" {{#if (eq maxRating 4)}}selected{{/if}}>4</option>
+                                <option value="5" {{#if (eq maxRating 5)}}selected{{/if}}>5</option>
+                                <option value="6" {{#if (eq maxRating 6)}}selected{{/if}}>6</option>
+                            </select>
                         </div>
                     </div>
                 </div>
 
-                <!-- Two-Column Item Selection Layout -->
-                <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 15px; min-height: 250px; height: 350px;">
-                    
-                    <!-- Left Column: Available Items Checklist -->
-                    <div class="matching-items-section" style="height: 100%; display: flex; flex-direction: column; min-height: unset; max-height: unset; margin: 0;">
+                <!-- Two-Column Item Seeding & Selected Items Area -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 min-h-[300px] h-[340px]">
+                    <!-- Left Column: Available Matching Items Box -->
+                    <div class="matching-items-section h-full flex flex-col m-0">
                         <div class="matching-items-header-row">
                             <div class="matching-items-title">
                                 {{localize 'SR5Marketplace.UI.ActorCreator.AvailableItems'}}
-                                <span class="matching-items-count-badge">{{localize 'SR5Marketplace.UI.ActorCreator.Matches' count=totalCount}}</span>
+                                <span class="matching-items-count-badge">{{localize 'SR5Marketplace.UI.ActorCreator.Matches' count=matchingCount}}</span>
                             </div>
                             <div class="item-types-quick-actions">
-                                <button type="button" class="quick-action-link select-all-items">{{localize 'SR5Marketplace.UI.ActorCreator.SelectAll'}}</button>
-                                <button type="button" class="quick-action-link clear-all-items">{{localize 'SR5Marketplace.UI.ActorCreator.ClearAll'}}</button>
+                                <button type="button" class="quick-action-link" data-action="selectAllItems">{{localize 'SR5Marketplace.UI.ActorCreator.SelectAll'}}</button>
+                                <span>|</span>
+                                <button type="button" class="quick-action-link" data-action="clearAllItems">{{localize 'SR5Marketplace.UI.ActorCreator.ClearAll'}}</button>
                             </div>
                         </div>
 
-                        <!-- Search Box & Active Tags -->
-                        <div class="form-group-custom">
-                            <div id="filter-tags-container" style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 4px;">
-                                {{#each filterTags}}
-                                <div class="filter-tag" data-tag="{{this}}">
-                                    <span>{{this}}</span>
-                                    <span class="remove-tag" title="{{localize 'SR5Marketplace.UI.ActorCreator.RemoveFilter'}}" style="margin-left: 5px; cursor: pointer;">&times;</span>
-                                </div>
-                                {{/each}}
-                            </div>
-                            <input type="text" class="form-input-custom items-search-input" value="{{searchQuery}}" placeholder="{{localize 'SR5Marketplace.UI.ActorCreator.SearchPlaceholder'}}" style="padding: 4px 8px !important; font-size: 12px;" />
+                        <!-- Active Filter Tags -->
+                        {{#if filterTags.length}}
+                        <div class="filter-tags-container">
+                            {{#each filterTags}}
+                            <span class="filter-tag">
+                                {{this}}
+                                <i class="fas fa-times remove-tag" data-action="removeFilterTag" data-tag="{{this}}" title="{{localize 'SR5Marketplace.UI.ActorCreator.RemoveFilter'}}"></i>
+                            </span>
+                            {{/each}}
+                        </div>
+                        {{/if}}
+
+                        <!-- Search Bar -->
+                        <div class="items-search-bar-row">
+                            <input type="text" class="form-input-custom items-search-input py-1 text-xs" value="{{searchQuery}}" placeholder="{{localize 'SR5Marketplace.UI.ActorCreator.SearchPlaceholder'}}" />
                         </div>
 
-                        <div class="matching-items-scrollable" style="flex-grow: 1;">
-                            {{#if itemsLoading}}
+                        <div class="matching-items-scrollable flex-grow">
+                            {{#if isLoadingItems}}
                                 <div class="no-items-placeholder">
                                     <i class="fas fa-spinner fa-spin"></i>
                                     <span>{{localize 'SR5Marketplace.UI.ActorCreator.LoadingDatabase'}}</span>
@@ -225,15 +243,9 @@
                                         </div>
                                         <img class="matching-item-img" src="{{this.img}}" alt="{{this.name}}" />
                                         <div class="matching-item-name" title="{{this.name}}">{{this.name}}</div>
-                                        <div class="matching-item-type" title="{{this.type}}">{{this.type}}</div>
-                                        <div class="matching-item-rating">
-                                            {{#if this.rating}}
-                                            {{localize 'SR5Marketplace.UI.ActorCreator.RatingAbbrev'}} {{this.rating}}
-                                            {{else}}
-                                            -
-                                            {{/if}}
-                                        </div>
-                                        <div class="matching-item-source" title="{{this.sourceName}}">{{this.sourceName}}</div>
+                                        <div class="matching-item-type">{{this.typeName}}</div>
+                                        <div class="matching-item-rating">{{#if this.rating}}{{localize 'SR5Marketplace.UI.ActorCreator.RatingAbbrev'}} {{this.rating}}{{/if}}</div>
+                                        <div class="matching-item-source">{{this.sourceLabel}}</div>
                                     </div>
                                     {{/each}}
                                 {{else}}
@@ -246,25 +258,25 @@
                         </div>
                     </div>
 
-                    <!-- Right Column: Currently Selected Items List (Linked UUIDs) -->
-                    <div class="selected-items-section" style="height: 100%; display: flex; flex-direction: column; min-height: unset; max-height: unset; margin: 0;">
+                    <!-- Right Column: Currently Selected Items List -->
+                    <div class="selected-items-section h-full flex flex-col m-0">
                         <div class="matching-items-header-row">
                             <div class="matching-items-title">
                                 {{localize 'SR5Marketplace.UI.ActorCreator.SelectedItems'}}
-                                <span class="matching-items-count-badge" style="background-color: var(--color-green-button); color: var(--color-white);">{{localize 'SR5Marketplace.UI.ActorCreator.CountItems' count=selectedCount}}</span>
+                                <span class="matching-items-count-badge bg-[var(--color-green-button)] text-[var(--color-white)]">{{localize 'SR5Marketplace.UI.ActorCreator.CountItems' count=selectedCount}}</span>
                             </div>
                             <div class="item-types-quick-actions">
-                                <button type="button" class="quick-action-link clear-all-selections" style="color: var(--color-red-base);">{{localize 'SR5Marketplace.UI.ActorCreator.RemoveAll'}}</button>
+                                <button type="button" class="quick-action-link text-[var(--color-red-base)]" data-action="clearAllSelections">{{localize 'SR5Marketplace.UI.ActorCreator.RemoveAll'}}</button>
                             </div>
                         </div>
 
-                        <div class="selected-items-scrollable" style="flex-grow: 1;">
+                        <div class="selected-items-scrollable flex-grow">
                             {{#if selectedItems.length}}
                                 {{#each selectedItems}}
                                 <div class="selected-item-card" data-uuid="{{this.uuid}}">
-                                    <img class="matching-item-img" src="{{this.img}}" alt="{{this.name}}" style="width: 20px; height: 20px;" />
-                                    <div class="matching-item-name" title="{{this.name}}" style="font-size: 11px;">{{this.name}}</div>
-                                    <button type="button" class="selected-item-remove-btn" data-uuid="{{this.uuid}}" title="{{localize 'SR5Marketplace.UI.ActorCreator.RemoveItem'}}">
+                                    <img class="matching-item-img w-5 h-5" src="{{this.img}}" alt="{{this.name}}" />
+                                    <div class="matching-item-name text-[11px]" title="{{this.name}}">{{this.name}}</div>
+                                    <button type="button" class="selected-item-remove-btn" data-action="removeSelectedItem" data-uuid="{{this.uuid}}" title="{{localize 'SR5Marketplace.UI.ActorCreator.RemoveItem'}}">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </div>
@@ -285,9 +297,9 @@
 
         <!-- Character Specific Configuration -->
         {{#if isCharacterActor}}
-        <div class="character-builder-section" style="margin-top: 15px; border-top: 1px dashed var(--border-color-medium); padding-top: 15px;">
-            <h3 style="margin-bottom: 8px;">{{localize 'SR5Marketplace.UI.ActorCreator.QuickBuildTitle'}}</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
+        <div class="character-builder-section">
+            <h3>{{localize 'SR5Marketplace.UI.ActorCreator.QuickBuildTitle'}}</h3>
+            <div class="character-builder-grid">
                 <div class="form-group-custom">
                     <label for="character-archetype-select">{{localize 'SR5Marketplace.UI.ActorCreator.SelectArchetypeLabel'}}</label>
                     <select id="character-archetype-select" name="archetype" class="form-select-custom archetype-select">
@@ -309,9 +321,9 @@
                     </select>
                 </div>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
+            <div class="character-builder-grid">
                 <div class="form-group-custom">
-                    <label for="character-corp-select">Corporation Flavor</label>
+                    <label for="character-corp-select">{{localize 'SR5Marketplace.UI.ActorCreator.CorpFlavor'}}</label>
                     <select id="character-corp-select" name="corporation" class="form-select-custom corp-select">
                         <option value="">None / Standard</option>
                         <option value="ares" {{#if (eq selectedCorp 'ares')}}selected{{/if}}>Ares Macrotechnology</option>
@@ -327,7 +339,7 @@
                     </select>
                 </div>
                 <div class="form-group-custom">
-                    <label for="character-level-select">Professional Level</label>
+                    <label for="character-level-select">{{localize 'SR5Marketplace.UI.ActorCreator.ProfessionalLevel'}}</label>
                     <select id="character-level-select" name="professionalLevel" class="form-select-custom level-select">
                         <option value="1" {{#if (eq selectedLevel 1)}}selected{{/if}}>Level 1 (Regular Security)</option>
                         <option value="2" {{#if (eq selectedLevel 2)}}selected{{/if}}>Level 2 (Semi-Pro Security)</option>
@@ -338,7 +350,7 @@
                     </select>
                 </div>
             </div>
-            <p style="font-size: 11px; opacity: 0.7; margin-bottom: 15px;">
+            <p class="text-[11px] opacity-70 mb-3.5">
                 {{localize 'SR5Marketplace.UI.ActorCreator.QuickBuildNote'}}
             </p>
         </div>

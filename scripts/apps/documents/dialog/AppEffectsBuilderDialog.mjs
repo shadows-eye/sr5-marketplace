@@ -26,14 +26,21 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
         };
 
         if (context.isCreating) {
-            const mappableKeys = SystemDataMapperService.getMappableKeys();
-            const selectedKey = context.draftEffect.changes[0].key;
-            
-            const activeMode = context.draftEffect.system?.applyTo;
+            const draft = context.draftEffect;
+            const primaryTarget = draft.system?.targets?.[0] || { id: 'actor', applyTo: draft.targetType || 'actor', conditions: [] };
+            const primaryChange = draft.system?.changes?.[0] || draft.changes?.[0] || { key: '', type: 'add', value: '' };
+
+            const activeMode = primaryTarget.applyTo || draft.system?.applyTo || draft.targetType || 'actor';
+            context.activeApplyTo = activeMode;
             context.isActorMode = (activeMode === 'actor' || activeMode === 'targeted_actor');
-            context.isTestMode = (activeMode === 'test_all' || activeMode === 'test_item');
+            context.isTestMode = (activeMode === 'test_all' || activeMode === 'test_item' || activeMode === 'test_target');
             context.isModifierMode = (activeMode === 'modifier');
 
+            const selectedKey = primaryChange.key || '';
+            context.selectedKey = selectedKey;
+            context.selectedChange = primaryChange;
+
+            const mappableKeys = SystemDataMapperService.getMappableKeys();
             const characterActorKeys = mappableKeys.actors.character || {};
             context.actorKeyGroups = this.#_prepareGroupsForGrid(characterActorKeys, selectedKey);
             context.rollKeyGroups = this.#_prepareGroupsForGrid(mappableKeys.rolls, selectedKey);
@@ -44,6 +51,20 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
                 const itemKeyData = { [`${builderState.baseItem.name} Keys`]: mappableKeys.items[itemType] };
                 context.itemKeyGroups = this.#_prepareGroupsForGrid(itemKeyData, selectedKey);
             }
+
+            // Extract condition values from target.conditions or legacy flat fields
+            const getConditionValues = (type) => {
+                const cond = primaryTarget.conditions?.find(c => c.type === type);
+                if (cond && Array.isArray(cond.values)) return cond.values;
+                if (Array.isArray(draft.system?.[`selection_${type}`])) return draft.system[`selection_${type}`];
+                return [];
+            };
+
+            context.selected_tests = getConditionValues('tests');
+            context.selected_categories = getConditionValues('categories');
+            context.selected_skills = getConditionValues('skills');
+            context.selected_attributes = getConditionValues('attributes');
+            context.selected_limits = getConditionValues('limits');
 
             // Prepare data for the multi-select components.
             context.selection_test_options = this._getTestOptions();
@@ -77,13 +98,26 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
             }
             context.attributeKeysOptionsListString = Array.from(propertyKeys).sort((a, b) => a.localeCompare(b)).join(", ");
 
-            const changeTypes = CONST.ACTIVE_EFFECT_CHANGE_TYPES || CONST.ACTIVE_EFFECT_MODES;
-            context.changeModes = Object.entries(changeTypes).map(([key, value]) => ({
-                value: value,
-                label: `EFFECT.MODE_${key.toUpperCase()}`,
-                mode: key.toLowerCase()
-            }));
+            const modeMap = { 0: 'add', 1: 'multiply', 2: 'add', 3: 'downgrade', 4: 'upgrade', 5: 'override' };
+            const selectedType = primaryChange.type || (primaryChange.mode !== undefined ? (modeMap[primaryChange.mode] || 'add') : 'add');
+            context.selectedType = selectedType;
 
+            const standardChangeTypes = [
+                { type: 'add', label: 'EFFECT.MODE_ADD', mode: 'add' },
+                { type: 'subtract', label: 'EFFECT.MODE_SUBTRACT', mode: 'subtract' },
+                { type: 'multiply', label: 'EFFECT.MODE_MULTIPLY', mode: 'multiply' },
+                { type: 'override', label: 'EFFECT.MODE_OVERRIDE', mode: 'override' },
+                { type: 'upgrade', label: 'EFFECT.MODE_UPGRADE', mode: 'upgrade' },
+                { type: 'downgrade', label: 'EFFECT.MODE_DOWNGRADE', mode: 'downgrade' }
+            ];
+
+            context.changeModes = standardChangeTypes.map(m => ({
+                value: m.type,
+                type: m.type,
+                mode: m.mode,
+                label: m.label,
+                isActive: m.type === selectedType
+            }));
         }
         // Find and prepare the derivable keys specifically from the baseItem.
         if (context.isDerivedValueSelectorVisible && builderState.baseItem) {

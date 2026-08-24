@@ -234,6 +234,9 @@
                 "MetatypeDwarf": "Dwarf",
                 "MetatypeOrk": "Ork",
                 "MetatypeTroll": "Troll",
+                "IsNPC": "Non-Player Character (NPC)",
+                "CorpFlavor": "Corporation Flavor",
+                "ProfessionalLevel": "Professional Level",
                 "QuickBuildNote": "If an archetype is selected, the character will be quickly populated with archetypal attributes, skills, qualities, and starter equipment using the system importer."
             },
             "Rating": "Rating",
@@ -299,6 +302,10 @@
                 "OrderReview": "Order Review"
             },
             "Settings": {
+                "QuickBuildWhisperGM": {
+                    "name": "Quick Build: Whisper Summary to GM",
+                    "hint": "When a character is created using archetype quick build, whisper an overview of attributes and items to the GM."
+                },
                 "AvailabilityRule": {
                     "name": "Availability Rules",
                     "hint": "Selection options for the Rules you want to use, standard is RAW",

@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [14.003.1] - 2026-08-24
+
+### Added
+- **NPC Actor Creation Toggle**:
+  - Added a dedicated "Is NPC" (`isNpc`) checkbox under the Actor Type selector for character actors.
+  - Automatically defaults to `true` when any archetype quick-build option is selected, and `false` for blank actors, while supporting full manual toggling.
+  - Sets `system.is_npc: true|false` on the created actor across both blank character creation and archetype imports.
+- **GM Whisper Chat Setting for Quick Build**:
+  - Registered `quickBuildWhisperGM` world setting in module settings (default `false`) with English and German localizations.
+  - When enabled, character quick build sends whispered summary cards directly to GM users only.
+- **Shop Actor Sheet Factory / Workshop Settings**:
+  - Added factory toggle (`system.shop.isFactory`) and factory rating input (1-6) directly to the Shop Actor sheet management UI.
+- **Handlebars Partial Templates**:
+  - Extracted HTML string construction from JavaScript into dedicated Handlebars partial templates (`character-description.html` and `character-chat-card.html`).
+
+### Changed
+- **Active Effects Alignment (Shadowrun 5e System 0.37.0+)**:
+  - Aligned all active effects across the builder and marketplace applications with the latest system active effects architecture (multi-target routing, filters, and dynamic change values).
+- **ApplicationV2 Refactoring**:
+  - Fully migrated `SR5CreateActorApp` to modern Foundry `ApplicationV2` with declarative static actions and form event delegation.
+- **UI & Typography Polish**:
+  - Removed all forced `text-transform: uppercase` rules across the actor creator, preserving natural title and sentence casing.
+  - Refined `.checkbox-custom` to exact 14x14px dimensions matching Compendium Browser styling (crisp dark unchecked square, gold-filled checked square with checkmark).
+
+### Fixed
+- **Archetype Importer Skills Metadata**:
+  - Resolved `TypeError: Cannot read properties of undefined (reading 'trim')` by establishing comprehensive `SKILL_METADATA` map in `constants.mjs` ensuring attributes, English attribute names, and skill categories are always populated for character import.
+
+---
+
 ## [14.003.0] - 2026-07-30
 
 ### Added

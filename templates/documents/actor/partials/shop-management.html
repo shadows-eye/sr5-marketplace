@@ -108,6 +108,33 @@
                     </div>
                 </div>
 
+                {{!-- FACTORY / WORKSHOP SETTING --}}
+                <div class="flex flex-col gap-1 {{#if isEditMode}}p-2 border-2 border-dashed border-transparent bg-[var(--color-black-transparent-20)] transition-colors rounded{{/if}}">
+                    <label class="text-xs font-bold opacity-80 pb-1 mb-1">{{localize "SR5Marketplace.Factory.IsFactory"}}</label>
+                    <div class="flex items-center gap-3 min-h-[36px]">
+                        {{#if @root.isEditMode}}
+                            <label class="inline-flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="system.shop.isFactory" class="checkbox-custom" {{#if system.shop.isFactory}}checked{{/if}}/>
+                                <span class="text-xs font-semibold">{{localize "SR5Marketplace.Factory.Workshop"}}</span>
+                            </label>
+                            {{#if system.shop.isFactory}}
+                                <div class="flex items-center gap-1.5 ml-auto">
+                                    <span class="text-xs opacity-75 font-semibold">{{localize "SR5Marketplace.Factory.Rating"}}:</span>
+                                    <input type="number" name="system.shop.factoryRating" value="{{system.shop.factoryRating}}" class="w-16 bg-[var(--color-black-transparent-30)] text-[var(--color-yellow-base)] border-none rounded px-2 py-1 text-xs font-bold focus:ring-1 focus:ring-[var(--color-yellow-base)] outline-none" min="1" max="6"/>
+                                </div>
+                            {{/if}}
+                        {{else}}
+                            {{#if system.shop.isFactory}}
+                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-bold bg-[var(--color-yellow-dark)] text-[var(--color-black)]">
+                                    <i class="fa-solid fa-wrench"></i> {{localize "SR5Marketplace.Factory.Workshop"}} ({{localize "SR5Marketplace.Factory.Rating"}} {{system.shop.factoryRating}})
+                                </span>
+                            {{else}}
+                                <span class="text-xs opacity-60 italic">{{localize "TYPES.Actor.sr5-marketplace.shop"}}</span>
+                            {{/if}}
+                        {{/if}}
+                    </div>
+                </div>
+
                 {{!-- MATRIX HOST INTEGRATION --}}
                 <div class="flex flex-col gap-2 md:col-span-2 {{#if isEditMode}}drop-target p-2 border-2 border-dashed border-[var(--color-grey-medium)] hover:border-[var(--color-yellow-base)] bg-[var(--color-black-transparent-20)] transition-colors rounded{{/if}}" {{#if isEditMode}}data-drop-zone="host" data-drop-type="Item"{{/if}}>
                     <label class="text-xs font-bold opacity-80 pb-1 mb-1">{{localize "SR5Marketplace.Marketplace.Shop.MatrixHost"}}</label>

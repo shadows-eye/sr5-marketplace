@@ -1,11 +1,12 @@
 import { BUILDS, RANKS, SCHOOLS, SOCIETIES, ARCHETYPES, METATYPES, LABELS } from "./NPCTemplate.enc.mjs";
 import { MAPPING } from "./chummer-corp-mapping.enc.mjs";
+import { SKILL_METADATA } from "../lib/constants.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 /**
  * A custom actor creation application that replaces the default Foundry creation dialog.
- * Adapts to a shop creation form if the 'sr5-marketplace.shop' type is chosen,
+ * Adapts to a shop creation form if the 'sr5-marketplace.shop' or 'sr5-marketplace.workshop' type is chosen,
  * allowing GMs to dynamically populate the shop's inventory from Compendiums and World items.
  */
 export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2) {
@@ -40,6 +41,8 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
         this.shopMarkup = 0;
         this.shopRadius = 1;
         this.shopDescription = "";
+
+        this.isNpc = false;
 
         this.isFactory = false;
         this.factoryRating = 5;
@@ -86,6 +89,27 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
                 title: "SR5Marketplace.UI.CreateActor",
                 resizable: true,
                 minimizable: true
+            },
+            actions: {
+                selectActorImage: SR5CreateActorApp.#onSelectActorImage,
+                loadExistingShop: SR5CreateActorApp.#onLoadExistingShop,
+                clearExistingShop: SR5CreateActorApp.#onClearExistingShop,
+                toggleSection: SR5CreateActorApp.#onToggleSection,
+                selectAllTypes: SR5CreateActorApp.#onSelectAllTypes,
+                clearAllTypes: SR5CreateActorApp.#onClearAllTypes,
+                selectAllItems: SR5CreateActorApp.#onSelectAllItems,
+                clearAllItems: SR5CreateActorApp.#onClearAllItems,
+                toggleItemSelection: SR5CreateActorApp.#onToggleItemSelection,
+                removeSelectedItem: SR5CreateActorApp.#onRemoveSelectedItem,
+                clearAllSelections: SR5CreateActorApp.#onClearAllSelections,
+                removeFilterTag: SR5CreateActorApp.#onRemoveFilterTag,
+                create: SR5CreateActorApp.#onCreateAction,
+                cancel: SR5CreateActorApp.#onCancelAction
+            },
+            form: {
+                handler: SR5CreateActorApp.#onFormSubmit,
+                submitOnChange: false,
+                closeOnSubmit: false
             }
         }, { inplace: false });
     }
@@ -329,6 +353,8 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
         } else {
             const extraCtx = {
                 isShopActor: false,
+                isCharacterType: this.selectedActorType === "character",
+                isNpc: this.isNpc,
                 defaultName,
                 types,
                 folders
@@ -353,6 +379,7 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
         return context;
     }
 
+    /** @override */
     _onRender(context, options) {
         super._onRender(context, options);
 
@@ -360,372 +387,18 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
         const themeClass = SR5CreateActorApp._getThemeFromSetting();
         this.element.classList.add(themeClass);
 
-        // 0. Listen for Image Picker click
-        const imgPicker = this.element.querySelector(".actor-img-picker");
-        if (imgPicker) {
-            imgPicker.addEventListener("click", () => {
-                new FilePicker({
-                    type: "image",
-                    current: this.actorImg,
-                    callback: (path) => {
-                        this.actorImg = path;
-                        const img = imgPicker.querySelector("img");
-                        if (img) img.src = path;
-                    }
-                }).browse();
-            });
-        }
+        // Form change & input delegation
+        this.element.removeEventListener("change", this._onChangeForm);
+        this.element.addEventListener("change", this._onChangeForm);
 
-        // 1. Listen for Actor Type selection
-        const typeSelect = this.element.querySelector(".type-select");
-        if (typeSelect) {
-            typeSelect.addEventListener("change", (e) => {
-                this.selectedActorType = e.target.value;
-                this.selectedItemUuids.clear();
-                this.selectedEmployeeUuids.clear();
-                this.selectedHostUuid = null;
-                this.filterTags = [];
-                this.searchQuery = "";
-                this.actorName = ""; // Reset custom name to trigger the new type's default name
-                this.selectedArchetype = "";
-                this.selectedMetatype = "random";
-                this.selectedCorp = "";
-                this.selectedLevel = 3;
-                this.render(false);
-            });
-        }
+        this.element.removeEventListener("input", this._onInputForm);
+        this.element.addEventListener("input", this._onInputForm);
 
-        // 2. Listen for Folder selection
-        const folderSelect = this.element.querySelector(".folder-select");
-        if (folderSelect) {
-            folderSelect.addEventListener("change", (e) => {
-                this.folder = e.target.value || null;
-            });
-        }
-
-        // 3. Listen for Actor Name
-        const nameInput = this.element.querySelector(".name-input");
-        if (nameInput) {
-            nameInput.addEventListener("input", (e) => {
-                this.actorName = e.target.value;
-            });
-        }
-
-        // character quick build archetype listeners
-        if (this.selectedActorType === "character") {
-            const archetypeSelect = this.element.querySelector(".archetype-select");
-            if (archetypeSelect) {
-                archetypeSelect.addEventListener("change", (e) => {
-                    this.selectedArchetype = e.target.value;
-                });
-            }
-            const metatypeSelect = this.element.querySelector(".metatype-select");
-            if (metatypeSelect) {
-                metatypeSelect.addEventListener("change", (e) => {
-                    this.selectedMetatype = e.target.value;
-                });
-            }
-            const corpSelect = this.element.querySelector(".corp-select");
-            if (corpSelect) {
-                corpSelect.addEventListener("change", (e) => {
-                    this.selectedCorp = e.target.value;
-                });
-            }
-            const levelSelect = this.element.querySelector(".level-select");
-            if (levelSelect) {
-                levelSelect.addEventListener("change", (e) => {
-                    this.selectedLevel = Number(e.target.value);
-                });
-            }
-        }
-
-        const isShopOrWorkshop = this.selectedActorType === "sr5-marketplace.shop" || this.selectedActorType === "sr5-marketplace.workshop";
-
-        // 4. Shop Seeding controls
-        if (isShopOrWorkshop) {
-            const loadExistingBtn = this.element.querySelector('.load-existing-shop-btn');
-            if (loadExistingBtn) {
-                loadExistingBtn.addEventListener("click", () => this._onLoadExistingShop());
-            }
-
-            const clearExistingBtn = this.element.querySelector('.clear-existing-shop-btn');
-            if (clearExistingBtn) {
-                clearExistingBtn.addEventListener("click", () => {
-                    this.existingActorUuid = null;
-                    this.actorName = "";
-                    this.actorImg = "icons/svg/mystery-man.svg";
-                    this.shopMarkup = 0;
-                    this.shopRadius = 1;
-                    this.shopDescription = "";
-                    this.isFactory = false;
-                    this.factoryRating = 5;
-                    this.selectedEmployeeUuids.clear();
-                    this.selectedHostUuid = null;
-                    this.render();
-                });
-            }
-
-            const isFactoryCb = this.element.querySelector(".shop-is-factory-cb");
-            if (isFactoryCb) {
-                isFactoryCb.addEventListener("change", (e) => {
-                    this.isFactory = e.target.checked;
-                    const ratingContainer = this.element.querySelector(".factory-rating-container");
-                    if (ratingContainer) {
-                        ratingContainer.style.display = this.isFactory ? "block" : "none";
-                    }
-                });
-            }
-
-            const ratingInput = this.element.querySelector(".factory-rating-input");
-            if (ratingInput) {
-                ratingInput.addEventListener("input", (e) => {
-                    this.factoryRating = Number(e.target.value) || 5;
-                });
-            }
-
-            // Collapsible header toggling with state preservation
-            const collapsibleHeaders = this.element.querySelectorAll(".actor-creator-collapsible-header");
-            for (const header of collapsibleHeaders) {
-                header.addEventListener("click", () => {
-                    const section = header.closest(".actor-creator-collapsible-section");
-                    const sectionId = section?.dataset.section;
-                    if (section && sectionId) {
-                        const isCurrentlyCollapsed = section.classList.contains("collapsed");
-                        if (isCurrentlyCollapsed) {
-                            section.classList.remove("collapsed");
-                            this.expandedSections.add(sectionId);
-                        } else {
-                            section.classList.add("collapsed");
-                            this.expandedSections.delete(sectionId);
-                        }
-                    }
-                });
-            }
-
-            const radiusInput = this.element.querySelector(".shop-radius-input");
-            if (radiusInput) {
-                radiusInput.addEventListener("input", (e) => {
-                    this.shopRadius = Number(e.target.value) || 1;
-                });
-            }
-
-            const markupInput = this.element.querySelector(".shop-markup-input");
-            if (markupInput) {
-                markupInput.addEventListener("input", (e) => {
-                    this.shopMarkup = Number(e.target.value) || 0;
-                });
-            }
-
-            const descTextarea = this.element.querySelector(".shop-description-textarea");
-            if (descTextarea) {
-                descTextarea.addEventListener("input", (e) => {
-                    this.shopDescription = e.target.value;
-                });
-            }
-
-            // Host Dropdown Selection
-            const hostSelect = this.element.querySelector(".shop-host-select");
-            if (hostSelect) {
-                hostSelect.addEventListener("change", (e) => {
-                    this.selectedHostUuid = e.target.value || null;
-                });
-            }
-
-            // Employee Checkboxes Selection
-            const employeeCbs = this.element.querySelectorAll(".employee-checkbox");
-            for (const cb of employeeCbs) {
-                cb.addEventListener("change", (e) => {
-                    const uuid = e.target.dataset.uuid;
-                    if (e.target.checked) {
-                        this.selectedEmployeeUuids.add(uuid);
-                    } else {
-                        this.selectedEmployeeUuids.delete(uuid);
-                    }
-                });
-            }
-
-            // Seeding Filters
-            const sourceSelect = this.element.querySelector(".item-source-select");
-            if (sourceSelect) {
-                sourceSelect.addEventListener("change", (e) => {
-                    this.activeSource = e.target.value;
-                    this.render(false);
-                });
-            }
-
-            const maxRatingInput = this.element.querySelector(".max-rating-input");
-            if (maxRatingInput) {
-                maxRatingInput.addEventListener("change", (e) => {
-                    this.maxRating = e.target.value === "" ? "" : Number(e.target.value);
-                    this.render(false);
-                });
-            }
-
-            // Checkboxes for type filters
-            const typeFilterCbs = this.element.querySelectorAll(".type-filter-checkbox");
-            for (const cb of typeFilterCbs) {
-                cb.addEventListener("change", (e) => {
-                    const type = e.target.dataset.type;
-                    if (e.target.checked) {
-                        this.selectedItemTypes.add(type);
-                    } else {
-                        this.selectedItemTypes.delete(type);
-                    }
-                    this.render(false);
-                });
-            }
-
-            // Quick actions for types
-            const selectAllTypes = this.element.querySelector(".select-all-types");
-            if (selectAllTypes) {
-                selectAllTypes.addEventListener("click", () => {
-                    const allAvailableTypes = [
-                        "weapon", "armor", "equipment", "device",
-                        "cyberware", "bioware", "spell", "program",
-                        "modification", "adept_power", "complex_form"
-                    ];
-                    this.selectedItemTypes = new Set(allAvailableTypes);
-                    this.render(false);
-                });
-            }
-
-            const clearAllTypes = this.element.querySelector(".clear-all-types");
-            if (clearAllTypes) {
-                clearAllTypes.addEventListener("click", () => {
-                    this.selectedItemTypes.clear();
-                    this.render(false);
-                });
-            }
-
-            // Search filtering with ENTER tag support
-            const searchInput = this.element.querySelector(".items-search-input");
-            if (searchInput) {
-                searchInput.addEventListener("focus", () => this._searchFocused = true);
-                searchInput.addEventListener("blur", () => this._searchFocused = false);
-
-                searchInput.addEventListener("keydown", (e) => {
-                    if (e.key === "Enter") {
-                        e.preventDefault();
-                        const q = e.target.value.trim().toLowerCase();
-                        if (q && !this.filterTags.includes(q)) {
-                            this.filterTags.push(q);
-                            this.searchQuery = "";
-                            this.render(false);
-                        }
-                    }
-                });
-
-                searchInput.addEventListener("input", (e) => {
-                    this.searchQuery = e.target.value;
-                    const query = this.searchQuery.toLowerCase().trim();
-                    const cards = this.element.querySelectorAll(".matching-item-card");
-                    for (const card of cards) {
-                        const name = card.querySelector(".matching-item-name")?.textContent.toLowerCase() || "";
-                        const type = card.querySelector(".matching-item-type")?.textContent.toLowerCase() || "";
-                        if (name.includes(query) || type.includes(query)) {
-                            card.style.display = "";
-                        } else {
-                            card.style.display = "none";
-                        }
-                    }
-                });
-            }
-
-            // Tag removal click listener
-            const tagsContainer = this.element.querySelector("#filter-tags-container");
-            if (tagsContainer) {
-                tagsContainer.addEventListener("click", (e) => {
-                    const removeBtn = e.target.closest(".remove-tag");
-                    if (removeBtn) {
-                        const tagToRemove = removeBtn.closest(".filter-tag")?.dataset.tag;
-                        if (tagToRemove) {
-                            this.filterTags = this.filterTags.filter(t => t !== tagToRemove);
-                            this.render(false);
-                        }
-                    }
-                });
-            }
-
-            // Item Selection Checkboxes
-            const itemCbs = this.element.querySelectorAll(".item-checkbox");
-            for (const cb of itemCbs) {
-                cb.addEventListener("change", (e) => {
-                    const uuid = e.target.dataset.uuid;
-                    if (e.target.checked) {
-                        this.selectedItemUuids.add(uuid);
-                    } else {
-                        this.selectedItemUuids.delete(uuid);
-                    }
-                    this.render(false);
-                });
-            }
-
-            // Quick actions for items list
-            const selectAllItems = this.element.querySelector(".select-all-items");
-            if (selectAllItems) {
-                selectAllItems.addEventListener("click", () => {
-                    const visibleCards = this.element.querySelectorAll(".matching-item-card");
-                    for (const card of visibleCards) {
-                        if (card.style.display !== "none") {
-                            const uuid = card.dataset.uuid;
-                            this.selectedItemUuids.add(uuid);
-                        }
-                    }
-                    this.render(false);
-                });
-            }
-
-            const clearAllItems = this.element.querySelector(".clear-all-items");
-            if (clearAllItems) {
-                clearAllItems.addEventListener("click", () => {
-                    const visibleCards = this.element.querySelectorAll(".matching-item-card");
-                    for (const card of visibleCards) {
-                        if (card.style.display !== "none") {
-                            const uuid = card.dataset.uuid;
-                            this.selectedItemUuids.delete(uuid);
-                        }
-                    }
-                    this.render(false);
-                });
-            }
-
-            // Selected column: Remove individual item
-            const selectedContainer = this.element.querySelector(".selected-items-scrollable");
-            if (selectedContainer) {
-                selectedContainer.addEventListener("click", (e) => {
-                    const removeBtn = e.target.closest(".selected-item-remove-btn");
-                    if (removeBtn) {
-                        const uuid = removeBtn.dataset.uuid;
-                        this.selectedItemUuids.delete(uuid);
-                        this.render(false);
-                    }
-                });
-            }
-
-            // Selected column: Clear all selections
-            const clearAllSelections = this.element.querySelector(".clear-all-selections");
-            if (clearAllSelections) {
-                clearAllSelections.addEventListener("click", () => {
-                    this.selectedItemUuids.clear();
-                    this.render(false);
-                });
-            }
-        }
-
-        // Cancel button
-        const cancelBtn = this.element.querySelector('.cancel-btn-custom');
-        if (cancelBtn) {
-            cancelBtn.addEventListener("click", () => this.close());
-        }
-
-        // Create button
-        const createBtn = this.element.querySelector('.create-btn');
-        if (createBtn) {
-            createBtn.addEventListener("click", () => this._onCreate());
-        }
+        this.element.removeEventListener("keydown", this._onKeydownForm);
+        this.element.addEventListener("keydown", this._onKeydownForm);
 
         // Focus restoration for search box
-        if (this._searchFocused && this.selectedActorType === "sr5-marketplace.shop") {
+        if (this._searchFocused && (this.selectedActorType === "sr5-marketplace.shop" || this.selectedActorType === "sr5-marketplace.workshop")) {
             const input = this.element.querySelector(".items-search-input");
             if (input) {
                 input.focus();
@@ -737,14 +410,352 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
     }
 
     /**
-     * Triggers the actual Actor document creation and seeding.
+     * Handles change events on form elements.
+     * @param {Event} event
+     * @private
      */
+    _onChangeForm = (event) => {
+        const target = event.target;
+        if (!target) return;
+
+        // 1. Actor Type selection
+        if (target.classList.contains("type-select")) {
+            this.selectedActorType = target.value;
+            this.selectedItemUuids.clear();
+            this.selectedEmployeeUuids.clear();
+            this.selectedHostUuid = null;
+            this.filterTags = [];
+            this.searchQuery = "";
+            this.actorName = ""; // Reset custom name to trigger the new type's default name
+            this.selectedArchetype = "";
+            this.selectedMetatype = "random";
+            this.selectedCorp = "";
+            this.selectedLevel = 3;
+            this.isFactory = target.value === "sr5-marketplace.workshop";
+            this.render(false);
+            return;
+        }
+
+        // 2. Folder selection
+        if (target.classList.contains("folder-select")) {
+            this.folder = target.value || null;
+            return;
+        }
+
+        // 3. Character archetype / metatype / corp / level / is_npc
+        if (target.classList.contains("is-npc-cb") || target.name === "isNpc") {
+            this.isNpc = target.checked;
+            return;
+        }
+        if (target.classList.contains("archetype-select") || target.name === "archetype") {
+            this.selectedArchetype = target.value;
+            this.isNpc = Boolean(this.selectedArchetype);
+            const isNpcCb = this.element.querySelector('input[name="isNpc"], .is-npc-cb');
+            if (isNpcCb) isNpcCb.checked = this.isNpc;
+            return;
+        }
+        if (target.classList.contains("metatype-select")) {
+            this.selectedMetatype = target.value;
+            return;
+        }
+        if (target.classList.contains("corp-select")) {
+            this.selectedCorp = target.value;
+            return;
+        }
+        if (target.classList.contains("level-select")) {
+            this.selectedLevel = Number(target.value) || 3;
+            return;
+        }
+
+        // 4. Shop specific fields
+        if (target.classList.contains("shop-is-factory-cb")) {
+            this.isFactory = target.checked;
+            const container = this.element.querySelector(".factory-rating-container");
+            if (container) {
+                if (this.isFactory) container.classList.remove("hidden");
+                else container.classList.add("hidden");
+            }
+            return;
+        }
+
+        if (target.classList.contains("factory-rating-input")) {
+            this.factoryRating = Number(target.value) || 5;
+            return;
+        }
+
+        if (target.classList.contains("shop-markup-input")) {
+            this.shopMarkup = Number(target.value) || 0;
+            return;
+        }
+
+        if (target.classList.contains("shop-radius-input")) {
+            this.shopRadius = Number(target.value) || 1;
+            return;
+        }
+
+        if (target.classList.contains("shop-description-textarea")) {
+            this.shopDescription = target.value;
+            return;
+        }
+
+        if (target.classList.contains("shop-host-select")) {
+            this.selectedHostUuid = target.value || null;
+            return;
+        }
+
+        if (target.classList.contains("employee-checkbox")) {
+            const uuid = target.dataset.uuid;
+            if (uuid) {
+                if (target.checked) this.selectedEmployeeUuids.add(uuid);
+                else this.selectedEmployeeUuids.delete(uuid);
+            }
+            return;
+        }
+
+        // 5. Seeding filters
+        if (target.classList.contains("item-source-select")) {
+            this.activeSource = target.value;
+            this.render(false);
+            return;
+        }
+
+        if (target.classList.contains("max-rating-input")) {
+            this.maxRating = target.value === "" ? "" : Number(target.value);
+            this.render(false);
+            return;
+        }
+
+        if (target.classList.contains("type-filter-checkbox")) {
+            const type = target.dataset.type;
+            if (type) {
+                if (target.checked) this.selectedItemTypes.add(type);
+                else this.selectedItemTypes.delete(type);
+                this.render(false);
+            }
+            return;
+        }
+
+        if (target.classList.contains("item-checkbox")) {
+            const uuid = target.dataset.uuid;
+            if (uuid) {
+                if (target.checked) this.selectedItemUuids.add(uuid);
+                else this.selectedItemUuids.delete(uuid);
+                this.render(false);
+            }
+            return;
+        }
+    };
+
+    /**
+     * Handles live input events on form elements.
+     * @param {Event} event
+     * @private
+     */
+    _onInputForm = (event) => {
+        const target = event.target;
+        if (!target) return;
+
+        if (target.classList.contains("name-input")) {
+            this.actorName = target.value;
+            return;
+        }
+
+        if (target.classList.contains("shop-markup-input")) {
+            this.shopMarkup = Number(target.value) || 0;
+            return;
+        }
+
+        if (target.classList.contains("shop-radius-input")) {
+            this.shopRadius = Number(target.value) || 1;
+            return;
+        }
+
+        if (target.classList.contains("shop-description-textarea")) {
+            this.shopDescription = target.value;
+            return;
+        }
+
+        if (target.classList.contains("factory-rating-input")) {
+            this.factoryRating = Number(target.value) || 5;
+            return;
+        }
+
+        if (target.classList.contains("items-search-input")) {
+            this.searchQuery = target.value;
+            const query = this.searchQuery.toLowerCase().trim();
+            const cards = this.element.querySelectorAll(".matching-item-card");
+            for (const card of cards) {
+                const name = card.querySelector(".matching-item-name")?.textContent.toLowerCase() || "";
+                const type = card.querySelector(".matching-item-type")?.textContent.toLowerCase() || "";
+                if (name.includes(query) || type.includes(query)) {
+                    card.style.display = "";
+                } else {
+                    card.style.display = "none";
+                }
+            }
+        }
+    };
+
+    /**
+     * Handles keydown events on the form (e.g. Enter on search input).
+     * @param {KeyboardEvent} event
+     * @private
+     */
+    _onKeydownForm = (event) => {
+        const target = event.target;
+        if (!target) return;
+
+        if (target.classList.contains("items-search-input")) {
+            this._searchFocused = true;
+            if (event.key === "Enter") {
+                event.preventDefault();
+                const q = target.value.trim().toLowerCase();
+                if (q && !this.filterTags.includes(q)) {
+                    this.filterTags.push(q);
+                    this.searchQuery = "";
+                    this.render(false);
+                }
+            }
+        }
+    };
+
+    // ========================================================
+    // ApplicationV2 Static Action Handlers
+    // ========================================================
+
+    static #onSelectActorImage(event, target) {
+        new FilePicker({
+            type: "image",
+            current: this.actorImg,
+            callback: (path) => {
+                this.actorImg = path;
+                this.render(false);
+            }
+        }).browse();
+    }
+
+    static async #onLoadExistingShop(event, target) {
+        await this._onLoadExistingShop();
+    }
+
+    static #onClearExistingShop(event, target) {
+        this.existingActorUuid = null;
+        this.actorName = "";
+        this.actorImg = "icons/svg/mystery-man.svg";
+        this.shopMarkup = 0;
+        this.shopRadius = 1;
+        this.shopDescription = "";
+        this.isFactory = false;
+        this.factoryRating = 5;
+        this.selectedEmployeeUuids.clear();
+        this.selectedHostUuid = null;
+        this.render(false);
+    }
+
+    static #onToggleSection(event, target) {
+        const section = target.closest(".actor-creator-collapsible-section");
+        const sectionId = section?.dataset.section || target.dataset.section;
+        if (section && sectionId) {
+            if (this.expandedSections.has(sectionId)) {
+                this.expandedSections.delete(sectionId);
+                section.classList.add("collapsed");
+            } else {
+                this.expandedSections.add(sectionId);
+                section.classList.remove("collapsed");
+            }
+        }
+    }
+
+    static #onSelectAllTypes(event, target) {
+        const allAvailableTypes = [
+            "weapon", "armor", "equipment", "device",
+            "cyberware", "bioware", "spell", "program",
+            "modification", "adept_power", "complex_form"
+        ];
+        this.selectedItemTypes = new Set(allAvailableTypes);
+        this.render(false);
+    }
+
+    static #onClearAllTypes(event, target) {
+        this.selectedItemTypes.clear();
+        this.render(false);
+    }
+
+    static #onSelectAllItems(event, target) {
+        const visibleCards = this.element.querySelectorAll(".matching-item-card");
+        for (const card of visibleCards) {
+            if (card.style.display !== "none") {
+                const uuid = card.dataset.uuid;
+                if (uuid) this.selectedItemUuids.add(uuid);
+            }
+        }
+        this.render(false);
+    }
+
+    static #onClearAllItems(event, target) {
+        const visibleCards = this.element.querySelectorAll(".matching-item-card");
+        for (const card of visibleCards) {
+            if (card.style.display !== "none") {
+                const uuid = card.dataset.uuid;
+                if (uuid) this.selectedItemUuids.delete(uuid);
+            }
+        }
+        this.render(false);
+    }
+
+    static #onToggleItemSelection(event, target) {
+        // Ignore if clicking the actual checkbox inside the card (the change event handles that)
+        if (event.target.tagName === "INPUT") return;
+        const uuid = target.dataset.uuid || target.closest("[data-uuid]")?.dataset.uuid;
+        if (!uuid) return;
+        if (this.selectedItemUuids.has(uuid)) {
+            this.selectedItemUuids.delete(uuid);
+        } else {
+            this.selectedItemUuids.add(uuid);
+        }
+        this.render(false);
+    }
+
+    static #onRemoveSelectedItem(event, target) {
+        const uuid = target.dataset.uuid || target.closest("[data-uuid]")?.dataset.uuid;
+        if (uuid) {
+            this.selectedItemUuids.delete(uuid);
+            this.render(false);
+        }
+    }
+
+    static #onClearAllSelections(event, target) {
+        this.selectedItemUuids.clear();
+        this.render(false);
+    }
+
+    static #onRemoveFilterTag(event, target) {
+        const tag = target.dataset.tag || target.closest("[data-tag]")?.dataset.tag;
+        if (tag) {
+            this.filterTags = this.filterTags.filter(t => t !== tag);
+            this.render(false);
+        }
+    }
+
+    static async #onCreateAction(event, target) {
+        await this._onCreate();
+    }
+
+    static #onCancelAction(event, target) {
+        this.close();
+    }
+
+    static async #onFormSubmit(event, form, formData) {
+        event.preventDefault();
+        await this._onCreate();
+    }
+
     /**
      * Triggers the actual Actor document creation and seeding.
      */
     async _onCreate() {
         const nameInput = this.element.querySelector(".name-input");
-        const name = nameInput?.value?.trim() || "Unknown";
+        const name = this.actorName?.trim() || nameInput?.value?.trim() || "Unknown";
 
         // Check if character archetype is chosen
         if (this.selectedActorType === "character" && this.selectedArchetype && SR5CreateActorApp.isImporterAvailable()) {
@@ -795,6 +806,10 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
                 description: {
                     value: this.shopDescription
                 }
+            };
+        } else if (actualActorType === "character") {
+            createData.system = {
+                is_npc: Boolean(this.isNpc)
             };
         }
 
@@ -1096,79 +1111,24 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
 
         const displayCorp = this.selectedCorp ? this.selectedCorp.toUpperCase() : (lang === "de" ? "KEINE/STANDARD" : "NONE/STANDARD");
 
-        let magicRowHtml = "";
-        if (build.magicType === "magician" || build.magicType === "aspected") {
-            magicRowHtml = `
-        <tr>
-            <td>
-                <p><strong>${labelSchool}</strong></p>
-            </td>
-            <td>
-                <p>${localizedSchool}</p>
-            </td>
-            <td>
-                <p><strong>${labelSociety}</strong></p>
-            </td>
-            <td>
-                <p>${localizedSociety || "-"}</p>
-            </td>
-        </tr>`;
-        }
-
-        const descriptionHtml = `
-<table>
-    <tbody>
-        <tr>
-            <th colspan="4">
-                <h1>${tableHeader}</h1>
-            </th>
-        </tr>
-        <tr>
-            <td>
-                <p>${labelArchetype}</p>
-            </td>
-            <td>
-                <p>${archetypeLabel}</p>
-            </td>
-            <td>
-                <p>${labelMetatype}</p>
-            </td>
-            <td>
-                <p>${metaLabel}</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <p>${labelCorp}</p>
-            </td>
-            <td>
-                <p>${displayCorp}</p>
-            </td>
-            <td>
-                <p>${labelRank}</p>
-            </td>
-            <td>
-                <p>${localizedRank}</p>
-            </td>
-        </tr>${magicRowHtml}
-        <tr>
-            <td>
-                <p><strong>${labelLevel}</strong></p>
-            </td>
-            <td>
-                <p>${level}</p>
-            </td>
-            <td>
-                <p></p>
-            </td>
-            <td>
-                <p></p>
-            </td>
-        </tr>
-    </tbody>
-</table>
-<p><br></p>
-`;
+        const descriptionHtml = await renderTemplate("modules/sr5-marketplace/templates/apps/createActor/partials/character-description.html", {
+            tableHeader,
+            labelArchetype,
+            archetypeLabel,
+            labelMetatype,
+            metaLabel,
+            labelCorp,
+            displayCorp,
+            labelRank,
+            localizedRank,
+            labelLevel,
+            level,
+            isMagic: build.magicType === "magician" || build.magicType === "aspected",
+            labelSchool,
+            localizedSchool,
+            labelSociety,
+            localizedSociety
+        });
 
         const chummerCharacter = {
             alias: finalName,
@@ -1190,169 +1150,157 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
                 null,
                 {
                     attribute: [
-                        { name_english: "bod", name: "bod", base: String(scaleAttr(build.attrs.body)), total: String(scaleAttr(build.attrs.body)) },
-                        { name_english: "agi", name: "agi", base: String(scaleAttr(build.attrs.agility)), total: String(scaleAttr(build.attrs.agility)) },
-                        { name_english: "rea", name: "rea", base: String(scaleAttr(build.attrs.reaction)), total: String(scaleAttr(build.attrs.reaction)) },
-                        { name_english: "str", name: "str", base: String(scaleAttr(build.attrs.strength)), total: String(scaleAttr(build.attrs.strength)) },
-                        { name_english: "wil", name: "wil", base: String(scaleAttr(build.attrs.willpower)), total: String(scaleAttr(build.attrs.willpower)) },
-                        { name_english: "log", name: "log", base: String(scaleAttr(build.attrs.logic)), total: String(scaleAttr(build.attrs.logic)) },
-                        { name_english: "int", name: "int", base: String(scaleAttr(build.attrs.intuition)), total: String(scaleAttr(build.attrs.intuition)) },
-                        { name_english: "cha", name: "cha", base: String(scaleAttr(build.attrs.charisma)), total: String(scaleAttr(build.attrs.charisma)) },
-                        { name_english: "edg", name: "edg", base: String(scaleAttr(build.attrs.edge)), total: String(scaleAttr(build.attrs.edge)) },
-                        { name_english: "mag", name: "mag", base: String(scaleAttr(build.attrs.magic)), total: String(scaleAttr(build.attrs.magic)) },
-                        { name_english: "res", name: "res", base: String(scaleAttr(build.attrs.resonance)), total: String(scaleAttr(build.attrs.resonance)) }
+                        { name_english: "BOD", name: "BOD", base: String(scaleAttr(build.attrs.body)), total: String(scaleAttr(build.attrs.body)) },
+                        { name_english: "AGI", name: "AGI", base: String(scaleAttr(build.attrs.agility)), total: String(scaleAttr(build.attrs.agility)) },
+                        { name_english: "REA", name: "REA", base: String(scaleAttr(build.attrs.reaction)), total: String(scaleAttr(build.attrs.reaction)) },
+                        { name_english: "STR", name: "STR", base: String(scaleAttr(build.attrs.strength)), total: String(scaleAttr(build.attrs.strength)) },
+                        { name_english: "WIL", name: "WIL", base: String(scaleAttr(build.attrs.willpower)), total: String(scaleAttr(build.attrs.willpower)) },
+                        { name_english: "LOG", name: "LOG", base: String(scaleAttr(build.attrs.logic)), total: String(scaleAttr(build.attrs.logic)) },
+                        { name_english: "INT", name: "INT", base: String(scaleAttr(build.attrs.intuition)), total: String(scaleAttr(build.attrs.intuition)) },
+                        { name_english: "CHA", name: "CHA", base: String(scaleAttr(build.attrs.charisma)), total: String(scaleAttr(build.attrs.charisma)) },
+                        { name_english: "EDG", name: "EDG", base: String(scaleAttr(build.attrs.edge)), total: String(scaleAttr(build.attrs.edge)) },
+                        { name_english: "MAG", name: "MAG", base: String(scaleAttr(build.attrs.magic)), total: String(scaleAttr(build.attrs.magic)) },
+                        { name_english: "RES", name: "RES", base: String(scaleAttr(build.attrs.resonance)), total: String(scaleAttr(build.attrs.resonance)) },
+                        { name_english: "ESS", name: "ESS", base: "6", total: "6" }
                     ]
                 }
             ],
-            initbonus: "0",
-            initdice: "1",
-            astralinitdice: "2",
-            matrixarinitdice: "3",
             skills: {
-                skill: (build.skills || []).map(([id, label, rating, spec]) => {
-                    const skillData = {
-                        name: label,
-                        name_english: label,
-                        rating: String(scaleSkill(rating)),
-                        attribute: id === "unarmed_combat" ? "agi" : (id === "hacking" || id === "electronic_warfare" || id === "hardware" || id === "software" || id === "cybercombat" ? "log" : (id === "spellcasting" || id === "counterspelling" || id === "summoning" || id === "binding" || id === "banishing" || id === "compiling" || id === "registering" || id === "decompiling" ? "mag" : "agi")),
-                        default: "True",
-                        islanguage: "False",
-                        knowledge: "False"
+                skill: (build.skills || []).map(entry => {
+                    let name, baseRating, spec;
+                    let key = "";
+                    if (Array.isArray(entry)) {
+                        key = String(entry[0] || "");
+                        name = entry[1] || entry[0];
+                        baseRating = entry[2];
+                        spec = entry[3] || "";
+                    } else if (typeof entry === "object") {
+                        key = String(entry.key || entry.name || "");
+                        name = entry.name;
+                        baseRating = entry.rating;
+                        spec = entry.spec || "";
+                    } else {
+                        key = String(entry);
+                        name = String(entry);
+                        baseRating = 1;
+                        spec = "";
+                    }
+
+                    const normalizedKey = key.toLowerCase().replace(/[\s\-]+/g, "_");
+                    const meta = SKILL_METADATA[normalizedKey] || { name: name, attr: "AGI", category: "Technical Active" };
+                    const attr = meta.attr || "AGI";
+                    const category = meta.category || "Combat Active";
+
+                    const skillObj = {
+                        name: name,
+                        name_english: name,
+                        rating: String(scaleSkill(baseRating)),
+                        ratingmax: "12",
+                        isgroup: "False",
+                        grouped: "False",
+                        attribute: attr,
+                        attribute_english: attr,
+                        skillcategory: category,
+                        skillcategory_english: category,
+                        base: String(scaleSkill(baseRating)),
+                        total: String(scaleSkill(baseRating))
                     };
                     if (spec) {
-                        skillData.skillspecializations = {
-                            skillspecialization: [
-                                { name: spec }
-                            ]
-                        };
+                        skillObj.spec = spec;
+                        skillObj.specialization = spec;
                     }
-                    return skillData;
+                    return skillObj;
                 })
             },
             qualities: {
-                quality: selectedQualities.map(([qname, qtype, karma, suid]) => ({
-                    name: qname,
-                    name_english: qname,
-                    qualitytype_english: qtype,
-                    extra: "0",
-                    bp: String(karma),
-                    suid: suid
-                }))
+                quality: selectedQualities.map(q => {
+                    let name, qType;
+                    if (Array.isArray(q)) {
+                        name = q[0];
+                        qType = q[1] === "negative" ? "Negative" : "Positive";
+                    } else if (typeof q === "object") {
+                        name = q.name;
+                        qType = q.qualitytype || (q.type === "negative" ? "Negative" : "Positive");
+                    } else {
+                        name = String(q);
+                        qType = "Positive";
+                    }
+                    return {
+                        name: name,
+                        qualitytype: qType
+                    };
+                })
             },
-            weapons: {
-                weapon: []
+            spells: {
+                spell: (build.spells || []).map(spellKey => {
+                    const resolved = getMappingItemByKey(spellKey);
+                    return resolved?.chummerData ? foundry.utils.deepClone(resolved.chummerData) : {
+                        name: resolved?.name || spellKey,
+                        category: "Combat",
+                        type: "Physical",
+                        range: "LOS",
+                        damage: "P",
+                        duration: "Instant",
+                        dv: "F-3"
+                    };
+                })
             },
-            armors: {
-                armor: []
+            powers: {
+                power: (build.powers || []).map(powerEntry => {
+                    let name, rating, points;
+                    if (Array.isArray(powerEntry)) {
+                        name = powerEntry[0];
+                        rating = String(powerEntry[1] ?? 1);
+                        points = String(powerEntry[2] ?? 0.5);
+                    } else if (typeof powerEntry === "object") {
+                        name = powerEntry.name;
+                        rating = String(powerEntry.rating ?? 1);
+                        points = String(powerEntry.points ?? 0.5);
+                    } else {
+                        const resolved = getMappingItemByKey(powerEntry);
+                        name = resolved?.name || powerEntry;
+                        rating = "1";
+                        points = "0.5";
+                    }
+                    return {
+                        name: name,
+                        rating: rating,
+                        points: points
+                    };
+                })
             },
             cyberwares: {
                 cyberware: []
             },
-            powers: {
-                power: []
+            biowares: {
+                bioware: []
             },
-            spells: {
-                spell: []
-            },
-            gears: {
-                gear: []
-            }
+            armors: { armor: [] },
+            weapons: { weapon: [] },
+            gears: { gear: [] }
         };
 
-        if (build.spells) {
-            const resolvedSpellNames = new Set();
-            for (const key of build.spells) {
-                let itemChoices = MAPPING.items.filter(item => {
-                    if (!item.mappingKeys.includes(key)) return false;
-                    if (item.type !== "spell") return false;
-                    if (item.schools && !item.schools.includes(paradigm)) return false;
-                    if (resolvedSpellNames.has(item.chummerData.name)) return false;
-                    if (this.selectedCorp) return item.corporations.includes(this.selectedCorp);
-                    return true;
-                });
-                if (itemChoices.length === 0) {
-                    itemChoices = MAPPING.items.filter(item => {
-                        if (!item.mappingKeys.includes(key)) return false;
-                        if (item.type !== "spell") return false;
-                        if (item.schools && !item.schools.includes(paradigm)) return false;
-                        if (resolvedSpellNames.has(item.chummerData.name)) return false;
-                        return true;
-                    });
-                }
-                if (itemChoices.length === 0) {
-                    itemChoices = MAPPING.items.filter(item => {
-                        if (!item.mappingKeys.includes(key)) return false;
-                        if (item.type !== "spell") return false;
-                        if (resolvedSpellNames.has(item.chummerData.name)) return false;
-                        return true;
-                    });
-                }
-                const chosenSpell = itemChoices.length > 0 ? pick(itemChoices) : null;
-                if (chosenSpell) {
-                    chummerCharacter.spells.spell.push(chosenSpell.chummerData);
-                    resolvedSpellNames.add(chosenSpell.chummerData.name);
-                }
-            }
-        }
+        // Populate resolved items from mappings (checking equipment, cyber, and items lists)
+        const itemKeys = [...(build.equipment || []), ...(build.cyber || []), ...(build.items || [])];
+        for (const itemKey of itemKeys) {
+            const item = getMappingItemByKey(itemKey);
+            if (!item) continue;
 
-        if (build.powers) {
-            chummerCharacter.powers.power = build.powers.map(([pname, rating, totalpoints, suid, chummerName]) => ({
-                name: chummerName,
-                name_english: chummerName,
-                fullname: pname,
-                fullname_english: pname,
-                rating: String(rating),
-                totalpoints: String(totalpoints),
-                suid: suid
-            }));
-        }
+            const chData = item.chummerData ? foundry.utils.deepClone(item.chummerData) : {
+                name: item.name,
+                qty: "1"
+            };
 
-        // Cyberware & Bioware selection/scaling
-        const grade = level <= 2 ? "standard" : (level <= 4 ? "alpha" : (level === 5 ? "beta" : "delta"));
-        const gradeMults = {
-            standard: { ess: 1.0, cost: 1.0 },
-            alpha: { ess: 0.8, cost: 1.2 },
-            beta: { ess: 0.7, cost: 1.5 },
-            delta: { ess: 0.5, cost: 2.5 }
-        };
-        const mults = gradeMults[grade] || { ess: 1.0, cost: 1.0 };
-
-        if (build.cyber) {
-            for (const key of build.cyber) {
-                const item = getMappingItemByKey(key);
-                if (!item) continue;
-                
-                const rawEss = Number(item.chummerData.ess) || 0;
-                const rawCost = Number(item.chummerData.cost) || 0;
-                
-                chummerCharacter.cyberwares.cyberware.push({
-                    name: item.chummerData.name,
-                    name_english: item.chummerData.name_english,
-                    ess: String(rawEss * mults.ess),
-                    cost: String(rawCost * mults.cost),
-                    rating: item.chummerData.rating || "1",
-                    grade: grade,
-                    improvementsource: item.chummerData.improvementsource || "Cyberware",
-                    suid: item.chummerData.suid
-                });
-            }
-        }
-
-        // Equipment / Gear selection
-        if (build.equipment) {
-            for (const key of build.equipment) {
-                const item = getMappingItemByKey(key);
-                if (!item) continue;
-                
-                const chData = { ...item.chummerData };
-                
-                if (item.type === "armor") {
-                    chummerCharacter.armors.armor.push(chData);
-                } else if (item.type === "weapon") {
-                    chummerCharacter.weapons.weapon.push(chData);
-                } else if (item.type === "commlink" || item.type === "deck" || item.type === "gear") {
-                    chummerCharacter.gears.gear.push(chData);
-                }
+            if (item.type === "armor") {
+                chummerCharacter.armors.armor.push(chData);
+            } else if (item.type === "weapon") {
+                chummerCharacter.weapons.weapon.push(chData);
+            } else if (item.type === "commlink" || item.type === "deck" || item.type === "gear") {
+                chummerCharacter.gears.gear.push(chData);
+            } else if (item.type === "cyberware") {
+                chummerCharacter.cyberwares.cyberware.push(chData);
+            } else if (item.type === "bioware") {
+                chummerCharacter.biowares.bioware.push(chData);
             }
         }
 
@@ -1384,6 +1332,7 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
         try {
             const [importedActor] = await game.shadowrun5e.CharacterImporter.import(chummerCharacter, importOptions);
             actor = importedActor;
+            await actor.update({ "system.is_npc": Boolean(this.isNpc) });
         } finally {
             if (itemPacks.length > 0) {
                 await game.settings.set("shadowrun5e", "ImporterCompendiumOrder", originalOrder);
@@ -1394,26 +1343,37 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
 
         const attrRows = Object.entries(build.attrs)
             .filter(([k]) => ["body", "agility", "reaction", "strength", "willpower", "logic", "intuition", "charisma", "edge", "magic", "resonance"].includes(k))
-            .map(([k, v]) => `<tr><td>${k[0].toUpperCase() + k.slice(1)}</td><td>${v}</td></tr>`).join("");
+            .map(([k, v]) => ({
+                label: k[0].toUpperCase() + k.slice(1),
+                value: v
+            }));
 
-        const itemRows = actor.items.map(i => `<tr><td>${i.name}</td><td>${game.i18n.localize("TYPES.Item." + i.type) || i.type}</td></tr>`).join("");
+        const itemRows = actor.items.map(i => ({
+            name: i.name,
+            type: game.i18n.localize("TYPES.Item." + i.type) || i.type
+        }));
 
-        await ChatMessage.create({
-            speaker: ChatMessage.getSpeaker({ actor }),
-            content: `
-        <div style="background:#0b0a13;color:#efe6d8;border:1px solid #5d142b;border-radius:4px;padding:8px;font-family:Signika, sans-serif;">
-          <div style="color:#f3d58a;font-size:14px;font-weight:bold;border-bottom:1px solid #5d142b;margin-bottom:6px;padding-bottom:4px;">Random SR5 Character Created</div>
-          <p><strong>Actor:</strong> ${actor.name}</p>
-          <p><strong>Archetype:</strong> ${archetypeLabel}</p>
-          <p><strong>Metatype:</strong> ${metaLabel}</p>
-          <p><strong>Starting Nuyen:</strong> ${Number(build.nuyen).toLocaleString()}¥</p>
-          <h3 style="color:#f3d58a;font-size:11px;">Attributes</h3>
-          <table style="width:100%;border-collapse:collapse;"><tr><th>Attribute</th><th>Rating</th></tr>${attrRows}</table>
-          <h3 style="color:#f3d58a;font-size:11px;">Created Items</h3>
-          <table style="width:100%;border-collapse:collapse;"><tr><th>Name</th><th>Type</th></tr>${itemRows}</table>
-          <p><em>Review the sheet before play. This is a generated template, not a rules-audited final legal character.</em></p>
-        </div>`
-        });
+        const whisperToGM = game.settings.get("sr5-marketplace", "quickBuildWhisperGM");
+        if (whisperToGM) {
+            const chatCardHtml = await renderTemplate("modules/sr5-marketplace/templates/apps/createActor/partials/character-chat-card.html", {
+                lang,
+                actor,
+                archetypeLabel,
+                metaLabel,
+                nuyen: Number(build.nuyen).toLocaleString(),
+                attrs: attrRows,
+                items: itemRows,
+                labelArchetype,
+                labelMetatype
+            });
+
+            const gmUsers = game.users.filter(u => u.isGM).map(u => u.id);
+            await ChatMessage.create({
+                speaker: ChatMessage.getSpeaker({ actor }),
+                content: chatCardHtml,
+                whisper: gmUsers.length > 0 ? gmUsers : [game.user.id]
+            });
+        }
 
         return actor;
     }
@@ -1436,9 +1396,9 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
 
         const optionsHtml = shops.map(s => `<option value="${s.uuid}">${s.name}</option>`).join("");
         const content = `
-            <div class="form-group" style="padding: 10px; display: flex; flex-direction: column; gap: 8px;">
-                <label style="font-weight: bold;">Select Shop to Upgrade:</label>
-                <select name="selectedShopUuid" class="form-select-custom" style="padding: 6px;">
+            <div class="form-group-custom p-2 flex flex-col gap-2">
+                <label class="font-bold">Select Shop to Upgrade:</label>
+                <select name="selectedShopUuid" class="form-select-custom p-1.5">
                     ${optionsHtml}
                 </select>
             </div>

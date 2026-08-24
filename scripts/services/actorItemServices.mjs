@@ -94,33 +94,43 @@ export class ActorItemServices extends ItemDataServices {
                 }
                 // Handle the effects array safely
                 enrichedItem.effects = (baseItem.effects || []).map((baseEffect, index) => {
-                    const effect = { ...baseEffect }; // Deep copy the effect
-    
+                    const effect = foundry.utils.deepClone(baseEffect);
+
                     // If the flag item has an effect that matches, enrich it
                     if (flagItem.effects && flagItem.effects[index]) {
                         const flagEffect = flagItem.effects[index];
-    
-                        // Enrich each part of the effect
-                        effect.origin = baseEffect.origin;
-                        effect.duration.startTime = baseEffect.duration?.startTime || null;
-                        effect.duration.endTime = baseEffect.duration?.endTime || null;
-                        effect.disabled = baseEffect.disabled || false;
-                        effect.name = baseEffect.name || "";
-                        
-                        // Ensure `changes` array is handled properly
-                        effect.changes = (baseEffect.changes || []).map(change => ({
-                            key: change.key || "",
-                            mode: change.mode || 0,
-                            value: change.value || flagItem.selectedRating || baseItem.system.technology.rating || 0,
-                            priority: change.priority || null
-                        }));
-    
-                        effect.transfer = baseEffect.transfer || false;
-                        effect.img = baseEffect.img || "";
-                        effect.type = baseEffect.type || "";
-                        effect.sort = baseEffect.sort || 0;
+
+                        effect.origin = flagEffect.origin || baseEffect.origin;
+                        effect.duration = effect.duration || {};
+                        effect.duration.startTime = flagEffect.duration?.startTime ?? baseEffect.duration?.startTime ?? null;
+                        effect.duration.endTime = flagEffect.duration?.endTime ?? baseEffect.duration?.endTime ?? null;
+                        effect.disabled = flagEffect.disabled ?? baseEffect.disabled ?? false;
+                        effect.name = flagEffect.name || baseEffect.name || "";
+                        effect.transfer = flagEffect.transfer ?? baseEffect.transfer ?? true;
+                        effect.img = flagEffect.img || baseEffect.img || "";
+                        effect.type = flagEffect.type || baseEffect.type || "base";
+
+                        const ratingValue = flagItem.selectedRating || baseItem.system?.technology?.rating || 0;
+
+                        if (effect.system?.changes && Array.isArray(effect.system.changes)) {
+                            effect.system.changes = effect.system.changes.map(change => ({
+                                key: change.key || "",
+                                type: change.type || "add",
+                                value: change.value ? change.value : ratingValue,
+                                priority: change.priority !== undefined ? change.priority : null,
+                                target: change.target || effect.system.targets?.[0]?.id || "actor"
+                            }));
+                        } else if (effect.changes && Array.isArray(effect.changes)) {
+                            effect.changes = effect.changes.map(change => ({
+                                key: change.key || "",
+                                type: change.type || (change.mode === 1 ? 'multiply' : (change.mode === 3 ? 'downgrade' : (change.mode === 4 ? 'upgrade' : (change.mode === 5 ? 'override' : 'add')))),
+                                mode: change.mode || 0,
+                                value: change.value ? change.value : ratingValue,
+                                priority: change.priority || null
+                            }));
+                        }
                     }
-    
+
                     return effect;
                 });
     

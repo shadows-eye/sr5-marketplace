@@ -135,7 +135,7 @@
                 <label title="{{localize 'SR5Marketplace.ItemBuilder.Effects.InnateLockedHint'}}">
                     <i class="fas fa-lock-alt"></i> {{this.name}}
                 </label>
-                <span>{{this.changes.[0].value}}</span>
+                <span>{{#if this.system.changes.[0].value}}{{this.system.changes.[0].value}}{{else}}{{this.changes.[0].value}}{{/if}}</span>
             </div>
         {{/each}}
         
@@ -144,7 +144,7 @@
                 <label title="{{localize 'SR5Marketplace.ItemBuilder.Effects.CustomEffect'}}">
                     <i class="fas fa-bolt"></i> {{this.name}}
                 </label>
-                <span>{{this.changes.[0].value}}</span>
+                <span>{{#if this.system.changes.[0].value}}{{this.system.changes.[0].value}}{{else}}{{this.changes.[0].value}}{{/if}}</span>
             </div>
         {{/each}}
         

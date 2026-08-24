@@ -82,23 +82,23 @@
                                         <div class="form-group">
                                             <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyToLabel'}}</label>
                                             <div class="button-group applyTo">
-                                                <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'actor')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="actor" title="{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.actor'}}"><i class="fas fa-user"></i></button>
-                                                <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'targeted_actor')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="targeted_actor" title="{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.targeted_actor'}}"><i class="fas fa-crosshairs"></i></button>
-                                                <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'test_all')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="test_all" title="{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.test_all'}}"><i class="fas fa-dice"></i></button>
-                                                <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'test_item')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="test_item" title="{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.test_item'}}"><i class="fas fa-dice-d20"></i></button>
-                                                <button type="button" class="{{#if (eq @root.draftEffect.system.applyTo 'modifier')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="modifier" title="{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.modifier'}}"><i class="fas fa-sliders-h"></i></button>
+                                                <button type="button" class="{{#if (eq @root.activeApplyTo 'actor')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="actor" title="{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.actor'}}"><i class="fas fa-user"></i></button>
+                                                <button type="button" class="{{#if (eq @root.activeApplyTo 'targeted_actor')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="targeted_actor" title="{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.targeted_actor'}}"><i class="fas fa-crosshairs"></i></button>
+                                                <button type="button" class="{{#if (eq @root.activeApplyTo 'test_all')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="test_all" title="{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.test_all'}}"><i class="fas fa-dice"></i></button>
+                                                <button type="button" class="{{#if (eq @root.activeApplyTo 'test_item')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="test_item" title="{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.test_item'}}"><i class="fas fa-dice-d20"></i></button>
+                                                <button type="button" class="{{#if (eq @root.activeApplyTo 'modifier')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="modifier" title="{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.modifier'}}"><i class="fas fa-sliders-h"></i></button>
                                             </div>
                                         </div>
                                     </div>
                                     
-                                    {{#if @root.draftEffect.system.applyTo}}
+                                    {{#if @root.activeApplyTo}}
                                         {{#if @root.isTestMode}}
                                             <div class="form-group">
                                                 <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.TestFilterLabel'}} <i class="fa-solid fa-circle-info" style="cursor: help; margin-left: 5px; color: var(--color-grey-light);" title="{{@root.testsOptionsListString}}"></i></label>
                                                 {{> "modules/sr5-marketplace/templates/apps/itemBuilder/partials/multi-select.html" 
                                                     name="system.selection_tests"
                                                     options=@root.selection_test_options
-                                                    selected=@root.draftEffect.system.selection_tests
+                                                    selected=@root.selected_tests
                                                     placeholder=(localize 'SR5Marketplace.ItemBuilder.Effects.SelectTestsPlaceholder')
                                                 }}
                                             </div>
@@ -107,7 +107,7 @@
                                                 {{> "modules/sr5-marketplace/templates/apps/itemBuilder/partials/multi-select.html" 
                                                     name="system.selection_categories"
                                                     options=@root.selection_category_options
-                                                    selected=@root.draftEffect.system.selection_categories
+                                                    selected=@root.selected_categories
                                                     placeholder=(localize 'SR5Marketplace.ItemBuilder.Effects.SelectCategoriesPlaceholder')
                                                 }}
                                             </div>
@@ -116,14 +116,14 @@
                                 </div>
 
                                 <div class="subcolumn subcolumn-b">
-                                    {{#if @root.draftEffect.system.applyTo}}
+                                    {{#if @root.activeApplyTo}}
                                         {{#if @root.isTestMode}}
                                             <div class="form-group">
                                                 <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.SkillFilterLabel'}} <i class="fa-solid fa-circle-info" style="cursor: help; margin-left: 5px; color: var(--color-grey-light);" title="{{@root.skillsOptionsListString}}"></i></label>
                                                 {{> "modules/sr5-marketplace/templates/apps/itemBuilder/partials/multi-select.html" 
                                                     name="system.selection_skills"
                                                     options=@root.selection_skill_options
-                                                    selected=@root.draftEffect.system.selection_skills
+                                                    selected=@root.selected_skills
                                                     placeholder=(localize 'SR5Marketplace.ItemBuilder.Effects.SelectSkillsPlaceholder')
                                                 }}
                                             </div>
@@ -132,7 +132,7 @@
                                                 {{> "modules/sr5-marketplace/templates/apps/itemBuilder/partials/multi-select.html" 
                                                     name="system.selection_attributes"
                                                     options=@root.selection_attribute_options
-                                                    selected=@root.draftEffect.system.selection_attributes
+                                                    selected=@root.selected_attributes
                                                     placeholder=(localize 'SR5Marketplace.ItemBuilder.Effects.SelectAttributesPlaceholder')
                                                 }}
                                             </div>
@@ -141,7 +141,7 @@
                                                 {{> "modules/sr5-marketplace/templates/apps/itemBuilder/partials/multi-select.html" 
                                                     name="system.selection_limits"
                                                     options=@root.selection_limit_options
-                                                    selected=@root.draftEffect.system.selection_limits
+                                                    selected=@root.selected_limits
                                                     placeholder=(localize 'SR5Marketplace.ItemBuilder.Effects.SelectLimitsPlaceholder')
                                                 }}
                                             </div>
@@ -153,7 +153,7 @@
 
                         {{!-- Middle Column: Selectable Lists & Interactive Panel --}}
                         <div class="creator-column middle-fields">
-                            {{#if @root.draftEffect.system.applyTo}}
+                            {{#if @root.activeApplyTo}}
                                 <div class="keys-scroll-area">
                                     <div class="key-selector-container">
                                         <div class="key-groups-wrapper">
@@ -163,7 +163,7 @@
                                                         <input type="checkbox" id="toggle-group-actor-{{group.groupName}}" class="toggle-checkbox" {{#if group.isExpanded}}checked{{/if}}>
                                                         <label for="toggle-group-actor-{{group.groupName}}" class="toggle-label"><h5>{{group.groupName}}</h5><i class="fas fa-chevron-right expand-icon"></i></label>
                                                         <div class="key-buttons toggle-content">
-                                                            {{#each group.groupData}}<button type="button" class="key-btn {{#if (eq this.path @root.draftEffect.changes.[0].key)}}selected{{/if}}" data-action="selectDraftKey" data-path="{{this.path}}">{{this.label}}</button>{{/each}}
+                                                            {{#each group.groupData}}<button type="button" class="key-btn {{#if (eq this.path @root.selectedKey)}}selected{{/if}}" data-action="selectDraftKey" data-path="{{this.path}}">{{this.label}}</button>{{/each}}
                                                         </div>
                                                     </div>
                                                 {{/each}}
@@ -175,7 +175,7 @@
                                                         <input type="checkbox" id="toggle-group-roll-{{group.groupName}}" class="toggle-checkbox" checked>
                                                         <label for="toggle-group-roll-{{group.groupName}}" class="toggle-label"><h5>{{group.groupName}}</h5><i class="fas fa-chevron-right expand-icon"></i></label>
                                                         <div class="key-buttons toggle-content">
-                                                            {{#each group.groupData}}<button type="button" class="key-btn {{#if (eq this.path @root.draftEffect.changes.[0].key)}}selected{{/if}}" data-action="selectDraftKey" data-path="{{this.path}}">{{this.label}}</button>{{/each}}
+                                                            {{#each group.groupData}}<button type="button" class="key-btn {{#if (eq this.path @root.selectedKey)}}selected{{/if}}" data-action="selectDraftKey" data-path="{{this.path}}">{{this.label}}</button>{{/each}}
                                                         </div>
                                                     </div>
                                                 {{/each}}
@@ -187,7 +187,7 @@
                                                         <input type="checkbox" id="toggle-group-mod-{{group.groupName}}" class="toggle-checkbox" checked>
                                                         <label for="toggle-group-mod-{{group.groupName}}" class="toggle-label"><h5>{{group.groupName}}</h5><i class="fas fa-chevron-right expand-icon"></i></label>
                                                         <div class="key-buttons toggle-content">
-                                                            {{#each group.groupData}}<button type="button" class="key-btn {{#if (eq this.path @root.draftEffect.changes.[0].key)}}selected{{/if}}" data-action="selectDraftKey" data-path="{{this.path}}">{{this.label}}</button>{{/each}}
+                                                            {{#each group.groupData}}<button type="button" class="key-btn {{#if (eq this.path @root.selectedKey)}}selected{{/if}}" data-action="selectDraftKey" data-path="{{this.path}}">{{this.label}}</button>{{/each}}
                                                         </div>
                                                     </div>
                                                 {{/each}}
@@ -204,7 +204,7 @@
                                                     <h5>{{group.groupName}}</h5>
                                                     <div class="key-buttons">
                                                         {{#each group.groupData}}
-                                                            <button type="button" class="{{#if (eq (concat "@" this.path) @root.draftEffect.changes.[0].value)}}active{{/if}}" data-action="selectDerivedValue" data-path="{{this.path}}">
+                                                            <button type="button" class="{{#if (eq (concat "@" this.path) @root.selectedChange.value)}}active{{/if}}" data-action="selectDerivedValue" data-path="{{this.path}}">
                                                                 {{this.label}}
                                                             </button>
                                                         {{/each}}
@@ -220,17 +220,16 @@
                                 <div class="selected-key-details-panel">
                                     <div class="form-group">
                                         <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.AttributeKeyLabel'}}{{#if @root.attributeKeysOptionsListString}} <i class="fa-solid fa-circle-info" style="cursor: help; margin-left: 5px; color: var(--color-grey-light);" title="{{@root.attributeKeysOptionsListString}}"></i>{{/if}}</label>
-                                        <input type="text" name="changes.0.key" value="{{@root.draftEffect.changes.[0].key}}" readonly placeholder="{{localize 'SR5Marketplace.ItemBuilder.Effects.AttributeKeyPlaceholder'}}"/>
+                                        <input type="text" name="system.changes.0.key" value="{{@root.selectedKey}}" readonly placeholder="{{localize 'SR5Marketplace.ItemBuilder.Effects.AttributeKeyPlaceholder'}}"/>
                                     </div>
                                 
                                     <div class="mode-value-row">
-                                        {{#if @root.draftEffect.changes.[0].key}}
+                                        {{#if @root.selectedKey}}
                                             <div class="form-group mode-field">
                                                 <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.ChangeModeLabel'}}</label>
                                                 <div class="button-group mode-selector">
                                                     {{#each @root.changeModes as |mode|}}
-                                                    <button type="button" class="{{#if (eq mode.value @root.draftEffect.changes.[0].mode)}}active{{/if}}" data-action="updateDraftField" name="changes.0.mode" value="{{mode.value}}" title="{{localize mode.label}}">
-                                                        {{#if (eq mode.mode 'custom')}}<i class="fas fa-asterisk"></i>{{/if}}
+                                                    <button type="button" class="{{#if mode.isActive}}active{{/if}}" data-action="updateDraftField" name="system.changes.0.type" value="{{mode.type}}" title="{{localize mode.label}}">
                                                         {{#if (eq mode.mode 'multiply')}}<i class="fas fa-times"></i>{{/if}}
                                                         {{#if (eq mode.mode 'add')}}<i class="fas fa-plus"></i>{{/if}}
                                                         {{#if (eq mode.mode 'subtract')}}<i class="fas fa-minus"></i>{{/if}}
@@ -244,7 +243,7 @@
                                             <div class="form-group value-field">
                                                 <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.EffectValueLabel'}}</label>
                                                 <div class="value-input-group">
-                                                    <input type="text" name="changes.0.value" value="{{@root.draftEffect.changes.[0].value}}"/>
+                                                    <input type="text" name="system.changes.0.value" value="{{@root.selectedChange.value}}"/>
                                                     <a class="toggle-derived-link" data-action="toggleDerivedValueSelector" title="{{localize 'SR5Marketplace.ItemBuilder.Effects.SelectDerivedValueTooltip'}}">
                                                         <i class="fas fa-at"></i>
                                                     </a>
@@ -258,10 +257,10 @@
 
                         {{!-- Right Column: Save and Cancel buttons at the bottom --}}
                         <div class="creator-column right-actions">
-                            {{#if @root.draftEffect.system.applyTo}}
+                            {{#if @root.activeApplyTo}}
                                 <div class="creator-actions-row">
                                     <button type="button" class="cancel-button" data-action="cancelDraftEffect"><i class="fas fa-times"></i> {{localize 'SR5Marketplace.UI.Cancel'}}</button>
-                                    <button type="button" class="save-button" data-action="saveDraftEffect" {{#unless @root.draftEffect.changes.[0].key}}disabled title="{{localize 'SR5Marketplace.ItemBuilder.Effects.SelectAttributeKeyFirst'}}"{{/unless}}><i class="fas fa-save"></i> {{localize 'SR5Marketplace.UI.Save'}}</button>
+                                    <button type="button" class="save-button" data-action="saveDraftEffect" {{#unless @root.selectedKey}}disabled title="{{localize 'SR5Marketplace.ItemBuilder.Effects.SelectAttributeKeyFirst'}}"{{/unless}}><i class="fas fa-save"></i> {{localize 'SR5Marketplace.UI.Save'}}</button>
                                 </div>
                             {{/if}}
                         </div>

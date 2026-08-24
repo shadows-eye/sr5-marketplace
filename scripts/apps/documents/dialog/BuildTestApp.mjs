@@ -422,7 +422,8 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 test.data.values.extendedHits.changes.push({
                     name: "Previous Hits",
                     value: previousHits,
-                    mode: typeof CONST !== 'undefined' ? (CONST.ACTIVE_EFFECT_MODES?.ADD ?? 2) : 2,
+                    type: "add",
+                    mode: typeof CONST !== 'undefined' ? (CONST.ACTIVE_EFFECT_CHANGE_TYPES?.ADD || CONST.ACTIVE_EFFECT_MODES?.ADD || 2) : 2,
                     priority: 0,
                     enabled: true
                 });

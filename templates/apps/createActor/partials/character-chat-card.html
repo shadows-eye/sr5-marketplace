@@ -1,0 +1,39 @@
+<div class="sr5-character-created-card bg-[#0b0a13] text-[#efe6d8] border border-[#5d142b] rounded p-2 font-['Signika',sans-serif]">
+    <div class="text-[#f3d58a] text-sm font-bold border-b border-[#5d142b] mb-1.5 pb-1">
+        {{#if (eq lang 'de')}}Zufälliger SR5-Charakter erstellt{{else}}Random SR5 Character Created{{/if}}
+    </div>
+    <p><strong>{{#if (eq lang 'de')}}Akteur{{else}}Actor{{/if}}:</strong> {{actor.name}}</p>
+    <p><strong>{{labelArchetype}}:</strong> {{archetypeLabel}}</p>
+    <p><strong>{{labelMetatype}}:</strong> {{metaLabel}}</p>
+    <p><strong>{{#if (eq lang 'de')}}Start-Nuyen{{else}}Starting Nuyen{{/if}}:</strong> {{nuyen}}¥</p>
+    
+    <h3 class="text-[#f3d58a] text-[11px] font-bold mt-2 mb-1">{{#if (eq lang 'de')}}Attribute{{else}}Attributes{{/if}}</h3>
+    <table class="w-full border-collapse text-xs">
+        <tr class="text-left text-[#f3d58a]">
+            <th>{{#if (eq lang 'de')}}Attribut{{else}}Attribute{{/if}}</th>
+            <th>{{#if (eq lang 'de')}}Stufe{{else}}Rating{{/if}}</th>
+        </tr>
+        {{#each attrs}}
+        <tr><td>{{this.label}}</td><td>{{this.value}}</td></tr>
+        {{/each}}
+    </table>
+
+    <h3 class="text-[#f3d58a] text-[11px] font-bold mt-2 mb-1">{{#if (eq lang 'de')}}Erstellte Gegenstände{{else}}Created Items{{/if}}</h3>
+    <table class="w-full border-collapse text-xs">
+        <tr class="text-left text-[#f3d58a]">
+            <th>{{#if (eq lang 'de')}}Name{{else}}Name{{/if}}</th>
+            <th>{{#if (eq lang 'de')}}Typ{{else}}Type{{/if}}</th>
+        </tr>
+        {{#each items}}
+        <tr><td>{{this.name}}</td><td>{{this.type}}</td></tr>
+        {{/each}}
+    </table>
+    
+    <p class="text-[10px] italic opacity-75 mt-2">
+        {{#if (eq lang 'de')}}
+        Überprüfen Sie den Bogen vor dem Spiel. Dies ist eine generierte Vorlage, kein regelgeprüfter fertiger Charakter.
+        {{else}}
+        Review the sheet before play. This is a generated template, not a rules-audited final legal character.
+        {{/if}}
+    </p>
+</div>

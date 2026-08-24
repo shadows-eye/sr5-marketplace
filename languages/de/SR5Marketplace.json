@@ -55,6 +55,9 @@
             "MetatypeDwarf": "Zwerg",
             "MetatypeOrk": "Ork",
             "MetatypeTroll": "Troll",
+            "IsNPC": "Nicht-Spieler-Charakter (NSC)",
+            "CorpFlavor": "Konzern-Hintergrund",
+            "ProfessionalLevel": "Professionalitätsstufe",
             "QuickBuildNote": "Wenn ein Archetyp ausgewählt wird, wird der Charakter schnell mit typischen Attributen, Fertigkeiten, Vor-/Nachteilen und Startausrüstung über den Systemimporter befüllt."
         },
         "Rating": "Stufe",
@@ -120,6 +123,10 @@
             "OrderReview": "Überprf."
         },
         "Settings": {
+            "QuickBuildWhisperGM": {
+                "name": "Charakter-Schnellerstellung: Zusammenfassung an SL flüstern",
+                "hint": "Wenn ein Charakter über die Archetypen-Schnellerstellung erstellt wird, wird automatisch eine Übersichtskarte mit Attributen und Gegenständen an den Spielleiter geflüstert."
+            },
             "AvailabilityRule": {
                 "name": "Verfügbarkeits Regeln",
                 "hint": "Auswahl welche regeln ihr benutzen wollt, standard ist RAW",
