@@ -493,7 +493,9 @@
                 "SelectActorTooltip": "Bitte wähle einen Akteur aus, um einzukaufen.",
                 "RequestActor": "Anfrage von",
                 "Funds": "Budget",
-                "PurchasingActor": "Käufer"
+                "PurchasingActor": "Käufer",
+                "Host": "Matrix-Host",
+                "Employees": "Mitarbeiter"
             },
             "Contacts": {
                 "SelectContact": "Wählen Sie einen Kontakt der die Bestellung besorgt",
@@ -568,8 +570,7 @@
                     "R": "E",
                     "F": "V",
                     "E": "E",
-                    "V": "V",
-                    "": ""
+                    "V": "V"
                 },
                 "technology": {
                     "quantity": "Menge",
@@ -692,7 +693,8 @@
                 "PurchaseApproved": "Kauf freigegeben für Benutzer {name}.",
                 "DeductedResources": "{cost} ¥ und {karma} Karma von {actor} abgezogen.",
                 "ItemsAdded": "{count} neue(r) Artikel zu {actor}s Inventar hinzugefügt.",
-                "WorkshopArrival": "{name} ist in der Werkstatt eingetroffen."
+                "WorkshopArrival": "{name} ist in der Werkstatt eingetroffen.",
+                "OutOfStockWarning": "Kann '{name}' nicht weiter hinzufügen. Das Geschäft hat nur {qty} auf Lager."
             },
             "NoContacts": "Hat keine Kontakte"
         },
@@ -804,6 +806,7 @@
             "NoVehiclesInRadius": "Keine Fahrzeuge oder Drohnen in Reichweite gefunden.",
             "RemoveVirtualMod": "Geplante Modifikation entfernen",
             "IsFactory": "Ist Werkstatt",
+            "Workshop": "Werkstatt",
             "Rating": "Stufe",
             "Repair": {
                 "Title": "Fahrzeug reparieren",
