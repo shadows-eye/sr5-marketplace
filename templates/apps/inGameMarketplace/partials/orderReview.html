@@ -22,9 +22,9 @@
         <div class="actor-requests-container">
             {{#each requests}}
             <div class="pending-request-block" data-user-id="{{this.user._id}}" data-basket-uuid="{{this.basket.basketUUID}}">
-                <h3 class="actor-request-header">
-                    <span>{{localize "SR5Marketplace.Marketplace.OrderReview.PurchaseRequestByUser"}} <strong>{{this.user.name}}</strong></span>
-                    <span class="request-time font-normal text-xs opacity-75">({{this.basket.creationTime}})</span>
+                <h3 class="actor-request-header flex justify-between items-center">
+                    <span>{{localize "SR5Marketplace.Marketplace.OrderReview.PurchaseRequestByUser"}} <strong>{{this.user.name}}</strong> <span class="request-time font-normal text-xs opacity-75">({{this.basket.creationTime}})</span></span>
+                    <span class="text-xs font-normal opacity-90"><i class="fas fa-wallet text-amber-400"></i> {{localize "SR5Marketplace.Marketplace.Basket.PaymentSource"}}: <strong>{{this.basket.paymentSourceName}}</strong></span>
                 </h3>
 
                 <div class="basket-grid headers seven-columns">

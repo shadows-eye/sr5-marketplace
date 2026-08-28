@@ -118,6 +118,21 @@
     },
     "Marketplace": {
         "Title": "Marktplatz Fenster",
+        "Credstick": {
+            "IsCredstick": "Credstick",
+            "IsCredstickHint": "Dieses Ausrüstungsteil als Credstick mit Guthaben- und Kapazitätsverwaltung kennzeichnen.",
+            "Balance": "Guthaben",
+            "CurrentBalance": "Aktuelles Guthaben dieses Credsticks in Nuyen (¥)",
+            "MaxCapacity": "Max. Kapazität",
+            "OverCapacity": "KAPAZITÄT ÜBERSCHRITTEN!",
+            "Types": {
+                "standard": "Standard-Credstick",
+                "silver": "Silber-Credstick",
+                "gold": "Gold-Credstick",
+                "platinum": "Platin-Credstick",
+                "ebony": "Ebony-Credstick"
+            }
+        },
         "Tabs": {
             "Shop": "Laden",
             "OrderReview": "Überprf."

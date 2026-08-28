@@ -1,6 +1,7 @@
 import { BasketService } from "./basketService.mjs";
 import { MODULE_ID, FLAGKEY_Basket } from "../lib/constants.mjs";
 import { AppTestFlagService } from "./AppTestFlagService.mjs";
+import { CredstickService } from "./credstickService.mjs";
 import enrichHTML from "./enricher.mjs";
 
 
@@ -53,6 +54,16 @@ export class PurchaseService {
                 for (const request of basketState.orderReviewItems) {
                     const doc = request.createdForActor ? await fromUuid(request.createdForActor) : null;
                     const actor = doc instanceof Actor ? doc : doc?.actor || null;
+                    
+                    let paymentSourceName = game.i18n.localize("SR5Marketplace.Marketplace.Basket.NuyenCash");
+                    if (request.paymentSourceUuid && request.paymentSourceUuid !== "nuyen" && actor) {
+                        const credItem = actor.items.find(i => i.uuid === request.paymentSourceUuid) || await fromUuid(request.paymentSourceUuid);
+                        if (credItem) {
+                            paymentSourceName = credItem.name;
+                        }
+                    }
+                    request.paymentSourceName = paymentSourceName;
+
                     allPendingRequests.push({
                         user: user.toJSON(),
                         basket: request,
@@ -91,6 +102,7 @@ export class PurchaseService {
             selectedContactId: basket.selectedContactId,
             shopActorUuid: basket.shopActorUuid,
             reviewRequest: true,
+            paymentSourceUuid: basket.paymentSourceUuid || "nuyen",
             basketItems: basket.shoppingCartItems,
             totalCost: basket.totalCost,
             totalAvailability: basket.totalAvailability,
@@ -393,16 +405,45 @@ export class PurchaseService {
 
         const currentNuyen = actor.system.nuyen;
         const currentKarma = actor.system.karma.value;
-        if (currentNuyen < basket.totalCost) {
-            ui.notifications.warn(`${actor.name} cannot afford this purchase. Needs ${basket.totalCost} ¥.`);
-            return false;
-        }
         if (currentKarma < basket.totalKarma) {
             ui.notifications.warn(`${actor.name} does not have enough Karma. Needs ${basket.totalKarma} K.`);
             return false;
         }
 
-        await actor.update({ "system.nuyen": currentNuyen - basket.totalCost, "system.karma.value": currentKarma - basket.totalKarma });
+        const allowOverrule = !!(game.settings.get(MODULE_ID, "allowGmOverruleMoney") && game.user.isGM);
+        const paymentSourceUuid = basket.paymentSourceUuid || "nuyen";
+
+        let paidWithCredstick = false;
+        if (paymentSourceUuid && paymentSourceUuid !== "nuyen") {
+            const credItem = actor.items.find(i => i.uuid === paymentSourceUuid) || await fromUuid(paymentSourceUuid);
+            if (credItem) {
+                paidWithCredstick = true;
+                const credData = CredstickService.getCredstickData(credItem);
+                if (credData.currentValue < basket.totalCost) {
+                    if (!allowOverrule) {
+                        ui.notifications.warn(`${actor.name}'s ${credItem.name} does not have enough funds. Needs ${basket.totalCost.toLocaleString()} ¥, but has ${credData.currentValue.toLocaleString()} ¥.`);
+                        return false;
+                    }
+                }
+                await CredstickService.deductCredstickFunds(credItem, basket.totalCost);
+                if (basket.totalKarma > 0) {
+                    await actor.update({ "system.karma.value": currentKarma - basket.totalKarma });
+                }
+            }
+        }
+
+        if (!paidWithCredstick) {
+            if (currentNuyen < basket.totalCost) {
+                if (!allowOverrule) {
+                    ui.notifications.warn(`${actor.name} cannot afford this purchase. Needs ${basket.totalCost.toLocaleString()} ¥.`);
+                    return false;
+                }
+            }
+            await actor.update({
+                "system.nuyen": currentNuyen - basket.totalCost,
+                "system.karma.value": currentKarma - basket.totalKarma
+            });
+        }
 
         const itemsToCreate = [];
         const workshopModsAdded = [];

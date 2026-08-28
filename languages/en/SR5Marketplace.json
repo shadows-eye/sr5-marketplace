@@ -118,6 +118,21 @@
     },
     "Marketplace": {
         "Title": "Marketplace Purchase Screen",
+        "Credstick": {
+            "IsCredstick": "Credstick",
+            "IsCredstickHint": "Mark this equipment item as a Credstick with balance and capacity tracking.",
+            "Balance": "Balance",
+            "CurrentBalance": "Current balance of this credstick in Nuyen (¥)",
+            "MaxCapacity": "Max Capacity",
+            "OverCapacity": "OVER CAPACITY!",
+            "Types": {
+                "standard": "Standard Credstick",
+                "silver": "Silver Credstick",
+                "gold": "Gold Credstick",
+                "platinum": "Platinum Credstick",
+                "ebony": "Ebony Credstick"
+            }
+        },
         "Tabs": {
             "Shop": "Shop",
             "OrderReview": "Order Review"

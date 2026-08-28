@@ -23,6 +23,11 @@
 /* TAILWIND CONFIG & CUSTOM CSS START HERE                  */
 /* -------------------------------------------------------- */
 
+/* Protect system .list-item from Tailwind CSS .list-item utility collision */
+.sr5v2 .list-item {
+    display: flex !important;
+}
+
 /* Tell Tailwind where your templates are */
 @source "../templates";
 @source "../scripts";

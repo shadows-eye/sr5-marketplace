@@ -14,6 +14,7 @@ export class BasketService {
             createdForActor: null,
             selectedContactUuid: null,
             shopActorUuid: null,
+            paymentSourceUuid: "nuyen",
             totalCost: 0,
             totalAvailability: "0",
             totalKarma: 0,
@@ -426,6 +427,17 @@ export class BasketService {
         const basket = await this.getBasket();
         basket.shopActorUuid = actorUuid;
         await this.saveBasket(basket);
+    }
+
+    /**
+     * Updates the selected payment source in the user's basket.
+     * @param {string} paymentSourceUuid The UUID of the selected payment source (or "nuyen").
+     * @param {string|null} [userId=null]
+     */
+    async setPaymentSource(paymentSourceUuid, userId = null) {
+        const basket = await this.getBasket(userId);
+        basket.paymentSourceUuid = paymentSourceUuid || "nuyen";
+        await this.saveBasket(basket, userId);
     }
 
     /**

@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [14.004.0] - 2026-08-28
+
+### Added
+- **Marketplace Equipment Sheet Extension**:
+  - Implemented `MarketplaceEquipmentSheet` extending system `SR5ItemSheet` registered on `ready` hook.
+  - Added Credstick header and footer partial templates with "Is Credstick" toggle, type selector, and balance tracker widget.
+  - Automatic synchronization of item cost, rating, and availability when credstick configuration updates.
+- **Credstick Funds & Payment Integration**:
+  - Integrated `CredstickService` for deducting funds from credsticks in inventory during marketplace checkout.
+  - Dynamic red balance color indicator when credstick balance exceeds type max capacity with hover title.
+
+### Changed
+- **CSS Utility Collision Protection**:
+  - Added CSS protection rule (`.sr5v2 .list-item { display: flex !important; }`) in `styles/marketplace.css` to prevent Tailwind CSS utility collision.
+  - Hidden cost and availability scaling checkboxes in Edit Mode specifically on credstick item sheets.
+
+### Fixed
+- **Foundry VTT v14 Sheet Initialization Lifecycle**:
+  - Fixed `CONFIG.Item.sheetClasses` timing issue by moving equipment sheet registration to `Hooks.on("ready")`.
+  - Added strict `this.item?.type === "equipment"` type checks.
+
+---
+
 ## [14.003.1] - 2026-08-24
 
 ### Added

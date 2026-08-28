@@ -8,6 +8,7 @@ import { DialogTestModifierService as DialogModifierService } from '../apps/docu
 import { AppTestFlagService } from '../services/AppTestFlagService.mjs';
 import { MODULE_ID } from '../lib/constants.mjs';
 import { ActorSelectionService } from '../services/ActorSelectionService.mjs';
+import { CredstickService } from '../services/credstickService.mjs';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -111,7 +112,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 showAvailabilityDialog: this.#onShowAvailabilityDialog,
                 selectContact: this.#onSelectContact,
                 changeReviewActor: this.#onChangeReviewActor,
-                changeAvailabilityTestRule: this.#onChangeAvailabilityTestRule
+                changeAvailabilityTestRule: this.#onChangeAvailabilityTestRule,
+                changePaymentSource: this.#onChangePaymentSource
             }
         }, { inplace: false });
     }
@@ -326,6 +328,20 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                             contactData.uuid = c.uuid;
                             contactData.isSelected = c.uuid === basket.selectedContactUuid;
                             return contactData;
+                        });
+
+                    // 2b. Get available credsticks owned by actor
+                    partialContext.credsticks = itemSource.items
+                        .filter(i => CredstickService.isCredstick(i))
+                        .map(c => {
+                            const credData = CredstickService.getCredstickData(c);
+                            return {
+                                uuid: c.uuid,
+                                name: c.name,
+                                currentValue: credData.currentValue,
+                                maxValue: credData.maxValue,
+                                isSelected: basket.paymentSourceUuid === c.uuid
+                            };
                         });
 
                     // 3. Resolve shop connection and employee contact items if active
@@ -827,6 +843,12 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
      * contact's linked actor) and updates the persistent test state in the flag.
      * @private
      */
+    static async #onChangePaymentSource(event, target) {
+        const paymentSourceUuid = target.value;
+        await this.basketService.setPaymentSource(paymentSourceUuid);
+        this.render(false);
+    }
+
     static async #onSelectContact(event, target) {
         const clickedContactUuid = target.dataset.contactUuid;
         const basket = await this.basketService.getBasket();
