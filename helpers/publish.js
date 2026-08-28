@@ -22,7 +22,7 @@ async function publishRelease() {
         const manifest = await response.json();
 
         const version = manifest.version;
-        const minCompatibility = manifest.compatibility?.minimum || "13";
+        const minCompatibility = manifest.compatibility?.minimum || "14";
         const verifiedCompatibility = manifest.compatibility?.verified || "14";
 
         // Construct the version-locked URL that Foundry will save
