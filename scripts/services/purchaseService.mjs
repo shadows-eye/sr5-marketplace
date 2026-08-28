@@ -1,6 +1,7 @@
 import { BasketService } from "./basketService.mjs";
 import { MODULE_ID, FLAGKEY_Basket } from "../lib/constants.mjs";
 import { AppTestFlagService } from "./AppTestFlagService.mjs";
+import { CredstickService } from "./credstickService.mjs";
 import enrichHTML from "./enricher.mjs";
 
 
@@ -51,10 +52,26 @@ export class PurchaseService {
             const basketState = user.getFlag(MODULE_ID, FLAGKEY_Basket);
             if (basketState?.orderReviewItems?.length > 0) {
                 for (const request of basketState.orderReviewItems) {
+                    this._recalculateTotals(request);
                     const doc = request.createdForActor ? await fromUuid(request.createdForActor) : null;
                     const actor = doc instanceof Actor ? doc : doc?.actor || null;
+                    
+                    let paymentSourceName = game.i18n.localize("SR5Marketplace.Marketplace.Basket.NuyenCash");
+                    if (request.paymentSourceUuid && request.paymentSourceUuid !== "nuyen" && actor) {
+                        const credItem = actor.items.find(i => i.uuid === request.paymentSourceUuid) || await fromUuid(request.paymentSourceUuid);
+                        if (credItem) {
+                            paymentSourceName = credItem.name;
+                        }
+                    }
+                    request.paymentSourceName = paymentSourceName;
+
                     allPendingRequests.push({
-                        user: user.toJSON(),
+                        user: {
+                            id: user.id,
+                            _id: user.id,
+                            name: user.name,
+                            color: user.color
+                        },
                         basket: request,
                         actor: actor ? {
                             name: actor.name,
@@ -81,6 +98,8 @@ export class PurchaseService {
             return ui.notifications.warn("Your shopping cart is empty.");
         }
 
+        this._recalculateTotals(basket);
+
         const testStates = await AppTestFlagService.readState(userId);
         const testState = Object.values(testStates).find(t => t.testType !== "BuildTest") || null;
 
@@ -91,6 +110,7 @@ export class PurchaseService {
             selectedContactId: basket.selectedContactId,
             shopActorUuid: basket.shopActorUuid,
             reviewRequest: true,
+            paymentSourceUuid: basket.paymentSourceUuid || "nuyen",
             basketItems: basket.shoppingCartItems,
             totalCost: basket.totalCost,
             totalAvailability: basket.totalAvailability,
@@ -98,6 +118,8 @@ export class PurchaseService {
             totalEssenceCost: basket.totalEssenceCost,
             testState: testState
         };
+
+        this._recalculateTotals(newRequest);
 
         basket.orderReviewItems.push(newRequest);
 
@@ -168,6 +190,28 @@ export class PurchaseService {
         if (!item) return;
 
         foundry.utils.setProperty(item, property, value);
+
+        if (property === "selectedRating") {
+            const effectiveRating = Math.max(1, Number(value) || 0);
+            const sourceItem = await fromUuid(item.itemUuid);
+            if (sourceItem) {
+                try {
+                    const cloned = sourceItem.clone({ "system.technology.rating": effectiveRating }, { keepId: true });
+                    const clonedCost = typeof cloned.system.technology?.cost === "object" ? cloned.system.technology?.cost?.value : cloned.system.technology?.cost;
+                    const fallbackCost = typeof cloned.system?.cost === "object" ? cloned.system.cost.value : cloned.system?.cost;
+                    if (clonedCost !== undefined && !isNaN(Number(clonedCost)) && Number(clonedCost) > 0) {
+                        item.cost = Number(clonedCost);
+                    } else if (fallbackCost !== undefined && !isNaN(Number(fallbackCost)) && Number(fallbackCost) > 0) {
+                        item.cost = Number(fallbackCost);
+                    }
+                    item.availability = cloned.system.technology?.availability ?? cloned.system.availability ?? item.availability;
+                    item.essence = typeof cloned.system.essence === "object" ? (cloned.system.essence?.value ?? 0) : (cloned.system.essence ?? item.essence);
+                } catch (err) {
+                    console.warn("SR5 Marketplace | Failed to clone item for dynamic calculation on pending update:", err);
+                }
+            }
+        }
+
         this._recalculateTotals(request);
 
         // --- FIX: Pass userId as an argument instead of using .call() ---
@@ -393,16 +437,46 @@ export class PurchaseService {
 
         const currentNuyen = actor.system.nuyen;
         const currentKarma = actor.system.karma.value;
-        if (currentNuyen < basket.totalCost) {
-            ui.notifications.warn(`${actor.name} cannot afford this purchase. Needs ${basket.totalCost} ¥.`);
-            return false;
-        }
         if (currentKarma < basket.totalKarma) {
             ui.notifications.warn(`${actor.name} does not have enough Karma. Needs ${basket.totalKarma} K.`);
             return false;
         }
 
-        await actor.update({ "system.nuyen": currentNuyen - basket.totalCost, "system.karma.value": currentKarma - basket.totalKarma });
+        const approvalWorkflowEnabled = !!game.settings.get(MODULE_ID, "approvalWorkflow");
+        const allowOverrule = !approvalWorkflowEnabled || !!(game.settings.get(MODULE_ID, "allowGmOverruleMoney") && game.user.isGM);
+        const paymentSourceUuid = basket.paymentSourceUuid || "nuyen";
+
+        let paidWithCredstick = false;
+        if (paymentSourceUuid && paymentSourceUuid !== "nuyen") {
+            const credItem = actor.items.find(i => i.uuid === paymentSourceUuid) || await fromUuid(paymentSourceUuid);
+            if (credItem) {
+                paidWithCredstick = true;
+                const credData = CredstickService.getCredstickData(credItem);
+                if (credData.currentValue < basket.totalCost) {
+                    if (!allowOverrule) {
+                        ui.notifications.warn(`${actor.name}'s ${credItem.name} does not have enough funds. Needs ${basket.totalCost.toLocaleString()} ¥, but has ${credData.currentValue.toLocaleString()} ¥.`);
+                        return false;
+                    }
+                }
+                await CredstickService.deductCredstickFunds(credItem, basket.totalCost);
+                if (basket.totalKarma > 0) {
+                    await actor.update({ "system.karma.value": currentKarma - basket.totalKarma });
+                }
+            }
+        }
+
+        if (!paidWithCredstick) {
+            if (currentNuyen < basket.totalCost) {
+                if (!allowOverrule) {
+                    ui.notifications.warn(`${actor.name} cannot afford this purchase. Needs ${basket.totalCost.toLocaleString()} ¥.`);
+                    return false;
+                }
+            }
+            await actor.update({
+                "system.nuyen": currentNuyen - basket.totalCost,
+                "system.karma.value": currentKarma - basket.totalKarma
+            });
+        }
 
         const itemsToCreate = [];
         const workshopModsAdded = [];
@@ -563,12 +637,12 @@ export class PurchaseService {
 
     static _recalculateTotals(basket) {
         const items = basket.basketItems || basket.shoppingCartItems || [];
-        basket.totalCost = items.reduce((acc, item) => acc + ((item.cost || 0) * (item.buyQuantity || 0)), 0);
-        basket.totalKarma = items.reduce((acc, item) => acc + ((item.karma || 0) * (item.buyQuantity || 0)), 0);
-        basket.totalEssenceCost = items.reduce((acc, item) => acc + ((item.essence || 0) * (item.buyQuantity || 0)), 0);
+        basket.totalCost = items.reduce((acc, item) => acc + ((Number(item.cost) || 0) * (Number(item.buyQuantity ?? item.quantity) || 1)), 0);
+        basket.totalKarma = items.reduce((acc, item) => acc + ((Number(item.karma) || 0) * (Number(item.buyQuantity ?? item.quantity) || 1)), 0);
+        basket.totalEssenceCost = items.reduce((acc, item) => acc + ((Number(item.essence) || 0) * (Number(item.buyQuantity ?? item.quantity) || 1)), 0);
 
         const basketService = new BasketService();
-        basket.totalAvailability = basketService._combineAvailabilities(items.flatMap(item => Array(item.buyQuantity || 1).fill(item.availability)));
+        basket.totalAvailability = basketService._combineAvailabilities(items.flatMap(item => Array(Number(item.buyQuantity ?? item.quantity) || 1).fill(item.availability)));
 
         return basket;
     }

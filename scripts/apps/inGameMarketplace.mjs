@@ -8,6 +8,8 @@ import { DialogTestModifierService as DialogModifierService } from '../apps/docu
 import { AppTestFlagService } from '../services/AppTestFlagService.mjs';
 import { MODULE_ID } from '../lib/constants.mjs';
 import { ActorSelectionService } from '../services/ActorSelectionService.mjs';
+import { CredstickService } from '../services/credstickService.mjs';
+import { PurchaseService } from '../services/purchaseService.mjs';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -80,7 +82,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         return foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
             id: "inGameMarketplace",
             position: { width: 910, height: 800, top: 50, left: 120 },
-            window: { title: "SR5.PurchaseScreen", resizable: true },
+            window: { title: "SR5Marketplace.Marketplace.Title", resizable: true },
             actions: {
                 changeTab: this.#onChangeTab,
                 toggleActorList: this.#onToggleActorList,
@@ -111,7 +113,8 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 showAvailabilityDialog: this.#onShowAvailabilityDialog,
                 selectContact: this.#onSelectContact,
                 changeReviewActor: this.#onChangeReviewActor,
-                changeAvailabilityTestRule: this.#onChangeAvailabilityTestRule
+                changeAvailabilityTestRule: this.#onChangeAvailabilityTestRule,
+                changePaymentSource: this.#onChangePaymentSource
             }
         }, { inplace: false });
     }
@@ -190,6 +193,15 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                     }
                 });
             });
+        }
+
+        if (this.tabGroups.main === "orderReview") {
+            const reviewInputs = this.element.querySelectorAll(".gm-review-input");
+            for (const input of reviewInputs) {
+                input.addEventListener("change", (event) => {
+                    inGameMarketplace.#onUpdatePendingItem(event, input, this);
+                });
+            }
         }
 
         // Restore shopping cart scroll position
@@ -328,6 +340,20 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                             return contactData;
                         });
 
+                    // 2b. Get available credsticks owned by actor
+                    partialContext.credsticks = itemSource.items
+                        .filter(i => CredstickService.isCredstick(i))
+                        .map(c => {
+                            const credData = CredstickService.getCredstickData(c);
+                            return {
+                                uuid: c.uuid,
+                                name: c.name,
+                                currentValue: credData.currentValue,
+                                maxValue: credData.maxValue,
+                                isSelected: basket.paymentSourceUuid === c.uuid
+                            };
+                        });
+
                     // 3. Resolve shop connection and employee contact items if active
                     if (basket.shopActorUuid) {
                         const shopDoc = await fromUuid(basket.shopActorUuid);
@@ -442,6 +468,9 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 // Group requests by actor
                 const groupedByActor = {};
                 for (const req of allPendingRequests) {
+                    if (req.basket) {
+                        PurchaseService._recalculateTotals(req.basket);
+                    }
                     const actorUuid = req.actor?.uuid || "unknown";
                     if (!groupedByActor[actorUuid]) {
                         groupedByActor[actorUuid] = {
@@ -811,13 +840,26 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         this.render();
     }
 
-    static async #onUpdatePendingItem(event, target) {
+    static async #onUpdatePendingItem(event, target, app) {
         const requestBlock = target.closest(".pending-request-block");
         const itemRow = target.closest(".item-row");
+        const userId = requestBlock?.dataset?.userId;
+        const basketUuid = requestBlock?.dataset?.basketUuid;
+        const basketItemUuid = itemRow?.dataset?.basketItemUuid;
         const property = target.dataset.property;
         const value = (target.type === "number") ? Number(target.value) : target.value;
-        await game.sr5marketplace.api.marketplace.updatePendingItem(requestBlock.dataset.userId, requestBlock.dataset.basketUuid, itemRow.dataset.basketItemUuid, property, value);
-        this.render();
+
+        if (!userId || !basketUuid || !basketItemUuid || !property) {
+            console.warn("SR5 Marketplace | Missing data attributes for #onUpdatePendingItem", { userId, basketUuid, basketItemUuid, property });
+            return;
+        }
+
+        await game.sr5marketplace.api.marketplace.updatePendingItem(userId, basketUuid, basketItemUuid, property, value);
+        if (app && typeof app.render === "function") {
+            app.render();
+        } else if (typeof this.render === "function") {
+            this.render();
+        }
     }
 
     /**
@@ -827,6 +869,12 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
      * contact's linked actor) and updates the persistent test state in the flag.
      * @private
      */
+    static async #onChangePaymentSource(event, target) {
+        const paymentSourceUuid = target.value;
+        await this.basketService.setPaymentSource(paymentSourceUuid);
+        this.render(false);
+    }
+
     static async #onSelectContact(event, target) {
         const clickedContactUuid = target.dataset.contactUuid;
         const basket = await this.basketService.getBasket();

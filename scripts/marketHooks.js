@@ -45,6 +45,7 @@ import { MarketplaceSettingsApp } from "./apps/MarketplaceSettingsApp.mjs";
 import { MarketShouterApp } from "./apps/marketshouter.mjs";
 import { registerShopRegionHooks } from "./apps/documents/sceneRegions/shopRegions.mjs";
 import { ShopActorSheet } from "../sheets/ShopActorSheet.mjs";
+import { getMarketplaceEquipmentSheetClass } from "../sheets/MarketplaceEquipmentSheet.mjs";
 // --- 4. API IMPORTS ---
 import { MarketplaceAPI, SR5SystemAPI } from './API/_module.mjs';
 import { ItemBuilderApp } from "./apps/ItemBuilderApp.mjs";
@@ -160,12 +161,22 @@ const initializeSettings = () => {
     });
 
     game.settings.register("sr5-marketplace", "approvalWorkflow", {
-        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.ApprovalWorkflow.name"),
-        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.ApprovalWorkflow.hint"),
+        name: "SR5Marketplace.Marketplace.Settings.ApprovalWorkflow.name",
+        hint: "SR5Marketplace.Marketplace.Settings.ApprovalWorkflow.hint",
         scope: "world",
         config: true,
         type: Boolean,
         default: true,
+        restricted: true,
+    });
+
+    game.settings.register("sr5-marketplace", "allowGmOverruleMoney", {
+        name: "SR5Marketplace.Marketplace.Settings.AllowGmOverruleMoney.name",
+        hint: "SR5Marketplace.Marketplace.Settings.AllowGmOverruleMoney.hint",
+        scope: "world",
+        config: true,
+        type: Boolean,
+        default: false,
         restricted: true,
     });
 
@@ -649,12 +660,25 @@ Hooks.once("init", () => {
         });
     };
 
+    // Override default Item creation dialog to filter out sr5-marketplace.basket
+    const originalItemCreateDialog = CONFIG.Item.documentClass.createDialog;
+    CONFIG.Item.documentClass.createDialog = function (data = {}, options = {}) {
+        if (!options.types || options.types.length === 0) {
+            options.types = Object.keys(CONFIG.Item.typeLabels || {}).filter(t => t !== "sr5-marketplace.basket");
+        } else {
+            options.types = options.types.filter(t => t !== "sr5-marketplace.basket");
+        }
+        return originalItemCreateDialog.call(this, data, options);
+    };
+
     // Register the custom ShopActorSheet
     foundry.documents.collections.Actors.registerSheet("sr5-marketplace", ShopActorSheet, {
         types: [SHOP_ACTOR_TYPE],
         makeDefault: true,
         label: "SR5Marketplace.Marketplace.Shop.SheetName"
     });
+
+    // Note: MarketplaceEquipmentSheet is registered during 'setup' hook to wait until system item sheets are fully loaded.
 
 
     // --- NEW API REGISTRATION ---
@@ -688,7 +712,7 @@ Hooks.once("init", () => {
     game.sr5marketplace.SR5CreateActorApp = game.sr5marketplace.api.SR5CreateActorApp;
     //game.sr5marketplace.itemBuilder = game.sr5marketplace.api.itemBuilder;
 
-    // Register custom tests during setup after system has initialized its globals but before ready
+    // Register custom tests during setup after system has initialized its globals
     Hooks.once("setup", async () => {
         injectThemeChoices();
         const { registerTests } = await import('../utils/tests.mjs');
@@ -697,11 +721,31 @@ Hooks.once("init", () => {
     });
 });
 
+export function registerMarketplaceEquipmentSheet() {
+    try {
+        const EquipmentSheetClass = getMarketplaceEquipmentSheetClass(true);
+        if (!EquipmentSheetClass) {
+            console.warn("SR5 Marketplace | System SR5ItemSheet class not found yet. Skipping MarketplaceEquipmentSheet registration.");
+            return;
+        }
+        foundry.documents.collections.Items.registerSheet("sr5-marketplace", EquipmentSheetClass, {
+            types: ["equipment"],
+            makeDefault: true,
+            label: "SR5Marketplace.EquipmentSheet"
+        });
+        const parentName = Object.getPrototypeOf(EquipmentSheetClass).name;
+        console.log(`SR5 Marketplace | Successfully registered MarketplaceEquipmentSheet extending system class "${parentName}".`);
+    } catch (err) {
+        console.error("SR5 Marketplace | Failed to register MarketplaceEquipmentSheet:", err);
+    }
+}
+
 /**
  * A hook that runs when the game is fully ready and all data is loaded.
  */
 Hooks.on("ready", async () => {
-    console.log("SR5 Marketplace | Module is ready!");
+    console.log("SR5 Marketplace | Module is ready - Registering MarketplaceEquipmentSheet extending SR5ItemSheet...");
+    registerMarketplaceEquipmentSheet();
     injectThemeChoices();
 
     try {
@@ -1530,16 +1574,12 @@ Hooks.on("preCreateChatMessage", (message, data, options, userId) => {
     }
 });
 
-// Debug hook to inspect all created chat messages and identify their source
-Hooks.on("createChatMessage", (message, options, userId) => {
-    if (game.user.isGM) {
-        console.log("SR5 Marketplace Debug | ChatMessage Created:", {
-            id: message.id,
-            speaker: message.speaker,
-            whisper: message.whisper,
-            alias: message.alias,
-            content: message.content,
-            flags: message.flags
-        });
+// Remove sr5-marketplace.basket option if rendered in an Item creation dialog
+Hooks.on("renderDialog", (app, html, data) => {
+    const htmlElem = html instanceof HTMLElement ? html : html[0];
+    if (!htmlElem) return;
+    const basketOption = htmlElem.querySelector('select[name="type"] option[value="sr5-marketplace.basket"]');
+    if (basketOption) {
+        basketOption.remove();
     }
 });
