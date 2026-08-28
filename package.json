@@ -1,6 +1,6 @@
 {
   "name": "sr5-marketplace",
-  "version": "14.004.0",
+  "version": "1.0.0",
   "type": "module",
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",

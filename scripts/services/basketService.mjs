@@ -14,7 +14,6 @@ export class BasketService {
             createdForActor: null,
             selectedContactUuid: null,
             shopActorUuid: null,
-            paymentSourceUuid: "nuyen",
             totalCost: 0,
             totalAvailability: "0",
             totalKarma: 0,
@@ -138,55 +137,43 @@ export class BasketService {
         } else {
             // --- NEW KARMA LOGIC ---
             // 1. Start with the item's defined karma (if any)
-            let calculatedKarma = typeof item.system.karma === "object" && item.system.karma !== null ? (Number(item.system.karma.value) || 0) : (Number(item.system.karma) || 0);
+            let calculatedKarma = item.system.karma || 0;
 
             // 2. If it's a spell/complex form and has 0 karma, pull from Settings
             if (item.type === "spell" && calculatedKarma === 0) {
-                calculatedKarma = game.settings.get("sr5-marketplace", "karmaCostForSpell") || 5;
+                calculatedKarma = game.settings.get("sr5-marketplace", "karmaCostForSpell");
             } else if (item.type === "complex_form" && calculatedKarma === 0) {
-                calculatedKarma = game.settings.get("sr5-marketplace", "karmaCostForComplexForm") || 4;
+                calculatedKarma = game.settings.get("sr5-marketplace", "karmaCostForComplexForm");
             }
 
             const isVehicle = item.type === "vehicle";
-            const rawRating = !isVehicle ? (item.system.technology?.rating ?? item.system.rating ?? 0) : 0;
-            const effectiveRating = Math.max(1, Number(rawRating) || 0);
+            const defaultRating = !isVehicle ? (item.system.technology?.rating || 0) : 0;
 
             let finalCost = 0;
             if (isVehicle) {
-                finalCost = typeof item.system.cost === "object" && item.system.cost !== null ? (Number(item.system.cost.value) || 0) : (Number(item.system.cost) || 0);
-            } else if (item.system?.technology?.cost !== undefined) {
-                finalCost = typeof item.system.technology.cost === "object" && item.system.technology.cost !== null ? (Number(item.system.technology.cost.value) || 0) : (Number(item.system.technology.cost) || 0);
+                finalCost = typeof item.system.cost === "object" ? (item.system.cost.value ?? 0) : (item.system.cost ?? 0);
             } else {
-                finalCost = typeof item.system?.cost === "object" && item.system.cost !== null ? (Number(item.system.cost.value) || 0) : (Number(item.system?.cost) || 0);
+                finalCost = typeof item.system.technology?.cost === "object" ? (item.system.technology?.cost.value ?? 0) : (item.system.technology?.cost ?? 0);
             }
 
             let finalAvailability = "0";
             if (isVehicle) {
-                finalAvailability = typeof item.system.availability === "object" && item.system.availability !== null ? (item.system.availability.value ?? "0") : (item.system.availability ?? "0");
-            } else if (item.system?.technology?.availability !== undefined) {
-                finalAvailability = typeof item.system.technology.availability === "object" && item.system.technology.availability !== null ? (item.system.technology.availability.value ?? "0") : (item.system.technology.availability ?? "0");
+                finalAvailability = typeof item.system.availability === "object" ? (item.system.availability.value ?? "0") : (item.system.availability ?? "0");
             } else {
-                finalAvailability = typeof item.system?.availability === "object" && item.system.availability !== null ? (item.system.availability.value ?? "0") : (item.system?.availability ?? "0");
+                finalAvailability = typeof item.system.technology?.availability === "object" ? (item.system.technology?.availability.value ?? "0") : (item.system.technology?.availability ?? "0");
             }
 
-            let finalEssence = 0;
-            if (item.system?.essence !== undefined) {
-                finalEssence = typeof item.system.essence === "object" && item.system.essence !== null ? (Number(item.system.essence.value) || 0) : (Number(item.system.essence) || 0);
-            }
+            let finalEssence = !isVehicle ? (item.system.essence || 0) : 0;
 
-            try {
-                const cloned = item.clone({ "system.technology.rating": effectiveRating }, { keepId: true });
-                const clonedCost = typeof cloned.system.technology?.cost === "object" ? cloned.system.technology?.cost?.value : cloned.system.technology?.cost;
-                const fallbackCost = typeof cloned.system?.cost === "object" ? cloned.system.cost.value : cloned.system?.cost;
-                if (clonedCost !== undefined && !isNaN(Number(clonedCost)) && Number(clonedCost) > 0) {
-                    finalCost = Number(clonedCost);
-                } else if (fallbackCost !== undefined && !isNaN(Number(fallbackCost)) && Number(fallbackCost) > 0) {
-                    finalCost = Number(fallbackCost);
+            if (defaultRating > 0) {
+                try {
+                    const cloned = item.clone({ "system.technology.rating": defaultRating }, { keepId: true });
+                    finalCost = cloned.system.technology?.cost ?? finalCost;
+                    finalAvailability = cloned.system.technology?.availability ?? finalAvailability;
+                    finalEssence = cloned.system.essence ?? finalEssence;
+                } catch (err) {
+                    console.warn("SR5 Marketplace | Failed to clone item for dynamic calculation on add:", err);
                 }
-                finalAvailability = cloned.system.technology?.availability ?? cloned.system.availability ?? finalAvailability;
-                finalEssence = typeof cloned.system.essence === "object" ? (cloned.system.essence?.value ?? 0) : (cloned.system.essence ?? finalEssence);
-            } catch (err) {
-                console.warn("SR5 Marketplace | Failed to clone item for dynamic calculation on add:", err);
             }
 
             if (shopItem) {
@@ -199,10 +186,10 @@ export class BasketService {
                 buyQuantity: 1,
                 name: item.name,
                 img: item.img,
-                cost: Number(finalCost) || 0,
-                karma: Number(calculatedKarma) || 0,
+                cost: finalCost,
+                karma: calculatedKarma,
                 availability: finalAvailability,
-                essence: Number(finalEssence) || 0,
+                essence: finalEssence,
                 itemQuantity: behavior === 'stack' ? 10 : (item.system.quantity || 1),
                 rating: defaultRating,
                 selectedRating: defaultRating,
@@ -377,19 +364,10 @@ export class BasketService {
                         }
                     }
 
-                    const effectiveRating = Math.max(1, Number(value) || 0);
-                    const cloned = sourceItem.clone({ "system.technology.rating": effectiveRating }, { keepId: true });
-                    const clonedCost = typeof cloned.system.technology?.cost === "object" ? cloned.system.technology?.cost?.value : cloned.system.technology?.cost;
-                    const fallbackCost = typeof cloned.system?.cost === "object" ? cloned.system.cost.value : cloned.system?.cost;
-                    if (shopItem) {
-                        targetItem.cost = shopItem.sellPrice.value;
-                    } else if (clonedCost !== undefined && !isNaN(Number(clonedCost)) && Number(clonedCost) > 0) {
-                        targetItem.cost = Number(clonedCost);
-                    } else if (fallbackCost !== undefined && !isNaN(Number(fallbackCost)) && Number(fallbackCost) > 0) {
-                        targetItem.cost = Number(fallbackCost);
-                    }
-                    targetItem.availability = cloned.system.technology?.availability ?? cloned.system.availability ?? targetItem.availability;
-                    targetItem.essence = typeof cloned.system.essence === "object" ? (cloned.system.essence?.value ?? 0) : (cloned.system.essence ?? targetItem.essence);
+                    const cloned = sourceItem.clone({ "system.technology.rating": value }, { keepId: true });
+                    targetItem.cost = shopItem ? shopItem.sellPrice.value : (cloned.system.technology?.cost ?? targetItem.cost);
+                    targetItem.availability = cloned.system.technology?.availability ?? targetItem.availability;
+                    targetItem.essence = cloned.system.essence ?? targetItem.essence;
                 } catch (err) {
                     console.warn("SR5 Marketplace | Failed to clone item for dynamic calculation on update:", err);
                 }
@@ -402,11 +380,11 @@ export class BasketService {
 
     _recalculateTotals(basket) {
         // This helper now correctly calculates totals based on the shoppingCartItems array.
-        const items = basket.shoppingCartItems || basket.basketItems || [];
-        basket.totalCost = items.reduce((acc, item) => acc + ((Number(item.cost) || 0) * (Number(item.buyQuantity) || 1)), 0);
-        basket.totalKarma = items.reduce((acc, item) => acc + ((Number(item.karma) || 0) * (Number(item.buyQuantity) || 1)), 0);
-        basket.totalEssenceCost = items.reduce((acc, item) => acc + ((Number(item.essence) || 0) * (Number(item.buyQuantity) || 1)), 0);
-        const allAvailabilities = items.flatMap(item => Array(Number(item.buyQuantity) || 1).fill(item.availability));
+        const items = basket.shoppingCartItems || [];
+        basket.totalCost = items.reduce((acc, item) => acc + ((item.cost || 0) * (item.buyQuantity || 0)), 0);
+        basket.totalKarma = items.reduce((acc, item) => acc + ((item.karma || 0) * (item.buyQuantity || 0)), 0);
+        basket.totalEssenceCost = items.reduce((acc, item) => acc + ((item.essence || 0) * (item.buyQuantity || 0)), 0);
+        const allAvailabilities = items.flatMap(item => Array(item.buyQuantity || 1).fill(item.availability));
         basket.totalAvailability = this._combineAvailabilities(allAvailabilities);
         return basket;
     }
@@ -448,17 +426,6 @@ export class BasketService {
         const basket = await this.getBasket();
         basket.shopActorUuid = actorUuid;
         await this.saveBasket(basket);
-    }
-
-    /**
-     * Updates the selected payment source in the user's basket.
-     * @param {string} paymentSourceUuid The UUID of the selected payment source (or "nuyen").
-     * @param {string|null} [userId=null]
-     */
-    async setPaymentSource(paymentSourceUuid, userId = null) {
-        const basket = await this.getBasket(userId);
-        basket.paymentSourceUuid = paymentSourceUuid || "nuyen";
-        await this.saveBasket(basket, userId);
     }
 
     /**
