@@ -28,6 +28,56 @@
     display: flex !important;
 }
 
+/* ================================================================== */
+/* Custom Select & Option Theme Styling (Dark / Light Mode Support)   */
+/* ================================================================== */
+
+.sr5-marketplace select,
+.application.sr5-marketplace-shop select,
+#payment-source-select {
+    background-color: var(--input-bg-transparent, rgba(15, 23, 42, 0.75)) !important;
+    color: var(--text-color-primary, #f8fafc) !important;
+    border: 1px solid var(--border-color-medium, rgba(255, 255, 255, 0.25)) !important;
+    border-radius: 6px !important;
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+    outline: none !important;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sr5-marketplace select:focus,
+.application.sr5-marketplace-shop select:focus,
+#payment-source-select:focus {
+    border-color: var(--color-yellow-base, #fbbf24) !important;
+    box-shadow: 0 0 6px rgba(251, 191, 36, 0.4) !important;
+}
+
+/* Styled dropdown options popup list */
+.sr5-marketplace select option,
+.application.sr5-marketplace-shop select option,
+#payment-source-select option {
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+    padding: 8px 12px !important;
+}
+
+/* Theme-specific Light Mode support (Neon Light & Apple Silicon) */
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) select,
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) select,
+:is(.theme-neon-light, .theme-silicon) #payment-source-select {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+:is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) select option,
+:is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) select option,
+:is(.theme-neon-light, .theme-silicon) #payment-source-select option {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+}
+
 /* Tell Tailwind where your templates are */
 @source "../templates";
 @source "../scripts";

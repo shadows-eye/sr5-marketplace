@@ -161,8 +161,8 @@ const initializeSettings = () => {
     });
 
     game.settings.register("sr5-marketplace", "approvalWorkflow", {
-        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.ApprovalWorkflow.name"),
-        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.ApprovalWorkflow.hint"),
+        name: "SR5Marketplace.Marketplace.Settings.ApprovalWorkflow.name",
+        hint: "SR5Marketplace.Marketplace.Settings.ApprovalWorkflow.hint",
         scope: "world",
         config: true,
         type: Boolean,
@@ -171,8 +171,8 @@ const initializeSettings = () => {
     });
 
     game.settings.register("sr5-marketplace", "allowGmOverruleMoney", {
-        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.AllowGmOverruleMoney.name"),
-        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.AllowGmOverruleMoney.hint"),
+        name: "SR5Marketplace.Marketplace.Settings.AllowGmOverruleMoney.name",
+        hint: "SR5Marketplace.Marketplace.Settings.AllowGmOverruleMoney.hint",
         scope: "world",
         config: true,
         type: Boolean,

@@ -153,8 +153,12 @@
                 }
             },
             "ApprovalWorkflow": {
-                "name": "GM Genehmigungsprocess",
-                "hint": "Schalte diese Einstellung um den Genehmigungsprocess für Spielerkäufe zu deaktivieren!"
+                "name": "GM Genehmigungsprozess",
+                "hint": "Schalte diese Einstellung um den Genehmigungsprozess für Spielerkäufe zu deaktivieren!"
+            },
+            "AllowGmOverruleMoney": {
+                "name": "GM-Übersteuerung: Unzureichendes Guthaben erlauben",
+                "hint": "Erlaubt Spielleitern, Käufe zu genehmigen oder auszuführen, selbst wenn der Charakter oder Credstick nicht genügend Guthaben hat."
             },
             "ChatRequestEnabled": {
                 "name": "Chat-Nachricht: Kaufanfragen",
@@ -343,6 +347,8 @@
         },
         "Basket": {
             "Title": "Einkaufskorb",
+            "PaymentSource": "Zahlungsmittel",
+            "NuyenCash": "Konto",
             "Contents": "Inhalt",
             "CurrentContents": "Aktueller Inhalt",
             "SelectItem": "Artikel auswählen",

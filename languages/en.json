@@ -333,7 +333,11 @@
                 },
                 "ApprovalWorkflow": {
                     "name": "GM Approval Workflow",
-                    "hint": "Toggle this setting to Disable the approval workflow for player purchases!"
+                    "hint": "Toggle this setting to disable the approval workflow for player purchases."
+                },
+                "AllowGmOverruleMoney": {
+                    "name": "Allow GM Overrule: Insufficient Funds",
+                    "hint": "Allow GMs to approve or execute purchases even if the character or credstick has insufficient funds."
                 },
                 "ChatRequestEnabled": {
                     "name": "Chat Message: Purchase Requests",
@@ -522,6 +526,8 @@
             },
             "Basket": {
                 "Title": "Shopping Basket",
+                "PaymentSource": "Payment Source",
+                "NuyenCash": "Account",
                 "Contents": "Contents",
                 "CurrentContents": "Current Contents",
                 "SelectItem": "Select Item",

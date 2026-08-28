@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added Credstick header and footer partial templates with "Is Credstick" toggle, type selector (Standard, Silver, Gold, Platinum, Ebony), and balance tracker widget.
   - Automatic synchronization of item cost, rating, and availability when credstick configuration updates.
   - Integrated `CredstickService` for deducting funds from credsticks in inventory during marketplace checkout with dynamic red over-capacity balance warning indicator.
+- **Payment Source Localisation & UI Refinement**:
+  - Added missing `PaymentSource` and `NuyenCash` localization keys (`Konto` / `Account`).
+  - Icon-only wallet label with native `title` attribute.
+  - Custom theme-aware styling for `<select>` and `<option>` popup lists for Dark and Light modes.
+- **Order Review GM Editing & Calculation Improvements**:
+  - User ID dataset fallback (`{{#if this.user.id}}...`) and change event listener delegation preventing input resets.
+  - Automatic dynamic recalculation of pending request totals and minimum floor (`effectiveRating >= 1`) for rating 0 items.
+  - Bypassed money overrule setting requirements when GM approval workflow is disabled.
 - **NPC Actor Creation & Archetype Smart-Default**:
   - Added a dedicated "Is NPC" (`isNpc`) toggle under the Actor Type selector for character actors.
   - Selecting any quick-build archetype automatically defaults `isNpc = true` (checked), while blank actor creation defaults to `false`.
