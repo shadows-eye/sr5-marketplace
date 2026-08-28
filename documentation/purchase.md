@@ -2,7 +2,7 @@
 
 [← Back to Main Overview](./main.md)
 
-`PurchaseService` provides the backend workflow logic for submits, reviews, rejections, approvals, and resource updates. It handles GM approval workflows, posts confirmation cards to the chat log, and manages resource deduction (Nuyen/Karma) on purchasing characters.
+`PurchaseService` provides the backend workflow logic for submits, reviews, rejections, approvals, and resource updates. It handles GM approval workflows, posts confirmation cards to the chat log (or Smartphone app), and manages resource deduction (Nuyen cash, Karma, and Credstick balances) on purchasing characters.
 
 The service is accessible via:
 * `game.sr5marketplace.PurchaseService` (The `PurchaseService` class)
@@ -16,11 +16,11 @@ Returns the total count of pending purchase requests waiting for GM review acros
 * **Returns**: `Number`
 
 ### `getAllPendingRequests()`
-Retrieves an array of all pending purchase requests across all players. Only returns data for GM accounts.
-* **Returns**: `Promise<Array<object>>` - Returns array of requests with `{ user, basket, actor }` properties.
+Retrieves an array of all pending purchase requests across all players. Only returns data for GM accounts. Automatically resolves payment source names (e.g. `"Nuyen (Cash)"` or the specific Credstick item name).
+* **Returns**: `Promise<Array<object>>` - Returns array of request objects with `{ user, basket, actor }` properties, where `basket.paymentSourceName` contains the formatted payment method label.
 
 ### `submitForReview(userId)`
-Submits the active shopping cart for a user to the GM's review queue, clears their active shopping cart fields, and posts a review request card to the chat log.
+Submits the active shopping cart for a user to the GM's review queue, clears their active shopping cart fields, preserves test states and payment source, and posts a review request card to the chat log.
 * **Parameters**:
   - `userId` (String): ID of the user submitting the request.
 * **Returns**: `Promise<void>`
@@ -36,7 +36,7 @@ Updates properties (such as price, rating, or count overrides) on a pending item
 * **Returns**: `Promise<void>`
 
 ### `rejectItemFromRequest(userId, basketUUID, basketItemUuid)`
-Rejects and removes a single item from a player's pending purchase request and posts a rejection notification to the chat.
+Rejects and removes a single item from a player's pending purchase request, recalculates request totals, and posts a rejection notification to the chat or Smartphone app.
 * **Parameters**:
   - `userId` (String)
   - `basketUUID` (String)
@@ -44,21 +44,21 @@ Rejects and removes a single item from a player's pending purchase request and p
 * **Returns**: `Promise<void>`
 
 ### `rejectBasket(userId, basketUUID)`
-Rejects and removes an entire pending request from the queue, notifies the player via sockets, and post a rejection summary card to the chat.
+Rejects and removes an entire pending request from the queue, notifies the player via sockets, and posts a rejection summary card to the chat or Smartphone app.
 * **Parameters**:
   - `userId` (String)
   - `basketUUID` (String)
 * **Returns**: `Promise<void>`
 
 ### `approveBasket(userId, basketUUID)`
-Approves a pending request, triggers character inventory creation, deducts resources, and clears the review queue slot.
+Approves a pending request, triggers character inventory creation or vehicle actor spawning, deducts resources (cash, Karma, or Credstick balance), and removes the approved request from the queue.
 * **Parameters**:
   - `userId` (String)
   - `basketUUID` (String)
 * **Returns**: `Promise<void>`
 
 ### `directPurchase(actor, basket, options)`
-Directly executes the purchase transaction. Validates resources (Nuyen and Karma), deducts the totals from the character document, clones compendium item schemas onto the actor, and renders a chat confirmation card.
+Directly executes the purchase transaction. Validates payment resources (Nuyen cash, Karma, or Credstick balance via `CredstickService`), deducts totals from the actor or credstick item, clones compendium item schemas onto the actor (or creates vehicle actors), and renders a chat/smartphone confirmation card.
 * **Parameters**:
   - `actor` (Actor): The purchasing actor document.
   - `basket` (Object): The basket or request details object.
@@ -68,17 +68,38 @@ Directly executes the purchase transaction. Validates resources (Nuyen and Karma
 
 ---
 
+## Payment & Credstick Deductions
+
+When executing a purchase via `directPurchase`:
+
+1. **Credstick Payment**:
+   - If `basket.paymentSourceUuid` points to a Credstick item on the actor (UUID != `"nuyen"`):
+     - Resolves the Credstick item on the actor.
+     - Validates that `credData.currentValue >= basket.totalCost` (unless GM overrule is enabled via `allowGmOverruleMoney`).
+     - Calls `CredstickService.deductCredstickFunds(credItem, basket.totalCost)` to deduct the purchase cost directly from the credstick's balance flag.
+     - Deducts any required Karma from `actor.system.karma.value`.
+2. **Nuyen Cash Payment**:
+   - If `paymentSourceUuid` is `"nuyen"` (or credstick is invalid/unselected):
+     - Validates that `actor.system.nuyen >= basket.totalCost` (unless GM overrule is enabled).
+     - Deducts cost from `actor.system.nuyen` and Karma from `actor.system.karma.value`.
+
+---
+
 ## Code Examples
 
-### Example 1: Direct Purchase Macro (Skipping GM Approval)
-Use this macro to purchase items directly for a character immediately:
+### Example 1: Direct Purchase Macro with Credstick Payment
+Use this macro to purchase items directly for a character using a Credstick as the payment source:
 
 ```javascript
 const character = game.user.character;
 if (!character) {
     ui.notifications.warn("Please select a character.");
 } else {
+    // Find a credstick in the character's inventory
+    const credstick = character.items.find(i => i.flags?.["sr5-marketplace"]?.credstick === true);
+    
     const basketData = {
+        paymentSourceUuid: credstick ? credstick.uuid : "nuyen",
         totalCost: 1500,
         totalKarma: 0,
         totalEssenceCost: 0,
@@ -98,7 +119,7 @@ if (!character) {
     });
 
     if (success) {
-        ui.notifications.info("Purchase completed successfully!");
+        ui.notifications.info(`Purchase completed successfully using ${credstick ? credstick.name : "Nuyen Cash"}!`);
     }
 }
 ```
@@ -117,7 +138,7 @@ if (!game.user.isGM) {
         ui.notifications.info("No pending purchase requests.");
     } else {
         for (const req of pending) {
-            console.log(`Approving basket ${req.basket.basketUUID} for user ${req.user.name}`);
+            console.log(`Approving basket ${req.basket.basketUUID} for user ${req.user.name} (Payment: ${req.basket.paymentSourceName})`);
             await PurchaseService.approveBasket(req.user._id, req.basket.basketUUID);
         }
         ui.notifications.info(`Approved ${pending.length} baskets.`);

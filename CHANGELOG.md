@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [14.004.0] - 2026-08-28
+## [14.003.2] - 2026-08-28
 
 ### Added
 - **Marketplace Equipment Sheet Extension**:
