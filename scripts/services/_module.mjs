@@ -28,8 +28,6 @@ export const factoryFlow = new FactoryFlow();
 export const buildService = new BuildService();
 export { InventoryRules } from './inventory-rules.mjs';
 
-export { CredstickService, CREDSTICK_TYPES } from './credstickService.mjs';
-
 // 3. Re-export classes (Export the class under its original name)
 export { 
  ActorItemServices, 

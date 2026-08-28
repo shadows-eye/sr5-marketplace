@@ -297,21 +297,6 @@
         },
         "Marketplace": {
             "Title": "Marketplace Purchase Screen",
-            "Credstick": {
-                "IsCredstick": "Credstick",
-                "IsCredstickHint": "Mark this equipment item as a Credstick with balance and capacity tracking.",
-                "Balance": "Balance",
-                "CurrentBalance": "Current balance of this credstick in Nuyen (¥)",
-                "MaxCapacity": "Max Capacity",
-                "OverCapacity": "OVER CAPACITY!",
-                "Types": {
-                    "standard": "Standard Credstick",
-                    "silver": "Silver Credstick",
-                    "gold": "Gold Credstick",
-                    "platinum": "Platinum Credstick",
-                    "ebony": "Ebony Credstick"
-                }
-            },
             "Tabs": {
                 "Shop": "Shop",
                 "OrderReview": "Order Review"
@@ -333,11 +318,7 @@
                 },
                 "ApprovalWorkflow": {
                     "name": "GM Approval Workflow",
-                    "hint": "Toggle this setting to disable the approval workflow for player purchases."
-                },
-                "AllowGmOverruleMoney": {
-                    "name": "Allow GM Overrule: Insufficient Funds",
-                    "hint": "Allow GMs to approve or execute purchases even if the character or credstick has insufficient funds."
+                    "hint": "Toggle this setting to Disable the approval workflow for player purchases!"
                 },
                 "ChatRequestEnabled": {
                     "name": "Chat Message: Purchase Requests",
@@ -526,8 +507,6 @@
             },
             "Basket": {
                 "Title": "Shopping Basket",
-                "PaymentSource": "Payment Source",
-                "NuyenCash": "Account",
                 "Contents": "Contents",
                 "CurrentContents": "Current Contents",
                 "SelectItem": "Select Item",

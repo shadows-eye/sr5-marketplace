@@ -297,21 +297,6 @@
         },
         "Marketplace": {
             "Title": "Marktplatz Fenster",
-            "Credstick": {
-                "IsCredstick": "Credstick",
-                "IsCredstickHint": "Dieses Ausrüstungsteil als Credstick mit Guthaben- und Kapazitätsverwaltung kennzeichnen.",
-                "Balance": "Guthaben",
-                "CurrentBalance": "Aktuelles Guthaben dieses Credsticks in Nuyen (¥)",
-                "MaxCapacity": "Max. Kapazität",
-                "OverCapacity": "KAPAZITÄT ÜBERSCHRITTEN!",
-                "Types": {
-                    "standard": "Standard-Credstick",
-                    "silver": "Silber-Credstick",
-                    "gold": "Gold-Credstick",
-                    "platinum": "Platin-Credstick",
-                    "ebony": "Ebony-Credstick"
-                }
-            },
             "Tabs": {
                 "Shop": "Laden",
                 "OrderReview": "Überprf."
@@ -332,12 +317,8 @@
                     }
                 },
                 "ApprovalWorkflow": {
-                    "name": "GM Genehmigungsprozess",
-                    "hint": "Schalte diese Einstellung um den Genehmigungsprozess für Spielerkäufe zu deaktivieren!"
-                },
-                "AllowGmOverruleMoney": {
-                    "name": "GM-Übersteuerung: Unzureichendes Guthaben erlauben",
-                    "hint": "Erlaubt Spielleitern, Käufe zu genehmigen oder auszuführen, selbst wenn der Charakter oder Credstick nicht genügend Guthaben hat."
+                    "name": "GM Genehmigungsprocess",
+                    "hint": "Schalte diese Einstellung um den Genehmigungsprocess für Spielerkäufe zu deaktivieren!"
                 },
                 "ChatRequestEnabled": {
                     "name": "Chat-Nachricht: Kaufanfragen",
@@ -526,8 +507,6 @@
             },
             "Basket": {
                 "Title": "Einkaufskorb",
-                "PaymentSource": "Zahlungsmittel",
-                "NuyenCash": "Konto",
                 "Contents": "Inhalt",
                 "CurrentContents": "Aktueller Inhalt",
                 "SelectItem": "Artikel auswählen",

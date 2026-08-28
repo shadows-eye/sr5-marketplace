@@ -7,22 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [14.004.0] - 2026-08-28
+## [14.003.1] - 2026-08-24
 
 ### Added
-- **Marketplace Equipment Sheet Extension & Credstick Integration**:
-  - Implemented `MarketplaceEquipmentSheet` extending system `SR5ItemSheet` registered on `ready` hook.
-  - Added Credstick header and footer partial templates with "Is Credstick" toggle, type selector (Standard, Silver, Gold, Platinum, Ebony), and balance tracker widget.
-  - Automatic synchronization of item cost, rating, and availability when credstick configuration updates.
-  - Integrated `CredstickService` for deducting funds from credsticks in inventory during marketplace checkout with dynamic red over-capacity balance warning indicator.
-- **Payment Source Localisation & UI Refinement**:
-  - Added missing `PaymentSource` and `NuyenCash` localization keys (`Konto` / `Account`).
-  - Icon-only wallet label with native `title` attribute.
-  - Custom theme-aware styling for `<select>` and `<option>` popup lists for Dark and Light modes.
-- **Order Review GM Editing & Calculation Improvements**:
-  - User ID dataset fallback (`{{#if this.user.id}}...`) and change event listener delegation preventing input resets.
-  - Automatic dynamic recalculation of pending request totals and minimum floor (`effectiveRating >= 1`) for rating 0 items.
-  - Bypassed money overrule setting requirements when GM approval workflow is disabled.
 - **NPC Actor Creation & Archetype Smart-Default**:
   - Added a dedicated "Is NPC" (`isNpc`) toggle under the Actor Type selector for character actors.
   - Selecting any quick-build archetype automatically defaults `isNpc = true` (checked), while blank actor creation defaults to `false`.
@@ -47,9 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Extracted HTML string construction from JavaScript into dedicated Handlebars partial templates (`character-description.html` and `character-chat-card.html`).
 
 ### Changed
-- **CSS Utility Collision Protection**:
-  - Added CSS protection rule (`.sr5v2 .list-item { display: flex !important; }`) in `styles/marketplace.css` to prevent Tailwind CSS utility collision.
-  - Hidden cost and availability scaling checkboxes in Edit Mode specifically on credstick item sheets.
 - **Active Effects Alignment (Shadowrun 5e System 0.37.0+)**:
   - Aligned all active effects across the builder and marketplace applications with the latest system active effects architecture (multi-target routing, filters, dynamic change values).
 - **ApplicationV2 Refactoring**:
@@ -59,20 +43,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Refined `.checkbox-custom` to exact 14x14px dimensions matching Compendium Browser styling (crisp dark unchecked square, gold-filled checked square with checkmark).
 
 ### Fixed
-- **Foundry VTT v14 Sheet Initialization Lifecycle**:
-  - Fixed `CONFIG.Item.sheetClasses` timing issue by moving equipment sheet registration to `Hooks.on("ready")`.
-  - Added strict `this.item?.type === "equipment"` type checks.
 - **Archetype Importer Skills Metadata**:
   - Resolved `TypeError: Cannot read properties of undefined (reading 'trim')` by establishing comprehensive `SKILL_METADATA` map in `constants.mjs` ensuring attributes, English attribute names, and skill categories are always populated for character import.
 - **Localization Resolution**:
   - Fixed missing localization keys (`SR5Marketplace.Factory.Workshop`, `SR5Marketplace.Marketplace.Shop.MatrixHost`, `SR5Marketplace.Marketplace.Shop.Employees`, and `OutOfStockWarning`).
-
----
-
-## [14.003.0] - 2026-08-24
-
-### Added
-- Initial 14.003 release foundation.
 
 ---
 

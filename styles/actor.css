@@ -72,7 +72,7 @@ add i:hover>hint {
     height: 100%;
 }
 
-.sr5-marketplace-shop-actor .sheet-top-content {
+.sheet-top-content {
     flex-shrink: 0;
     position: sticky;
     top: 0;
@@ -82,7 +82,9 @@ add i:hover>hint {
     padding: 5px;
 }
 
-.sr5-marketplace-shop-actor .sheet-body {
+
+
+.sheet-body {
     flex-grow: 1;
     overflow-y: auto;
     padding: 10px;
