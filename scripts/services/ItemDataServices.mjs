@@ -67,50 +67,60 @@ export default class ItemDataServices {
                 }
             }
 
-            // 2. Fetch from all visible Item Compendiums
-            const packs = game.packs.filter(p => p.metadata.type === "Item" && p.visible);
-            for (const pack of packs) {
-                const index = await pack.getIndex({
-                    fields: [
-                        "system.category", "system.type", "system.technology.cost", 
-                        "system.technology.rating", "system.technology.availability", 
-                        "system.karma", "system.essence", "system.quantity", 
-                        "system.range.ranges.category",
-                        "system.drain",
-                        "system.mount_point",
-                        "system.mod_weapon.mount_point",
-                        "system.slots",
-                        "system.modification_category"
-                    ]
-                });
+            // 2. Fetch from all visible Item Compendiums concurrently
+            const itemPacks = game.packs.filter(p => p.metadata.type === "Item" && p.visible);
+            const itemFields = [
+                "system.category", "system.type", "system.technology.cost", 
+                "system.technology.rating", "system.technology.availability", 
+                "system.karma", "system.essence", "system.quantity", 
+                "system.range.ranges.category",
+                "system.drain",
+                "system.mount_point",
+                "system.mod_weapon.mount_point",
+                "system.slots",
+                "system.modification_category"
+            ];
+            const itemIndexes = await Promise.all(
+                itemPacks.map(pack => pack.getIndex({ fields: itemFields }).catch(err => {
+                    console.error(`SR5 Marketplace | Error indexing item pack ${pack.collection}:`, err);
+                    return [];
+                }))
+            );
 
+            for (let i = 0; i < itemPacks.length; i++) {
+                const pack = itemPacks[i];
+                const index = itemIndexes[i] || [];
                 for (const entry of index) {
                     if (!excludedTypes.includes(entry.type) && !entry.name.includes('#[CF_tempEntity]')) {
                         entry.uuid = entry.uuid || `Compendium.${pack.collection}.${entry._id}`;
                         // Normalize mount_point from mod_weapon if present
-                        if (entry.system) {
-                            if (entry.system.mod_weapon?.mount_point) {
-                                entry.system.mount_point = entry.system.mod_weapon.mount_point;
-                            }
+                        if (entry.system?.mod_weapon?.mount_point) {
+                            entry.system.mount_point = entry.system.mod_weapon.mount_point;
                         }
                         allItems.push(entry);
                     }
                 }
             }
 
-            // 2b. Fetch from all visible Actor Compendiums
+            // 2b. Fetch from all visible Actor Compendiums concurrently
             const actorPacks = game.packs.filter(p => p.metadata.type === "Actor" && p.visible);
-            for (const pack of actorPacks) {
-                const index = await pack.getIndex({
-                    fields: [
-                        "system.cost",
-                        "system.availability",
-                        "system.isDrone",
-                        "system.isdrone",
-                        "system.importFlags"
-                    ]
-                });
+            const actorFields = [
+                "system.cost",
+                "system.availability",
+                "system.isDrone",
+                "system.isdrone",
+                "system.importFlags"
+            ];
+            const actorIndexes = await Promise.all(
+                actorPacks.map(pack => pack.getIndex({ fields: actorFields }).catch(err => {
+                    console.error(`SR5 Marketplace | Error indexing actor pack ${pack.collection}:`, err);
+                    return [];
+                }))
+            );
 
+            for (let i = 0; i < actorPacks.length; i++) {
+                const pack = actorPacks[i];
+                const index = actorIndexes[i] || [];
                 for (const entry of index) {
                     if (entry.type === "vehicle") {
                         entry.uuid = entry.uuid || `Compendium.${pack.collection}.${entry._id}`;
@@ -119,19 +129,17 @@ export default class ItemDataServices {
                 }
             }
 
-            // --- THE FIX: Pre-calculate and cache the heavy category objects ---
+            // Pre-calculate and cache the category objects in a single pass
             this._globalItemsCache = allItems;
             
             const categorizedAll = this._categorizeItems(allItems);
             this._categorizedAll = this._transformToAllItems(categorizedAll, allItems);
 
             const baseItems = allItems.filter(item => item.type !== "modification");
-            const categorizedBase = this._categorizeItems(baseItems);
-            this._categorizedBase = this._transformToBaseItems(categorizedBase, baseItems);
+            this._categorizedBase = this._transformToBaseItems(categorizedAll, baseItems);
 
             const modItems = allItems.filter(item => item.type === "modification");
-            const categorizedMods = this._categorizeItems(modItems);
-            this._categorizedMods = this._transformToModifications(categorizedMods, modItems);
+            this._categorizedMods = this._transformToModifications(categorizedAll, modItems);
 
             this._indexPromise = null;
             return allItems;
@@ -308,20 +316,19 @@ export default class ItemDataServices {
         const shopActor = await fromUuid(shopActorUuid);
         if (!shopActor?.system?.shop?.inventory) return this._transformToAllItems({}, []);
 
-        const shopItems = [];
-        // Resolve the UUIDs from the shop's inventory into lightweight objects
-        for (const invItem of Object.values(shopActor.system.shop.inventory)) {
+        const inventoryEntries = Object.values(shopActor.system.shop.inventory || {});
+        const shopItems = (await Promise.all(inventoryEntries.map(async (invItem) => {
+            if (!invItem?.itemUuid) return null;
             const item = await fromUuid(invItem.itemUuid);
-            if (item) {
-                const itemData = item.toObject(false);
-                itemData.uuid = item.uuid;
-                if (itemData.system?.technology) {
-                    itemData.system.technology.cost = invItem.sellPrice?.value ?? itemData.system.technology.cost;
-                    itemData.system.technology.availability = invItem.availability?.value ?? itemData.system.technology.availability;
-                }
-                shopItems.push(itemData);
+            if (!item) return null;
+            const itemData = item.toObject(false);
+            itemData.uuid = item.uuid;
+            if (itemData.system?.technology) {
+                itemData.system.technology.cost = invItem.sellPrice?.value ?? itemData.system.technology.cost;
+                itemData.system.technology.availability = invItem.availability?.value ?? itemData.system.technology.availability;
             }
-        }
+            return itemData;
+        }))).filter(Boolean);
         
         const categorized = this._categorizeItems(shopItems);
         return this._transformToAllItems(categorized, shopItems);

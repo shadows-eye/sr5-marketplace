@@ -96,7 +96,7 @@ Sets the active shop context in the basket, binding custom inventory rules and p
 * **Returns**: `Promise<void>`
 
 ### `setPaymentSource(paymentSourceUuid, userId)`
-Updates the selected payment source in the user's shopping cart.
+Updates the selected payment source in the user's active shopping cart flag (`"nuyen"` for cash or UUID of a Credstick item document). See [credstick.md](./credstick.md) for credstick validation and balance management.
 * **Parameters**:
   - `paymentSourceUuid` (String): UUID of the Credstick item on the purchasing actor, or `"nuyen"` for cash.
   - `userId` (String, optional): User ID. Defaults to current user.

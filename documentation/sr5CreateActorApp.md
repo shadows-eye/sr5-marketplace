@@ -12,7 +12,13 @@ The class is accessible via:
 
 ---
 
-## 1. NPC Actor Creation & Scaling (v14.003.0+)
+## 1. NPC Actor Creation & Scaling (v14.004.0+)
+
+### Dedicated "Is NPC" Toggle & Archetype Smart-Defaults
+* **Actor Type Selector**: Features an explicit "Is NPC" (`isNpc`) checkbox control.
+* **Smart Defaults**: Selecting any quick-build archetype automatically sets `isNpc = true` (checked), while blank actor creation defaults to `false`.
+* **Document Persistence**: Sets `system.is_npc: true|false` on the created Actor document for both manual creation and template imports.
+* **GM Whisper Setting**: Respects the `quickBuildWhisperGM` world setting. When enabled, character quick-build summaries are whispered directly to GM users only.
 
 ### Corporate Flavoring
 GMs can select a corporate affiliation to contextualize the generated NPC. Corporate flavors dynamically filter and prioritize corporate gear, specific item sets, and spell paradigms for magical builds.

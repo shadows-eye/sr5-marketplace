@@ -26,7 +26,7 @@ Submits the active shopping cart for a user to the GM's review queue, clears the
 * **Returns**: `Promise<void>`
 
 ### `updatePendingItem(userId, basketUUID, basketItemUuid, property, value)`
-Updates properties (such as price, rating, or count overrides) on a pending item inside the review queue and recalculates cart totals.
+Updates properties (such as cost, selectedRating, or buyQuantity overrides) on a pending item inside the GM review queue and automatically recalculates cart totals in real-time. Enforces a minimum rating floor (`effectiveRating >= 1`) for rating 0 item configurations.
 * **Parameters**:
   - `userId` (String): User ID.
   - `basketUUID` (String): Basket UUID.
@@ -51,14 +51,14 @@ Rejects and removes an entire pending request from the queue, notifies the playe
 * **Returns**: `Promise<void>`
 
 ### `approveBasket(userId, basketUUID)`
-Approves a pending request, triggers character inventory creation or vehicle actor spawning, deducts resources (cash, Karma, or Credstick balance), and removes the approved request from the queue.
+Approves a pending request, triggers character inventory creation or vehicle actor spawning, deducts resources (cash, Karma, or Credstick balance via `CredstickService`), and removes the approved request from the queue. Automatically bypasses money overrule setting requirements when GM approval workflow is disabled.
 * **Parameters**:
   - `userId` (String)
   - `basketUUID` (String)
 * **Returns**: `Promise<void>`
 
 ### `directPurchase(actor, basket, options)`
-Directly executes the purchase transaction. Validates payment resources (Nuyen cash, Karma, or Credstick balance via `CredstickService`), deducts totals from the actor or credstick item, clones compendium item schemas onto the actor (or creates vehicle actors), and renders a chat/smartphone confirmation card.
+Directly executes the purchase transaction. Validates payment resources (Nuyen cash, Karma, or Credstick balance via `CredstickService`), deducts totals from the actor or credstick item (`CredstickService.deductCredstickFunds`), clones compendium item schemas onto the actor (or creates vehicle actors), and renders a chat/smartphone confirmation card. Resolves human-readable payment source names (e.g. `"Nuyen (Cash)"` vs Credstick item label).
 * **Parameters**:
   - `actor` (Actor): The purchasing actor document.
   - `basket` (Object): The basket or request details object.
@@ -74,7 +74,7 @@ When executing a purchase via `directPurchase`:
 
 1. **Credstick Payment**:
    - If `basket.paymentSourceUuid` points to a Credstick item on the actor (UUID != `"nuyen"`):
-     - Resolves the Credstick item on the actor.
+     - Resolves the Credstick item on the actor using `CredstickService.getCredstickData(item)`.
      - Validates that `credData.currentValue >= basket.totalCost` (unless GM overrule is enabled via `allowGmOverruleMoney`).
      - Calls `CredstickService.deductCredstickFunds(credItem, basket.totalCost)` to deduct the purchase cost directly from the credstick's balance flag.
      - Deducts any required Karma from `actor.system.karma.value`.
