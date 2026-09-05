@@ -21,6 +21,7 @@ Click on any of the sections below to access their specific documentation page, 
 | `game.sr5marketplace.itemData` | `ItemDataServices` | Direct access to global and shop-specific item databases, index builders, and category filters. | [itemData.md](./itemData.md) |
 | `game.sr5marketplace.PurchaseService` | `PurchaseService` | Backend operations managing shopping carts submissions, reviews, GM approvals, and rejections. | [purchase.md](./purchase.md) |
 | `game.sr5marketplace.BasketService` | `BasketService` | Active shopping cart operations (get/save basket, add items, set contact, clear cart). | [basket.md](./basket.md) |
+| `game.sr5marketplace.CredstickService` | `CredstickService` | Credstick balance tracking, tier limits, fund deductions, and dynamic equipment sheet integration. | [credstick.md](./credstick.md) |
 | `game.sr5marketplace.SR5CreateActorApp` | `SR5CreateActorApp` | Custom Actor Creation application supporting shop initialization, corporate flavors, and professional level scaling. | [sr5CreateActorApp.md](./sr5CreateActorApp.md) |
 | `game.sr5marketplace.api.AppDialogBuilder` | `AppDialogBuilder` | Router and context builder that constructs structured test UI parameters (availability/opposed rolls). | [appDialogBuilder.md](./appDialogBuilder.md) |
 

@@ -11,7 +11,9 @@ Programmatic control is handled via:
 
 ## 1. UI Class: `inGameMarketplace`
 
-### Constructor Options
+### Constructor Options & Startup Readiness (v14.004.1)
+The marketplace top-bar search bar and controls are available immediately upon joining the game world, allowing instant search filtering while item database indexing runs seamlessly in the background.
+
 When creating a new instance of the marketplace, you can configure it via its constructor options:
 
 ```javascript
@@ -23,6 +25,20 @@ const app = new game.sr5marketplace.inGameMarketplace({
 
 * **`shopActorUuid`**: (String, optional) If provided, the marketplace opens as a shop window showing the specified Shop Actor's customized inventory and prices. If omitted, it defaults to **Global Mode** (showing all items across compendiums and world items) or automatically detects if the purchasing actor is inside a Shop Region on the canvas.
 * **`initialSearchTerm`**: (String, optional) Pre-populates the live search filter in the shop.
+
+---
+
+## 2. Shop Actor Sheet Configuration
+
+GMs can configure shop behavior directly on the `ShopActorSheet` management tab:
+* **Markup Percentage**: Set shop price markup or markdown percentage.
+* **Shop Radius**: Set token detection radius on canvas.
+* **Factory / Workshop Integration**:
+  * `system.shop.isFactory` (`Boolean`): Toggles whether the shop functions as a factory/workshop.
+  * `system.shop.factoryRating` (`Number`): Workshop rating scale from 1 to 6.
+* **Serving Employee**: Assigns an employee Actor document to provide social test skill bases.
+
+---
 
 ### Instance Methods
 
