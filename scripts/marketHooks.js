@@ -755,10 +755,11 @@ Hooks.on("ready", async () => {
         console.error("SR5 Marketplace | Failed to initialize System API bridge:", err);
     }
 
-    // --- REMOVED: await game.sr5marketplace.api.itemData.initialize(); ---
+    // Initialize MarketShouter bar immediately on ready so UI does not wait on compendium indexing
+    MarketShouterApp.initialize();
+
     game.sr5marketplace.api.itemData.buildIndex().then(() => {
         console.log("SR5 Marketplace | Item index successfully cached in memory.");
-        MarketShouterApp.initialize();
         Hooks.callAll("sr5marketplaceReady", game.sr5marketplace.api);
     });
     if (game.user.isGM) {
