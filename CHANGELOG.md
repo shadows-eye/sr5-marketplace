@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [14.004.1] - 2026-09-05
+
+### Improved
+- **World Load Performance**: Drastically reduced initial loading times when entering a game world, ensuring smooth startup even in worlds with extensive item compendiums and large item catalogs (#102).
+- **Instant Interface Availability**: The Marketplace search bar and top-bar UI controls now load and display immediately upon joining the game, allowing players and GMs to interact with the interface right away while background caching completes seamlessly.
+- **Responsive Shop Caching**: Optimized catalog indexing and shop item processing for faster responsiveness when browsing inventory collections.
+
+---
+
 ## [14.004.0] - 2026-08-28
 
 ### Added
