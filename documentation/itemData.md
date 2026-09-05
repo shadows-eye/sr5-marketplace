@@ -9,6 +9,17 @@ The service is accessible via:
 
 ---
 
+## Performance & Async Caching Architecture (v14.004.1)
+
+With version `14.004.1`, `ItemDataServices` features an optimized indexing pipeline that unblocks world startup:
+
+1. **Parallel Compendium Indexing**: Compendium index fetching uses concurrent `Promise.all()` requests across all Item and Actor compendiums, replacing serial await loops.
+2. **Single-Pass Taxonomy Categorization**: `buildIndex()` processes item taxonomy categorization in a single pass across items, avoiding deep cloning overhead and redundant iterations.
+3. **Parallel Inventory UUID Resolution**: `getShopItems()` fetches shop inventory UUID documents in parallel via `Promise.all()`.
+4. **Non-Blocking Readiness**: Indexing executes asynchronously in the background on world load without stalling UI initialization or top-bar capsule rendering.
+
+---
+
 ## Properties & Constants
 
 ### Category and Icon Mappings

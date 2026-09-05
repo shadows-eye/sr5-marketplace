@@ -4,13 +4,15 @@
 
 The **MarketShouter** floating bar provides quick contextual access to the marketplace, shopping cart, item builder, and custom module actions from anywhere in Foundry VTT.
 
-With version `14.003.0`, third-party modules and custom scripts can register custom action buttons directly into the MarketShouter capsule bar.
+With version `14.004.1`, MarketShouter initializes instantly on world load during the `ready` hook. The floating bar and top-bar search controls display immediately so players and GMs can begin interacting with the interface right away while item caching completes asynchronously.
+
+Third-party modules and custom scripts can register custom action buttons directly into the MarketShouter capsule bar.
 
 ---
 
 ## 1. Readiness Hook: `sr5marketplaceReady`
 
-When the SR5 Marketplace module initializes its API and builds item index caches, it fires the standard hook `sr5marketplaceReady`. Third-party modules should listen for this hook to register custom MarketShouter buttons.
+When the SR5 Marketplace module initializes its API and completes item index loading, it fires the standard hook `sr5marketplaceReady`. Third-party modules should listen for this hook to register custom MarketShouter buttons or trigger custom marketplace integrations.
 
 ```javascript
 Hooks.once("sr5marketplaceReady", (api) => {
