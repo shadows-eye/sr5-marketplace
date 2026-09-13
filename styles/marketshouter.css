@@ -417,3 +417,9 @@
     transform: scale(0.9);
 }
 
+
+/* Suppress MarketShouter bar when full-screen creation wizards are active */
+body:has(#shadows-creater-wizard) .marketshouter-container,
+body.has-shadows-creater .marketshouter-container {
+    display: none !important;
+}
