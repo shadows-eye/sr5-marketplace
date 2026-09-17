@@ -1,3 +1,5 @@
+import { MarketplaceSettingsService } from "./MarketplaceSettingsService.mjs";
+
 /**
  * A helper function to safely retrieve a nested property from an object using a dot-notation string.
  * @param {object} obj The object to query.
@@ -43,32 +45,36 @@ export default class ItemDataServices {
             const excludedTypes = ["call_in_action", "critter_power", "host", "sprite_power", "contact", "skill"];
             let allItems = [];
 
-            // 1. Fetch custom items created in the local World
-            for (const item of game.items.contents) {
-                if (!excludedTypes.includes(item.type) && !item.name.includes('#[CF_tempEntity]')) {
-                    const itemData = item.toObject(false);
-                    itemData.uuid = item.uuid;
-                    // Normalize mount_point from mod_weapon if present
-                    if (itemData.system) {
-                        if (itemData.system.mod_weapon?.mount_point) {
-                            itemData.system.mount_point = itemData.system.mod_weapon.mount_point;
+            const allowWorldItems = MarketplaceSettingsService.isWorldItemsAllowed();
+
+            // 1. Fetch custom items created in the local World (if enabled)
+            if (allowWorldItems) {
+                for (const item of game.items.contents) {
+                    if (!excludedTypes.includes(item.type) && !item.name.includes('#[CF_tempEntity]')) {
+                        const itemData = item.toObject(false);
+                        itemData.uuid = item.uuid;
+                        // Normalize mount_point from mod_weapon if present
+                        if (itemData.system) {
+                            if (itemData.system.mod_weapon?.mount_point) {
+                                itemData.system.mount_point = itemData.system.mod_weapon.mount_point;
+                            }
                         }
+                        allItems.push(itemData);
                     }
-                    allItems.push(itemData);
+                }
+
+                // 1b. Fetch custom actors of type "vehicle" from the local World
+                for (const actor of game.actors.contents) {
+                    if (actor.type === "vehicle") {
+                        const actorData = actor.toObject(false);
+                        actorData.uuid = actor.uuid;
+                        allItems.push(actorData);
+                    }
                 }
             }
 
-            // 1b. Fetch custom actors of type "vehicle" from the local World
-            for (const actor of game.actors.contents) {
-                if (actor.type === "vehicle") {
-                    const actorData = actor.toObject(false);
-                    actorData.uuid = actor.uuid;
-                    allItems.push(actorData);
-                }
-            }
-
-            // 2. Fetch from all visible Item Compendiums concurrently
-            const itemPacks = game.packs.filter(p => p.metadata.type === "Item" && p.visible);
+            // 2. Fetch from all visible and allowed Item Compendiums concurrently
+            const itemPacks = game.packs.filter(p => p.metadata.type === "Item" && p.visible && MarketplaceSettingsService.isCompendiumAllowed(p.collection));
             const itemFields = [
                 "system.category", "system.type", "system.technology.cost", 
                 "system.technology.rating", "system.technology.availability", 
@@ -102,8 +108,8 @@ export default class ItemDataServices {
                 }
             }
 
-            // 2b. Fetch from all visible Actor Compendiums concurrently
-            const actorPacks = game.packs.filter(p => p.metadata.type === "Actor" && p.visible);
+            // 2b. Fetch from all visible and allowed Actor Compendiums concurrently
+            const actorPacks = game.packs.filter(p => p.metadata.type === "Actor" && p.visible && MarketplaceSettingsService.isCompendiumAllowed(p.collection));
             const actorFields = [
                 "system.cost",
                 "system.availability",

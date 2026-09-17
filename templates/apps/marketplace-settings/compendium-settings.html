@@ -1,0 +1,117 @@
+<div class="compendium-settings-app flex flex-col h-full overflow-hidden p-3 gap-3">
+    {{!-- HEADER BAR --}}
+    <div class="compendium-settings-header flex flex-col gap-2 pb-2 border-b border-[var(--border-color-medium)]">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-base font-bold text-[var(--color-yellow-base)] flex items-center gap-2 m-0">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                    {{localize "SR5Marketplace.CompendiumSettings.Title"}}
+                </h2>
+                <p class="text-xs text-[var(--text-color-primary)] opacity-70 m-0">
+                    {{localize "SR5Marketplace.CompendiumSettings.Description"}}
+                </p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" class="btn-action-small" data-action="selectAll">
+                    <i class="fa-solid fa-check-double"></i> {{localize "SR5Marketplace.UI.SelectAll"}}
+                </button>
+                <button type="button" class="btn-action-small" data-action="deselectAll">
+                    <i class="fa-solid fa-xmark"></i> {{localize "SR5Marketplace.UI.DeselectAll"}}
+                </button>
+            </div>
+        </div>
+
+        {{!-- SEARCH INPUT --}}
+        <div class="relative w-full">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 opacity-50 text-xs"></i>
+            <input type="text" class="compendium-search-input w-full pl-8 pr-3 py-1.5 text-xs bg-[var(--input-bg-transparent)] text-[var(--text-color-primary)] border border-[var(--border-color-medium)] rounded focus:border-[var(--color-yellow-base)] outline-none" placeholder="{{localize 'SR5Marketplace.CompendiumSettings.SearchPlaceholder'}}" value="{{searchQuery}}">
+        </div>
+    </div>
+
+    {{!-- SCROLLABLE CONTENT --}}
+    <div class="compendium-settings-content flex-1 overflow-y-auto flex flex-col gap-3 pr-1">
+        {{!-- WORLD ITEMS TOGGLE CARD --}}
+        <div class="compendium-card world-items-card {{#if allowWorldItems}}enabled{{/if}}">
+            <div class="compendium-card-header">
+                <div class="compendium-card-title-group">
+                    <i class="fa-solid fa-earth-americas compendium-card-icon world-items-icon"></i>
+                    <div class="compendium-card-name-wrap">
+                        <span class="compendium-card-title">{{localize "SR5Marketplace.CompendiumSettings.WorldItemsTitle"}}</span>
+                        <span class="compendium-card-pkg">{{localize "SR5Marketplace.CompendiumSettings.WorldItemsHint"}}</span>
+                    </div>
+                </div>
+                <label class="marketplace-switch" title="{{localize 'SR5Marketplace.CompendiumSettings.ToggleWorldItems'}}">
+                    <input type="checkbox" class="world-items-toggle" {{#if allowWorldItems}}checked{{/if}}>
+                    <span class="marketplace-slider"></span>
+                </label>
+            </div>
+        </div>
+
+        {{!-- COMPENDIUMS GRID --}}
+        <div class="compendiums-card-grid grid grid-cols-1 md:grid-cols-2 gap-2.5">
+            {{#each compendiums}}
+            <div class="compendium-card {{#if this.enabled}}enabled{{/if}}" data-pack-id="{{this.id}}" data-title="{{this.title}}" data-package="{{this.package}}">
+                <div class="compendium-card-header">
+                    <div class="compendium-card-title-group">
+                        <i class="{{this.icon}} compendium-card-icon"></i>
+                        <div class="compendium-card-name-wrap min-w-0">
+                            <span class="compendium-card-title truncate" title="{{this.title}}">{{this.title}}</span>
+                            <span class="compendium-card-pkg truncate" title="{{this.id}}">{{this.package}} &bull; {{this.id}}</span>
+                        </div>
+                    </div>
+                    <label class="marketplace-switch shrink-0" title="{{localize 'SR5Marketplace.CompendiumSettings.ToggleCompendium'}}">
+                        <input type="checkbox" class="compendium-toggle" data-pack-id="{{this.id}}" {{#if this.enabled}}checked{{/if}}>
+                        <span class="marketplace-slider"></span>
+                    </label>
+                </div>
+
+                <div class="compendium-card-stats flex flex-wrap items-center gap-1.5 mt-2 pt-2 border-t border-[var(--border-color-light)]">
+                    {{#if this.counts.weapons}}
+                    <span class="stat-pill weapons" title="{{localize 'SR5Marketplace.Marketplace.ItemTypes.Weapons'}}">
+                        <i class="fa-solid fa-gun"></i> {{this.counts.weapons}}
+                    </span>
+                    {{/if}}
+                    {{#if this.counts.gear}}
+                    <span class="stat-pill gear" title="{{localize 'SR5Marketplace.Marketplace.ItemTypes.Equipment'}}">
+                        <i class="fa-solid fa-toolbox"></i> {{this.counts.gear}}
+                    </span>
+                    {{/if}}
+                    {{#if this.counts.armor}}
+                    <span class="stat-pill armor" title="{{localize 'SR5Marketplace.Marketplace.ItemTypes.Armor'}}">
+                        <i class="fa-solid fa-shield"></i> {{this.counts.armor}}
+                    </span>
+                    {{/if}}
+                    {{#if this.counts.vehicles}}
+                    <span class="stat-pill vehicles" title="{{localize 'SR5.Vehicle.Vehicle'}}">
+                        <i class="fa-solid fa-car"></i> {{this.counts.vehicles}}
+                    </span>
+                    {{/if}}
+                    <span class="stat-pill total ml-auto" title="{{localize 'SR5Marketplace.CompendiumSettings.TotalItems'}}">
+                        <i class="fa-solid fa-cube"></i> {{this.counts.total}}
+                    </span>
+                </div>
+            </div>
+            {{else}}
+            <div class="col-span-2 text-center py-8 opacity-60 text-xs">
+                <i class="fa-solid fa-magnifying-glass text-2xl mb-2"></i>
+                <p>{{localize "SR5Marketplace.UI.NoMatches"}}</p>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+
+    {{!-- FOOTER BAR --}}
+    <div class="compendium-settings-footer flex items-center justify-between pt-2 border-t border-[var(--border-color-medium)] mt-auto">
+        <div class="text-xs text-[var(--text-color-primary)] opacity-80">
+            <span class="font-bold text-[var(--color-yellow-base)] active-count">{{activeCount}}</span> / {{totalCount}} {{localize "SR5Marketplace.CompendiumSettings.CompendiumsActive"}}
+        </div>
+        <div class="flex items-center gap-2">
+            <button type="button" class="btn-cancel" data-action="cancel">
+                {{localize "SR5Marketplace.UI.Cancel"}}
+            </button>
+            <button type="button" class="btn-save" data-action="save">
+                <i class="fa-solid fa-floppy-disk"></i> {{localize "SR5Marketplace.CompendiumSettings.SaveConfig"}}
+            </button>
+        </div>
+    </div>
+</div>

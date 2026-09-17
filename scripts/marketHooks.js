@@ -42,6 +42,8 @@ export {
 
 import { inGameMarketplace } from "./apps/inGameMarketplace.mjs";
 import { MarketplaceSettingsApp } from "./apps/MarketplaceSettingsApp.mjs";
+import { CompendiumSettingsApp } from "./apps/CompendiumSettingsApp.mjs";
+import { MarketplaceSettingsService } from "./services/MarketplaceSettingsService.mjs";
 import { MarketShouterApp } from "./apps/marketshouter.mjs";
 import { registerShopRegionHooks } from "./apps/documents/sceneRegions/shopRegions.mjs";
 import { ShopActorSheet } from "../sheets/ShopActorSheet.mjs";
@@ -290,6 +292,48 @@ const initializeSettings = () => {
         }
     });
 
+    game.settings.register("sr5-marketplace", "allowedCompendiums", {
+        name: "SR5Marketplace.CompendiumSettings.AllowedCompendiums.name",
+        hint: "SR5Marketplace.CompendiumSettings.AllowedCompendiums.hint",
+        scope: "world",
+        config: false,
+        type: Array,
+        default: [],
+        onChange: () => {
+            game.sr5marketplace?.api?.itemData?.invalidateCache();
+        }
+    });
+
+    game.settings.register("sr5-marketplace", "allowWorldItemsInMarket", {
+        name: "SR5Marketplace.CompendiumSettings.AllowWorldItems.name",
+        hint: "SR5Marketplace.CompendiumSettings.AllowWorldItems.hint",
+        scope: "world",
+        config: false,
+        type: Boolean,
+        default: true,
+        onChange: () => {
+            game.sr5marketplace?.api?.itemData?.invalidateCache();
+        }
+    });
+
+    game.settings.register("sr5-marketplace", "globalDefaultFilterTags", {
+        name: "SR5Marketplace.UI.GlobalDefaultFilterTags.name",
+        scope: "world",
+        config: false,
+        type: Array,
+        default: []
+    });
+
+    game.settings.register("sr5-marketplace", "openCompendiumSettingsMenu", {
+        name: game.i18n.localize("SR5Marketplace.CompendiumSettings.Menu.name"),
+        hint: game.i18n.localize("SR5Marketplace.CompendiumSettings.Menu.hint"),
+        scope: "world",
+        config: true,
+        restricted: true,
+        type: Object,
+        default: {}
+    });
+
     game.settings.register("sr5-marketplace", "availabilityTestRule", {
         name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.AvailabilityRule.name"),
         hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.AvailabilityRule.hint"),
@@ -419,6 +463,29 @@ Hooks.on("renderSettingsConfig", (app, html, data) => {
 
         // Place the summary container after the entire form group for correct layout.
         settingGroup.after(summaryContainer);
+    }
+
+    // --- Compendium Settings Button Injection ---
+    const compSettingInput = html.querySelector(`[name="sr5-marketplace.openCompendiumSettingsMenu"]`);
+    if (compSettingInput) {
+        const compGroup = compSettingInput.closest(".form-group");
+        if (compGroup) {
+            const compFields = compGroup.querySelector(".form-fields");
+            if (compFields) {
+                compSettingInput.style.display = "none";
+                const compBtnClass = "sr5-marketplace-compendium-settings-button";
+                if (!compFields.querySelector(`.${compBtnClass}`)) {
+                    const compButton = document.createElement("button");
+                    compButton.type = "button";
+                    compButton.classList.add(compBtnClass, "btn-action-small");
+                    compButton.innerHTML = `<i class="fa-solid fa-boxes-stacked"></i> ${game.i18n.localize("SR5Marketplace.CompendiumSettings.Menu.buttonLabel") || "Configure Marketplace Compendiums"}`;
+                    compButton.addEventListener("click", () => {
+                        new CompendiumSettingsApp().render(true);
+                    });
+                    compFields.appendChild(compButton);
+                }
+            }
+        }
     }
 });
 
@@ -699,6 +766,8 @@ Hooks.once("init", () => {
         marketplace: new MarketplaceAPI.Marketplace(),
         itemBuilder: new MarketplaceAPI.ItemBuilder(),
         factory: new MarketplaceAPI.Factory(),
+        settings: MarketplaceSettingsService,
+        CompendiumSettingsApp: CompendiumSettingsApp,
         registerShouterButton: (id, config) => MarketShouterApp.registerButton(id, config)
     };
 

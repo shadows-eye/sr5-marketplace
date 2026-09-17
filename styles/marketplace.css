@@ -18,6 +18,7 @@
 @import "./compendium-browser.css";
 @import "./create-actor.css";
 @import "./smartphone.css";
+@import "./compendium-settings.css";
 
 /* -------------------------------------------------------- */
 /* TAILWIND CONFIG & CUSTOM CSS START HERE                  */
@@ -618,6 +619,56 @@ select#item-type-selector option {
     border-radius: 50%;
     min-width: 0.8em;
     padding-left: 0.16em;
+}
+
+.filter-tag.is-global {
+    background: var(--color-filter-global-bg);
+    border: 1px solid var(--color-filter-global-border);
+    color: var(--color-filter-global-text);
+}
+
+.filter-tag.is-global .global-tag-icon {
+    font-size: 0.85em;
+    margin-right: 5px;
+    color: var(--color-filter-global-icon);
+}
+
+.filter-save-global-btn,
+.filter-clear-global-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: bold;
+    cursor: pointer;
+    border: 1px solid var(--color-white-transparent-20);
+    transition: all 0.2s ease;
+}
+
+.filter-save-global-btn {
+    background: var(--color-filter-save-bg);
+    color: var(--color-filter-save-text);
+    border-color: var(--color-filter-save-border);
+}
+
+.filter-save-global-btn:hover {
+    background: var(--color-filter-save-hover-bg);
+    color: var(--color-filter-save-hover-text);
+    box-shadow: 0 0 8px var(--color-filter-save-hover-shadow);
+}
+
+.filter-clear-global-btn {
+    background: var(--color-filter-clear-bg);
+    color: var(--color-filter-clear-text);
+    border-color: var(--color-filter-clear-border);
+}
+
+.filter-clear-global-btn:hover {
+    background: var(--color-filter-clear-hover-bg);
+    color: var(--color-filter-clear-hover-text);
+    box-shadow: 0 0 8px var(--color-filter-clear-hover-shadow);
 }
 
 /* --------------------------------------

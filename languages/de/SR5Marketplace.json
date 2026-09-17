@@ -114,7 +114,52 @@
         "CostOrKarma": "Kosten / Karma",
         "Nuyen": "Nuyen",
         "CopyDocumentUuid": "Dokumenten-UUID kopieren",
-        "DescriptionPlaceholder": "Keine Beschreibung verfügbar."
+        "DescriptionPlaceholder": "Keine Beschreibung verfügbar.",
+        "SaveGlobalFilter": "Global speichern",
+        "SaveGlobalFilterTooltip": "Aktuelle Such-Tags als standardmäßigen globalen Marktplatz-Filter speichern",
+        "ClearGlobalFilter": "Global löschen",
+        "ClearGlobalFilterTooltip": "Gespeicherten standardmäßigen globalen Marktplatz-Filter löschen",
+        "FilterSavedGlobal": "Globaler Standard-Suchfilter gespeichert.",
+        "FilterClearedGlobal": "Globaler Standard-Suchfilter gelöscht.",
+        "RemoveFilter": "Filter entfernen",
+        "GlobalFilterLocked": "Globaler Standardfilter (vom SL festgelegt)",
+        "GlobalDefaultFilterTags": {
+            "name": "Globale Standard-Filter-Tags"
+        }
+    },
+    "CompendiumSettings": {
+        "Title": "Marktplatz-Kompendien",
+        "Description": "Wähle aus, welche Kompendien und Quellen auf dem globalen Marktplatz verfügbar sind.",
+        "WindowTitle": "SR5 Marktplatz - Kompendien-Quellen",
+        "ButtonLabel": "Kompendien-Quellen",
+        "ButtonTooltip": "Festlegen, welche Kompendien auf dem globalen Marktplatz aktiv sind",
+        "WorldItemsTitle": "Lokale Welt-Gegenstände",
+        "WorldItemsHint": "Gegenstände und Fahrzeuge, die direkt in dieser Welt erstellt wurden",
+        "ToggleWorldItems": "Einbindung lokaler Welt-Gegenstände umschalten",
+        "ToggleCompendium": "Einbindung dieses Kompendiums umschalten",
+        "SearchPlaceholder": "Kompendien nach Name oder Paket filtern...",
+        "TotalItems": "Gegenstände gesamt",
+        "WeaponsCount": "Waffen",
+        "ArmorCount": "Rüstung",
+        "GearCount": "Ausrüstung / Geräte",
+        "VehiclesCount": "Fahrzeuge / Drohnen",
+        "CompendiumsActive": "Kompendien aktiv",
+        "SaveConfig": "Konfiguration speichern",
+        "SavedNotification": "Kompendien-Konfiguration erfolgreich gespeichert.",
+        "Menu": {
+            "name": "Marktplatz-Kompendienquellen",
+            "hint": "Konfiguriere, welche Kompendien und Quellen für Spieler und den Marktplatz zugänglich sind.",
+            "label": "Kompendien konfigurieren",
+            "buttonLabel": "Marktplatz-Kompendien konfigurieren"
+        },
+        "AllowedCompendiums": {
+            "name": "Erlaubte Kompendien",
+            "hint": "Interne Einstellung für die Collection-IDs der erlaubten Kompendien."
+        },
+        "AllowWorldItems": {
+            "name": "Welt-Gegenstände auf Marktplatz erlauben",
+            "hint": "Interne Einstellung, ob Gegenstände aus der Welt auf dem Marktplatz erscheinen."
+        }
     },
     "Marketplace": {
         "Title": "Marktplatz Fenster",

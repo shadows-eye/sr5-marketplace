@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [14.005.0] - 2026-09-17
+
+### Added
+- **Global Marketplace Search Filter Presets**:
+  - Gamemasters can now save active search tags as global default filters for the marketplace using an inline "Save Global" button directly beside the search tags (#105).
+  - Players automatically inherit these default search tags when browsing the marketplace.
+  - Global default tags are badged with a globe icon and distinct gold border. Players can add and dismiss their own temporary search tags while global tags remain active and protected (#105).
+- **Compendium Sources Configuration Window**:
+  - Added a dedicated "Compendium Sources" manager accessible directly from module settings, allowing GMs to choose exactly which compendium packs and world items appear in the marketplace (#105).
+  - Compendiums are displayed as clean cards featuring item breakdowns across **Weapons**, **Armor**, **Gear**, **Vehicles**, and **Total Items**, alongside simple toggle switches (#105).
+  - Includes instant search filtering and "Select All" / "Deselect All" convenience buttons (#105).
+
+### Fixed
+- **Shop Inventory Seeding Accordion & Scroll**:
+  - Resolved an issue when populating shop inventory where selecting an item would collapse the inventory section and reset your scroll position (#106).
+  - Fixed a display bug that showed "undefined Matches" in the shop inventory search bar (#106).
+
+---
+
 ## [14.004.1] - 2026-09-05
 
 ### Improved

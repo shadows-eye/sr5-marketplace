@@ -76,7 +76,13 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
     static PARTS = {
         main: {
             id: "body",
-            template: "modules/sr5-marketplace/templates/apps/createActor/create-actor.html"
+            template: "modules/sr5-marketplace/templates/apps/createActor/create-actor.html",
+            scrollable: [
+                ".create-actor-form-body",
+                ".matching-items-scrollable",
+                ".selected-items-scrollable",
+                ".item-types-list"
+            ]
         }
     };
 
@@ -193,7 +199,9 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
             // Pass collapsed/expanded section flags
             context.shopDetailsExpanded = this.expandedSections.has("shop-details");
             context.hostEmployeesExpanded = this.expandedSections.has("host-employees");
-            context.populateInventoryExpanded = this.expandedSections.has("populate-inventory");
+            const isInventoryOpen = this.expandedSections.has("inventory-seeding") || this.expandedSections.has("populate-inventory");
+            context.inventoryExpanded = isInventoryOpen;
+            context.populateInventoryExpanded = isInventoryOpen;
 
             // World Hosts
             const worldHosts = game.items.filter(i => i.type === "host").map(h => ({
@@ -339,6 +347,7 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
                     filterTags: this.filterTags,
                     matchingItems,
                     selectedItems,
+                    matchingCount: matchingItems.length,
                     totalCount: this.totalCount,
                     selectedCount: this.selectedItemUuids.size,
                     shopMarkup: this.shopMarkup,
@@ -380,8 +389,37 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
     }
 
     /** @override */
+    _preRender(context, options) {
+        super._preRender(context, options);
+        this._savedScrolls = {};
+        if (this.element) {
+            const selectors = [
+                ".create-actor-form-body",
+                ".matching-items-scrollable",
+                ".selected-items-scrollable",
+                ".item-types-list"
+            ];
+            for (const sel of selectors) {
+                const el = this.element.querySelector(sel);
+                if (el) this._savedScrolls[sel] = { top: el.scrollTop, left: el.scrollLeft };
+            }
+        }
+    }
+
+    /** @override */
     _onRender(context, options) {
         super._onRender(context, options);
+
+        // Restore scroll positions across re-renders
+        if (this._savedScrolls) {
+            for (const [sel, pos] of Object.entries(this._savedScrolls)) {
+                const el = this.element.querySelector(sel);
+                if (el) {
+                    el.scrollTop = pos.top;
+                    el.scrollLeft = pos.left;
+                }
+            }
+        }
 
         // Apply theme color
         const themeClass = SR5CreateActorApp._getThemeFromSetting();
