@@ -1,0 +1,184 @@
+/* ======================================================== */
+/* Compendium Settings Mini-App Styles                      */
+/* ======================================================== */
+
+.compendium-settings-window {
+    min-width: 600px;
+    min-height: 500px;
+}
+
+.compendium-settings-app {
+    color: var(--text-color-primary, var(--color-grey-lightest));
+    font-family: 'Outfit', 'Inter', sans-serif;
+}
+
+/* Small Action Buttons */
+.btn-action-small {
+    background: var(--input-bg-transparent, var(--color-white-transparent-08));
+    border: 1px solid var(--border-color-medium, var(--color-white-transparent-20));
+    color: var(--text-color-primary, var(--color-grey-lightest));
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-action-small:hover {
+    background: var(--color-yellow-base);
+    color: var(--color-black-almost);
+    border-color: var(--color-yellow-base);
+}
+
+/* Card Styles */
+.compendium-card {
+    background: var(--color-black-transparent-35);
+    border: 1px solid var(--border-color-medium, var(--color-white-transparent-15));
+    border-radius: 6px;
+    padding: 10px;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.compendium-card:hover {
+    border-color: var(--color-white-transparent-30);
+    background: var(--color-black-transparent-45);
+}
+
+.compendium-card.enabled {
+    border-color: var(--color-card-enabled-border);
+    box-shadow: var(--color-card-enabled-shadow);
+}
+
+.compendium-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.compendium-card-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.compendium-card-icon {
+    font-size: 16px;
+    opacity: 0.85;
+    color: var(--color-yellow-base);
+}
+
+.world-items-icon {
+    color: var(--color-cyan-base);
+}
+
+.compendium-card-name-wrap {
+    display: flex;
+    flex-direction: column;
+}
+
+.compendium-card-title {
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--text-color-primary, var(--color-white));
+}
+
+.compendium-card-pkg {
+    font-size: 10px;
+    opacity: 0.6;
+    color: var(--text-color-subheader, var(--color-grey-light));
+}
+
+/* World Items Card Banner */
+.world-items-card {
+    background: linear-gradient(90deg, var(--color-cyan-bg-transparent) 0%, var(--color-black-transparent-35) 100%);
+    border-color: var(--color-cyan-border-transparent);
+}
+
+.world-items-card.enabled {
+    border-color: var(--color-cyan-glow);
+    box-shadow: var(--color-cyan-card-shadow);
+}
+
+/* Stat Pills */
+.stat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    background: var(--color-white-transparent-06);
+    color: var(--color-white-transparent-85);
+    border: 1px solid var(--color-white-transparent-08);
+}
+
+.stat-pill.weapons {
+    color: var(--color-badge-weapons);
+    border-color: var(--color-badge-weapons-border);
+}
+
+.stat-pill.armor {
+    color: var(--color-badge-armor);
+    border-color: var(--color-badge-armor-border);
+}
+
+.stat-pill.gear {
+    color: var(--color-badge-gear);
+    border-color: var(--color-badge-gear-border);
+}
+
+.stat-pill.vehicles {
+    color: var(--color-badge-vehicles);
+    border-color: var(--color-badge-vehicles-border);
+}
+
+.stat-pill.total {
+    background: var(--color-badge-total-bg);
+    color: var(--color-badge-total-text);
+}
+
+/* Save and Cancel Buttons */
+.btn-save {
+    background: var(--color-green-button);
+    color: var(--color-white);
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-save:hover {
+    filter: brightness(1.15);
+    box-shadow: 0 0 10px var(--color-green-button-glow);
+}
+
+.btn-cancel {
+    background: transparent;
+    color: var(--text-color-primary, var(--color-grey-light));
+    border: 1px solid var(--border-color-medium, var(--color-white-transparent-20));
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-cancel:hover {
+    background: var(--color-white-transparent-08);
+    color: var(--color-white);
+}

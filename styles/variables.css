@@ -67,6 +67,63 @@
     /* --- Oranges --- */
     --color-orange-blend: #ab4c0c;
 
+    /* --- Cyans & Blues --- */
+    --color-cyan-base: #06b6d4;
+    --color-cyan-glow: rgba(6, 182, 212, 0.6);
+    --color-cyan-bg-transparent: rgba(6, 182, 212, 0.12);
+    --color-cyan-border-transparent: rgba(6, 182, 212, 0.3);
+    --color-cyan-card-shadow: inset 0 0 12px rgba(6, 182, 212, 0.08);
+    --color-blue-light: #60a5fa;
+    --color-blue-border-transparent: rgba(96, 165, 250, 0.2);
+
+    /* --- Purples & Violets --- */
+    --color-purple-light: #a78bfa;
+    --color-purple-border-transparent: rgba(167, 139, 250, 0.2);
+
+    /* --- Extended Neutrals & Transparencies --- */
+    --color-black-almost: #111111;
+    --color-black-transparent-35: rgba(0, 0, 0, 0.35);
+    --color-black-transparent-45: rgba(0, 0, 0, 0.45);
+    --color-white-transparent-06: rgba(255, 255, 255, 0.06);
+    --color-white-transparent-08: rgba(255, 255, 255, 0.08);
+    --color-white-transparent-15: rgba(255, 255, 255, 0.15);
+    --color-white-transparent-20: rgba(255, 255, 255, 0.2);
+    --color-white-transparent-30: rgba(255, 255, 255, 0.3);
+    --color-white-transparent-85: rgba(255, 255, 255, 0.85);
+
+    /* --- Stat Pills & Breakdown Badges --- */
+    --color-badge-weapons: #f87171;
+    --color-badge-weapons-border: rgba(248, 113, 113, 0.2);
+    --color-badge-armor: #60a5fa;
+    --color-badge-armor-border: rgba(96, 165, 250, 0.2);
+    --color-badge-gear: #fbbf24;
+    --color-badge-gear-border: rgba(251, 191, 36, 0.2);
+    --color-badge-vehicles: #a78bfa;
+    --color-badge-vehicles-border: rgba(167, 139, 250, 0.2);
+    --color-badge-total-bg: rgba(255, 255, 255, 0.1);
+    --color-badge-total-text: #f1f5f9;
+
+    /* --- Global Filter Tags & Actions --- */
+    --color-filter-global-bg: linear-gradient(135deg, rgba(234, 179, 8, 0.25), rgba(180, 83, 9, 0.35));
+    --color-filter-global-border: rgba(234, 179, 8, 0.5);
+    --color-filter-global-text: #fef08a;
+    --color-filter-global-icon: #facc15;
+    --color-filter-save-bg: rgba(234, 179, 8, 0.15);
+    --color-filter-save-text: var(--color-yellow-base);
+    --color-filter-save-border: rgba(234, 179, 8, 0.4);
+    --color-filter-save-hover-bg: var(--color-yellow-base);
+    --color-filter-save-hover-text: #111111;
+    --color-filter-save-hover-shadow: rgba(234, 179, 8, 0.4);
+    --color-filter-clear-bg: rgba(239, 68, 68, 0.15);
+    --color-filter-clear-text: #f87171;
+    --color-filter-clear-border: rgba(239, 68, 68, 0.4);
+    --color-filter-clear-hover-bg: #ef4444;
+    --color-filter-clear-hover-text: var(--color-white);
+    --color-filter-clear-hover-shadow: rgba(239, 68, 68, 0.4);
+    --color-card-enabled-border: rgba(234, 179, 8, 0.4);
+    --color-card-enabled-shadow: inset 0 0 12px rgba(234, 179, 8, 0.05);
+    --color-green-button-glow: rgba(76, 175, 80, 0.4);
+
     /* --- Settings & UI Tints --- */
     --color-blue-info-bg: #d1ecf1;
     --color-blue-info-border: #bee5eb;

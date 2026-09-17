@@ -1,7 +1,14 @@
 <form autocomplete="off">
     <div class="sr5-marketplace-settings settings-wrapper">
-            <h2>{{localize "SR5Marketplace.Marketplace.Settings.title"}}</h2>
-            <p class="description">{{localize "SR5Marketplace.Marketplace.Settings.description"}}</p>
+        <div class="flex items-center justify-between mb-2">
+            <div>
+                <h2>{{localize "SR5Marketplace.Marketplace.Settings.title"}}</h2>
+                <p class="description">{{localize "SR5Marketplace.Marketplace.Settings.description"}}</p>
+            </div>
+            <button type="button" class="btn-action-small" data-action="openCompendiumSettings" title="{{localize 'SR5Marketplace.CompendiumSettings.ButtonTooltip'}}">
+                <i class="fa-solid fa-boxes-stacked"></i> {{localize "SR5Marketplace.CompendiumSettings.ButtonLabel"}}
+            </button>
+        </div>
         <div class="settings-header-grid">
             <div class="column-header unique">
                 {{localize "SR5Marketplace.Marketplace.Settings.CategoryUnique"}}

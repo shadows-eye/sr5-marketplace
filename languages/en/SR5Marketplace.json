@@ -114,7 +114,52 @@
         "CostOrKarma": "Cost / Karma",
         "Nuyen": "Nuyen",
         "CopyDocumentUuid": "Copy Document UUID",
-        "DescriptionPlaceholder": "No description available."
+        "DescriptionPlaceholder": "No description available.",
+        "SaveGlobalFilter": "Save Global",
+        "SaveGlobalFilterTooltip": "Save current search tags as default global marketplace filter",
+        "ClearGlobalFilter": "Clear Global",
+        "ClearGlobalFilterTooltip": "Clear saved default global marketplace filter",
+        "FilterSavedGlobal": "Global default search filter saved.",
+        "FilterClearedGlobal": "Global default search filter cleared.",
+        "RemoveFilter": "Remove Filter",
+        "GlobalFilterLocked": "Global Default Filter (Set by GM)",
+        "GlobalDefaultFilterTags": {
+            "name": "Global Default Filter Tags"
+        }
+    },
+    "CompendiumSettings": {
+        "Title": "Marketplace Compendiums",
+        "Description": "Select which compendiums and sources are accessible in the Global Marketplace.",
+        "WindowTitle": "SR5 Marketplace - Compendium Sources",
+        "ButtonLabel": "Compendium Sources",
+        "ButtonTooltip": "Configure which compendiums are enabled in the Global Marketplace",
+        "WorldItemsTitle": "Local World Items",
+        "WorldItemsHint": "Items and vehicles created directly in this World",
+        "ToggleWorldItems": "Toggle inclusion of World items",
+        "ToggleCompendium": "Toggle inclusion of this compendium",
+        "SearchPlaceholder": "Filter compendiums by name or package...",
+        "TotalItems": "Total Items",
+        "WeaponsCount": "Weapons",
+        "ArmorCount": "Armor",
+        "GearCount": "Gear / Equipment",
+        "VehiclesCount": "Vehicles / Drones",
+        "CompendiumsActive": "Compendiums active",
+        "SaveConfig": "Save Configuration",
+        "SavedNotification": "Compendium visibility configuration saved.",
+        "Menu": {
+            "name": "Marketplace Compendium Sources",
+            "hint": "Configure which compendiums and sources are accessible to players and the marketplace.",
+            "label": "Configure Compendiums",
+            "buttonLabel": "Configure Marketplace Compendiums"
+        },
+        "AllowedCompendiums": {
+            "name": "Allowed Compendiums",
+            "hint": "Internal setting storing the collection IDs of allowed compendiums."
+        },
+        "AllowWorldItems": {
+            "name": "Allow World Items in Marketplace",
+            "hint": "Internal setting storing whether local World items appear in the marketplace."
+        }
     },
     "Marketplace": {
         "Title": "Marketplace Purchase Screen",

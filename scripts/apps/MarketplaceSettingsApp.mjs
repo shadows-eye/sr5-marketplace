@@ -1,4 +1,5 @@
 import { MARKETPLACE_SETTINGS_TEMPLATE } from '../lib/constants.mjs';
+import { CompendiumSettingsApp } from './CompendiumSettingsApp.mjs';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -83,6 +84,13 @@ export class MarketplaceSettingsApp extends HandlebarsApplicationMixin(Applicati
      * @private
      */
     _onClick = async (event) => {
+        const compendiumBtn = event.target.closest("[data-action='openCompendiumSettings']");
+        if (compendiumBtn) {
+            event.preventDefault();
+            new CompendiumSettingsApp().render(true);
+            return;
+        }
+
         const card = event.target.closest(".item-type-card[data-target-behavior]");
         if (!card) return;
 
