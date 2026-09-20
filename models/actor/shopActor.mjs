@@ -103,10 +103,13 @@ export function defineShopActorClass() {
                 // Validating the inventory as an object with dynamic keys
                 // Each key is an inventory entry ID, and each value is an inventory item object.
                 inventory: new foundry.data.fields.ObjectField({
-                    validate: obj => {
-                        for ( const itemData of Object.values(obj) ) {
+                    validate: (obj, options = {}) => {
+                        if (!obj || typeof obj !== "object") return true;
+                        for ( const [key, itemData] of Object.entries(obj) ) {
+                            if ( !itemData || typeof itemData !== "object" ) continue;
+                            if ( (typeof foundry !== "undefined" && foundry.data?.operators?.DataFieldOperator && itemData instanceof foundry.data.operators.DataFieldOperator) || (typeof _del !== "undefined" && itemData === _del) ) continue;
                             try {
-                                inventoryItemSchema.clean(itemData, {});
+                                inventoryItemSchema.clean(itemData, options);
                             } catch (error) {
                                 console.error("Shop Inventory Validation Failed on Item:", itemData, error);
                                 return false;
@@ -177,6 +180,18 @@ export function defineShopActorClass() {
             } finally {
                 this.type = originalType;
             }
+        }
+
+        /** @override */
+        async update(data = {}, options = {}) {
+            if (this.isToken && this.token?.baseActor) {
+                const flat = foundry.utils.flattenObject(data);
+                const hasShopData = Object.keys(flat).some(k => k.startsWith("system.shop"));
+                if (hasShopData) {
+                    await this.token.baseActor.update(data, options);
+                }
+            }
+            return super.update(data, options);
         }
 
         /** @override */
@@ -509,17 +524,14 @@ export function defineShopActorClass() {
          * @param {string} inventoryEntryId The unique ID of the inventory entry to remove.
          * @returns {Promise<this>}
          */
-        /**
-         * Removes an item from the shop's inventory.
-         * @param {string} inventoryEntryId The unique ID of the inventory entry to remove.
-         * @returns {Promise<this>}
-         */
         async removeItemFromInventory(inventoryEntryId) {
-            const updateData = {
-                [`system.shop.inventory.-=${inventoryEntryId}`]: null
-            };
+            const del = foundry.data?.operators?.ForcedDeletion 
+                ? new foundry.data.operators.ForcedDeletion() 
+                : null;
+            const updateData = del 
+                ? { [`system.shop.inventory.${inventoryEntryId}`]: del }
+                : { [`system.shop.inventory.-=${inventoryEntryId}`]: null };
             
-            console.log("Attempting to apply update:", updateData);
             return this.update(updateData);
         }
 

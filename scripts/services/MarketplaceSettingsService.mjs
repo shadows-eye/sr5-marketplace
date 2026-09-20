@@ -12,13 +12,14 @@ export class MarketplaceSettingsService {
     /**
      * Retrieves the set of explicitly allowed compendium collection IDs.
      * Returns null if no restriction is active (i.e. all visible compendiums allowed).
+     * Returns Set<string> (including an empty set) when configured.
      * @returns {Set<string>|null}
      */
     static getAllowedCompendiums() {
         if (typeof game === "undefined" || !game.settings) return null;
         try {
             const raw = game.settings.get("sr5-marketplace", this.SETTING_ALLOWED_COMPENDIUMS);
-            if (Array.isArray(raw) && raw.length > 0) {
+            if (Array.isArray(raw)) {
                 return new Set(raw);
             }
         } catch (err) {
@@ -103,11 +104,15 @@ export class MarketplaceSettingsService {
     }
 
     /**
-     * Helper to invalidate the global items cache.
+     * Helper to invalidate the global items cache and re-render open marketplace if active.
      */
     static invalidateItemCache() {
         if (game.sr5marketplace?.api?.itemData?.invalidateCache) {
             game.sr5marketplace.api.itemData.invalidateCache();
+        }
+        const openMarketplace = foundry.applications?.instances?.get("inGameMarketplace");
+        if (openMarketplace?.rendered) {
+            openMarketplace.render(true);
         }
     }
 
