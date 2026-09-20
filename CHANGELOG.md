@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [14.005.1] - 2026-09-20
+
+### Fixed
+- **Marketplace Purchasing & Cart**:
+  - Resolved an issue that prevented purchasing items or adding them to the shopping cart.
+- **Compendium Sources Settings**:
+  - Resolved a problem where disabling all compendiums in the Compendium Sources configuration window would reset and re-enable them upon saving.
+- **Shop Actor Inventory Deletion**:
+  - Fixed an issue where removing an item from a shop's inventory on the canvas appeared to succeed in the confirmation dialog, but the item remained visible on the sheet. Deletions and inventory changes now persist reliably and update the sheet immediately.
+
+---
+
 ## [14.005.0] - 2026-09-17
 
 ### Added
