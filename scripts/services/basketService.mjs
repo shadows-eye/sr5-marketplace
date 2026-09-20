@@ -148,8 +148,8 @@ export class BasketService {
             }
 
             const isVehicle = item.type === "vehicle";
-            const rawRating = !isVehicle ? (item.system.technology?.rating ?? item.system.rating ?? 0) : 0;
-            const effectiveRating = Math.max(1, Number(rawRating) || 0);
+            const defaultRating = !isVehicle ? (item.system.technology?.rating ?? item.system.rating ?? 0) : 0;
+            const effectiveRating = Math.max(1, Number(defaultRating) || 0);
 
             let finalCost = 0;
             if (isVehicle) {
