@@ -298,7 +298,7 @@ const initializeSettings = () => {
         scope: "world",
         config: false,
         type: Array,
-        default: [],
+        default: null,
         onChange: () => {
             game.sr5marketplace?.api?.itemData?.invalidateCache();
         }
