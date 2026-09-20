@@ -776,13 +776,7 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         });
 
         if (choice === "remove") {
-            // 1. Await the backend data update.
             await this.document.removeItemFromInventory(inventoryEntryId);
-
-            // 2. (As requested) Log the new state of the inventory to confirm the deletion.
-            console.log(`Item entry ${inventoryEntryId} removed. Current inventory:`, this.document.shop.inventory);
-
-            // 3. (The Fix) Trigger a re-render of the sheet to update the UI.
             this.render();
         }
     }
@@ -1456,8 +1450,15 @@ export class ShopActorSheet extends MarketplaceDocumentSheetMixin(ActorSheet) {
         if (choice === "clear") {
             const updates = {};
             const inventory = this.document.system.shop?.inventory || {};
+            const del = foundry.data?.operators?.ForcedDeletion 
+                ? new foundry.data.operators.ForcedDeletion() 
+                : null;
             for (const entryId of Object.keys(inventory)) {
-                updates[`system.shop.inventory.-=${entryId}`] = null;
+                if (del) {
+                    updates[`system.shop.inventory.${entryId}`] = del;
+                } else {
+                    updates[`system.shop.inventory.-=${entryId}`] = null;
+                }
             }
 
             await this.document.update(updates);
