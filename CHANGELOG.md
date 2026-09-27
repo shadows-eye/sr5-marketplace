@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [14.006.0] - 2026-09-27
+
+### Added
+- **Custom Compendium Save Targets (GM Settings)**:
+  - Game Masters can now choose custom compendiums as the save location for custom-built or modified items and vehicles instead of saving them to the World directory.
+  - Configurable only by the GM directly in Foundry's Module Settings or via the Marketplace Compendium Sources window.
+  - Automatically unlocks the selected compendium upon selection and save so the GM never needs to manually unlock it first.
+
+### Changed & Improved
+- **Unified Theme & Styling**:
+  - Enjoy a sleek, consistent visual style across the Marketplace, Item Builder, Item Preview, and Settings windows.
+  - Modernized headers and card layouts with distinctive dark orange accents matching the Shadows theme.
+  - Re-styled modifier sections and builder cards for clearer visibility and improved contrast.
+- **Smarter MarketShouter Interactions**:
+  - The MarketShouter bar now automatically recesses to the background when the Marketplace or Item Builder is open so it never blocks your dialogs or actions.
+  - Smoother hover behavior and responsive positioning prevent the bar from closing unexpectedly while browsing.
+
+### Fixed
+- **Item Builder & Shopping Cart**:
+  - Fixed an issue where adding customized items or vehicles directly to the cart would lose applied modifications or recalculated prices. Cart purchases now accurately reflect all custom changes, combined availability, and total costs.
+  - Fixed a display bug where price and availability values in item previews could occasionally show raw unformatted text.
+  - Live combined totals for cost, essence, and availability now update dynamically in real time as you customize items.
+
+---
+
 ## [14.005.1] - 2026-09-20
 
 ### Fixed

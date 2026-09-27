@@ -29,9 +29,26 @@ export class MarketplaceSettingsService {
      * @param {string} collectionId
      * @returns {Promise<void>}
      */
+    /**
+     * Sets the target compendium for custom items.
+     * @param {string} collectionId
+     * @returns {Promise<void>}
+     */
     static async setCustomItemCompendium(collectionId) {
-        if (!game.settings) return;
-        await game.settings.set("sr5-marketplace", this.SETTING_CUSTOM_ITEM_COMPENDIUM, collectionId || "world");
+        if (!game.settings || !game.user?.isGM) return;
+        const targetId = collectionId || "world";
+        await game.settings.set("sr5-marketplace", this.SETTING_CUSTOM_ITEM_COMPENDIUM, targetId);
+        if (targetId !== "world" && typeof game !== "undefined" && game.packs) {
+            const pack = game.packs.get(targetId);
+            if (pack?.locked) {
+                try {
+                    await pack.configure({ locked: false });
+                    console.log(`SR5 Marketplace | Automatically unlocked compendium: ${pack.metadata.label}`);
+                } catch (err) {
+                    console.warn(`SR5 Marketplace | Could not unlock compendium ${targetId}:`, err);
+                }
+            }
+        }
         this.invalidateItemCache();
     }
 
@@ -54,13 +71,25 @@ export class MarketplaceSettingsService {
      * @returns {Promise<void>}
      */
     static async setCustomVehicleCompendium(collectionId) {
-        if (!game.settings) return;
-        await game.settings.set("sr5-marketplace", this.SETTING_CUSTOM_VEHICLE_COMPENDIUM, collectionId || "world");
+        if (!game.settings || !game.user?.isGM) return;
+        const targetId = collectionId || "world";
+        await game.settings.set("sr5-marketplace", this.SETTING_CUSTOM_VEHICLE_COMPENDIUM, targetId);
+        if (targetId !== "world" && typeof game !== "undefined" && game.packs) {
+            const pack = game.packs.get(targetId);
+            if (pack?.locked) {
+                try {
+                    await pack.configure({ locked: false });
+                    console.log(`SR5 Marketplace | Automatically unlocked compendium: ${pack.metadata.label}`);
+                } catch (err) {
+                    console.warn(`SR5 Marketplace | Could not unlock compendium ${targetId}:`, err);
+                }
+            }
+        }
         this.invalidateItemCache();
     }
 
     /**
-     * Returns a map of choices for custom item compendiums (World Directory + editable/unlocked Item compendiums).
+     * Returns a map of choices for custom item compendiums (World Directory + Item compendiums).
      * @returns {Record<string, string>}
      */
     static getItemCompendiumChoices() {
@@ -68,7 +97,7 @@ export class MarketplaceSettingsService {
         const choices = { "world": defaultLabel };
         if (typeof game !== "undefined" && game.packs) {
             for (const pack of game.packs) {
-                if (pack.metadata.type === "Item" && !pack.locked) {
+                if (pack.metadata.type === "Item") {
                     choices[pack.collection] = `${pack.metadata.label} (${pack.collection})`;
                 }
             }
@@ -77,7 +106,7 @@ export class MarketplaceSettingsService {
     }
 
     /**
-     * Returns a map of choices for custom vehicle compendiums (World Directory + editable/unlocked Actor compendiums).
+     * Returns a map of choices for custom vehicle compendiums (World Directory + Actor compendiums).
      * @returns {Record<string, string>}
      */
     static getVehicleCompendiumChoices() {
@@ -85,7 +114,7 @@ export class MarketplaceSettingsService {
         const choices = { "world": defaultLabel };
         if (typeof game !== "undefined" && game.packs) {
             for (const pack of game.packs) {
-                if (pack.metadata.type === "Actor" && !pack.locked) {
+                if (pack.metadata.type === "Actor") {
                     choices[pack.collection] = `${pack.metadata.label} (${pack.collection})`;
                 }
             }
@@ -289,6 +318,14 @@ export class MarketplaceSettingsService {
         if (targetId && targetId !== "world" && typeof game !== "undefined" && game.packs) {
             targetPack = game.packs.get(targetId);
             if (targetPack?.locked) {
+                try {
+                    await targetPack.configure({ locked: false });
+                    console.log(`SR5 Marketplace | Automatically unlocked compendium on save: ${targetPack.metadata.label}`);
+                } catch (err) {
+                    console.warn(`SR5 Marketplace | Failed to unlock compendium ${targetPack.metadata.label}:`, err);
+                }
+            }
+            if (targetPack?.locked) {
                 if (notify) {
                     const warnMsg = game.i18n?.format("SR5Marketplace.CompendiumSettings.PackLockedWarning", { name: targetPack.metadata.label })
                         || `Target compendium "${targetPack.metadata.label}" is locked. Saving to World directory instead.`;
@@ -347,6 +384,14 @@ export class MarketplaceSettingsService {
         let targetPack = null;
         if (targetId && targetId !== "world" && typeof game !== "undefined" && game.packs) {
             targetPack = game.packs.get(targetId);
+            if (targetPack?.locked) {
+                try {
+                    await targetPack.configure({ locked: false });
+                    console.log(`SR5 Marketplace | Automatically unlocked compendium on save: ${targetPack.metadata.label}`);
+                } catch (err) {
+                    console.warn(`SR5 Marketplace | Failed to unlock compendium ${targetPack.metadata.label}:`, err);
+                }
+            }
             if (targetPack?.locked) {
                 if (notify) {
                     const warnMsg = game.i18n?.format("SR5Marketplace.CompendiumSettings.PackLockedWarning", { name: targetPack.metadata.label })

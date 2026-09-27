@@ -89,6 +89,7 @@ export class CompendiumSettingsApp extends HandlebarsApplicationMixin(Applicatio
         context.customVehicleCompendium = this.customVehicleCompendium;
         context.itemCompendiumChoices = MarketplaceSettingsService.getItemCompendiumChoices();
         context.vehicleCompendiumChoices = MarketplaceSettingsService.getVehicleCompendiumChoices();
+        context.isGM = game.user?.isGM ?? false;
         context.searchQuery = this.searchQuery;
         context.totalCount = mapped.length;
         context.activeCount = activeCount;
@@ -239,13 +240,15 @@ export class CompendiumSettingsApp extends HandlebarsApplicationMixin(Applicatio
             if (isEnabled) allowedIds.push(packId);
         }
 
-        const customItemSelect = this.element.querySelector(".custom-item-compendium-select");
-        if (customItemSelect) {
-            await MarketplaceSettingsService.setCustomItemCompendium(customItemSelect.value);
-        }
-        const customVehicleSelect = this.element.querySelector(".custom-vehicle-compendium-select");
-        if (customVehicleSelect) {
-            await MarketplaceSettingsService.setCustomVehicleCompendium(customVehicleSelect.value);
+        if (game.user?.isGM) {
+            const customItemSelect = this.element.querySelector(".custom-item-compendium-select");
+            if (customItemSelect) {
+                await MarketplaceSettingsService.setCustomItemCompendium(customItemSelect.value);
+            }
+            const customVehicleSelect = this.element.querySelector(".custom-vehicle-compendium-select");
+            if (customVehicleSelect) {
+                await MarketplaceSettingsService.setCustomVehicleCompendium(customVehicleSelect.value);
+            }
         }
 
         await MarketplaceSettingsService.setAllowedCompendiums(allowedIds);

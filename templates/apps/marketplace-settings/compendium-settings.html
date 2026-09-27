@@ -47,7 +47,8 @@
             </div>
         </div>
 
-        {{!-- TARGET SAVE DESTINATIONS CARD --}}
+        {{!-- TARGET SAVE DESTINATIONS CARD (GM ONLY) --}}
+        {{#if isGM}}
         <div class="compendium-card">
             <div class="compendium-card-header flex-col items-start gap-2">
                 <div class="compendium-card-title-group w-full justify-between items-center">
@@ -79,6 +80,7 @@
                 </div>
             </div>
         </div>
+        {{/if}}
 
         {{!-- COMPENDIUMS GRID --}}
         <div class="compendiums-card-grid grid grid-cols-1 md:grid-cols-2 gap-2.5">

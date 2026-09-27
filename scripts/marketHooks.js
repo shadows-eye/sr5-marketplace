@@ -343,7 +343,18 @@ const initializeSettings = () => {
         type: String,
         default: "world",
         choices: MarketplaceSettingsService.getItemCompendiumChoices(),
-        onChange: () => {
+        onChange: async (value) => {
+            if (value && value !== "world" && typeof game !== "undefined" && game.packs) {
+                const pack = game.packs.get(value);
+                if (pack?.locked) {
+                    try {
+                        await pack.configure({ locked: false });
+                        console.log(`SR5 Marketplace | Automatically unlocked compendium: ${pack.metadata.label}`);
+                    } catch (err) {
+                        console.warn(`SR5 Marketplace | Could not unlock compendium ${value}:`, err);
+                    }
+                }
+            }
             MarketplaceSettingsService.invalidateItemCache();
         }
     });
@@ -357,7 +368,18 @@ const initializeSettings = () => {
         type: String,
         default: "world",
         choices: MarketplaceSettingsService.getVehicleCompendiumChoices(),
-        onChange: () => {
+        onChange: async (value) => {
+            if (value && value !== "world" && typeof game !== "undefined" && game.packs) {
+                const pack = game.packs.get(value);
+                if (pack?.locked) {
+                    try {
+                        await pack.configure({ locked: false });
+                        console.log(`SR5 Marketplace | Automatically unlocked compendium: ${pack.metadata.label}`);
+                    } catch (err) {
+                        console.warn(`SR5 Marketplace | Could not unlock compendium ${value}:`, err);
+                    }
+                }
+            }
             MarketplaceSettingsService.invalidateItemCache();
         }
     });
@@ -952,6 +974,13 @@ Hooks.on("ready", async () => {
                 actorData.ownership[data.userId] = CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER;
                 const targetPackCollection = data.targetPack || MarketplaceSettingsService.getCustomVehicleCompendium();
                 const pack = (targetPackCollection && targetPackCollection !== "world") ? game.packs.get(targetPackCollection) : null;
+                if (pack?.locked) {
+                    try {
+                        await pack.configure({ locked: false });
+                    } catch (err) {
+                        console.warn("SR5 Marketplace | GM failed to unlock compendium:", err);
+                    }
+                }
                 let newActor = null;
                 if (pack && !pack.locked) {
                     newActor = await Actor.create(actorData, { pack: pack.collection });
