@@ -52,7 +52,7 @@
                             <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Seats"}}</label><div class="display">{{statVal item.system.vehicle_stats.seats}}</div></div>
                             {{/if}}
                             {{#if item.system.availability}}
-                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Availability"}}</label><div class="display">{{item.system.availability}}</div></div>
+                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Availability"}}</label><div class="display">{{formatAvail item.system.availability}}</div></div>
                             {{/if}}
                             {{#if item.system.cost}}
                             <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Cost"}}</label><div class="display">{{formatNumber item.system.cost}}<span class="unit"><i class="fas fa-yen-sign"></i></span></div></div>
@@ -89,7 +89,7 @@
                             {{/if}}
 
                             {{#if item.system.technology.rating}}
-                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Rating"}}</label><div class="display">{{item.system.technology.rating}}</div></div>
+                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Rating"}}</label><div class="display">{{formatVal item.system.technology.rating}}</div></div>
                             {{/if}}
                             {{#if item.system.technology.cost}}
                             <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Cost"}}</label><div class="display">{{formatNumber item.system.technology.cost}}<span class="unit"><i class="fas fa-yen-sign"></i></span></div></div>
@@ -101,7 +101,7 @@
                             <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Karma"}}</label><div class="display">{{item.flags.sr5-marketplace.Karma}}</div></div>
                             {{/if}}
                             {{#if item.system.technology.availability}}
-                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Availability"}}</label><div class="display">{{item.system.technology.availability}}</div></div>
+                            <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Availability"}}</label><div class="display">{{formatAvail item.system.technology.availability}}</div></div>
                             {{/if}}
                              {{#if item.system.slots}}
                             <div class="flexrow nowrap"><label>{{localize "SR5Marketplace.UI.Slots"}}</label><div class="display">{{item.system.slots}}</div></div>

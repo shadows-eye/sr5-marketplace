@@ -101,23 +101,23 @@
     <div class="stat-block">
         <label>{{localize "SR5.Rating"}}</label>
         {{#if isEditingBaseItem}}
-            <input type="text" name="system.technology.rating" value="{{displayItem.system.technology.rating}}" class="item-input"/> 
+            <input type="text" name="system.technology.rating" value="{{formatVal displayItem.system.technology.rating}}" class="item-input"/> 
         {{else}}
-            <span>{{displayItem.system.technology.rating}}</span>
+            <span>{{formatVal displayItem.system.technology.rating}}</span>
         {{/if}}
     </div>
     <div class="stat-block">
         <label>{{localize "SR5.Availability"}}</label>
         {{#if isEditingBaseItem}}
-            <input type="text" name="system.technology.availability" value="{{displayItem.system.technology.availability}}" class="item-input"/> 
+            <input type="text" name="system.technology.availability" value="{{formatAvail displayItem.system.technology.availability}}" class="item-input"/> 
         {{else}}
-            <span>{{displayItem.system.technology.availability}}</span>
+            <span>{{formatAvail displayItem.system.technology.availability}}</span>
         {{/if}}
     </div>
     <div class="stat-block">
         <label>{{localize "SR5.Cost"}}</label>
         {{#if isEditingBaseItem}}
-            <input type="text" name="system.technology.cost" value="{{displayItem.system.technology.cost}}" class="item-input"/>
+            <input type="text" name="system.technology.cost" value="{{formatVal displayItem.system.technology.cost}}" class="item-input"/>
             <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen details"></i> 
         {{else}}
             <span>{{formatNumber displayItem.system.technology.cost}}</span>

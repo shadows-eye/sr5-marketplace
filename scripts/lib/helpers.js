@@ -164,8 +164,11 @@ export const registerBasicHelpers = () => {
         return game.i18n.format(key, options.hash);
     });
     Handlebars.registerHelper('formatNumber', function(num) {
+        if (num !== null && typeof num === 'object') {
+            num = num.value ?? num.base ?? 0;
+        }
         const val = Number(num);
-        if (Number.isNaN(val)) return num;
+        if (Number.isNaN(val)) return (num !== null && typeof num === 'object') ? "" : (num ?? "");
         if (val >= 1000) {
             const divided = val / 1000;
             return (divided % 1 === 0 ? divided : divided.toFixed(1).replace(/\.0$/, "")) + "k";
@@ -175,10 +178,31 @@ export const registerBasicHelpers = () => {
     Handlebars.registerHelper('statVal', function(statObj) {
         if (statObj === undefined || statObj === null) return 0;
         if (typeof statObj !== 'object') return statObj;
-        const val = Number(statObj.value);
-        if (!Number.isNaN(val) && val !== 0) {
-            return val;
+        if (statObj.value !== undefined) {
+            const val = Number(statObj.value);
+            if (!Number.isNaN(val)) return val;
+            return statObj.value;
         }
         return statObj.base !== undefined ? statObj.base : 0;
+    });
+    Handlebars.registerHelper('formatAvail', function(avail) {
+        if (avail === undefined || avail === null) return "";
+        if (typeof avail === 'object') {
+            const val = avail.value ?? avail.base ?? "";
+            const type = (avail.type && typeof avail.type === 'string') ? avail.type : "";
+            if (type && typeof val === 'number') return `${val}${type}`;
+            if (type && typeof val === 'string' && !val.includes(type)) return `${val}${type}`;
+            return String(val || "");
+        }
+        return String(avail);
+    });
+    Handlebars.registerHelper('formatVal', function(val) {
+        if (val === undefined || val === null) return "";
+        if (typeof val === 'object') {
+            if (val.value !== undefined) return val.value;
+            if (val.base !== undefined) return val.base;
+            return "";
+        }
+        return val;
     });
 };

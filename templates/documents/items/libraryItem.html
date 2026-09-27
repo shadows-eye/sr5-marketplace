@@ -30,10 +30,10 @@
         <div class="flex flex-wrap gap-1 text-[10px] font-semibold tracking-wide">
             {{#if (eq this.type "modification")}}
                 <span class="item-stat-badge px-1.5 py-0.5 rounded" title="{{localize 'SR5Marketplace.Marketplace.system.avail.avail'}}">
-                    {{localize "SR5Marketplace.Marketplace.system.avail.avail"}}: {{this.system.technology.availability}}
+                    {{localize "SR5Marketplace.Marketplace.system.avail.avail"}}: {{formatAvail this.system.technology.availability}}
                 </span>
                 <span class="item-stat-badge px-1.5 py-0.5 rounded" title="{{localize 'SR5Marketplace.Marketplace.system.technology.rating'}}">
-                    {{localize "SR5Marketplace.Marketplace.system.technology.rating"}}: {{this.system.technology.rating}}
+                    {{localize "SR5Marketplace.Marketplace.system.technology.rating"}}: {{formatVal this.system.technology.rating}}
                 </span>
                 {{#if (eq this.system.type "weapon")}}
                     <span class="item-stat-badge px-1.5 py-0.5 rounded" title="{{localize 'SR5Marketplace.UI.MountPoint'}}">
@@ -57,10 +57,10 @@
                 {{else if (eq this.type "echo")}}
                 {{else}}
                     <span class="item-stat-badge px-1.5 py-0.5 rounded" title="{{localize 'SR5Marketplace.Marketplace.system.avail.avail'}}">
-                        {{localize "SR5Marketplace.Marketplace.system.avail.avail"}}: {{this.system.technology.availability}}
+                        {{localize "SR5Marketplace.Marketplace.system.avail.avail"}}: {{formatAvail this.system.technology.availability}}
                     </span>
                     <span class="item-stat-badge px-1.5 py-0.5 rounded" title="{{localize 'SR5Marketplace.Marketplace.system.technology.rating'}}">
-                        {{localize "SR5Marketplace.Marketplace.system.technology.rating"}}: {{this.system.technology.rating}}
+                        {{localize "SR5Marketplace.Marketplace.system.technology.rating"}}: {{formatVal this.system.technology.rating}}
                     </span>
                 {{/if}}
             {{/if}}

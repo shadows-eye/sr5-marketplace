@@ -46,6 +46,31 @@ export class ItemPreviewApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const itemData = item.toObject(false);
         itemData.uuid = item.uuid;
 
+        // Normalize technology stats in case they are objects
+        if (itemData.system?.technology) {
+            if (typeof itemData.system.technology.cost === "object" && itemData.system.technology.cost !== null) {
+                itemData.system.technology.cost = itemData.system.technology.cost.value ?? itemData.system.technology.cost.base ?? 0;
+            }
+            if (typeof itemData.system.technology.availability === "object" && itemData.system.technology.availability !== null) {
+                const availObj = itemData.system.technology.availability;
+                const v = availObj.value ?? availObj.base ?? "";
+                const t = availObj.type ?? "";
+                itemData.system.technology.availability = (t && !String(v).includes(t)) ? `${v}${t}` : (v || "0");
+            }
+            if (typeof itemData.system.technology.rating === "object" && itemData.system.technology.rating !== null) {
+                itemData.system.technology.rating = itemData.system.technology.rating.value ?? itemData.system.technology.rating.base ?? 0;
+            }
+        }
+        if (typeof itemData.system?.cost === "object" && itemData.system?.cost !== null) {
+            itemData.system.cost = itemData.system.cost.value ?? itemData.system.cost.base ?? 0;
+        }
+        if (typeof itemData.system?.availability === "object" && itemData.system?.availability !== null) {
+            const availObj = itemData.system.availability;
+            const v = availObj.value ?? availObj.base ?? "";
+            const t = availObj.type ?? "";
+            itemData.system.availability = (t && !String(v).includes(t)) ? `${v}${t}` : (v || "0");
+        }
+
         this.purchasingActor = await ActorSelectionService.getSelectedActor();
 
         //options.window.title = itemData.name;
