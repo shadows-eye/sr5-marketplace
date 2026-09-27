@@ -179,6 +179,7 @@
     },
     "SR5Marketplace": {
         "Themes": {
+            "ShadowsTheme": "Shadows HUD Theme (Standard)",
             "Neon": "Cyber-Neon (Dunkel)",
             "NeonLight": "Cyber-Neon (Hell)",
             "Silicon": "Silicon"

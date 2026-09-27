@@ -414,9 +414,19 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         if (!container) return;
 
         const position = game.settings.get("sr5-marketplace", "marketshouterPosition") || "top-right";
+        const hasOpenWindow = !!document.querySelector(
+            "#inGameMarketplace:not(.minimized), #itemBuilder:not(.minimized), .itemBuilder:not(.minimized), .sr5-marketplace:not(.marketshouter-app):not(.minimized)"
+        );
+
+        if (hasOpenWindow) {
+            this.element.style.zIndex = "25";
+            container.style.zIndex = "25";
+        } else {
+            container.style.zIndex = "";
+        }
 
         if (position === "top-right") {
-            this.element.style.zIndex = "1000";
+            if (!hasOpenWindow) this.element.style.zIndex = "1000";
             container.style.left = "";
             container.style.bottom = "";
             container.style.top = "";
@@ -436,7 +446,7 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         }
 
         if (position === "top-center") {
-            this.element.style.zIndex = "1000";
+            if (!hasOpenWindow) this.element.style.zIndex = "1000";
             container.style.right = "";
             container.style.left = "";
             container.style.bottom = "";
@@ -445,7 +455,7 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         }
 
         if (position === "bottom-left") {
-            this.element.style.zIndex = "105";
+            if (!hasOpenWindow) this.element.style.zIndex = "105";
             container.style.right = "";
             container.style.top = "";
 

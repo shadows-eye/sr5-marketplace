@@ -1426,9 +1426,21 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     // --- Static Helpers ---
 
     static _getThemeFromSetting() {
-        const uiConfig = game.settings.get("core", "uiConfig");
-        const themeValue = uiConfig?.colorScheme.applications || "light";
-        return `theme-${themeValue}`;
+        if (typeof game !== "undefined" && game.settings) {
+            try {
+                const uiConfig = game.settings.get("core", "uiConfig");
+                const themeValue = uiConfig?.colorScheme?.applications;
+                if (themeValue === "shadows-theme" || themeValue === "shadows") {
+                    return "shadows-theme";
+                }
+                if (themeValue && themeValue !== "light" && themeValue !== "dark") {
+                    return themeValue.startsWith("theme-") ? themeValue : `theme-${themeValue}`;
+                }
+            } catch (err) {
+                // ignore
+            }
+        }
+        return "shadows-theme";
     }
 
     // --- Event Listeners (Bound in _onRender) ---

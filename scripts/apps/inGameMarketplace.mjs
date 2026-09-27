@@ -82,7 +82,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         return foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
             id: "inGameMarketplace",
             position: { width: 910, height: 800, top: 50, left: 120 },
-            window: { title: "SR5Marketplace.Marketplace.Title", resizable: true },
+            window: { icon: "fa-solid fa-cart-shopping", title: "SR5Marketplace.Marketplace.Title", resizable: true },
             actions: {
                 changeTab: this.#onChangeTab,
                 toggleActorList: this.#onToggleActorList,
@@ -640,15 +640,28 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 const setting = game.settings.get("core", "sheetThemes");
                 const documentTheme = setting?.documents?.[shopActorUuid];
                 if (documentTheme) {
-                    return `theme-${documentTheme}`;
+                    if (documentTheme === "shadows-theme" || documentTheme === "shadows") return "shadows-theme";
+                    return documentTheme.startsWith("theme-") ? documentTheme : `theme-${documentTheme}`;
                 }
             } catch (err) {
                 console.warn("inGameMarketplace | Failed to read sheetThemes setting synchronously:", err);
             }
         }
-        const uiConfig = game.settings.get("core", "uiConfig");
-        const themeValue = uiConfig?.colorScheme.applications || "light";
-        return `theme-${themeValue}`;
+        if (typeof game !== "undefined" && game.settings) {
+            try {
+                const uiConfig = game.settings.get("core", "uiConfig");
+                const themeValue = uiConfig?.colorScheme?.applications;
+                if (themeValue === "shadows-theme" || themeValue === "shadows") {
+                    return "shadows-theme";
+                }
+                if (themeValue && themeValue !== "light" && themeValue !== "dark") {
+                    return themeValue.startsWith("theme-") ? themeValue : `theme-${themeValue}`;
+                }
+            } catch (err) {
+                // ignore
+            }
+        }
+        return "shadows-theme";
     }
     // --- ACTION HANDLERS ---
     static #onChangeTab(event, target) {

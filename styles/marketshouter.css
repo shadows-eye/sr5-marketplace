@@ -87,6 +87,18 @@ body:has(#shadows-hud-root .shadows-hud-drawer-container.open) .marketshouter-co
     z-index: 80;
 }
 
+/* When Marketplace or ItemBuilder is open and active, keep MarketShouter behind windows */
+body:has(#inGameMarketplace:not(.minimized)) .marketshouter-app,
+body:has(#inGameMarketplace:not(.minimized)) .marketshouter-container,
+body:has(#itemBuilder:not(.minimized)) .marketshouter-app,
+body:has(#itemBuilder:not(.minimized)) .marketshouter-container,
+body:has(.itemBuilder:not(.minimized)) .marketshouter-app,
+body:has(.itemBuilder:not(.minimized)) .marketshouter-container,
+body:has(.sr5-marketplace:not(.marketshouter-app):not(.minimized)) .marketshouter-app,
+body:has(.sr5-marketplace:not(.marketshouter-app):not(.minimized)) .marketshouter-container {
+    z-index: 25;
+}
+
 /* Sleek glassmorphic pill capsule bar */
 .marketshouter-bar {
     display: flex;

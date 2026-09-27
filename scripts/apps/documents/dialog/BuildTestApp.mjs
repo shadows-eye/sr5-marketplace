@@ -11,9 +11,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     constructor(options = {}) {
         // Apply theme classes
-        const currentTheme = game.settings.get("sr5-marketplace", "enablePremiumThemes")
-            ? (game.user.getFlag("sr5-marketplace", "theme") || "theme-dark")
-            : "theme-dark";
+        const currentTheme = game.user?.getFlag("sr5-marketplace", "theme") || "shadows-theme";
         options.classes = [
             ...(options.classes || []),
             "sr5-marketplace",

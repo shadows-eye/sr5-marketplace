@@ -566,10 +566,11 @@ select#item-type-selector {
     width: auto;
     flex-grow: 0;
     max-height: 1.8rem;
-    padding: 2px 5px;
-    border: 1px solid var(--border-highlight-dark-yellow);
-    background: var(--bg-item-card);
-    color: var(--color-red-dark);
+    padding: 2px 8px;
+    border: 1px solid var(--border-color-medium);
+    background: var(--color-carbon-slot);
+    color: var(--color-slate-bright);
+    border-radius: 4px;
 }
 
 input#search-box.marketplace-search {
@@ -577,13 +578,15 @@ input#search-box.marketplace-search {
     flex-grow: 1;
     max-width: 300px;
     max-height: 1.9rem;
-    background-color: var(--searbarColor);
-    border: 1px solid var(--border-highlight-dark-yellow);
+    background-color: var(--color-carbon-slot);
+    border: 1px solid var(--border-color-medium);
+    color: var(--color-slate-bright);
+    border-radius: 4px;
 }
 
 select#item-type-selector option {
-    background-color: var(--bg-basket-content);
-    color: var(--color-red-very-dark);
+    background-color: var(--color-carbon-slot);
+    color: var(--color-slate-bright);
 }
 
 #filter-tags-container {
@@ -699,23 +702,126 @@ select#item-type-selector option {
 .item-card {
     background-color: var(--bg-item-card);
     padding: 0.7em;
-    border: 0.2em solid var(--color-red-transparent-subtle);
-    border-radius: 0.7em;
+    border: 1px solid var(--border-item-card);
+    border-radius: 8px;
     display: flex;
     flex-direction: column;
     max-height: fit-content;
     min-width: 0;
+    box-shadow: var(--shadow-item-card);
+    transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
 .marketplace-item.grid-item:hover,
 .item-card:hover {
     background-color: var(--bg-item-card-hover);
-    color: var(--color-yellow-base);
+    border-color: var(--border-item-card-hover);
+    box-shadow: var(--shadow-item-card-hover);
+    transform: translateY(-2px);
+}
+
+.marketplace-item.grid-item h4,
+.item-card h4 {
+    color: var(--text-color-header);
+    transition: color 0.15s ease, text-shadow 0.15s ease;
 }
 
 .marketplace-item.grid-item:hover h4,
 .item-card:hover h4 {
-    color: var(--color-yellow-base);
+    color: var(--text-color-subheader);
+    text-shadow: 0 0 6px var(--color-gold-glow);
+}
+
+/* Item Image Slot */
+.marketplace-item .marketplace-item-img-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--inventory-item-image-bg);
+    border: 1px solid var(--border-item-card);
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.marketplace-item:hover .marketplace-item-img-link {
+    border-color: var(--border-item-card-hover);
+}
+
+.marketplace-item .marketplace-item-img-link img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border: none;
+    transition: transform 0.2s ease;
+}
+
+.marketplace-item:hover .marketplace-item-img-link img {
+    transform: scale(1.08);
+}
+
+/* Item Price Display */
+.marketplace-item .marketplace-item-price {
+    color: var(--text-color-subheader);
+    font-size: 14px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: text-shadow 0.2s ease;
+}
+
+.marketplace-item .marketplace-item-price i {
+    color: var(--text-color-link);
+}
+
+.marketplace-item:hover .marketplace-item-price {
+    text-shadow: 0 0 6px var(--color-gold-glow);
+}
+
+/* Item Stat Badges */
+.marketplace-item .item-stat-badge {
+    background: var(--bg-item-stat-badge);
+    border: 1px solid var(--border-item-stat-badge);
+    color: var(--text-item-stat-badge);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.marketplace-item:hover .item-stat-badge {
+    border-color: var(--border-item-card-hover);
+}
+
+/* Add To Cart Button */
+.marketplace-item .add-to-cart {
+    background: var(--color-cart-btn-bg);
+    border: 1px solid var(--color-cart-btn-border);
+    color: var(--color-white);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px var(--color-black-transparent-45);
+    transition: all 0.15s ease;
+}
+
+.marketplace-item .add-to-cart:hover {
+    background: var(--color-cart-btn-hover);
+    border-color: var(--color-cart-btn-border-hover);
+    box-shadow: var(--color-cart-btn-shadow-hover);
+    color: var(--color-white);
+    transform: translateY(-1px);
+}
+
+.marketplace-item .add-to-cart:active {
+    transform: translateY(1px);
 }
 
 .grid-show {
@@ -1705,4 +1811,507 @@ hr.marketplace-settings-hr {
 
 .tour-fadeout {
     z-index: 27000;
+}
+
+/* ================================================================== */
+/* 10. Shadows HUD Theme Overrides                                    */
+/* ================================================================== */
+
+.shadows-theme {
+    border: 1px solid var(--color-gold-transparent-35);
+    border-radius: 8px;
+    box-shadow: 0 8px 32px var(--color-black-transparent-70), 0 0 12px var(--color-gold-glow);
+    overflow: hidden;
+}
+
+/* Seamless Window Frame Header (Matching Shadows HUD header) */
+.shadows-theme .window-header {
+    background: var(--header-gradient-bar);
+    border: none;
+    box-shadow: none;
+    margin: 0;
+    padding: 4px 12px 2px 12px;
+}
+
+.shadows-theme .window-header .window-title {
+    color: var(--color-gold-title);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 6px var(--color-gold-glow);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.shadows-theme .window-header i {
+    color: var(--color-gold-bright);
+}
+
+.shadows-theme .window-content {
+    padding: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.shadows-theme .marketplace-header {
+    background: var(--header-gradient-bar);
+    margin: 0 0 10px 0;
+    padding: 6px 12px 10px 12px;
+    border-radius: 0;
+    border-bottom: 1px solid var(--color-gold-transparent-25);
+    box-shadow: none;
+}
+
+.shadows-theme .marketplace-title {
+    color: var(--color-gold-title);
+    font-family: "Modesto Condensed", "Signika", sans-serif;
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 6px var(--color-gold-glow);
+}
+
+.shadows-theme .marketplace-body {
+    padding: 0 10px 10px 10px;
+}
+
+.shadows-theme .marketplace-filter {
+    background: var(--color-carbon-panel);
+    border: 1px solid var(--color-gold-transparent-25);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px var(--color-black-transparent-45);
+}
+
+.shadows-theme .marketplace-filter select,
+.shadows-theme .marketplace-filter input[type="text"] {
+    background: var(--color-carbon-slot);
+    border: 1px solid var(--color-gold-transparent-25);
+    color: var(--color-slate-bright);
+    border-radius: 4px;
+}
+
+.shadows-theme .marketplace-filter select:focus,
+.shadows-theme .marketplace-filter input[type="text"]:focus {
+    border-color: var(--color-gold-bright);
+    box-shadow: 0 0 8px var(--color-gold-glow);
+    color: var(--color-white);
+    outline: none;
+}
+
+.shadows-theme .marketplace-filter select option {
+    background-color: var(--color-carbon-slot);
+    color: var(--color-slate-bright);
+}
+
+/* Shadows HUD Style Tabs (Capsule/Pill buttons with crimson active) */
+.shadows-theme nav.sheet-tabs.marketplace-tabs {
+    border-bottom: none;
+    padding: 0 10px;
+    margin: 0 0 10px 0;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.shadows-theme nav.sheet-tabs.marketplace-tabs>a {
+    background: var(--color-carbon-slot);
+    border: 1px solid var(--color-gold-transparent-25);
+    border-radius: 4px;
+    color: var(--color-slate-muted);
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    box-shadow: none;
+    text-shadow: none;
+    margin: 0;
+    transition: all 0.15s ease;
+}
+
+.shadows-theme nav.sheet-tabs.marketplace-tabs>a span {
+    color: var(--color-slate-muted);
+}
+
+.shadows-theme nav.sheet-tabs.marketplace-tabs>a i {
+    color: var(--color-gold-title);
+}
+
+.shadows-theme nav.sheet-tabs.marketplace-tabs>a:hover {
+    background: var(--color-carbon-panel);
+    border-color: var(--color-gold-transparent-50);
+    color: var(--color-gold-bright);
+}
+
+.shadows-theme nav.sheet-tabs.marketplace-tabs>a:hover span {
+    color: var(--color-gold-bright);
+}
+
+.shadows-theme nav.sheet-tabs.marketplace-tabs>a.active {
+    background: var(--color-hud-crimson-hover);
+    border: 1px solid var(--color-gold-bright);
+    border-radius: 4px;
+    color: var(--color-gold-title);
+    box-shadow: 0 0 8px var(--color-gold-glow);
+    text-shadow: 0 0 4px var(--color-gold-glow);
+    margin: 0;
+    padding: 4px 10px;
+}
+
+.shadows-theme nav.sheet-tabs.marketplace-tabs>a.active span {
+    color: var(--color-gold-title);
+}
+
+.shadows-theme nav.sheet-tabs.marketplace-tabs>a.active i {
+    color: var(--color-gold-bright);
+}
+
+/* Modifier Groups & Availability Dialog (Shadows Theme) */
+.shadows-theme .marketplace-modifiers-container {
+    gap: 10px;
+    padding: 0;
+}
+
+.shadows-theme .modifier-group {
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    padding: 0;
+    margin-bottom: 8px;
+    overflow: hidden;
+}
+
+.shadows-theme .place-collapsible-header {
+    background: var(--header-gradient-bar);
+    border: 1px solid var(--color-gold-transparent-25);
+    border-radius: 6px;
+    color: var(--color-gold-title);
+    font-family: "Modesto Condensed", "Signika", sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 8px 12px 8px 32px;
+    box-shadow: 0 2px 6px var(--color-black-transparent-35);
+    text-shadow: 0 0 6px var(--color-gold-glow);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.shadows-theme .place-collapsible-header:hover {
+    border-color: var(--color-gold-bright);
+    color: var(--color-gold-bright);
+    box-shadow: 0 0 10px var(--color-gold-glow);
+}
+
+.shadows-theme .place-collapsible-header::before {
+    color: var(--color-gold-title);
+}
+
+.shadows-theme .place-collapsible-header:hover::before {
+    color: var(--color-gold-bright);
+}
+
+.shadows-theme .toggle-checkbox:checked ~ .place-collapsible-header {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom: 1px solid var(--color-gold-transparent-20);
+}
+
+.shadows-theme .place-collapsible-content {
+    background-color: var(--bg-item-card);
+    border: 1px solid var(--border-item-card);
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    box-shadow: var(--shadow-item-card);
+    padding: 12px 14px;
+}
+
+.shadows-theme .modifier-items-grid {
+    gap: 6px 16px;
+}
+
+.shadows-theme .modifier-items-grid label {
+    color: var(--color-slate-bright);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.shadows-theme .modifier-button,
+.shadows-theme .btn-modifier {
+    background: var(--color-carbon-slot);
+    border: 1px solid var(--color-gold-transparent-25);
+    color: var(--color-slate-bright);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.shadows-theme .modifier-button:hover,
+.shadows-theme .btn-modifier:hover {
+    background: var(--color-carbon-panel);
+    border-color: var(--color-gold-bright);
+    color: var(--color-gold-title);
+    box-shadow: 0 0 6px var(--color-gold-glow);
+}
+
+.shadows-theme .modifier-button.active,
+.shadows-theme .btn-modifier.active {
+    background: var(--color-hud-crimson-hover);
+    border-color: var(--color-gold-title);
+    color: var(--color-gold-bright);
+    box-shadow: 0 0 8px var(--color-gold-glow);
+}
+
+.shadows-theme .custom-modifier-item {
+    background: var(--color-carbon-slot);
+    border: 1px solid var(--color-gold-transparent-20);
+    border-radius: 4px;
+    color: var(--color-slate-bright);
+}
+
+.shadows-theme .custom-mod-label,
+.shadows-theme .custom-mod-value {
+    background: var(--color-carbon-input);
+    border: 1px solid var(--color-gold-transparent-25);
+    color: var(--color-slate-bright);
+    border-radius: 4px;
+}
+
+.shadows-theme .custom-mod-label:focus,
+.shadows-theme .custom-mod-value:focus {
+    border-color: var(--color-gold-bright);
+    box-shadow: 0 0 6px var(--color-gold-glow);
+    outline: none;
+}
+
+.shadows-theme .dialog-header-grid {
+    background: var(--color-carbon-panel);
+    border: 1px solid var(--color-gold-transparent-25);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px var(--color-black-transparent-45);
+}
+
+.shadows-theme .dialog-header-grid select {
+    background: var(--color-carbon-slot);
+    border: 1px solid var(--color-gold-transparent-25);
+    color: var(--color-slate-bright);
+    border-radius: 4px;
+}
+
+.shadows-theme .dialog-header-grid select option {
+    background-color: var(--color-carbon-slot);
+    color: var(--color-slate-bright);
+}
+
+.shadows-theme .dice-pool-summary {
+    background: var(--color-carbon-slot);
+    border: 1px solid var(--color-gold-transparent-25);
+    border-radius: 6px;
+}
+
+/* ItemBuilder (Shadows Theme) */
+.shadows-theme.itemBuilder .builder-header,
+.shadows-theme .itemBuilder .builder-header {
+    background: var(--header-gradient-bar);
+    border-bottom: 1px solid var(--color-gold-transparent-25);
+    padding: 6px 12px;
+}
+
+.shadows-theme.itemBuilder .builderTitle,
+.shadows-theme .itemBuilder .builderTitle {
+    color: var(--color-gold-title);
+    font-family: "Modesto Condensed", "Signika", sans-serif;
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 6px var(--color-gold-glow);
+}
+
+.shadows-theme.itemBuilder .builder-header .header-right button,
+.shadows-theme .itemBuilder .builder-header .header-right button {
+    background: var(--color-carbon-slot);
+    border: 1px solid var(--color-gold-transparent-25);
+    border-radius: 4px;
+    color: var(--color-slate-bright);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s ease;
+}
+
+.shadows-theme.itemBuilder .builder-header .header-right button:hover,
+.shadows-theme .itemBuilder .builder-header .header-right button:hover {
+    background: var(--color-carbon-panel);
+    border-color: var(--color-gold-bright);
+    color: var(--color-gold-bright);
+    box-shadow: 0 0 6px var(--color-gold-glow);
+}
+
+.shadows-theme.itemBuilder .builder-header .header-right button i,
+.shadows-theme .itemBuilder .builder-header .header-right button i {
+    color: var(--color-gold-title);
+}
+
+.shadows-theme.itemBuilder nav.builder-nav,
+.shadows-theme .itemBuilder nav.builder-nav {
+    border-top: none;
+    border-bottom: 1px solid var(--color-gold-transparent-20);
+    padding: 4px 10px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.shadows-theme.itemBuilder a.builder-tabs.item,
+.shadows-theme .itemBuilder a.builder-tabs.item {
+    background: var(--color-carbon-slot);
+    border: 1px solid var(--color-gold-transparent-25);
+    border-radius: 4px;
+    color: var(--color-slate-muted);
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.15s ease;
+}
+
+.shadows-theme.itemBuilder a.builder-tabs.item i,
+.shadows-theme .itemBuilder a.builder-tabs.item i {
+    color: var(--color-gold-title);
+}
+
+.shadows-theme.itemBuilder a.builder-tabs.item:hover,
+.shadows-theme .itemBuilder a.builder-tabs.item:hover {
+    background: var(--color-carbon-panel);
+    border-color: var(--color-gold-transparent-50);
+    color: var(--color-gold-bright);
+}
+
+.shadows-theme.itemBuilder a.builder-tabs.item.active,
+.shadows-theme .itemBuilder a.builder-tabs.item.active {
+    background: var(--color-hud-crimson-hover);
+    border: 1px solid var(--color-gold-bright);
+    color: var(--color-gold-title);
+    box-shadow: 0 0 8px var(--color-gold-glow);
+    text-shadow: 0 0 4px var(--color-gold-glow);
+}
+
+.shadows-theme.itemBuilder a.builder-tabs.item.active i,
+.shadows-theme .itemBuilder a.builder-tabs.item.active i {
+    color: var(--color-gold-bright);
+}
+
+.shadows-theme.itemBuilder .item-selector-section,
+.shadows-theme .itemBuilder .item-selector-section,
+.shadows-theme.itemBuilder .mod-selector-section,
+.shadows-theme .itemBuilder .mod-selector-section {
+    background: var(--color-carbon-panel);
+    border: 1px solid var(--color-gold-transparent-25);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px var(--color-black-transparent-45);
+    padding: 8px;
+}
+
+.shadows-theme.itemBuilder .component-header h3,
+.shadows-theme .itemBuilder .component-header h3 {
+    background: var(--header-gradient-bar);
+    color: var(--color-gold-title);
+    font-family: "Modesto Condensed", "Signika", sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border: 1px solid var(--color-gold-transparent-25);
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin: 0 0 6px 0;
+    box-shadow: 0 2px 6px var(--color-black-transparent-35);
+    text-shadow: 0 0 6px var(--color-gold-glow);
+}
+
+.shadows-theme.itemBuilder .header-controls select,
+.shadows-theme .itemBuilder .header-controls select,
+.shadows-theme.itemBuilder .header-controls input[type="search"],
+.shadows-theme .itemBuilder .header-controls input[type="search"] {
+    background: var(--color-carbon-input);
+    border: 1px solid var(--color-gold-transparent-25);
+    color: var(--color-slate-bright);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.shadows-theme.itemBuilder .header-controls select:focus,
+.shadows-theme .itemBuilder .header-controls select:focus,
+.shadows-theme.itemBuilder .header-controls input[type="search"]:focus,
+.shadows-theme .itemBuilder .header-controls input[type="search"]:focus {
+    border-color: var(--color-gold-bright);
+    box-shadow: 0 0 6px var(--color-gold-glow);
+    outline: none;
+}
+
+.shadows-theme.itemBuilder .item-card,
+.shadows-theme .itemBuilder .item-card {
+    background: var(--bg-item-card);
+    border: 1px solid var(--border-item-card);
+    border-radius: 5px;
+    box-shadow: 0 2px 4px var(--color-black-transparent-35);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.shadows-theme.itemBuilder .item-card:hover,
+.shadows-theme .itemBuilder .item-card:hover {
+    background: var(--bg-item-card-hover);
+    border-color: var(--color-gold-bright);
+    box-shadow: 0 0 8px var(--color-gold-glow);
+}
+
+.shadows-theme.itemBuilder .item-card .item-name,
+.shadows-theme .itemBuilder .item-card .item-name {
+    color: var(--color-gold-title);
+    font-weight: 500;
+}
+
+.shadows-theme.itemBuilder .item-card:hover .item-name,
+.shadows-theme .itemBuilder .item-card:hover .item-name {
+    color: var(--color-gold-bright);
+}
+
+.shadows-theme.itemBuilder .item-card .select-icon,
+.shadows-theme .itemBuilder .item-card .select-icon {
+    color: var(--color-gold-title);
+}
+
+.shadows-theme.itemBuilder .item-card:hover .select-icon,
+.shadows-theme .itemBuilder .item-card:hover .select-icon {
+    color: var(--color-gold-bright);
+}
+
+.shadows-theme.itemBuilder .weapon-stats-hud,
+.shadows-theme .itemBuilder .weapon-stats-hud {
+    background: var(--color-black-glass);
+    border: 1px solid var(--color-gold-transparent-35);
+    border-radius: 4px;
+    box-shadow: 0 0 12px var(--color-gold-glow), inset 0 0 8px var(--color-black-transparent-80);
+}
+
+.shadows-theme.itemBuilder .weapon-stats-hud .stat-label,
+.shadows-theme .itemBuilder .weapon-stats-hud .stat-label {
+    color: var(--color-gold-title);
+    font-family: "Modesto Condensed", "Signika", sans-serif;
+    font-size: 1.1em;
+}
+
+.shadows-theme.itemBuilder .weapon-stats-hud .stat-value,
+.shadows-theme .itemBuilder .weapon-stats-hud .stat-value {
+    color: var(--color-gold-bright);
+}
+
+.shadows-theme.itemBuilder .weapon-stats-hud .stat-pipe,
+.shadows-theme .itemBuilder .weapon-stats-hud .stat-pipe {
+    color: var(--color-gold-transparent-25);
+}
+
+.shadows-theme.itemBuilder .weapon-stats-hud .stat-icon-segment i,
+.shadows-theme .itemBuilder .weapon-stats-hud .stat-icon-segment i {
+    color: var(--color-gold-title);
 }

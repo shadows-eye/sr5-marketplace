@@ -537,7 +537,7 @@ function wrapConfigureUI() {
 
     const originalConfigureUI = game.configureUI;
     game.configureUI = function (config) {
-        const ourThemeClasses = ["theme-neon", "theme-neon-light", "theme-silicon"];
+        const ourThemeClasses = ["shadows-theme", "theme-shadows", "theme-neon", "theme-neon-light", "theme-silicon"];
 
         // Remove from body
         if (document.body) {
@@ -572,16 +572,20 @@ function wrapConfigureUI() {
                     if (app.element) {
                         app.element.classList.remove(...ourThemeClasses, "theme-light", "theme-dark");
 
-                        let newTheme = "theme-light";
+                        let newTheme = "shadows-theme";
                         const appColorTheme = config?.colorScheme?.applications;
 
                         if (isShopSheet && app.document) {
                             const sheetTheme = foundry.applications.apps.DocumentSheetConfig.getSheetThemeForDocument(app.document);
-                            newTheme = sheetTheme ? `theme-${sheetTheme}` : `theme-${appColorTheme || "light"}`;
+                            newTheme = sheetTheme
+                                ? ((sheetTheme === "shadows-theme" || sheetTheme === "shadows") ? "shadows-theme" : `theme-${sheetTheme}`)
+                                : ((appColorTheme === "shadows-theme" || appColorTheme === "shadows") ? "shadows-theme" : `theme-${appColorTheme || "dark"}`);
                         } else if (isMarketplace) {
                             newTheme = app.constructor._getThemeFromSetting(app.shopActorUuid);
                         } else {
-                            newTheme = `theme-${appColorTheme || "light"}`;
+                            newTheme = (appColorTheme === "shadows-theme" || appColorTheme === "shadows")
+                                ? "shadows-theme"
+                                : (appColorTheme ? `theme-${appColorTheme}` : "shadows-theme");
                         }
 
                         app.element.classList.add(newTheme);
@@ -611,28 +615,46 @@ function wrapConfigureUI() {
 
 function injectThemeChoices() {
     try {
-        if (typeof game !== "undefined" && game.settings && game.settings.settings.has("sr5-marketplace.enablePremiumThemes")) {
-            if (!game.settings.get("sr5-marketplace", "enablePremiumThemes")) {
-                return; // Do not inject themes if setting is disabled
-            }
-        }
-
         wrapConfigureUI();
+
+        const enablePremium = typeof game !== "undefined" && game.settings?.settings?.has("sr5-marketplace.enablePremiumThemes")
+            ? game.settings.get("sr5-marketplace", "enablePremiumThemes")
+            : true;
+
+        const themesToInject = [
+            { key: "shadows-theme", label: "SR5Marketplace.Themes.ShadowsTheme" }
+        ];
+
+        if (enablePremium) {
+            themesToInject.push(
+                { key: "neon", label: "SR5Marketplace.Themes.Neon" },
+                { key: "neon-light", label: "SR5Marketplace.Themes.NeonLight" },
+                { key: "silicon", label: "SR5Marketplace.Themes.Silicon" }
+            );
+        }
 
         if (typeof CONFIG !== "undefined" && CONFIG.ui?.menu) {
             if (!CONFIG.ui.menu.classes) {
                 CONFIG.ui.menu.classes = [];
             }
             if (Array.isArray(CONFIG.ui.menu.classes)) {
-                if (!CONFIG.ui.menu.classes.includes("theme-neon")) CONFIG.ui.menu.classes.push("theme-neon");
-                if (!CONFIG.ui.menu.classes.includes("theme-neon-light")) CONFIG.ui.menu.classes.push("theme-neon-light");
-                if (!CONFIG.ui.menu.classes.includes("theme-silicon")) CONFIG.ui.menu.classes.push("theme-silicon");
+                if (!CONFIG.ui.menu.classes.includes("shadows-theme")) CONFIG.ui.menu.classes.push("shadows-theme");
+                if (!CONFIG.ui.menu.classes.includes("theme-shadows")) CONFIG.ui.menu.classes.push("theme-shadows");
+                if (enablePremium) {
+                    if (!CONFIG.ui.menu.classes.includes("theme-neon")) CONFIG.ui.menu.classes.push("theme-neon");
+                    if (!CONFIG.ui.menu.classes.includes("theme-neon-light")) CONFIG.ui.menu.classes.push("theme-neon-light");
+                    if (!CONFIG.ui.menu.classes.includes("theme-silicon")) CONFIG.ui.menu.classes.push("theme-silicon");
+                }
             }
 
             try {
                 const originalDefaultOptions = CONFIG.ui.menu.DEFAULT_OPTIONS || {};
                 const originalClasses = originalDefaultOptions.classes || [];
-                const newClasses = [...new Set([...originalClasses, "theme-neon", "theme-neon-light", "theme-silicon"])];
+                const extraClasses = ["shadows-theme", "theme-shadows"];
+                if (enablePremium) {
+                    extraClasses.push("theme-neon", "theme-neon-light", "theme-silicon");
+                }
+                const newClasses = [...new Set([...originalClasses, ...extraClasses])];
 
                 Object.defineProperty(CONFIG.ui.menu, "DEFAULT_OPTIONS", {
                     get() {
@@ -654,15 +676,15 @@ function injectThemeChoices() {
             if (schema.fields) {
                 const appField = schema.fields.colorScheme?.fields?.applications;
                 if (appField) {
-                    safeAddChoice(appField, "choices", "neon", "SR5Marketplace.Themes.Neon");
-                    safeAddChoice(appField, "choices", "neon-light", "SR5Marketplace.Themes.NeonLight");
-                    safeAddChoice(appField, "choices", "silicon", "SR5Marketplace.Themes.Silicon");
+                    for (const theme of themesToInject) {
+                        safeAddChoice(appField, "choices", theme.key, theme.label);
+                    }
                 }
                 const intField = schema.fields.colorScheme?.fields?.interface;
                 if (intField) {
-                    safeAddChoice(intField, "choices", "neon", "SR5Marketplace.Themes.Neon");
-                    safeAddChoice(intField, "choices", "neon-light", "SR5Marketplace.Themes.NeonLight");
-                    safeAddChoice(intField, "choices", "silicon", "SR5Marketplace.Themes.Silicon");
+                    for (const theme of themesToInject) {
+                        safeAddChoice(intField, "choices", theme.key, theme.label);
+                    }
                 }
             }
         }
@@ -671,36 +693,54 @@ function injectThemeChoices() {
         if (typeof game !== "undefined" && game.settings?.settings) {
             const uiConfigSetting = game.settings.settings.get("core.uiConfig");
             if (uiConfigSetting) {
-                safeAddChoice(uiConfigSetting, "choices", "neon", "SR5Marketplace.Themes.Neon");
-                safeAddChoice(uiConfigSetting, "choices", "neon-light", "SR5Marketplace.Themes.NeonLight");
-                safeAddChoice(uiConfigSetting, "choices", "silicon", "SR5Marketplace.Themes.Silicon");
+                for (const theme of themesToInject) {
+                    safeAddChoice(uiConfigSetting, "choices", theme.key, theme.label);
+                }
 
                 const schemaField = uiConfigSetting.type;
                 if (schemaField && schemaField.fields) {
                     const appField = schemaField.fields.colorScheme?.fields?.applications;
                     if (appField) {
-                        safeAddChoice(appField, "choices", "neon", "SR5Marketplace.Themes.Neon");
-                        safeAddChoice(appField, "choices", "neon-light", "SR5Marketplace.Themes.NeonLight");
-                        safeAddChoice(appField, "choices", "silicon", "SR5Marketplace.Themes.Silicon");
+                        for (const theme of themesToInject) {
+                            safeAddChoice(appField, "choices", theme.key, theme.label);
+                        }
                     }
                     const intField = schemaField.fields.colorScheme?.fields?.interface;
                     if (intField) {
-                        safeAddChoice(intField, "choices", "neon", "SR5Marketplace.Themes.Neon");
-                        safeAddChoice(intField, "choices", "neon-light", "SR5Marketplace.Themes.NeonLight");
-                        safeAddChoice(intField, "choices", "silicon", "SR5Marketplace.Themes.Silicon");
+                        for (const theme of themesToInject) {
+                            safeAddChoice(intField, "choices", theme.key, theme.label);
+                        }
                     }
                 }
             }
         }
 
-        injectSheetThemeChoices();
+        injectSheetThemeChoices(themesToInject);
     } catch (err) {
         console.warn("SR5 Marketplace | Failed to inject theme choices:", err);
     }
 }
 
-function injectSheetThemeChoices() {
+function injectSheetThemeChoices(themesToInject = null) {
     if (typeof CONFIG === "undefined" || !CONFIG.Actor?.sheetClasses) return;
+
+    if (!themesToInject) {
+        const enablePremium = typeof game !== "undefined" && game.settings?.settings?.has("sr5-marketplace.enablePremiumThemes")
+            ? game.settings.get("sr5-marketplace", "enablePremiumThemes")
+            : true;
+
+        themesToInject = [
+            { key: "shadows-theme", label: "SR5Marketplace.Themes.ShadowsTheme" }
+        ];
+
+        if (enablePremium) {
+            themesToInject.push(
+                { key: "neon", label: "SR5Marketplace.Themes.Neon" },
+                { key: "neon-light", label: "SR5Marketplace.Themes.NeonLight" },
+                { key: "silicon", label: "SR5Marketplace.Themes.Silicon" }
+            );
+        }
+    }
 
     // Inject themes into Actor, Item, and other document sheet configurations
     const documentTypes = ["Actor", "Item", "JournalEntry", "RollTable", "Cards"];
@@ -715,9 +755,9 @@ function injectSheetThemeChoices() {
             for (const sheetId in sheets) {
                 const sheetDesc = sheets[sheetId];
                 if (sheetDesc && sheetDesc.themes) {
-                    safeAddChoice(sheetDesc, "themes", "neon", "SR5Marketplace.Themes.Neon");
-                    safeAddChoice(sheetDesc, "themes", "neon-light", "SR5Marketplace.Themes.NeonLight");
-                    safeAddChoice(sheetDesc, "themes", "silicon", "SR5Marketplace.Themes.Silicon");
+                    for (const theme of themesToInject) {
+                        safeAddChoice(sheetDesc, "themes", theme.key, theme.label);
+                    }
                 }
             }
         }
@@ -1057,6 +1097,31 @@ Hooks.on("collapseSidebar", (sidebar, collapsed) => {
         } else {
             shouter.render();
         }
+    }
+});
+
+/**
+ * Reactively adjust MarketShouter z-index when Marketplace or ItemBuilder windows open or close.
+ */
+const refreshMarketShouterPosition = () => {
+    const shouter = foundry.applications.instances.get("marketshouter");
+    if (shouter && shouter.rendered && typeof shouter.updatePosition === "function") {
+        shouter.updatePosition();
+    }
+};
+
+Hooks.on("renderInGameMarketplace", refreshMarketShouterPosition);
+Hooks.on("closeInGameMarketplace", refreshMarketShouterPosition);
+Hooks.on("renderItemBuilderApp", refreshMarketShouterPosition);
+Hooks.on("closeItemBuilderApp", refreshMarketShouterPosition);
+Hooks.on("renderApplicationV2", (app) => {
+    if (app?.id === "inGameMarketplace" || app?.id === "itemBuilder") {
+        refreshMarketShouterPosition();
+    }
+});
+Hooks.on("closeApplicationV2", (app) => {
+    if (app?.id === "inGameMarketplace" || app?.id === "itemBuilder") {
+        refreshMarketShouterPosition();
     }
 });
 

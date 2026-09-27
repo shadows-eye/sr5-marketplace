@@ -168,6 +168,37 @@
     --color-yellow-warning-bg: #fff3cd;
     --color-yellow-warning-border: #ffeeba;
 
+    /* --- Shadows HUD Palette (Carbon Glass & Gold) --- */
+    --color-carbon-main: rgba(16, 18, 24, 0.96);
+    --color-carbon-panel: rgba(20, 24, 33, 0.92);
+    --color-carbon-card: rgba(24, 27, 37, 0.95);
+    --color-carbon-card-hover: rgba(34, 38, 52, 0.98);
+    --color-carbon-slot: rgba(10, 12, 17, 0.85);
+    --color-carbon-input: rgba(12, 14, 20, 0.9);
+    --color-gold-transparent-20: rgba(231, 201, 62, 0.2);
+    --color-gold-transparent-25: rgba(231, 201, 62, 0.25);
+    --color-gold-transparent-35: rgba(231, 201, 62, 0.35);
+    --color-gold-transparent-50: rgba(231, 201, 62, 0.5);
+    --color-gold-transparent-75: rgba(231, 201, 62, 0.75);
+    --color-gold-glow: rgba(231, 201, 62, 0.35);
+    --color-gold-title: rgb(251, 222, 110);
+    --color-gold-bright: rgb(244, 207, 14);
+    --color-green-emerald: rgb(16, 185, 129);
+    --color-green-emerald-dark: rgb(5, 46, 22);
+    --color-green-emerald-light: rgb(34, 197, 94);
+    --color-green-glow: rgba(34, 197, 94, 0.35);
+    --color-cart-green-gradient: linear-gradient(135deg, rgba(22, 101, 52, 0.9) 0%, rgba(5, 46, 22, 0.95) 100%);
+    --color-cart-green-hover: linear-gradient(135deg, rgba(34, 197, 94, 0.95) 0%, rgba(22, 101, 52, 0.95) 100%);
+    --color-crimson-glass: rgba(93, 20, 43, 0.45);
+    --color-crimson-deep: rgb(93, 20, 43);
+    --color-hud-crimson-hover: rgb(77, 18, 32);
+    --color-hud-crimson-border: rgba(231, 201, 62, 0.6);
+    --color-hud-header-gradient: linear-gradient(135deg, rgba(93, 20, 43, 0.85) 0%, rgba(20, 22, 30, 0.95) 100%);
+    --color-orange-dark: rgb(194, 65, 12);
+    --color-orange-border: rgb(217, 119, 6);
+    --color-slate-muted: rgb(148, 163, 184);
+    --color-slate-bright: rgb(226, 232, 240);
+
     /* --- Backgrounds --- */
     --bg-main: ;
     /*-- Light Background for all light Themes */
@@ -175,8 +206,20 @@
     /*-- Dark Background for all dark Themes */
     --bg-main-dark: url(/modules/sr5-marketplace/assets/dark-pageV1.webp);
     --bg-dark-section-hover: #3d3d3d;
-    --bg-item-card: #d3af0cd6;
-    --bg-item-card-hover: var(--color-red-dark);
+    --bg-item-card: var(--color-carbon-card);
+    --bg-item-card-hover: var(--color-hud-crimson-hover);
+    --border-item-card: var(--color-gold-transparent-25);
+    --border-item-card-hover: var(--color-hud-crimson-border);
+    --shadow-item-card: 0 4px 12px var(--color-black-transparent-45);
+    --shadow-item-card-hover: 0 0 12px var(--color-gold-glow), 0 4px 16px var(--color-black-transparent-70);
+    --bg-item-stat-badge: var(--color-carbon-slot);
+    --border-item-stat-badge: var(--color-gold-transparent-20);
+    --text-item-stat-badge: var(--color-slate-muted);
+    --color-cart-btn-bg: var(--color-cart-green-gradient);
+    --color-cart-btn-hover: var(--color-cart-green-hover);
+    --color-cart-btn-border: var(--color-gold-transparent-35);
+    --color-cart-btn-border-hover: var(--color-gold-bright);
+    --color-cart-btn-shadow-hover: 0 0 10px var(--color-green-glow), 0 0 6px var(--color-gold-glow);
     --bg-basket-content: #aaaaaa83;
     --bg-basket-summary: #a3a3a3;
 
@@ -268,8 +311,20 @@
 
     /* Unchanged variables from original file */
     --marketplace-collapsible-header: colar: rgb(0 0 0 / 23%);
-    --bg-item-card: #d3af0cd6;
-    --bg-item-card-hover: var(--color-primary-red-dark);
+    --bg-item-card: var(--color-carbon-card);
+    --bg-item-card-hover: var(--color-carbon-card-hover);
+    --border-item-card: var(--color-gold-transparent-25);
+    --border-item-card-hover: var(--color-gold-transparent-75);
+    --shadow-item-card: 0 4px 12px var(--color-black-transparent-45);
+    --shadow-item-card-hover: 0 0 12px var(--color-gold-glow), 0 4px 16px var(--color-black-transparent-70);
+    --bg-item-stat-badge: var(--color-carbon-slot);
+    --border-item-stat-badge: var(--color-gold-transparent-20);
+    --text-item-stat-badge: var(--color-slate-muted);
+    --color-cart-btn-bg: var(--color-cart-green-gradient);
+    --color-cart-btn-hover: var(--color-cart-green-hover);
+    --color-cart-btn-border: var(--color-gold-transparent-35);
+    --color-cart-btn-border-hover: var(--color-gold-bright);
+    --color-cart-btn-shadow-hover: 0 0 10px var(--color-green-glow), 0 0 6px var(--color-gold-glow);
     --bg-filter-bar: #00000017;
     --bg-basket-content: #aaaaaa83;
     --bg-basket-summary: ;
@@ -347,6 +402,22 @@
     --header-gradient-bar: linear-gradient(to right, var(--color-yellow-light) 0%, transparent 100%);
     --header-gradient-text: var(--color-red-darkest);
     --tab-line: var(--color-red-deep);
+
+    /* Item Card Variables (Light) */
+    --bg-item-card: var(--color-white);
+    --bg-item-card-hover: var(--color-grey-lightest);
+    --border-item-card: var(--color-grey-medium-light);
+    --border-item-card-hover: var(--color-yellow-dark);
+    --shadow-item-card: 0 2px 6px var(--color-black-transparent-10);
+    --shadow-item-card-hover: 0 4px 12px var(--color-black-transparent-15);
+    --bg-item-stat-badge: var(--color-black-transparent-10);
+    --border-item-stat-badge: var(--color-grey-medium-light);
+    --text-item-stat-badge: var(--color-dark-grey);
+    --color-cart-btn-bg: var(--color-green-emerald);
+    --color-cart-btn-hover: var(--color-green-emerald-light);
+    --color-cart-btn-border: var(--color-green-emerald-dark);
+    --color-cart-btn-border-hover: var(--color-green-emerald-dark);
+    --color-cart-btn-shadow-hover: 0 0 8px var(--color-green-glow);
 }
 
 .themed.theme-dark {
@@ -408,6 +479,106 @@
     --header-gradient-bar: linear-gradient(to right, var(--color-red-darkest) 0%, transparent 100%);
     --header-gradient-text: var(--color-white);
     --tab-line: var(--color-yellow-base);
+
+    /* Item Card Variables (Dark) */
+    --bg-item-card: var(--color-carbon-card);
+    --bg-item-card-hover: var(--color-carbon-card-hover);
+    --border-item-card: var(--color-gold-transparent-25);
+    --border-item-card-hover: var(--color-gold-transparent-75);
+    --shadow-item-card: 0 4px 12px var(--color-black-transparent-45);
+    --shadow-item-card-hover: 0 0 12px var(--color-gold-glow), 0 4px 16px var(--color-black-transparent-70);
+    --bg-item-stat-badge: var(--color-carbon-slot);
+    --border-item-stat-badge: var(--color-gold-transparent-20);
+    --text-item-stat-badge: var(--color-slate-muted);
+    --color-cart-btn-bg: var(--color-cart-green-gradient);
+    --color-cart-btn-hover: var(--color-cart-green-hover);
+    --color-cart-btn-border: var(--color-gold-transparent-35);
+    --color-cart-btn-border-hover: var(--color-gold-bright);
+    --color-cart-btn-shadow-hover: 0 0 10px var(--color-green-glow), 0 0 6px var(--color-gold-glow);
+}
+
+/* ================================================================== */
+/* 3.1 Shadows HUD (Carbon Glass & Gold) Theme - DEFAULT              */
+/* ================================================================== */
+
+.shadows-theme {
+    --bg-basket-summary: var(--color-carbon-panel);
+    --Form-background-group: var(--color-carbon-slot);
+    --Form-background-group-hover: var(--color-carbon-panel);
+    --bg-main: var(--bg-main-dark);
+    --app-window-header-bg: var(--color-hud-header-gradient);
+    --app-window-header-border: transparent;
+    --app-window-header-title-color: var(--color-gold-title);
+    --app-window-content-bg: var(--bg-main-dark);
+    --app-window-content-color: var(--color-slate-bright);
+    --app-sticky-top-bg: var(--color-carbon-panel);
+    --app-sticky-top-border: var(--color-gold-transparent-25);
+
+    --text-color-primary: var(--color-slate-bright);
+    --text-color-header: var(--color-gold-title);
+    --text-color-subheader: var(--color-gold-bright);
+    --text-color-link: var(--color-gold-title);
+    --text-color-link-hover: var(--color-gold-bright);
+    --text-color-read-only: var(--color-slate-muted);
+
+    --border-color-medium: var(--color-gold-transparent-25);
+    --border-color-dark: var(--color-gold-transparent-20);
+    --border-color-highlight: var(--color-gold-bright);
+
+    --tab-inactive-bg: var(--color-carbon-slot);
+    --tab-inactive-bg-grad: linear-gradient(to bottom, var(--color-carbon-panel) 0%, var(--color-carbon-slot) 100%);
+    --tab-inactive-border: var(--color-gold-transparent-25);
+    --tab-inactive-color: var(--color-slate-muted);
+    --tab-active-bg: var(--color-hud-crimson-hover);
+    --tab-active-text-shadow: 0 0 6px var(--color-gold-glow);
+
+    --attribute-group-bg: var(--color-carbon-panel);
+    --attribute-group-title-color: var(--color-gold-bright);
+    --attribute-group-border: var(--color-gold-transparent-25);
+    --attribute-text-color: var(--color-gold-title);
+
+    --skill-header-color: var(--color-gold-bright);
+    --skill-header-border: var(--color-gold-transparent-25);
+    --place-collapsible-header-hover-bg: var(--color-carbon-slot);
+    --place-collapsible-label-hover-bg: var(--color-carbon-panel);
+    --place-collapsible-content-bg: var(--color-carbon-slot);
+
+    --input-bg-transparent: var(--color-carbon-input);
+    --input-color: var(--color-slate-bright);
+    --input-border-dark: var(--color-gold-transparent-25);
+    --input-name-bg: var(--color-carbon-input);
+    --drop-target-border: var(--color-gold-bright);
+    --drop-target-border-hover: var(--color-gold-title);
+    --drop-target-bg-hover: var(--color-gold-transparent-25);
+
+    --inventory-header-color: var(--color-gold-bright);
+    --inventory-item-border: var(--color-gold-transparent-20);
+    --inventory-item-image-bg: var(--color-carbon-slot);
+    --searbarColor: var(--color-carbon-input);
+
+    /* Theme Header Semantic Variables - nice red to transparent gradient */
+    --header-gradient-bar: var(--color-hud-header-gradient);
+    --header-gradient-text: var(--color-gold-title);
+    --tab-line: var(--color-orange-dark);
+
+    /* Item Card Variables (Shadows Theme) */
+    --bg-item-card: var(--color-carbon-card);
+    --bg-item-card-hover: var(--color-hud-crimson-hover);
+    --border-item-card: var(--color-gold-transparent-25);
+    --border-item-card-hover: var(--color-hud-crimson-border);
+    --shadow-item-card: 0 4px 12px var(--color-black-transparent-45);
+    --shadow-item-card-hover: 0 0 14px var(--color-gold-glow), 0 4px 16px var(--color-black-transparent-70);
+    --bg-item-stat-badge: var(--color-carbon-slot);
+    --border-item-stat-badge: var(--color-gold-transparent-20);
+    --text-item-stat-badge: var(--color-slate-muted);
+    --color-cart-btn-bg: var(--color-cart-green-gradient);
+    --color-cart-btn-hover: var(--color-cart-green-hover);
+    --color-cart-btn-border: var(--color-gold-transparent-35);
+    --color-cart-btn-border-hover: var(--color-gold-bright);
+    --color-cart-btn-shadow-hover: 0 0 10px var(--color-green-glow), 0 0 6px var(--color-gold-glow);
+
+    --bg-filter-bar: var(--color-carbon-slot);
+    --bg-basket-content: var(--color-carbon-slot);
 }
 
 /* ================================================================== */
@@ -469,12 +640,21 @@
     --inventory-item-image-bg: rgba(255, 255, 255, 0.05);
     --searbarColor: #0f172a;
 
-    /* Theme Header Semantic Variables */
-    --header-gradient-bar: linear-gradient(to right, #0076ff 0%, transparent 100%);
-    --header-gradient-text: #ffffff;
-    --tab-line: #00d2ff;
-
-
+    /* Item Card Variables (Neon) */
+    --bg-item-card: #0e1526;
+    --bg-item-card-hover: #172033;
+    --border-item-card: #1e293b;
+    --border-item-card-hover: #00d2ff;
+    --shadow-item-card: 0 4px 12px rgba(0, 0, 0, 0.45);
+    --shadow-item-card-hover: 0 0 12px rgba(0, 210, 255, 0.35);
+    --bg-item-stat-badge: rgba(0, 0, 0, 0.3);
+    --border-item-stat-badge: #1e293b;
+    --text-item-stat-badge: #38bdf8;
+    --color-cart-btn-bg: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    --color-cart-btn-hover: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    --color-cart-btn-border: #00d2ff;
+    --color-cart-btn-border-hover: #00f0ff;
+    --color-cart-btn-shadow-hover: 0 0 10px rgba(0, 240, 255, 0.4);
 }
 
 /* ================================================================== */
@@ -551,6 +731,22 @@
     --color-text-secondary: var(--text-color-subheader);
     --color-text-emphatic: var(--text-color-header);
     --color-text-hyperlink: var(--text-color-link);
+
+    /* Item Card Variables (Neon Light) */
+    --bg-item-card: #ffffff;
+    --bg-item-card-hover: #f0f9ff;
+    --border-item-card: #e2e8f0;
+    --border-item-card-hover: #0284c7;
+    --shadow-item-card: 0 2px 6px rgba(0, 0, 0, 0.05);
+    --shadow-item-card-hover: 0 4px 12px rgba(2, 132, 199, 0.15);
+    --bg-item-stat-badge: #f0f9ff;
+    --border-item-stat-badge: #cbd5e1;
+    --text-item-stat-badge: #0369a1;
+    --color-cart-btn-bg: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    --color-cart-btn-hover: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    --color-cart-btn-border: #0284c7;
+    --color-cart-btn-border-hover: #0369a1;
+    --color-cart-btn-shadow-hover: 0 0 8px rgba(2, 132, 199, 0.3);
 }
 
 body.vtt .window-app.theme-neon-light .marketplace-item.grid-item,
@@ -649,6 +845,22 @@ body.vtt .window-app.theme-neon-light button {
     --color-text-secondary: var(--text-color-subheader);
     --color-text-emphatic: var(--text-color-header);
     --color-text-hyperlink: var(--text-color-link);
+
+    /* Item Card Variables (Silicon) */
+    --bg-item-card: #ffffff;
+    --bg-item-card-hover: #f5f5f7;
+    --border-item-card: #e5e5e7;
+    --border-item-card-hover: #0066cc;
+    --shadow-item-card: 0 2px 6px rgba(0, 0, 0, 0.04);
+    --shadow-item-card-hover: 0 4px 12px rgba(0, 102, 204, 0.15);
+    --bg-item-stat-badge: #f5f5f7;
+    --border-item-stat-badge: #e5e5e7;
+    --text-item-stat-badge: #515154;
+    --color-cart-btn-bg: #0071e3;
+    --color-cart-btn-hover: #0077ed;
+    --color-cart-btn-border: #0071e3;
+    --color-cart-btn-border-hover: #0077ed;
+    --color-cart-btn-shadow-hover: 0 0 8px rgba(0, 113, 227, 0.3);
 }
 
 body.vtt .window-app.theme-silicon .marketplace-item.grid-item,

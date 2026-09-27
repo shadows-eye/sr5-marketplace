@@ -32,14 +32,24 @@ export class ThemeService {
         }
 
         let theme = null;
-        const themeClasses = ["theme-light", "theme-dark", "theme-neon", "theme-neon-light", "theme-silicon"];
+        const themeClasses = [
+            "shadows-theme",
+            "theme-shadows",
+            "theme-light",
+            "theme-dark",
+            "theme-neon",
+            "theme-neon-light",
+            "theme-silicon"
+        ];
 
         // 1. Check for document-specific sheet theme override first
         if (doc && typeof foundry !== "undefined" && foundry.applications?.apps?.DocumentSheetConfig) {
             try {
                 const sheetTheme = foundry.applications.apps.DocumentSheetConfig.getSheetThemeForDocument(doc);
                 if (sheetTheme) {
-                    theme = `theme-${sheetTheme}`;
+                    theme = (sheetTheme === "shadows-theme" || sheetTheme === "shadows")
+                        ? "shadows-theme"
+                        : (sheetTheme.startsWith("theme-") ? sheetTheme : `theme-${sheetTheme}`);
                 }
             } catch (err) {
                 console.warn("ThemeService | Failed to read document sheet theme:", err);
@@ -63,11 +73,17 @@ export class ThemeService {
         if (!theme) {
             try {
                 const uiConfig = game.settings.get("core", "uiConfig");
-                const themeValue = uiConfig?.colorScheme.applications || "light";
-                theme = `theme-${themeValue}`;
+                const themeValue = uiConfig?.colorScheme?.applications;
+                if (themeValue === "shadows-theme" || themeValue === "shadows") {
+                    theme = "shadows-theme";
+                } else if (themeValue && themeValue !== "light" && themeValue !== "dark") {
+                    theme = themeValue.startsWith("theme-") ? themeValue : `theme-${themeValue}`;
+                } else {
+                    theme = "shadows-theme"; // Default theme for marketplace suite
+                }
             } catch (err) {
                 console.warn("ThemeService | Failed to read core uiConfig setting:", err);
-                theme = "theme-light"; // Final fallback
+                theme = "shadows-theme"; // Final fallback
             }
         }
 
