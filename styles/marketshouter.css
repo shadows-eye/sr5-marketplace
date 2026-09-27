@@ -53,18 +53,23 @@
 /* Bottom Left (above user latency & player list, aligned with shadows-hud) */
 .marketshouter-container.pos-bottom-left {
     top: auto;
-    bottom: 45px;
+    bottom: 55px;
     left: 15px;
     right: auto;
     transform: none;
     align-items: flex-start;
 }
 
-/* When shadows-hud is active, position cleanly above HUD bar */
-body:has(#shadows-hud-root) .marketshouter-container.pos-bottom-left,
-body:has(.shadows-hud) .marketshouter-container.pos-bottom-left {
+/* When shadows-hud is active and expanded, sit above main bar */
+body:has(#shadows-hud-root:not(.minimized)) .marketshouter-container.pos-bottom-left {
     left: 5em;
-    bottom: 3.8em;
+    bottom: calc(0.5em + 12em + 8px);
+}
+
+/* When shadows-hud is active and minimized, sit above the header tab */
+body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
+    left: 5em;
+    bottom: calc(0.5em + 2.2em + 8px);
 }
 
 /* Sleek glassmorphic pill capsule bar */
@@ -300,7 +305,7 @@ body:has(.shadows-hud) .marketshouter-container.pos-bottom-left {
 /* Bottom Left Dropdown (opens upwards) */
 .pos-bottom-left .marketshouter-results {
     top: auto;
-    bottom: 52px;
+    bottom: calc(100% + 8px);
     left: 0;
     right: auto;
     transform-origin: bottom left;
@@ -311,6 +316,10 @@ body:has(.shadows-hud) .marketshouter-container.pos-bottom-left {
     transform: scale(0.95) translateY(10px);
     pointer-events: none;
     display: block !important;
+}
+
+.pos-bottom-left .marketshouter-results-list {
+    max-height: min(380px, calc(100vh - 280px));
 }
 
 /* Header/Summary section of results dropdown */

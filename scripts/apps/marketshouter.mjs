@@ -11,6 +11,9 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         this.matchedItems = [];
         this.currentShopActorUuid = null;
         this.searchableItems = null;
+        this._sidebarObserver = null;
+        this._bottomLeftObserver = null;
+        this._onWindowResize = () => this.updatePosition();
     }
 
     /** @override */
@@ -133,20 +136,39 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
 
         if (!container || !searchInput || !resultsPanel) return;
 
-        // Dynamic sidebar-aware positioning calculation
+        // Dynamic positioning calculation and observers
         if (this._sidebarObserver) {
             this._sidebarObserver.disconnect();
             this._sidebarObserver = null;
         }
+        if (this._bottomLeftObserver) {
+            this._bottomLeftObserver.disconnect();
+            this._bottomLeftObserver = null;
+        }
+        window.removeEventListener("resize", this._onWindowResize);
 
         this.updatePosition();
 
-        const sidebar = document.getElementById("sidebar");
-        if (sidebar) {
-            this._sidebarObserver = new ResizeObserver(() => {
+        const position = game.settings.get("sr5-marketplace", "marketshouterPosition") || "top-right";
+        if (position === "top-right") {
+            const sidebar = document.getElementById("sidebar");
+            if (sidebar) {
+                this._sidebarObserver = new ResizeObserver(() => {
+                    this.updatePosition();
+                });
+                this._sidebarObserver.observe(sidebar);
+            }
+        } else if (position === "bottom-left") {
+            window.addEventListener("resize", this._onWindowResize);
+            this._bottomLeftObserver = new MutationObserver(() => {
                 this.updatePosition();
             });
-            this._sidebarObserver.observe(sidebar);
+            this._bottomLeftObserver.observe(document.body, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ["class", "style"]
+            });
         }
 
         // Add action button listeners
@@ -392,22 +414,65 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         if (!container) return;
 
         const position = game.settings.get("sr5-marketplace", "marketshouterPosition") || "top-right";
-        if (position !== "top-right") {
-            container.style.right = "";
+
+        if (position === "top-right") {
+            container.style.left = "";
+            container.style.bottom = "";
+            container.style.top = "";
+            const sidebar = document.getElementById("sidebar");
+            if (sidebar) {
+                const sidebarWidth = sidebar.offsetWidth || 0;
+                container.style.right = `${sidebarWidth + 8}px`;
+            } else {
+                const sidebarCollapsed = ui.sidebar?.collapsed ?? true;
+                if (sidebarCollapsed) {
+                    container.style.right = "40px"; // Default fallback (32px sidebar + 8px gap)
+                } else {
+                    container.style.right = "308px"; // Default fallback (300px sidebar + 8px gap)
+                }
+            }
             return;
         }
 
-        const sidebar = document.getElementById("sidebar");
-        if (sidebar) {
-            const sidebarWidth = sidebar.offsetWidth || 0;
-            container.style.right = `${sidebarWidth + 8}px`;
-        } else {
-            const sidebarCollapsed = ui.sidebar?.collapsed ?? true;
-            if (sidebarCollapsed) {
-                container.style.right = "40px"; // Default fallback (32px sidebar + 8px gap)
-            } else {
-                container.style.right = "308px"; // Default fallback (300px sidebar + 8px gap)
+        if (position === "top-center") {
+            container.style.right = "";
+            container.style.left = "";
+            container.style.bottom = "";
+            container.style.top = "";
+            return;
+        }
+
+        if (position === "bottom-left") {
+            container.style.right = "";
+            container.style.top = "";
+
+            const shadowsHud = document.getElementById("shadows-hud-root");
+            if (shadowsHud && !shadowsHud.classList.contains("hidden")) {
+                const hudRect = shadowsHud.getBoundingClientRect();
+                if (hudRect.height > 0) {
+                    // Position cleanly 8px above the top of Shadows HUD
+                    const bottomGap = window.innerHeight - hudRect.top + 8;
+                    container.style.bottom = `${Math.round(bottomGap)}px`;
+                    container.style.left = `${Math.round(hudRect.left)}px`;
+                    return;
+                }
             }
+
+            // Fallback to native Foundry player list / latency bar
+            const players = document.getElementById("players");
+            if (players && players.style.display !== "none") {
+                const playersRect = players.getBoundingClientRect();
+                if (playersRect.height > 0 && playersRect.top < window.innerHeight) {
+                    const bottomGap = window.innerHeight - playersRect.top + 8;
+                    container.style.bottom = `${Math.round(bottomGap)}px`;
+                    container.style.left = `${Math.round(playersRect.left)}px`;
+                    return;
+                }
+            }
+
+            // Default fallback for bottom-left if no element detected
+            container.style.bottom = "55px";
+            container.style.left = "15px";
         }
     }
 
@@ -420,6 +485,11 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
             this._sidebarObserver.disconnect();
             this._sidebarObserver = null;
         }
+        if (this._bottomLeftObserver) {
+            this._bottomLeftObserver.disconnect();
+            this._bottomLeftObserver = null;
+        }
+        window.removeEventListener("resize", this._onWindowResize);
         return super.close(options);
     }
 
