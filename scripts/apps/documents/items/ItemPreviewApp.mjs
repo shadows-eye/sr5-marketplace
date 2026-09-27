@@ -10,6 +10,7 @@ export class ItemPreviewApp extends HandlebarsApplicationMixin(ApplicationV2) {
     constructor(itemUuid, options = {}) {
         super(options);
         this.itemUuid = itemUuid;
+        this.customItemData = options.itemData || null;
         this.basketService = new BasketService();
         this.purchasingActor = null;
     }
@@ -36,15 +37,19 @@ export class ItemPreviewApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     /** @override */
     async _prepareContext(options) {
-        // 1. Fetch the full item document using its UUID, as you suggested.
-        const item = await fromUuid(this.itemUuid);
-        if (!item) {
-            ui.notifications.error(`Could not find item with UUID: ${this.itemUuid}`);
-            this.close();
-            return {};
+        let itemData = null;
+        if (this.customItemData) {
+            itemData = foundry.utils.deepClone(this.customItemData);
+        } else {
+            const item = await fromUuid(this.itemUuid);
+            if (!item) {
+                ui.notifications.error(`Could not find item with UUID: ${this.itemUuid}`);
+                this.close();
+                return {};
+            }
+            itemData = item.toObject(false);
+            itemData.uuid = item.uuid;
         }
-        const itemData = item.toObject(false);
-        itemData.uuid = item.uuid;
 
         // Normalize technology stats in case they are objects
         if (itemData.system?.technology) {
@@ -114,15 +119,21 @@ export class ItemPreviewApp extends HandlebarsApplicationMixin(ApplicationV2) {
     static async #onAddToCart(event, target) {
         if (!this.purchasingActor) {
             ui.notifications.warn("Please select a character to purchase items.", { localize: true });
-            // Optionally, we could try to open the main marketplace to force a selection.
-            // For now, a simple warning is enough.
             return;
         }
 
-        const itemUuid = target.dataset.itemId;
-
-        // Call the existing service with the correct data.
-        await this.basketService.addToBasket(itemUuid, this.purchasingActor.uuid);
+        if (this.customItemData) {
+            const customData = foundry.utils.deepClone(this.customItemData);
+            const totals = {
+                cost: typeof customData.system?.technology?.cost === "object" ? customData.system.technology.cost.value : (customData.system?.technology?.cost ?? customData.system?.cost ?? 0),
+                availability: typeof customData.system?.technology?.availability === "object" ? customData.system.technology.availability.value : (customData.system?.technology?.availability ?? customData.system?.availability ?? "0"),
+                essence: customData.system?.essence ?? 0
+            };
+            await this.basketService.addCustomToBasket(customData, this.purchasingActor.uuid, totals);
+        } else {
+            const itemUuid = target.dataset.itemId || this.itemUuid;
+            await this.basketService.addToBasket(itemUuid, this.purchasingActor.uuid);
+        }
         
         // Close the preview window for a smooth user experience.
         this.close();

@@ -30,6 +30,8 @@ export { InventoryRules } from './inventory-rules.mjs';
 
 export { CredstickService, CREDSTICK_TYPES } from './credstickService.mjs';
 
+import { MarketplaceSettingsService } from './MarketplaceSettingsService.mjs';
+
 // 3. Re-export classes (Export the class under its original name)
 export { 
  ActorItemServices, 
@@ -39,5 +41,6 @@ export {
  ItemDataServicesClass as ItemDataServices, // Aliased back so marketHooks.js can use `new ItemDataServices()`
  ActorSelectionService,
  FactoryFlow,
- BuildService
+ BuildService,
+ MarketplaceSettingsService
 };

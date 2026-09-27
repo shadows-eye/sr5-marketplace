@@ -504,10 +504,18 @@ export class PurchaseService {
                     workshopModsAdded.push(basketItem);
                 }
             } else if (basketItem.isCustomBuild) {
-                const buildData = basketItem.customData;
+                const buildData = foundry.utils.deepClone(basketItem.customData);
+                if (buildData.system) {
+                    buildData.system.quantity = (Number(buildData.system.quantity) || 1) * (Number(basketItem.buyQuantity) || 1);
+                }
                 if (buildData.type === "vehicle") {
-                    await this._createVehicleActor(buildData, userId);
+                    const buyQty = Number(basketItem.buyQuantity) || 1;
+                    for (let q = 0; q < buyQty; q++) {
+                        await this._createVehicleActor(foundry.utils.deepClone(buildData), userId);
+                    }
                 } else {
+                    delete buildData._id;
+                    delete buildData._stats;
                     itemsToCreate.push(buildData);
                 }
             } else {

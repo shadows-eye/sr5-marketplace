@@ -160,7 +160,21 @@
         "AllowWorldItems": {
             "name": "Allow World Items in Marketplace",
             "hint": "Internal setting storing whether local World items appear in the marketplace."
-        }
+        },
+        "WorldDirectory": "World Directory (Default)",
+        "CustomBuildSaveLocationTitle": "Custom Build Save Locations",
+        "CustomBuildSaveLocationHint": "Configure target compendiums where custom items and vehicles are saved instead of the World directory.",
+        "CustomItemCompendium": {
+            "name": "Target Compendium for Custom Items",
+            "hint": "Select an unlocked compendium where modified or newly built items will be saved instead of the World directory. Select 'World Directory' to save items to the world."
+        },
+        "CustomVehicleCompendium": {
+            "name": "Target Compendium for Custom Vehicles",
+            "hint": "Select an unlocked compendium where modified or newly built vehicles/drones will be saved instead of the World directory. Select 'World Directory' to save vehicles to the world."
+        },
+        "PackLockedWarning": "Target compendium \"{name}\" is locked and cannot be modified. Saved to World directory instead.",
+        "SavedToCompendium": "\"{name}\" was successfully saved to compendium \"{pack}\".",
+        "UpdatedInCompendium": "\"{name}\" was successfully updated in compendium \"{pack}\"."
     },
     "Marketplace": {
         "Title": "Marketplace Purchase Screen",

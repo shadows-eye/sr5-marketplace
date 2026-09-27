@@ -10,6 +10,7 @@ import { ActorSelectionService } from "../services/ActorSelectionService.mjs";
 import { AppTestFlagService } from '../services/AppTestFlagService.mjs';
 import { AppDialogBuilder } from '../apps/documents/dialog/AppDialogBuilder.mjs';
 import { BuildTestApp } from "./documents/dialog/BuildTestApp.mjs";
+import { MarketplaceSettingsService } from "../services/MarketplaceSettingsService.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -1243,6 +1244,44 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     displayItem = foundry.utils.deepClone(builderData.baseItem);
                     // Merge the overrides on top for display
                     foundry.utils.mergeObject(displayItem, builderData.baseItemOverrides);
+
+                    // When not actively editing the base item in edit mode, display the combined totals including slotted mods
+                    if (!builderData.isEditingBaseItem) {
+                        const totals = ItemBuilderApp.calculateTotals(builderData);
+                        if (displayItem.type === "vehicle") {
+                            if (!displayItem.system) displayItem.system = {};
+                            if (typeof displayItem.system.cost === "object" && displayItem.system.cost !== null) {
+                                displayItem.system.cost.value = totals.totalCost;
+                            } else {
+                                displayItem.system.cost = totals.totalCost;
+                            }
+                            if (typeof displayItem.system.availability === "object" && displayItem.system.availability !== null) {
+                                displayItem.system.availability.value = totals.combinedAvailability;
+                            } else {
+                                displayItem.system.availability = totals.combinedAvailability;
+                            }
+                        } else {
+                            if (!displayItem.system) displayItem.system = {};
+                            if (!displayItem.system.technology) displayItem.system.technology = {};
+                            if (typeof displayItem.system.technology.cost === "object" && displayItem.system.technology.cost !== null) {
+                                displayItem.system.technology.cost.value = totals.totalCost;
+                            } else {
+                                displayItem.system.technology.cost = totals.totalCost;
+                            }
+                            if (typeof displayItem.system.technology.availability === "object" && displayItem.system.technology.availability !== null) {
+                                displayItem.system.technology.availability.value = totals.combinedAvailability;
+                            } else {
+                                displayItem.system.technology.availability = totals.combinedAvailability;
+                            }
+                            if (displayItem.system.essence !== undefined) {
+                                if (typeof displayItem.system.essence === "object" && displayItem.system.essence !== null) {
+                                    displayItem.system.essence.value = totals.totalEssence;
+                                } else {
+                                    displayItem.system.essence = totals.totalEssence;
+                                }
+                            }
+                        }
+                    }
                 }
                 partialContext.displayItem = displayItem;
                 partialContext.isEditingBaseItem = builderData.isEditingBaseItem;
@@ -1299,7 +1338,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     partialContext.isWeapon = ['rangedWeapon', 'meleeWeapon', 'weapon'].includes(baseItemType);
                     partialContext.showWeaponStats = this.showWeaponStats !== false;
                     if (partialContext.isWeapon) {
-                        partialContext.weaponStats = this._calculateWeaponStats(builderData.baseItem, builderData.changes);
+                        partialContext.weaponStats = this._calculateWeaponStats(displayItem, builderData.changes);
                     }
 
                     const weaponTypes = ['rangedWeapon', 'meleeWeapon', 'weapon'];
@@ -1743,7 +1782,14 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
                 // 2. Build the update object from all input values
                 inputs.forEach(input => {
-                    updateData[input.name] = input.value;
+                    let val = input.value;
+                    if (input.name.includes("cost") || input.name.includes("rating")) {
+                        const cleanStr = String(val).replace(/,/g, '').trim();
+                        if (!isNaN(Number(cleanStr)) && cleanStr !== "") {
+                            val = Number(cleanStr);
+                        }
+                    }
+                    updateData[input.name] = val;
                 });
 
                 // 3. Save all overrides in one go
@@ -1786,6 +1832,99 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      * @param {*} target 
      * @returns 
      */
+    /**
+     * Calculates the total cost, combined availability, and total essence for the given builder state.
+     * Combines base item, overrides, and all slotted modifications.
+     * @param {object} state - Current builder state.
+     * @returns {{ totalCost: number, combinedAvailability: string, totalEssence: number, allAvails: string[] }}
+     */
+    static calculateTotals(state) {
+        if (!state?.baseItem) {
+            return { totalCost: 0, combinedAvailability: "0", totalEssence: 0, allAvails: ["0"] };
+        }
+
+        const baseItem = foundry.utils.deepClone(state.baseItem);
+        if (state.baseItemOverrides) {
+            foundry.utils.mergeObject(baseItem, state.baseItemOverrides);
+        }
+
+        const isVehicle = baseItem.type === "vehicle";
+
+        // 1. Base Cost
+        let rawBaseCost = isVehicle
+            ? baseItem.system?.cost
+            : (baseItem.system?.technology?.cost ?? baseItem.system?.cost);
+        let baseCost = 0;
+        if (typeof rawBaseCost === "object" && rawBaseCost !== null) {
+            baseCost = Number(String(rawBaseCost.value ?? rawBaseCost.base ?? 0).replace(/,/g, '')) || 0;
+        } else {
+            baseCost = Number(String(rawBaseCost ?? 0).replace(/,/g, '')) || 0;
+        }
+
+        // 2. Base Availability
+        let rawBaseAvail = isVehicle
+            ? baseItem.system?.availability
+            : (baseItem.system?.technology?.availability ?? baseItem.system?.availability);
+        let baseAvail = "0";
+        if (typeof rawBaseAvail === "object" && rawBaseAvail !== null) {
+            const v = rawBaseAvail.value ?? rawBaseAvail.base ?? "0";
+            const t = rawBaseAvail.type ?? "";
+            baseAvail = (t && !String(v).includes(t)) ? `${v}${t}` : String(v || "0");
+        } else {
+            baseAvail = String(rawBaseAvail || "0");
+        }
+
+        // 3. Base Essence
+        const rawEssence = baseItem.system?.essence;
+        const baseEssence = typeof rawEssence === "object" && rawEssence !== null
+            ? (Number(rawEssence.value) || 0)
+            : (Number(rawEssence) || 0);
+
+        let totalCost = baseCost;
+        let totalEssence = isVehicle ? 0 : baseEssence;
+        const allAvails = [baseAvail];
+
+        // 4. Sum up all slotted changes
+        for (const mod of Object.values(state.changes || {})) {
+            if (!mod) continue;
+
+            let rawModCost = mod.system?.technology?.cost ?? mod.system?.cost;
+            let modCost = 0;
+            if (typeof rawModCost === "object" && rawModCost !== null) {
+                modCost = Number(String(rawModCost.value ?? rawModCost.base ?? 0).replace(/,/g, '')) || 0;
+            } else {
+                modCost = Number(String(rawModCost ?? 0).replace(/,/g, '')) || 0;
+            }
+            totalCost += modCost;
+
+            let rawModAvail = mod.system?.technology?.availability ?? mod.system?.availability;
+            let modAvail = "0";
+            if (typeof rawModAvail === "object" && rawModAvail !== null) {
+                const v = rawModAvail.value ?? rawModAvail.base ?? "0";
+                const t = rawModAvail.type ?? "";
+                modAvail = (t && !String(v).includes(t)) ? `${v}${t}` : String(v || "0");
+            } else {
+                modAvail = String(rawModAvail || "0");
+            }
+            allAvails.push(modAvail);
+
+            let rawModEssence = mod.system?.essence;
+            let modEssence = typeof rawModEssence === "object" && rawModEssence !== null
+                ? (Number(rawModEssence.value) || 0)
+                : (Number(rawModEssence) || 0);
+            totalEssence += modEssence;
+        }
+
+        const combinedAvailability = game.sr5marketplace?.api?.marketplace?.combineAvailabilities(allAvails) ?? allAvails[0];
+
+        return {
+            totalCost,
+            combinedAvailability,
+            totalEssence,
+            allAvails
+        };
+    }
+
     /**
      * Compiles the complete build data payload (Item or Actor) from the current state.
      * @param {object} state - The current builder state.
@@ -1859,10 +1998,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             return buildService._normalizeEffect(foundry.utils.deepClone(effect));
         });
 
-        // E. Update name
-        // (Do not append anything to the name automatically)
-
-        // F. Update description
+        // E. Update description
         let description = "";
         if (isVehicle) {
             description = baseItemData.system?.description || "";
@@ -1885,13 +2021,55 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         }
 
+        // F. Calculate and persist totals (cost, availability, essence)
+        const totals = ItemBuilderApp.calculateTotals(state);
+
+        if (isVehicle) {
+            if (!baseItemData.system) baseItemData.system = {};
+            if (typeof baseItemData.system.cost === "object" && baseItemData.system.cost !== null) {
+                baseItemData.system.cost.value = totals.totalCost;
+            } else {
+                baseItemData.system.cost = totals.totalCost;
+            }
+            if (typeof baseItemData.system.availability === "object" && baseItemData.system.availability !== null) {
+                baseItemData.system.availability.value = totals.combinedAvailability;
+            } else {
+                baseItemData.system.availability = totals.combinedAvailability;
+            }
+        } else {
+            if (!baseItemData.system) baseItemData.system = {};
+            if (!baseItemData.system.technology) baseItemData.system.technology = {};
+            if (typeof baseItemData.system.technology.cost === "object" && baseItemData.system.technology.cost !== null) {
+                baseItemData.system.technology.cost.value = totals.totalCost;
+            } else {
+                baseItemData.system.technology.cost = totals.totalCost;
+            }
+            if (typeof baseItemData.system.technology.availability === "object" && baseItemData.system.technology.availability !== null) {
+                baseItemData.system.technology.availability.value = totals.combinedAvailability;
+            } else {
+                baseItemData.system.technology.availability = totals.combinedAvailability;
+            }
+            if (baseItemData.system.essence !== undefined) {
+                if (typeof baseItemData.system.essence === "object" && baseItemData.system.essence !== null) {
+                    baseItemData.system.essence.value = totals.totalEssence;
+                } else {
+                    baseItemData.system.essence = totals.totalEssence;
+                }
+            }
+        }
+
         // G. Update flags
+        if (!baseItemData.flags) baseItemData.flags = {};
+        if (!baseItemData.flags['sr5-marketplace']) baseItemData.flags['sr5-marketplace'] = {};
+        baseItemData.flags['sr5-marketplace'] = {
+            ...baseItemData.flags['sr5-marketplace'],
+            isCustomBuild: true,
+            customTotals: totals,
+            changes: foundry.utils.deepClone(state.changes || {})
+        };
+
         if (!isVehicle) {
-            if (!baseItemData.flags) baseItemData.flags = {};
-            baseItemData.flags['sr5-marketplace'] = {
-                ...baseItemData.flags['sr5-marketplace'],
-                linkedItems: linkedItemsFlag
-            };
+            baseItemData.flags['sr5-marketplace'].linkedItems = linkedItemsFlag;
         } else {
             // For vehicles, append embedded items
             baseItemData.items = [
@@ -1931,24 +2109,43 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         const buildData = ItemBuilderApp._prepareBuildData(state);
 
+        let savedDoc = null;
         if (buildData.type === "vehicle") {
-            // Send socket event to GM client to create actor and grant ownership
-            game.socket.emit(`module.sr5-marketplace`, {
-                action: "create_actor",
-                actorData: buildData,
-                userId: game.user.id
+            savedDoc = await MarketplaceSettingsService.saveOrUpdateVehicle(buildData, {
+                notify: true,
+                existingUuid: state.baseItem.uuid
             });
-            ui.notifications.info(`Request sent to GM to create vehicle "${buildData.name}".`);
         } else {
-            console.log("Marketplace Builder | Creating new item in World:", buildData);
+            console.log("Marketplace Builder | Saving item:", buildData);
             try {
-                const createdItem = await Item.create(buildData);
-                if (createdItem) {
-                    ui.notifications.info(`Item "${createdItem.name}" was successfully created in the World directory.`);
-                }
+                savedDoc = await MarketplaceSettingsService.saveOrUpdateItem(buildData, {
+                    notify: true,
+                    existingUuid: state.baseItem.uuid
+                });
             } catch (err) {
-                console.error("Marketplace Builder | Failed to create item in world:", err);
-                ui.notifications.error("Failed to create the item in the World directory.");
+                console.error("Marketplace Builder | Failed to save item:", err);
+                ui.notifications.error("Failed to save the item.");
+            }
+        }
+
+        if (savedDoc) {
+            // Update builder base item to point to the saved item
+            await game.sr5marketplace.api.factory.updateBuilderState({
+                baseItem: {
+                    ...state.baseItem,
+                    uuid: savedDoc.uuid,
+                    name: savedDoc.name,
+                    img: savedDoc.img
+                }
+            });
+
+            // Invalidate marketplace index cache so the new/updated item appears immediately
+            game.sr5marketplace?.api?.itemData?.invalidateCache();
+
+            // Re-render inGameMarketplace if it is open
+            const marketApp = foundry.applications.instances.get("inGameMarketplace");
+            if (marketApp && marketApp.rendered) {
+                marketApp.render();
             }
         }
     }
@@ -2064,7 +2261,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     /**
-     * Adds the compiled build data to the active shopping cart.
+     * Saves the modified item to the World and adds it directly to the active shopping cart.
      */
     static async #onAddToCart(event, target) {
         const state = await game.sr5marketplace.api.factory.getBuilderState();
@@ -2081,56 +2278,46 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         const buildData = ItemBuilderApp._prepareBuildData(state);
 
-        // Pre-calculate totals for the custom item
-        const baseItem = state.baseItem;
-        const isVehicle = baseItem.type === "vehicle";
-
-        let totalCost = 0;
-        if (isVehicle) {
-            totalCost = typeof baseItem.system.cost === "object" ? (baseItem.system.cost.value ?? 0) : (baseItem.system.cost ?? 0);
-        } else {
-            totalCost = typeof baseItem.system.technology?.cost === "object" ? (baseItem.system.technology?.cost.value ?? 0) : (baseItem.system.technology?.cost ?? 0);
-        }
-
-        let allAvails = [];
-        let baseAvail = "0";
-        if (isVehicle) {
-            baseAvail = typeof baseItem.system.availability === "object" ? (baseItem.system.availability.value ?? "0") : (baseItem.system.availability ?? "0");
-        } else {
-            baseAvail = typeof baseItem.system.technology?.availability === "object" ? (baseItem.system.technology?.availability.value ?? "0") : (baseItem.system.technology?.availability ?? "0");
-        }
-        allAvails.push(baseAvail);
-
-        let totalEssence = isVehicle ? 0 : (baseItem.system.essence || 0);
-
-        // Sum up modifications
-        for (const mod of Object.values(state.changes)) {
-            let modCost = typeof mod.system.technology?.cost === "object" ? (mod.system.technology?.cost.value ?? 0) : (mod.system.technology?.cost ?? 0);
-            if (modCost === undefined || modCost === null || modCost === 0) {
-                modCost = typeof mod.system.cost === "object" ? (mod.system.cost.value ?? 0) : (mod.system.cost ?? 0);
+        let savedDoc = null;
+        if (buildData.type === "vehicle") {
+            savedDoc = await MarketplaceSettingsService.saveOrUpdateVehicle(buildData, {
+                notify: false,
+                existingUuid: state.baseItem.uuid
+            });
+            if (!savedDoc && !game.user.isGM) {
+                ui.notifications.info(`Request sent to GM to create vehicle "${buildData.name}".`);
+                return;
             }
-            totalCost += Number(modCost) || 0;
-
-            let modAvail = typeof mod.system.technology?.availability === "object" ? (mod.system.technology?.availability.value ?? "0") : (mod.system.technology?.availability ?? "0");
-            if (modAvail === undefined || modAvail === null || modAvail === "0") {
-                modAvail = typeof mod.system.availability === "object" ? (mod.system.availability.value ?? "0") : (mod.system.availability ?? "0");
-            }
-            allAvails.push(modAvail);
-
-            let modEssence = mod.system.essence || 0;
-            totalEssence += Number(modEssence) || 0;
+        } else {
+            savedDoc = await MarketplaceSettingsService.saveOrUpdateItem(buildData, {
+                notify: false,
+                existingUuid: state.baseItem.uuid
+            });
         }
 
-        const combinedAvailability = game.sr5marketplace.api.marketplace.combineAvailabilities(allAvails);
+        if (savedDoc) {
+            // Update builder base item to point to the saved world item
+            await game.sr5marketplace.api.factory.updateBuilderState({
+                baseItem: {
+                    ...state.baseItem,
+                    uuid: savedDoc.uuid,
+                    name: savedDoc.name,
+                    img: savedDoc.img
+                }
+            });
 
-        const totals = {
-            cost: totalCost,
-            availability: combinedAvailability,
-            essence: totalEssence
-        };
+            // Invalidate marketplace index cache so the world item is immediately available
+            game.sr5marketplace?.api?.itemData?.invalidateCache();
 
-        // Add custom item/actor to cart
-        await game.sr5marketplace.api.marketplace.addCustom(buildData, actor.uuid, totals);
+            // Add the created world item directly to the basket
+            await game.sr5marketplace.api.marketplace.addToBasket(savedDoc.uuid, actor.uuid);
+            ui.notifications.info(`"${savedDoc.name}" added to cart.`);
+
+            const marketApp = foundry.applications.instances.get("inGameMarketplace");
+            if (marketApp && marketApp.rendered) {
+                marketApp.render();
+            }
+        }
     }
 
     /**

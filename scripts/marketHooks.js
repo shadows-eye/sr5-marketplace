@@ -334,6 +334,34 @@ const initializeSettings = () => {
         default: {}
     });
 
+    game.settings.register("sr5-marketplace", MarketplaceSettingsService.SETTING_CUSTOM_ITEM_COMPENDIUM, {
+        name: game.i18n.localize("SR5Marketplace.CompendiumSettings.CustomItemCompendium.name"),
+        hint: game.i18n.localize("SR5Marketplace.CompendiumSettings.CustomItemCompendium.hint"),
+        scope: "world",
+        config: true,
+        restricted: true,
+        type: String,
+        default: "world",
+        choices: MarketplaceSettingsService.getItemCompendiumChoices(),
+        onChange: () => {
+            MarketplaceSettingsService.invalidateItemCache();
+        }
+    });
+
+    game.settings.register("sr5-marketplace", MarketplaceSettingsService.SETTING_CUSTOM_VEHICLE_COMPENDIUM, {
+        name: game.i18n.localize("SR5Marketplace.CompendiumSettings.CustomVehicleCompendium.name"),
+        hint: game.i18n.localize("SR5Marketplace.CompendiumSettings.CustomVehicleCompendium.hint"),
+        scope: "world",
+        config: true,
+        restricted: true,
+        type: String,
+        default: "world",
+        choices: MarketplaceSettingsService.getVehicleCompendiumChoices(),
+        onChange: () => {
+            MarketplaceSettingsService.invalidateItemCache();
+        }
+    });
+
     game.settings.register("sr5-marketplace", "availabilityTestRule", {
         name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.AvailabilityRule.name"),
         hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.AvailabilityRule.hint"),
@@ -409,6 +437,8 @@ const initializeSettings = () => {
  * This hook injects our custom button into the settings menu using standard JavaScript.
  */
 Hooks.on("renderSettingsConfig", (app, html, data) => {
+    MarketplaceSettingsService.updateCompendiumSettingChoices();
+
     // 'html' is a standard HTMLElement.
     const settingInput = html.querySelector(`[name="sr5-marketplace.openSettingsMenu"]`);
     if (!settingInput) return;
@@ -873,6 +903,7 @@ Hooks.on("ready", async () => {
     console.log("SR5 Marketplace | Module is ready - Registering MarketplaceEquipmentSheet extending SR5ItemSheet...");
     registerMarketplaceEquipmentSheet();
     injectThemeChoices();
+    MarketplaceSettingsService.updateCompendiumSettingChoices();
 
     try {
         await game.sr5marketplace.api.system.init();
@@ -919,9 +950,17 @@ Hooks.on("ready", async () => {
                 const actorData = foundry.utils.deepClone(data.actorData);
                 actorData.ownership = actorData.ownership || {};
                 actorData.ownership[data.userId] = CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER;
-                const newActor = await Actor.create(actorData);
+                const targetPackCollection = data.targetPack || MarketplaceSettingsService.getCustomVehicleCompendium();
+                const pack = (targetPackCollection && targetPackCollection !== "world") ? game.packs.get(targetPackCollection) : null;
+                let newActor = null;
+                if (pack && !pack.locked) {
+                    newActor = await Actor.create(actorData, { pack: pack.collection });
+                } else {
+                    newActor = await Actor.create(actorData);
+                }
                 if (newActor) {
                     console.log(`SR5 Marketplace | GM created actor: ${newActor.name} for user ${data.userId}`);
+                    game.sr5marketplace?.api?.itemData?.invalidateCache();
                 }
             } else if (data.action === "update_actor_field") {
                 const actor = await fromUuid(data.actorUuid);
@@ -1181,9 +1220,26 @@ async function seedDefaultSkills(actor) {
 }
 
 Hooks.on("createActor", async (actor, options, userId) => {
+    if (actor.type === "vehicle") {
+        game.sr5marketplace?.api?.itemData?.invalidateCache();
+        const marketApp = foundry.applications.instances.get("inGameMarketplace");
+        if (marketApp && marketApp.rendered) {
+            marketApp.render();
+        }
+    }
     if (game.user.id !== userId) return;
     if (actor.type !== "sr5-marketplace.shop") return;
     await seedDefaultSkills(actor);
+});
+
+Hooks.on("deleteActor", async (actor, options, userId) => {
+    if (actor.type === "vehicle") {
+        game.sr5marketplace?.api?.itemData?.invalidateCache();
+        const marketApp = foundry.applications.instances.get("inGameMarketplace");
+        if (marketApp && marketApp.rendered) {
+            marketApp.render();
+        }
+    }
 });
 
 function getShopsForEmployee(actor) {
@@ -1203,6 +1259,14 @@ Hooks.on("updateActor", async (actor, changes, options, userId) => {
         const selectedUuid = builderApp.selectedVehicleActorUuid;
         if (selectedUuid && (actor.uuid === selectedUuid || actor.id === selectedUuid.split(".").pop())) {
             builderApp.render();
+        }
+    }
+
+    if (actor.type === "vehicle") {
+        game.sr5marketplace?.api?.itemData?.invalidateCache();
+        const marketApp = foundry.applications.instances.get("inGameMarketplace");
+        if (marketApp && marketApp.rendered) {
+            marketApp.render();
         }
     }
 
@@ -1277,7 +1341,14 @@ Hooks.on("createItem", async (item, options, userId) => {
     }
 
     if (game.user.id !== userId) return;
-    if (!item.parent) return;
+    if (!item.parent) {
+        game.sr5marketplace?.api?.itemData?.invalidateCache();
+        const marketApp = foundry.applications.instances.get("inGameMarketplace");
+        if (marketApp && marketApp.rendered) {
+            marketApp.render();
+        }
+        return;
+    }
 
     const actor = item.parent;
     if (actor.type === "sr5-marketplace.shop" && item.type === "host") {
@@ -1326,7 +1397,14 @@ Hooks.on("updateItem", async (item, changes, options, userId) => {
     }
 
     if (game.user.id !== userId) return;
-    if (!item.parent) return;
+    if (!item.parent) {
+        game.sr5marketplace?.api?.itemData?.invalidateCache();
+        const marketApp = foundry.applications.instances.get("inGameMarketplace");
+        if (marketApp && marketApp.rendered) {
+            marketApp.render();
+        }
+        return;
+    }
 
     const actor = item.parent;
     if (actor.type === "sr5-marketplace.shop" && item.type === "host") {
@@ -1375,7 +1453,14 @@ Hooks.on("deleteItem", async (item, options, userId) => {
     }
 
     if (game.user.id !== userId) return;
-    if (!item.parent) return;
+    if (!item.parent) {
+        game.sr5marketplace?.api?.itemData?.invalidateCache();
+        const marketApp = foundry.applications.instances.get("inGameMarketplace");
+        if (marketApp && marketApp.rendered) {
+            marketApp.render();
+        }
+        return;
+    }
 
     const actor = item.parent;
     if (item.type === "skill") {

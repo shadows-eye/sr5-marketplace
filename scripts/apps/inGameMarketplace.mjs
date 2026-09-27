@@ -692,6 +692,17 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
      * Passes only the item's UUID to the ItemPreviewApp.
      */
     static async #onOpenDocumentLink(event, target) {
+        const basketRow = target.closest("[data-basket-item-uuid]");
+        if (basketRow) {
+            const basketItemUuid = basketRow.dataset.basketItemUuid;
+            const basket = await this.basketService.getBasket();
+            const basketItem = basket.shoppingCartItems.find(i => i.basketItemUuid === basketItemUuid);
+            if (basketItem?.isCustomBuild && basketItem.customData) {
+                new ItemPreviewApp(null, { itemData: basketItem.customData }).render(true);
+                return;
+            }
+        }
+
         const uuid = target.dataset.uuid;
         if (!uuid) return;
         const item = await fromUuid(uuid);
