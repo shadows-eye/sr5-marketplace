@@ -19,18 +19,52 @@
     overflow: visible !important;
 }
 
-/* Container positioned fixed at top-right left of Foundry sidebar */
+/* Container positioning variants */
 .marketshouter-container {
     position: fixed;
-    top: 10px;
-    right: 70px; /* Moved further to the right as requested! */
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
     pointer-events: auto; /* Re-enable pointer events for the container */
     z-index: 1000;
     font-family: 'Outfit', 'Inter', 'Roboto', sans-serif;
-    transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Default / Top Right */
+.marketshouter-container,
+.marketshouter-container.pos-top-right {
+    top: 10px;
+    right: 70px;
+    left: auto;
+    bottom: auto;
+    align-items: flex-end;
+}
+
+/* Top Center */
+.marketshouter-container.pos-top-center {
+    top: 10px;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    transform: translateX(-50%);
+    align-items: center;
+}
+
+/* Bottom Left (above user latency & player list, aligned with shadows-hud) */
+.marketshouter-container.pos-bottom-left {
+    top: auto;
+    bottom: 45px;
+    left: 15px;
+    right: auto;
+    transform: none;
+    align-items: flex-start;
+}
+
+/* When shadows-hud is active, position cleanly above HUD bar */
+body:has(#shadows-hud-root) .marketshouter-container.pos-bottom-left,
+body:has(.shadows-hud) .marketshouter-container.pos-bottom-left {
+    left: 5em;
+    bottom: 3.8em;
 }
 
 /* Sleek glassmorphic pill capsule bar */
@@ -216,8 +250,6 @@
 /* Live Floating Search Results Dropdown */
 .marketshouter-results {
     position: absolute;
-    top: 52px;
-    right: 0;
     width: 320px;
     background: rgba(14, 14, 14, 0.94);
     backdrop-filter: blur(20px);
@@ -227,15 +259,58 @@
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     overflow: hidden;
     transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    transform-origin: top right;
     pointer-events: auto;
 }
 
-.marketshouter-results.hidden {
+/* Default / Top Right Dropdown */
+.pos-top-right .marketshouter-results,
+.marketshouter-container:not(.pos-top-center):not(.pos-bottom-left) .marketshouter-results {
+    top: 52px;
+    bottom: auto;
+    right: 0;
+    left: auto;
+    transform-origin: top right;
+}
+
+.pos-top-right .marketshouter-results.hidden,
+.marketshouter-container:not(.pos-top-center):not(.pos-bottom-left) .marketshouter-results.hidden {
     opacity: 0;
     transform: scale(0.95) translateY(-10px);
     pointer-events: none;
-    display: block !important; /* Keep block display but hide via scaling/opacity for transition */
+    display: block !important;
+}
+
+/* Top Center Dropdown */
+.pos-top-center .marketshouter-results {
+    top: 52px;
+    bottom: auto;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    transform-origin: top center;
+}
+
+.pos-top-center .marketshouter-results.hidden {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.95) translateY(-10px);
+    pointer-events: none;
+    display: block !important;
+}
+
+/* Bottom Left Dropdown (opens upwards) */
+.pos-bottom-left .marketshouter-results {
+    top: auto;
+    bottom: 52px;
+    left: 0;
+    right: auto;
+    transform-origin: bottom left;
+}
+
+.pos-bottom-left .marketshouter-results.hidden {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+    pointer-events: none;
+    display: block !important;
 }
 
 /* Header/Summary section of results dropdown */

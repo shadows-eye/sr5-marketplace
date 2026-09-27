@@ -65,6 +65,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         // To hold a reference to the active tooltip application
         this.tooltipApp = null;
 
+        // Mount point filter & weapon stats
+        this.selectedMountPointFilter = "";
+        this.showWeaponStats = true;
+
         //Drag data
         this.draggedModData = null;
         this.draggedItemType = null;
@@ -108,11 +112,15 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 selectBaseItem: this.#onSelectBaseItem,
                 removeChange: this.#onRemoveChange,
                 selectCategory: this.#onSelectCategory,
+                clickSlotFilter: this.#onClickSlotFilter,
+                filterByMountPoint: this.#onFilterByMountPoint,
+                toggleWeaponStats: this.#onToggleWeaponStats,
                 // Effects Tab
                 createEffect: this.#onCreateEffect,
                 editEffect: this.#onEditEffect,
                 deleteEffect: this.#onDeleteEffect,
                 updateDraftField: this.#onUpdateDraftField,
+                toggleDraftCheckbox: this.#onToggleDraftCheckbox,
                 selectDraftKey: this.#onSelectDraftKey,
                 saveDraftEffect: this.#onSaveDraftEffect,
                 cancelDraftEffect: this.#onCancelDraftEffect,
@@ -553,6 +561,25 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 categorySelector.addEventListener("change", this.onChangeCategory.bind(this));
             }
 
+            // Sync mount filter dropdown and slot highlight
+            const modMountFilter = this.element.querySelector("#mod-mount-filter");
+            if (modMountFilter) {
+                modMountFilter.value = this.selectedMountPointFilter || "";
+            }
+
+            if (this.selectedMountPointFilter) {
+                const allSlots = this.element.querySelectorAll(".mod-slot[data-action='clickSlotFilter']");
+                allSlots.forEach(s => {
+                    const sm = (s.dataset.mountPoint || "").toLowerCase().trim();
+                    if (sm === this.selectedMountPointFilter) {
+                        s.classList.add("filter-active");
+                    } else {
+                        s.classList.remove("filter-active");
+                    }
+                });
+                this._filterItemsDOM('.mod-selector-section .item-content-grid', this.modSearchTags, this.modSearchQuery);
+            }
+
             // --- UNIFIED TOOLTIP LISTENERS ---
             // Select all elements that should have a hover tooltip
             const hoverTargets = this.element.querySelectorAll("[data-hover-delay]");
@@ -676,7 +703,18 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 matchesTags = tagTerms.every(tag => name.includes(tag));
             }
 
-            if (matchesQuery && matchesTags) {
+            let matchesMountPoint = true;
+            if (containerSelector.includes(".mod-selector-section") && this.selectedMountPointFilter) {
+                const cardMount = (card.dataset.mountPoint || "").toLowerCase().trim();
+                const filterMount = this.selectedMountPointFilter.toLowerCase().trim();
+                if (filterMount === "none") {
+                    matchesMountPoint = (!cardMount || cardMount === "none");
+                } else {
+                    matchesMountPoint = (cardMount === filterMount);
+                }
+            }
+
+            if (matchesQuery && matchesTags && matchesMountPoint) {
                 card.style.display = "";
             } else {
                 card.style.display = "none";
@@ -1251,27 +1289,6 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
                 let selectedItems = this.selectedKey ? (itemsByType[this.selectedKey]?.items || []) : [];
 
-                // Filter functions using tags and queries
-                const filterBySearch = (items, tags = [], query = "") => {
-                    const queryTerm = query.trim().toLowerCase();
-                    const tagTerms = tags.map(t => t.trim().toLowerCase());
-                    if (!queryTerm && tagTerms.length === 0) return items;
-                    return items.filter(item => {
-                        const name = (item.name || "").trim().toLowerCase();
-                        const matchesQuery = !queryTerm || name.includes(queryTerm);
-                        const matchesTags = tagTerms.every(tag => name.includes(tag));
-                        return matchesQuery && matchesTags;
-                    });
-                };
-
-                // Apply search filters
-                if (this.tabGroups.main === "vehicle") {
-                    selectedItems = VehicleSearchService.filter(selectedItems, this.itemSearchTags, this.itemSearchQuery);
-                } else {
-                    selectedItems = filterBySearch(selectedItems, this.itemSearchTags, this.itemSearchQuery);
-                }
-                allMods = filterBySearch(allMods, this.modSearchTags, this.modSearchQuery);
-
                 partialContext.selectedItems = selectedItems;
 
                 // --- Logic for when a Base Item IS Selected ---
@@ -1280,6 +1297,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     const isDrone = builderData.baseItem.system?.isDrone || builderData.baseItem.system?.isdrone || false;
 
                     partialContext.isWeapon = ['rangedWeapon', 'meleeWeapon', 'weapon'].includes(baseItemType);
+                    partialContext.showWeaponStats = this.showWeaponStats !== false;
+                    if (partialContext.isWeapon) {
+                        partialContext.weaponStats = this._calculateWeaponStats(builderData.baseItem, builderData.changes);
+                    }
 
                     const weaponTypes = ['rangedWeapon', 'meleeWeapon', 'weapon'];
 
@@ -1418,6 +1439,99 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         await this.render();
     }
 
+    // --- Weapon Stats Calculation ---
+
+    /**
+     * Calculates combined weapon stats (DV, ACC, Range, Mode, RC) from base item and slotted mods.
+     * @param {object} baseItem - Base weapon item data.
+     * @param {object} changes - Slotted modifications.
+     * @returns {object} Weapon statistics object.
+     * @private
+     */
+    _calculateWeaponStats(baseItem, changes = {}) {
+        if (!baseItem) return null;
+
+        const actionData = baseItem.system?.action || {};
+        const rangeData = actionData.range || baseItem.system?.range || {};
+        const damageData = actionData.damage || baseItem.system?.damage || {};
+
+        let baseDamage = Number(damageData.value ?? 0);
+        let baseAcc = Number(actionData.accuracy?.value ?? baseItem.system?.accuracy?.value ?? 0);
+        let baseRc = Number(rangeData.rc?.base ?? rangeData.rc?.value ?? 0);
+
+        let bonusDv = 0;
+        let bonusAcc = 0;
+        let bonusRc = 0;
+
+        for (const mod of Object.values(changes || {})) {
+            if (!mod) continue;
+            if (mod.system?.mod_weapon) {
+                if (mod.system.mod_weapon.dv) bonusDv += Number(mod.system.mod_weapon.dv) || 0;
+                if (mod.system.mod_weapon.accuracy) bonusAcc += Number(mod.system.mod_weapon.accuracy) || 0;
+                if (mod.system.mod_weapon.rc) bonusRc += Number(mod.system.mod_weapon.rc) || 0;
+            }
+            const effects = mod.effects || [];
+            for (const eff of effects) {
+                const effChanges = eff.system?.changes || eff.changes || [];
+                for (const ch of effChanges) {
+                    const val = Number(ch.value) || 0;
+                    if (!val) continue;
+                    const key = ch.key || "";
+                    if (key.includes("damage.value") || key === "system.damage") {
+                        if (ch.type === "add" || ch.mode === 2) bonusDv += val;
+                        else if (ch.type === "subtract") bonusDv -= val;
+                    } else if (key.includes("accuracy.value") || key === "system.accuracy") {
+                        if (ch.type === "add" || ch.mode === 2) bonusAcc += val;
+                        else if (ch.type === "subtract") bonusAcc -= val;
+                    } else if (key.includes("rc.value") || key.includes("range.rc")) {
+                        if (ch.type === "add" || ch.mode === 2) bonusRc += val;
+                        else if (ch.type === "subtract") bonusRc -= val;
+                    }
+                }
+            }
+        }
+
+        const totalDv = baseDamage + bonusDv;
+        const totalAcc = baseAcc + bonusAcc;
+        const totalRc = baseRc + bonusRc;
+
+        // Damage type: P or S
+        const rawType = damageData.type?.value || damageData.type || "physical";
+        const damageType = String(rawType).toLowerCase().startsWith("s") ? "S" : "P";
+
+        // Ranges: formatted as "5/20/40/60m"
+        let ranges = null;
+        const rangesObj = rangeData.ranges?.value || rangeData.ranges;
+        if (rangesObj && typeof rangesObj === "object") {
+            if (rangesObj.short !== undefined && rangesObj.medium !== undefined) {
+                ranges = `${rangesObj.short}/${rangesObj.medium}/${rangesObj.long}/${rangesObj.extreme}m`;
+            } else if (Array.isArray(rangesObj)) {
+                ranges = `${rangesObj.join('/')}m`;
+            }
+        }
+
+        // Firing modes
+        const modesData = actionData.modes || rangeData.modes || baseItem.system?.modes || {};
+        const activeModes = [];
+        if (modesData.single_shot || modesData.ss) activeModes.push("SS");
+        if (modesData.semi_auto || modesData.sa) activeModes.push("SA");
+        if (modesData.burst_fire || modesData.bf) activeModes.push("BF");
+        if (modesData.full_auto || modesData.fa) activeModes.push("FA");
+        const modes = activeModes.join("/") || (typeof modesData === "string" ? modesData : null);
+
+        // RC display: "0 (3)" if bonus exists, else "0"
+        const rcDisplay = bonusRc > 0 ? `${baseRc} (${totalRc})` : `${baseRc}`;
+
+        return {
+            dv: totalDv,
+            damageType: damageType,
+            acc: totalAcc > 0 ? totalAcc : null,
+            ranges: ranges,
+            modes: modes,
+            rc: rcDisplay
+        };
+    }
+
     // --- Action Handlers (from DEFAULT_OPTIONS) ---
 
     static async #onSelectCategory(event, target) {
@@ -1427,6 +1541,65 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             this.itemSearchService?.clearAllFilters(); // Clear search when changing category
             this.render();
         }
+    }
+
+    static #onClickSlotFilter(event, target) {
+        if (event.target.closest(".delete-mod-link")) return;
+
+        const mountPoint = (target.dataset.mountPoint || "").toLowerCase().trim();
+        if (!mountPoint) return;
+
+        if (this.selectedMountPointFilter === mountPoint) {
+            this.selectedMountPointFilter = "";
+        } else {
+            this.selectedMountPointFilter = mountPoint;
+        }
+
+        const filterSelect = this.element.querySelector("#mod-mount-filter");
+        if (filterSelect) {
+            filterSelect.value = this.selectedMountPointFilter;
+        }
+
+        const allSlots = this.element.querySelectorAll(".mod-slot[data-action='clickSlotFilter']");
+        allSlots.forEach(s => {
+            const sm = (s.dataset.mountPoint || "").toLowerCase().trim();
+            if (this.selectedMountPointFilter && sm === this.selectedMountPointFilter) {
+                s.classList.add("filter-active");
+            } else {
+                s.classList.remove("filter-active");
+            }
+        });
+
+        this._filterItemsDOM('.mod-selector-section .item-content-grid', this.modSearchTags, this.modSearchQuery);
+    }
+
+    static #onFilterByMountPoint(event, target) {
+        this.selectedMountPointFilter = (target.value || "").toLowerCase().trim();
+
+        const allSlots = this.element.querySelectorAll(".mod-slot[data-action='clickSlotFilter']");
+        allSlots.forEach(s => {
+            const sm = (s.dataset.mountPoint || "").toLowerCase().trim();
+            if (this.selectedMountPointFilter && sm === this.selectedMountPointFilter) {
+                s.classList.add("filter-active");
+            } else {
+                s.classList.remove("filter-active");
+            }
+        });
+
+        this._filterItemsDOM('.mod-selector-section .item-content-grid', this.modSearchTags, this.modSearchQuery);
+    }
+
+    static async #onToggleWeaponStats(event, target) {
+        this.showWeaponStats = !this.showWeaponStats;
+        await this.render();
+    }
+
+    static async #onToggleDraftCheckbox(event, target) {
+        const fieldName = target.name;
+        const isChecked = target.checked;
+        const updateData = foundry.utils.expandObject({ [fieldName]: isChecked });
+        await game.sr5marketplace.api.factory.updateBuilderDraftEffect(updateData);
+        await this.render();
     }
 
     static #onChangeTab(event, target) {
@@ -1647,6 +1820,17 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 if (item.type === 'modification' || item.type === 'ammo') {
                     // "Consumed" Mod/Ammo
                     descriptionModList.push(`<li>${item.name}</li>`);
+                    if (item.type === 'modification') {
+                        if (!baseItemData.flags) baseItemData.flags = {};
+                        if (!baseItemData.flags.shadowrun5e) baseItemData.flags.shadowrun5e = {};
+                        if (!Array.isArray(baseItemData.flags.shadowrun5e.embeddedItems)) {
+                            baseItemData.flags.shadowrun5e.embeddedItems = [];
+                        }
+                        const modClone = foundry.utils.deepClone(item);
+                        modClone._id = modClone._id || foundry.utils.randomID();
+                        if (modClone.system) modClone.system.equipped = true;
+                        baseItemData.flags.shadowrun5e.embeddedItems.push(modClone);
+                    }
                 } else {
                     // "Linkable Item"
                     linkedItemsFlag.push({

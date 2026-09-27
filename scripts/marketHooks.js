@@ -361,6 +361,23 @@ const initializeSettings = () => {
         default: false,
     });
 
+    game.settings.register("sr5-marketplace", "marketshouterPosition", {
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.MarketshouterPosition.Name"),
+        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.MarketshouterPosition.Hint"),
+        scope: "client",
+        config: true,
+        type: String,
+        choices: {
+            "top-right": game.i18n.localize("SR5Marketplace.Marketplace.Settings.MarketshouterPosition.TopRight"),
+            "top-center": game.i18n.localize("SR5Marketplace.Marketplace.Settings.MarketshouterPosition.TopCenter"),
+            "bottom-left": game.i18n.localize("SR5Marketplace.Marketplace.Settings.MarketshouterPosition.BottomLeft")
+        },
+        default: "top-right",
+        onChange: () => {
+            MarketShouterApp.renderApp();
+        }
+    });
+
     game.settings.register("sr5-marketplace", "quickBuildWhisperGM", {
         name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.QuickBuildWhisperGM.name"),
         hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.QuickBuildWhisperGM.hint"),

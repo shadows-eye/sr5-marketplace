@@ -183,6 +183,13 @@
             "OrderReview": "Überprf."
         },
         "Settings": {
+            "MarketshouterPosition": {
+                "Name": "MarketShouter-Leistenposition",
+                "Hint": "Wähle die Bildschirmposition für die schwebende MarketShouter-Kapselleiste.",
+                "TopRight": "Oben rechts (Standard)",
+                "TopCenter": "Oben Mitte",
+                "BottomLeft": "Unten links (über HUD)"
+            },
             "QuickBuildWhisperGM": {
                 "name": "Charakter-Schnellerstellung: Zusammenfassung an SL flüstern",
                 "hint": "Wenn ein Charakter über die Archetypen-Schnellerstellung erstellt wird, wird automatisch eine Übersichtskarte mit Attributen und Gegenständen an den Spielleiter geflüstert."

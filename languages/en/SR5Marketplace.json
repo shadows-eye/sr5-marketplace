@@ -183,6 +183,13 @@
             "OrderReview": "Order Review"
         },
         "Settings": {
+            "MarketshouterPosition": {
+                "Name": "MarketShouter Bar Position",
+                "Hint": "Choose the screen anchor position for the floating MarketShouter capsule bar.",
+                "TopRight": "Top Right (Default)",
+                "TopCenter": "Top Center",
+                "BottomLeft": "Bottom Left (Above HUD)"
+            },
             "QuickBuildWhisperGM": {
                 "name": "Quick Build: Whisper Summary to GM",
                 "hint": "When a character is created using archetype quick build, whisper an overview of attributes and items to the GM."

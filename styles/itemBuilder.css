@@ -472,6 +472,101 @@ a.builder-tabs.item.active:hover {
   transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), filter 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.itemBuilder .slot-name-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.35em;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.95), 0 0 4px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+  user-select: none;
+  letter-spacing: 0.05em;
+  z-index: 1;
+}
+
+.itemBuilder .mod-slot[data-action="clickSlotFilter"] {
+  cursor: pointer;
+}
+
+.itemBuilder .mod-slot[data-action="clickSlotFilter"]:hover {
+  filter: drop-shadow(0 0 8px rgba(255, 100, 0, 0.5));
+}
+
+.itemBuilder .mod-slot.filter-active {
+  filter: drop-shadow(0 0 10px rgba(255, 170, 0, 0.9)) !important;
+}
+
+.itemBuilder .mod-mount-filter {
+  background: rgba(18, 18, 18, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  color: #ffffff;
+  padding: 4px 8px;
+  font-size: 0.9em;
+  height: 32px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  max-width: 140px;
+}
+
+.itemBuilder .mod-mount-filter:focus,
+.itemBuilder .mod-mount-filter:hover {
+  border-color: rgba(255, 100, 0, 0.6);
+  background: rgba(25, 25, 25, 0.95);
+  outline: none;
+}
+
+.itemBuilder .weapon-stats-hud {
+  position: absolute;
+  bottom: 0.5em;
+  z-index: 105;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 2px solid #cc0000;
+  border-radius: 4px;
+  box-shadow: 0 0 12px rgba(204, 0, 0, 0.5), inset 0 0 8px rgba(0, 0, 0, 0.8);
+  font-family: 'Outfit', 'Inter', monospace, sans-serif;
+  font-size: 1.05em;
+  letter-spacing: 0.03em;
+  user-select: none;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.itemBuilder .weapon-stats-hud .stat-segment {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.itemBuilder .weapon-stats-hud .stat-label {
+  color: #ffaa00;
+  font-weight: 700;
+}
+
+.itemBuilder .weapon-stats-hud .stat-value {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.itemBuilder .weapon-stats-hud .stat-icon-segment {
+  color: #70d44b;
+}
+
+.itemBuilder .weapon-stats-hud .stat-icon-segment i {
+  color: #ffaa00;
+}
+
+.itemBuilder .weapon-stats-hud .stat-pipe {
+  color: #555555;
+  font-weight: 300;
+}
+
 .itemBuilder .mod-slot::before {
   content: "";
   position: absolute;

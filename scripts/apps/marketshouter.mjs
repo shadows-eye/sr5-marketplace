@@ -106,6 +106,8 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
             .filter(btn => typeof btn.visible === "function" ? btn.visible() : (btn.visible !== false))
             .sort((a, b) => (a.order || 100) - (b.order || 100));
 
+        const positionClass = game.settings.get("sr5-marketplace", "marketshouterPosition") || "top-right";
+
         return {
             itemCount,
             shopActorImg,
@@ -113,7 +115,8 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
             isGM,
             pendingCount,
             showItemBuilder,
-            customButtons
+            customButtons,
+            positionClass
         };
     }
 
@@ -388,6 +391,12 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         const container = this.element.querySelector(".marketshouter-container");
         if (!container) return;
 
+        const position = game.settings.get("sr5-marketplace", "marketshouterPosition") || "top-right";
+        if (position !== "top-right") {
+            container.style.right = "";
+            return;
+        }
+
         const sidebar = document.getElementById("sidebar");
         if (sidebar) {
             const sidebarWidth = sidebar.offsetWidth || 0;
@@ -426,6 +435,16 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         if (!id || !config) return;
         MarketShouterApp.registeredButtons.set(id, { id, order: 100, ...config });
         console.log(`SR5 Marketplace | Registered MarketShouter button: ${id}`);
+        const app = foundry.applications.instances.get("marketshouter");
+        if (app && app.rendered) {
+            app.render(true);
+        }
+    }
+
+    /**
+     * Renders or re-renders the current MarketShouter application instance.
+     */
+    static renderApp() {
         const app = foundry.applications.instances.get("marketshouter");
         if (app && app.rendered) {
             app.render(true);
