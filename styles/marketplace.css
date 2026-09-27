@@ -51,15 +51,15 @@
 .application.sr5-marketplace-shop select:focus,
 #payment-source-select:focus {
     border-color: var(--color-yellow-base, #fbbf24) !important;
-    box-shadow: 0 0 6px rgba(251, 191, 36, 0.4) !important;
+    box-shadow: 0 0 6px var(--color-filter-save-hover-shadow) !important;
 }
 
 /* Styled dropdown options popup list */
 .sr5-marketplace select option,
 .application.sr5-marketplace-shop select option,
 #payment-source-select option {
-    background-color: #1e293b !important;
-    color: #f8fafc !important;
+    background-color: var(--color-slate-card) !important;
+    color: var(--color-grey-lightest) !important;
     padding: 8px 12px !important;
 }
 
@@ -67,16 +67,16 @@
 :is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) select,
 :is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) select,
 :is(.theme-neon-light, .theme-silicon) #payment-source-select {
-    background-color: #ffffff !important;
-    color: #0f172a !important;
-    border: 1px solid #cbd5e1 !important;
+    background-color: var(--color-white) !important;
+    color: var(--color-grey-text) !important;
+    border: 1px solid var(--border-color-medium) !important;
 }
 
 :is(#interface.theme-neon-light, :is(.window-app, .application).theme-neon-light) select option,
 :is(#interface.theme-silicon, :is(.window-app, .application).theme-silicon) select option,
 :is(.theme-neon-light, .theme-silicon) #payment-source-select option {
-    background-color: #ffffff !important;
-    color: #0f172a !important;
+    background-color: var(--color-white) !important;
+    color: var(--color-grey-text) !important;
 }
 
 /* Tell Tailwind where your templates are */
@@ -95,7 +95,7 @@
 .sr5-marketplace .window-header {
     background: var(--app-window-header-bg);
     border-bottom: 2px solid var(--app-window-header-border);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 5px var(--color-black-transparent-20);
     max-height: 2em;
 }
 
@@ -106,7 +106,7 @@
 
 .marketplace-title {
     color: var(--header-gradient-text);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+    text-shadow: 1px 1px 2px var(--color-black-transparent-50);
 }
 
 /* ======================================
@@ -167,7 +167,7 @@
 .sr5-marketplace .marketplace-header span,
 .sr5-marketplace .marketplace-header i {
     color: var(--header-gradient-text);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+    text-shadow: 1px 1px 2px var(--color-black-transparent-50);
 }
 
 /* 2. Target Generic Tabs (Smaller, Tighter & Glassy) */
@@ -197,7 +197,7 @@
     margin: 0;
     cursor: pointer;
     text-decoration: none;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 1px var(--color-white-transparent-10);
     transition: filter 0.2s ease, transform 0.1s ease;
 }
 
@@ -216,8 +216,8 @@
     color: var(--header-gradient-text);
 
     /* The Glassy Highlight Magic: Top white reflection + Dark inner bottom */
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -10px 10px rgba(0, 0, 0, 0.2), 0 -2px 5px rgba(0, 0, 0, 0.3);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    box-shadow: inset 0 1px 1px var(--color-white-transparent-30), inset 0 -10px 10px var(--color-black-transparent-20), 0 -2px 5px var(--color-black-transparent-30);
+    text-shadow: 1px 1px 2px var(--color-black-transparent-80);
 
     /* Zeroed out bottom margin to keep it perfectly aligned with inactive tabs and the 2px padding */
     margin-bottom: 0;
@@ -382,7 +382,7 @@
     border-radius: 5px;
     padding: 10px;
     z-index: 100;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 8px var(--color-black-transparent-50);
 }
 
 .actor-selection-grid {
@@ -538,19 +538,19 @@ nav.marketplace-tabs {
     width: 26px;
     left: -2px;
     top: -7px;
-    background-color: #444;
+    background-color: var(--color-grey-medium);
     background-image: var(--thumb-image, url('/icons/svg/mystery-man.svg'));
     background-size: cover;
     background-position: center;
     transition: 0.3s ease;
     border-radius: 50%;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 1px 4px var(--color-black-transparent-50);
     border: 1.5px solid var(--color-yellow-light, #ffd700);
     z-index: 2;
 }
 
 .marketplace-switch input:checked+.marketplace-slider {
-    background-color: rgba(212, 175, 55, 0.15);
+    background-color: var(--color-filter-save-bg);
     border-color: var(--color-yellow-base, #d4af37);
     opacity: 1;
     /* Fully opaque when selected */
@@ -699,7 +699,7 @@ select#item-type-selector option {
 .item-card {
     background-color: var(--bg-item-card);
     padding: 0.7em;
-    border: 0.2em solid rgba(89, 15, 15, 0.15);
+    border: 0.2em solid var(--color-red-transparent-subtle);
     border-radius: 0.7em;
     display: flex;
     flex-direction: column;
@@ -728,7 +728,7 @@ select#item-type-selector option {
 
 .market-item-image {
     max-width: 62px;
-    background-color: rgba(95, 95, 95, 0.27);
+    background-color: var(--color-white-transparent-30);
     border-radius: 10px;
     border: 3px outset;
 }
@@ -913,7 +913,7 @@ select#item-type-selector option {
 .sr5-marketplace-availability {
     font-weight: bold;
     color: var(--color-yellow-base);
-    background: rgba(0, 0, 0, 0.25);
+    background: var(--color-black-transparent-25);
     padding: 1px 6px;
     border-radius: 4px;
     border: 1px solid var(--border-color-dark);
@@ -1074,12 +1074,12 @@ body.gm .review-request-button {
     padding: 3px 9px;
     border-radius: 10px;
     font-size: 11px;
-    border: 1px solid rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--color-black-transparent-20);
     font-weight: bold;
     color: var(--color-grey-text);
     white-space: nowrap;
     text-transform: capitalize;
-    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+    box-shadow: inset 0 0 5px var(--color-black-transparent-15);
 }
 
 .behavior-tag.unique {
@@ -1110,9 +1110,9 @@ body.gm .review-request-button {
     border-radius: 10px;
     font-size: 0.9em;
     font-weight: bold;
-    color: rgba(0, 0, 0, 0.7);
+    color: var(--color-black-transparent-75);
     margin-top: 5px;
-    border: 1px solid rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--color-black-transparent-20);
 }
 
 .column-header.unique,
@@ -1246,7 +1246,7 @@ hr.marketplace-settings-hr {
     color: var(--tab-inactive-color);
     cursor: pointer;
     transition: filter 0.2s ease, transform 0.1s ease;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 1px var(--color-white-transparent-10);
 }
 
 .review-actor-tab:hover {
@@ -1262,8 +1262,8 @@ hr.marketplace-settings-hr {
     color: var(--header-gradient-text);
 
     /* The Glassy Highlight Magic: Top white reflection + Dark inner bottom */
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -10px 10px rgba(0, 0, 0, 0.2), 0 -2px 5px rgba(0, 0, 0, 0.3);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+    box-shadow: inset 0 1px 1px var(--color-white-transparent-30), inset 0 -10px 10px var(--color-black-transparent-20), 0 -2px 5px var(--color-black-transparent-30);
+    text-shadow: 1px 1px 2px var(--color-black-transparent-50);
     font-weight: bold;
     margin-bottom: 0;
 }
@@ -1274,7 +1274,7 @@ hr.marketplace-settings-hr {
     object-fit: cover;
     object-position: top;
     border-radius: 3px;
-    border: 1px solid rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--color-black-transparent-30);
 }
 
 .review-actor-tab-info {
@@ -1369,8 +1369,8 @@ hr.marketplace-settings-hr {
 }
 
 .text-blue {
-    color: #4da6ff;
-    text-shadow: 0 0 4px rgba(77, 166, 255, 0.4);
+    color: var(--color-blue-sky);
+    text-shadow: 0 0 4px var(--color-cyan-transparent-medium);
 }
 
 .text-purple {
@@ -1407,7 +1407,7 @@ hr.marketplace-settings-hr {
     color: var(--color-grey-lightest) !important;
     font-weight: bold;
     font-size: 0.85em;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.85);
+    text-shadow: 1px 1px 2px var(--color-black-transparent-80);
     opacity: 0.95;
     text-transform: none !important;
     /* No uppercase! */
@@ -1594,14 +1594,14 @@ hr.marketplace-settings-hr {
     color: var(--text-color-primary) !important;
     font-weight: bold;
     text-decoration: none;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    text-shadow: 1px 1px 2px var(--color-black-transparent-80);
     transition: color 0.2s ease, text-shadow 0.2s ease;
     cursor: pointer;
 }
 
 .pending-request-block .basket-item.item-name a:hover {
     color: var(--color-yellow-light) !important;
-    text-shadow: 0 0 5px var(--color-yellow-base), 1px 1px 2px rgba(0, 0, 0, 0.9);
+    text-shadow: 0 0 5px var(--color-yellow-base), 1px 1px 2px var(--color-black-transparent-80);
 }
 
 /* Item Pack Quantity high readability */
@@ -1609,7 +1609,7 @@ hr.marketplace-settings-hr {
     color: var(--text-color-primary) !important;
     opacity: 0.95;
     font-weight: bold;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    text-shadow: 1px 1px 2px var(--color-black-transparent-80);
 }
 
 /* Major Refactoring Styles for Pending Requests Container and Elements */
@@ -1619,7 +1619,7 @@ hr.marketplace-settings-hr {
     border-radius: 6px;
     padding: 12px 15px;
     margin-bottom: 15px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 6px var(--color-black-transparent-15);
 }
 
 .actor-request-header {
@@ -1669,14 +1669,14 @@ hr.marketplace-settings-hr {
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s ease;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25), 0 2px 4px rgba(0, 0, 0, 0.3);
+    text-shadow: 1px 1px 2px var(--color-black-transparent-80);
+    box-shadow: inset 0 1px 1px var(--color-white-transparent-30), 0 2px 4px var(--color-black-transparent-30);
 }
 
 .basket-actions.full-basket-actions button.approve-all-btn {
-    background: linear-gradient(to bottom, #5cb85c 0%, #449d44 100%);
-    border: 1px solid #449d44;
-    color: #fff;
+    background: linear-gradient(to bottom, var(--color-green-button) 0%, var(--color-green-dark) 100%);
+    border: 1px solid var(--color-green-dark);
+    color: var(--color-white);
 }
 
 .basket-actions.full-basket-actions button.approve-all-btn:hover {
@@ -1684,9 +1684,9 @@ hr.marketplace-settings-hr {
 }
 
 .basket-actions.full-basket-actions button.reject-all-btn {
-    background: linear-gradient(to bottom, #d9534f 0%, #c9302c 100%);
-    border: 1px solid #c9302c;
-    color: #fff;
+    background: linear-gradient(to bottom, var(--color-red-bright) 0%, var(--color-red-dark) 100%);
+    border: 1px solid var(--color-red-dark);
+    color: var(--color-white);
 }
 
 .basket-actions.full-basket-actions button.reject-all-btn:hover {

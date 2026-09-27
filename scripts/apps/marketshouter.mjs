@@ -202,7 +202,7 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
 
         searchInput.addEventListener("focus", () => {
             if (this.searchQuery.length >= 2) {
-                resultsPanel.classList.remove("hidden");
+                resultsPanel.classList.remove("is-hidden");
             }
         });
 
@@ -217,7 +217,7 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         // Global Outside click listener to dismiss search dropdown
         const outsideClickListener = (event) => {
             if (!this.element.contains(event.target)) {
-                resultsPanel.classList.add("hidden");
+                resultsPanel.classList.add("is-hidden");
             }
         };
 
@@ -234,14 +234,14 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
 
         // Toggle clear button
         if (this.searchQuery.length > 0) {
-            clearBtn.classList.remove("hidden");
+            clearBtn.classList.remove("is-hidden");
         } else {
-            clearBtn.classList.add("hidden");
+            clearBtn.classList.add("is-hidden");
         }
 
         // Must have at least 2 characters to trigger search
         if (this.searchQuery.length < 2) {
-            resultsPanel.classList.add("hidden");
+            resultsPanel.classList.add("is-hidden");
             resultsList.innerHTML = "";
             return;
         }
@@ -307,7 +307,7 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
             });
         }
 
-        resultsPanel.classList.remove("hidden");
+        resultsPanel.classList.remove("is-hidden");
     }
 
     /**
@@ -319,7 +319,7 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
 
         // Dismiss dropdown
         if (resultsPanel) {
-            resultsPanel.classList.add("hidden");
+            resultsPanel.classList.add("is-hidden");
         }
 
         // Clean search input
@@ -328,7 +328,7 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
             searchInput.value = "";
             this.searchQuery = "";
             const clearBtn = this.element.querySelector(".marketshouter-clear-btn");
-            if (clearBtn) clearBtn.classList.add("hidden");
+            if (clearBtn) clearBtn.classList.add("is-hidden");
         }
 
         // Determine correct category key for inGameMarketplace
@@ -416,6 +416,7 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         const position = game.settings.get("sr5-marketplace", "marketshouterPosition") || "top-right";
 
         if (position === "top-right") {
+            this.element.style.zIndex = "1000";
             container.style.left = "";
             container.style.bottom = "";
             container.style.top = "";
@@ -435,6 +436,7 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         }
 
         if (position === "top-center") {
+            this.element.style.zIndex = "1000";
             container.style.right = "";
             container.style.left = "";
             container.style.bottom = "";
@@ -443,6 +445,7 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         }
 
         if (position === "bottom-left") {
+            this.element.style.zIndex = "90";
             container.style.right = "";
             container.style.top = "";
 

@@ -46,6 +46,7 @@
     --color-grey-lightest: #F5F5F5;
     /* Usage: .window-header .window-title, .window-content, .sheet-tabs .item, .inventory-item input (text) */
     --color-grey-tab-active: #555;
+    --color-slate-card: #131b26;
     --color-black-transparent-15: rgba(0, 0, 0, 0.15);
     /* Usage: .employee-list .toggle-content (bg) */
     --color-black-transparent-20: rgba(0, 0, 0, 0.2);
@@ -62,19 +63,46 @@
     /* --- Greens --- */
     --color-green-base: green;
     --color-green-button: #4CAF50;
+    --color-green-dark: #376b0f;
     --color-green-text-light: rgb(215 239 210);
 
-    /* --- Oranges --- */
+    /* --- Oranges & Ambers --- */
     --color-orange-blend: #ab4c0c;
+    --color-orange-base: #ff6400;
+    --color-orange-bright: #ff4500;
+    --color-orange-light: #ffaa66;
+    --color-orange-amber: #ffaa00;
+    --color-orange-glow: rgba(255, 100, 0, 0.6);
+    --color-orange-transparent-subtle: rgba(255, 100, 0, 0.15);
+    --color-orange-transparent-medium: rgba(255, 100, 0, 0.35);
 
     /* --- Cyans & Blues --- */
     --color-cyan-base: #06b6d4;
+    --color-cyan-bright: #00f0ff;
+    --color-cyan-teal: #00ffcc;
     --color-cyan-glow: rgba(6, 182, 212, 0.6);
     --color-cyan-bg-transparent: rgba(6, 182, 212, 0.12);
     --color-cyan-border-transparent: rgba(6, 182, 212, 0.3);
+    --color-cyan-transparent-subtle: rgba(0, 210, 255, 0.15);
+    --color-cyan-transparent-medium: rgba(0, 210, 255, 0.35);
     --color-cyan-card-shadow: inset 0 0 12px rgba(6, 182, 212, 0.08);
     --color-blue-light: #60a5fa;
+    --color-blue-sky: #38bdf8;
+    --color-blue-neon: #0096ff;
+    --color-blue-deep: #0055ff;
     --color-blue-border-transparent: rgba(96, 165, 250, 0.2);
+
+    /* --- Greens --- */
+    --color-green-neon: #00ff66;
+    --color-green-transparent-subtle: rgba(0, 255, 102, 0.2);
+    --color-green-transparent-glow: rgba(0, 255, 102, 0.6);
+
+    /* --- Reds & Magentas --- */
+    --color-red-neon: #cc0000;
+    --color-red-soft: #ff8585;
+    --color-magenta-neon: #ff00ff;
+    --color-red-transparent-subtle: rgba(204, 0, 0, 0.2);
+    --color-red-transparent-glow: rgba(204, 0, 0, 0.6);
 
     /* --- Purples & Violets --- */
     --color-purple-light: #a78bfa;
@@ -82,13 +110,19 @@
 
     /* --- Extended Neutrals & Transparencies --- */
     --color-black-almost: #111111;
+    --color-black-glass: rgba(15, 15, 15, 0.85);
+    --color-black-transparent-25: rgba(0, 0, 0, 0.25);
     --color-black-transparent-35: rgba(0, 0, 0, 0.35);
     --color-black-transparent-45: rgba(0, 0, 0, 0.45);
+    --color-black-transparent-50: rgba(0, 0, 0, 0.5);
+    --color-black-transparent-75: rgba(0, 0, 0, 0.75);
     --color-white-transparent-06: rgba(255, 255, 255, 0.06);
     --color-white-transparent-08: rgba(255, 255, 255, 0.08);
     --color-white-transparent-15: rgba(255, 255, 255, 0.15);
     --color-white-transparent-20: rgba(255, 255, 255, 0.2);
     --color-white-transparent-30: rgba(255, 255, 255, 0.3);
+    --color-white-transparent-35: rgba(255, 255, 255, 0.35);
+    --color-white-transparent-70: rgba(255, 255, 255, 0.7);
     --color-white-transparent-85: rgba(255, 255, 255, 0.85);
 
     /* --- Stat Pills & Breakdown Badges --- */
@@ -123,6 +157,8 @@
     --color-card-enabled-border: rgba(234, 179, 8, 0.4);
     --color-card-enabled-shadow: inset 0 0 12px rgba(234, 179, 8, 0.05);
     --color-green-button-glow: rgba(76, 175, 80, 0.4);
+    --color-gradient-teal-dark: linear-gradient(135deg, rgba(20, 60, 110, 0.9) 0%, rgba(10, 80, 50, 0.9) 100%);
+    --color-gradient-crimson-dark: linear-gradient(135deg, rgba(90, 20, 20, 0.9) 0%, rgba(130, 15, 45, 0.9) 100%);
 
     /* --- Settings & UI Tints --- */
     --color-blue-info-bg: #d1ecf1;

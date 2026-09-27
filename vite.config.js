@@ -3,6 +3,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 import { mergeLocales } from './merge-locales.js';
+import { verifyNoImportant } from './helpers/verify-no-important.js';
 
 
 export default defineConfig({
@@ -54,6 +55,19 @@ export default defineConfig({
           console.log(`\nLocale file changed: ${file}. Re-merging...`);
           mergeLocales();
           server.ws.send({ type: 'full-reload' });
+        }
+      }
+    },
+    {
+      name: 'test-no-important-css-plugin',
+      buildStart() {
+        verifyNoImportant(['styles/marketshouter.css'], path.resolve(__dirname, '.'));
+        console.log('✅ [Vite Test] Verified zero !important statements in styles/marketshouter.css');
+      },
+      handleHotUpdate({ file }) {
+        if (file.endsWith('marketshouter.css')) {
+          verifyNoImportant(['styles/marketshouter.css'], path.resolve(__dirname, '.'));
+          console.log('✅ [Vite Test] Verified zero !important statements in styles/marketshouter.css');
         }
       }
     },

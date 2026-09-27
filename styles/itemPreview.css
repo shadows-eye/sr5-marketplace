@@ -1,11 +1,11 @@
 h1.sr5-marketplace-sr5Type-header {
-    background: linear-gradient(to right, #55101e 30%, rgba(85, 16, 30, 0) 100%);
+    background: linear-gradient(to right, var(--color-red-deep) 30%, transparent 100%);
     border-bottom: none;
 }
 
 .ItemPreviewApp .window-header {
     background: var(--color-red-darkest);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 5px var(--color-black-transparent-20);
     max-height: 2em;
 }
 
@@ -144,8 +144,8 @@ h1.sr5-marketplace-sr5Type-header {
 /* Apply gradient mask to description for clean fade at boundaries */
 .item-preview-tooltip .description {
     position: relative;
-    mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, var(--color-black) 12%, var(--color-black) 88%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, var(--color-black) 12%, var(--color-black) 88%, transparent 100%);
 }
 
 /* Keyframes for text auto-scrolling */

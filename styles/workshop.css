@@ -23,7 +23,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(0, 0, 0, 0.4);
+    background: var(--color-black-transparent-45);
     padding: 10px 15px;
     border-radius: 6px;
     border: 1px solid var(--border-color-medium, #444);
@@ -37,8 +37,8 @@
 }
 
 .vehicle-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-white-transparent-05);
+    border: 1px solid var(--color-white-transparent-10);
     border-radius: 8px;
     padding: 15px;
     text-align: center;
@@ -51,9 +51,9 @@
 }
 
 .vehicle-card:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--color-white-transparent-10);
     border-color: var(--color-yellow-dark, #ffaa00);
-    box-shadow: 0 0 10px rgba(255, 170, 0, 0.2);
+    box-shadow: 0 0 10px var(--color-orange-transparent-subtle);
     transform: translateY(-2px);
 }
 
@@ -127,7 +127,7 @@
 }
 
 .vehicle-details-card {
-    background: rgba(15, 20, 25, 0.6);
+    background: var(--color-black-glass);
     border-radius: 12px;
     border: 1px solid var(--border-color-medium, #444);
     padding: 8px 12px;
@@ -139,7 +139,7 @@
 .vehicle-details-card .details-header {
     font-weight: bold;
     font-size: 1.1em;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--color-white-transparent-10);
     padding-bottom: 6px;
     color: var(--color-yellow-dark, #ffaa00);
     display: flex;
@@ -152,10 +152,10 @@
     justify-content: space-between;
     align-items: center;
     gap: 4px;
-    background: rgba(0, 0, 0, 0.25);
+    background: var(--color-black-transparent-25);
     padding: 8px;
     border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--color-white-transparent-05);
 }
 
 .vehicle-details-card .stat-item {
@@ -175,11 +175,11 @@
 .vehicle-details-card .stat-value {
     font-size: 0.85em;
     font-weight: bold;
-    color: #fff;
+    color: var(--color-white);
 }
 
 .installed-mods-summary-card {
-    background: rgba(15, 20, 25, 0.6);
+    background: var(--color-black-glass);
     border-radius: 12px;
     border: 1px solid var(--border-color-medium, #444);
     padding: 8px 12px;
@@ -193,7 +193,7 @@
 .installed-mods-summary-card .summary-header {
     font-weight: bold;
     font-size: 1.1em;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--color-white-transparent-10);
     padding-bottom: 6px;
     color: var(--color-yellow-dark, #ffaa00);
     display: flex;
@@ -219,9 +219,9 @@
 .installed-mods-category-group .category-group-header {
     font-size: 0.8em;
     font-weight: bold;
-    color: #00ffcc;
+    color: var(--color-cyan-teal);
     opacity: 0.9;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+    border-bottom: 1px dashed var(--color-white-transparent-10);
     padding-bottom: 2px;
     margin-bottom: 2px;
 }
@@ -230,7 +230,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--color-white-transparent-05);
     padding: 4px 8px;
     padding-left: 12px;
     border-radius: 4px;
@@ -247,34 +247,34 @@
     bottom: 0;
     width: 3px;
     border-radius: 4px 0 0 4px;
-    background: #00ffcc;
+    background: var(--color-cyan-teal);
     /* fallback */
     transition: background 0.2s ease;
 }
 
 /* Category Specific Sidebar Indicators */
 .installed-mods-category-group.drive .installed-mods-summary-item::before {
-    background: linear-gradient(to bottom, #00f0ff, #0044ff);
+    background: linear-gradient(to bottom, var(--color-cyan-bright), var(--color-blue-deep));
 }
 
 .installed-mods-category-group.protection .installed-mods-summary-item::before {
-    background: linear-gradient(to bottom, #ffaa00, #b27a00);
+    background: linear-gradient(to bottom, var(--color-orange-amber), var(--color-orange-blend));
 }
 
 .installed-mods-category-group.weapons .installed-mods-summary-item::before {
-    background: linear-gradient(to bottom, #cc0000, #7a00cc);
+    background: linear-gradient(to bottom, var(--color-red-neon), var(--color-red-deep));
 }
 
 .installed-mods-category-group.electronics .installed-mods-summary-item::before {
-    background: linear-gradient(to bottom, #00ff66, #ffea00);
+    background: linear-gradient(to bottom, var(--color-green-neon), var(--color-yellow-bright));
 }
 
 .installed-mods-category-group.body .installed-mods-summary-item::before {
-    background: linear-gradient(to bottom, #777777, #ffffff);
+    background: linear-gradient(to bottom, var(--color-grey-medium-light), var(--color-white));
 }
 
 .installed-mods-category-group.cosmetic .installed-mods-summary-item::before {
-    background: linear-gradient(to bottom, #ff00ff, #ffb6c1);
+    background: linear-gradient(to bottom, var(--color-magenta-neon), var(--color-red-soft));
 }
 
 .installed-mods-summary-item .mod-name {
@@ -311,16 +311,16 @@
     align-items: stretch;
     margin-bottom: 0;
     flex-direction: column;
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--color-black-transparent-20);
     border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--color-white-transparent-15);
     padding: 4px 8px;
     min-height: 40px;
 }
 
 .shelf-search-wrap:focus-within {
     border-color: var(--color-yellow-dark, #ffaa00);
-    box-shadow: 0 0 5px rgba(255, 170, 0, 0.3);
+    box-shadow: 0 0 5px var(--color-orange-transparent-medium);
 }
 
 .shelf-search-icon {
@@ -334,7 +334,7 @@
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
-    color: #fff !important;
+    color: var(--color-white) !important;
     font-size: 0.9em !important;
     width: 100% !important;
     height: 100% !important;
@@ -355,21 +355,21 @@
 }
 
 .shelf-search-bar::placeholder {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-white-transparent-35);
 }
 
 .workshop-header-bar .shelf-search-wrap {
     margin-bottom: 0;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+    background: var(--color-white-transparent-05);
+    border: 1px solid var(--color-white-transparent-10);
+    box-shadow: inset 0 1px 2px var(--color-black-transparent-20);
     transition: all 0.2s ease;
 }
 
 .workshop-header-bar .shelf-search-wrap:focus-within {
     border-color: var(--color-yellow-dark, #ffaa00);
-    background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 0 8px rgba(255, 170, 0, 0.2);
+    background: var(--color-white-transparent-08);
+    box-shadow: 0 0 8px var(--color-orange-transparent-subtle);
 }
 
 .workshop-visualizer {
@@ -388,9 +388,9 @@
     width: 200px;
     height: 200px;
     border-radius: 12px;
-    border: 2px solid rgba(255, 170, 0, 0.8);
-    box-shadow: 0 0 25px rgba(255, 170, 0, 0.5), inset 0 0 15px rgba(255, 170, 0, 0.2);
-    background: rgba(10, 12, 15, 0.85);
+    border: 2px solid var(--color-orange-amber);
+    box-shadow: 0 0 25px var(--color-orange-glow), inset 0 0 15px var(--color-orange-transparent-subtle);
+    background: var(--color-black-glass);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -408,8 +408,8 @@
 
 .center-vehicle:hover {
     transform: scale(1.03);
-    box-shadow: 0 0 35px rgba(255, 170, 0, 0.7), inset 0 0 20px rgba(255, 170, 0, 0.3);
-    border-color: #ffaa00;
+    box-shadow: 0 0 35px var(--color-orange-glow), inset 0 0 20px var(--color-orange-transparent-medium);
+    border-color: var(--color-orange-amber);
 }
 
 .category-box {
@@ -423,26 +423,26 @@
     gap: 4px;
     overflow: hidden;
     border: 1.5px solid transparent;
-    background: linear-gradient(rgba(20, 24, 30, 0.85), rgba(20, 24, 30, 0.85)) padding-box,
-        linear-gradient(135deg, var(--gradient-start, rgba(255, 255, 255, 0.25)), var(--gradient-end, rgba(255, 255, 255, 0.25))) border-box;
-    box-shadow: 0 0 10px rgba(var(--glow-color, 255, 255, 255), 0.12);
+    background: linear-gradient(var(--color-slate-card), var(--color-slate-card)) padding-box,
+        linear-gradient(135deg, var(--gradient-start, var(--color-white-transparent-20)), var(--gradient-end, var(--color-white-transparent-20))) border-box;
+    box-shadow: 0 0 10px var(--glow-color, var(--color-white-transparent-15));
 }
 
 .category-box:hover {
     transform: scale(1.02);
-    box-shadow: 0 0 15px rgba(var(--glow-color, 255, 255, 255), 0.3);
+    box-shadow: 0 0 15px var(--glow-color, var(--color-white-transparent-30));
 }
 
 .category-box.valid-drop {
-    border: 1.5px solid #00ffcc !important;
-    background: rgba(0, 255, 204, 0.1) !important;
-    box-shadow: 0 0 15px rgba(0, 255, 204, 0.4) !important;
+    border: 1.5px solid var(--color-cyan-teal) !important;
+    background: var(--color-cyan-bg-transparent) !important;
+    box-shadow: 0 0 15px var(--color-cyan-glow) !important;
 }
 
 .category-box.invalid-drop {
-    border: 1.5px solid #ff3366 !important;
-    background: rgba(255, 51, 102, 0.1) !important;
-    box-shadow: 0 0 15px rgba(255, 51, 102, 0.4) !important;
+    border: 1.5px solid var(--color-filter-clear-hover-bg) !important;
+    background: var(--color-filter-clear-bg) !important;
+    box-shadow: 0 0 15px var(--color-filter-clear-border) !important;
 }
 
 .category-box.drag-hover {
@@ -453,56 +453,56 @@
 .category-box.drive {
     top: 6%;
     left: 8%;
-    --gradient-start: #00f0ff;
-    --gradient-end: #0044ff;
-    --glow-color: 0, 240, 255;
+    --gradient-start: var(--color-cyan-bright);
+    --gradient-end: var(--color-blue-deep);
+    --glow-color: var(--color-cyan-glow);
 }
 
 .category-box.protection {
     top: 6%;
     right: 8%;
-    --gradient-start: #ffaa00;
-    --gradient-end: #b27a00;
-    --glow-color: 255, 170, 0;
+    --gradient-start: var(--color-orange-amber);
+    --gradient-end: var(--color-orange-blend);
+    --glow-color: var(--color-orange-glow);
 }
 
 .category-box.weapons {
     top: 40%;
     left: 3%;
-    --gradient-start: #cc0000;
-    --gradient-end: #7a00cc;
-    --glow-color: 204, 0, 0;
+    --gradient-start: var(--color-red-neon);
+    --gradient-end: var(--color-red-deep);
+    --glow-color: var(--color-red-transparent-glow);
 }
 
 .category-box.body {
     top: 40%;
     right: 3%;
-    --gradient-start: #777777;
-    --gradient-end: #ffffff;
-    --glow-color: 150, 150, 150;
+    --gradient-start: var(--color-grey-medium-light);
+    --gradient-end: var(--color-white);
+    --glow-color: var(--color-white-transparent-35);
 }
 
 .category-box.electronics {
     bottom: 6%;
     left: 8%;
-    --gradient-start: #00ff66;
-    --gradient-end: #ffea00;
-    --glow-color: 0, 255, 102;
+    --gradient-start: var(--color-green-neon);
+    --gradient-end: var(--color-yellow-bright);
+    --glow-color: var(--color-green-transparent-glow);
 }
 
 .category-box.cosmetic {
     bottom: 6%;
     right: 8%;
-    --gradient-start: #ff00ff;
-    --gradient-end: #ffb6c1;
-    --glow-color: 255, 0, 255;
+    --gradient-start: var(--color-magenta-neon);
+    --gradient-end: var(--color-red-soft);
+    --glow-color: var(--color-magenta-neon);
 }
 
 .category-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--color-white-transparent-10);
     padding-bottom: 4px;
     margin-bottom: 4px;
     font-size: 0.85em;
@@ -516,15 +516,15 @@
 }
 
 .category-header .slots-counter {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--color-white-transparent-10);
     padding: 1px 5px;
     border-radius: 4px;
     font-size: 0.85em;
 }
 
 .category-header .slots-counter.limit-reached {
-    background: rgba(255, 51, 102, 0.3);
-    color: #ff3366;
+    background: var(--color-filter-clear-border);
+    color: var(--color-filter-clear-hover-bg);
 }
 
 .installed-mods-list {
@@ -556,10 +556,10 @@
     width: 26px;
     height: 26px;
     border-radius: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--color-white-transparent-20);
     object-fit: cover;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-    background: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 1px 3px var(--color-black-transparent-35);
+    background: var(--color-black-transparent-30);
 }
 
 .installed-mod-empty {
@@ -572,7 +572,7 @@
 }
 
 .workshop-shelf-sidebar {
-    background: rgba(15, 20, 25, 0.6);
+    background: var(--color-black-glass);
     border-radius: 12px;
     border: 1px solid var(--border-color-medium, #444);
     display: flex;
@@ -587,7 +587,7 @@
 .workshop-shelf-header {
     font-weight: bold;
     font-size: 1.2em;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--color-white-transparent-10);
     padding-bottom: 8px;
     margin-bottom: 5px;
     display: flex;
@@ -611,25 +611,25 @@
     padding: 3px 8px;
     border-radius: 4px;
     transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--color-white-transparent-10);
+    background: var(--color-white-transparent-05);
     opacity: 0.6;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--color-white-transparent-85);
     user-select: none;
 }
 
 .shelf-count-badge.sort-badge:hover {
     opacity: 0.9;
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: var(--color-white-transparent-08);
+    border-color: var(--color-white-transparent-20);
 }
 
 .shelf-count-badge.sort-badge.active {
     opacity: 1;
-    background: rgba(255, 170, 0, 0.15);
+    background: var(--color-orange-transparent-subtle);
     border-color: var(--color-yellow-dark, #ffaa00);
     color: var(--color-yellow-dark, #ffaa00);
-    box-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
+    box-shadow: 0 0 10px var(--color-orange-transparent-medium);
 }
 
 .shelf-items-list {
@@ -646,8 +646,8 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-white-transparent-05);
+    border: 1px solid var(--color-white-transparent-10);
     border-radius: 6px;
     padding: 8px;
     cursor: grab;
@@ -656,13 +656,13 @@
 }
 
 .mod-card:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--color-white-transparent-08);
     transform: translateY(-1px);
 }
 
 .mod-card.owner-mod {
-    border-color: #ffb700;
-    box-shadow: inset 0 0 5px rgba(255, 183, 0, 0.1);
+    border-color: var(--color-orange-amber);
+    box-shadow: inset 0 0 5px var(--color-filter-save-bg);
 }
 
 .mod-card.owner-mod::before {
@@ -672,7 +672,7 @@
     left: 0;
     width: 4px;
     height: 100%;
-    background: #ffb700;
+    background: var(--color-orange-amber);
     border-radius: 3px 0 0 3px;
 }
 
@@ -706,8 +706,8 @@
 }
 
 .owner-indicator-badge {
-    background: rgba(255, 183, 0, 0.15);
-    color: #ffb700;
+    background: var(--color-filter-save-bg);
+    color: var(--color-orange-amber);
     padding: 1px 4px;
     border-radius: 3px;
     font-weight: bold;
@@ -715,7 +715,7 @@
 }
 
 .repair-panel {
-    background: rgba(15, 20, 25, 0.6);
+    background: var(--color-black-glass);
     border-radius: 12px;
     border: 1px solid var(--border-color-medium, #444);
     padding: 8px 12px;
@@ -727,7 +727,7 @@
 .repair-header {
     font-weight: bold;
     font-size: 1.1em;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--color-white-transparent-10);
     padding-bottom: 6px;
 }
 
@@ -741,16 +741,16 @@
 .damage-box {
     width: 20px;
     height: 20px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    border: 2px solid var(--color-white-transparent-20);
     border-radius: 4px;
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--color-black-transparent-30);
     position: relative;
 }
 
 .damage-box.filled {
-    border-color: #8b0000;
-    background: linear-gradient(to bottom, #aa0000, #660000);
-    box-shadow: 0 0 5px rgba(139, 0, 0, 0.6);
+    border-color: var(--color-red-dark);
+    background: linear-gradient(to bottom, var(--color-red-base), var(--color-red-dark));
+    box-shadow: 0 0 5px var(--color-red-transparent-glow);
 }
 
 .damage-box.filled::after {
@@ -759,7 +759,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--color-white-transparent-85);
     font-size: 11px;
     font-weight: bold;
 }
@@ -777,8 +777,8 @@
 }
 
 .repair-button {
-    background-color: var(--color-green-button, #15aa5a);
-    color: white;
+    background-color: var(--color-green-button);
+    color: var(--color-white);
     border: none;
     padding: 8px 16px;
     border-radius: 4px;
@@ -791,13 +791,13 @@
 }
 
 .repair-button:hover {
-    background-color: #1cc66b;
-    box-shadow: 0 0 10px rgba(28, 198, 107, 0.3);
+    background-color: var(--color-green-neon);
+    box-shadow: 0 0 10px var(--color-green-transparent-subtle);
 }
 
 .repair-button:disabled {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.3);
+    background-color: var(--color-white-transparent-10);
+    color: var(--color-white-transparent-30);
     cursor: not-allowed;
 }
 
@@ -871,7 +871,7 @@
 
 .repair-panel .sr5v2 .horizontal-cell-input .icon-container a,
 .repair-panel .sr5v2 .horizontal-cell-input .clear-container a {
-    color: #00ffcc;
+    color: var(--color-cyan-teal);
     opacity: 0.8;
     transition: opacity 0.2s ease;
 }
@@ -890,9 +890,9 @@
 
 .repair-panel .sr5v2 .horizontal-cell-input .cell {
     cursor: pointer;
-    border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
+    border: 1.5px solid var(--color-white-transparent-20) !important;
     border-radius: 3px !important;
-    background: rgba(0, 0, 0, 0.3) !important;
+    background: var(--color-black-transparent-30) !important;
     width: 14px !important;
     height: 14px !important;
     margin: 0 !important;
@@ -901,9 +901,9 @@
 }
 
 .repair-panel .sr5v2 .horizontal-cell-input .cell.filled {
-    border-color: #00ff66 !important;
-    background: linear-gradient(to bottom, #00ff66, #ffea00) !important;
-    box-shadow: 0 0 6px rgba(0, 255, 102, 0.5) !important;
+    border-color: var(--color-green-neon) !important;
+    background: linear-gradient(to bottom, var(--color-green-neon), var(--color-yellow-bright)) !important;
+    box-shadow: 0 0 6px var(--color-green-transparent-glow) !important;
     position: relative !important;
 }
 
@@ -913,13 +913,13 @@
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
-    color: #0d121d !important;
+    color: var(--color-grey-darkest) !important;
     font-size: 8px !important;
     font-weight: bold !important;
 }
 
 .repair-panel .sr5v2 .horizontal-cell-input .cell:hover {
-    border-color: #00ff66 !important;
+    border-color: var(--color-green-neon) !important;
 }
 
 /* Quick Filter Buttons Section */
@@ -927,15 +927,15 @@
     display: flex;
     gap: 6px;
     align-items: center;
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--color-black-transparent-30);
     padding: 4px 8px;
     border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--color-white-transparent-10);
 }
 
 .quick-filter-btn {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: var(--color-white-transparent-05);
+    border: 1px solid var(--color-white-transparent-15);
     border-radius: 4px;
     width: 30px;
     height: 30px;
@@ -949,134 +949,134 @@
 
 .quick-filter-btn i {
     font-size: 1em;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--color-white-transparent-50, var(--color-white-transparent-70));
     transition: all 0.2s ease;
 }
 
 /* Base Hover for Buttons */
 .quick-filter-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--color-white-transparent-08);
 }
 
 /* Category Specific Colors and Glows */
 .quick-filter-btn.drive i {
-    color: rgba(0, 240, 255, 0.7);
+    color: var(--color-cyan-glow);
 }
 
 .quick-filter-btn.drive:hover {
-    border-color: #00f0ff;
-    box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+    border-color: var(--color-cyan-bright);
+    box-shadow: 0 0 10px var(--color-cyan-transparent-medium);
 }
 
 .quick-filter-btn.drive:hover i,
 .quick-filter-btn.drive.active i {
-    color: #00f0ff;
+    color: var(--color-cyan-bright);
 }
 
 .quick-filter-btn.drive.active {
-    background: rgba(0, 240, 255, 0.15);
-    border-color: #00f0ff;
-    box-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
+    background: var(--color-cyan-transparent-subtle);
+    border-color: var(--color-cyan-bright);
+    box-shadow: 0 0 12px var(--color-cyan-glow);
 }
 
 .quick-filter-btn.protection i {
-    color: rgba(255, 170, 0, 0.7);
+    color: var(--color-orange-glow);
 }
 
 .quick-filter-btn.protection:hover {
-    border-color: #ffaa00;
-    box-shadow: 0 0 10px rgba(255, 170, 0, 0.4);
+    border-color: var(--color-orange-amber);
+    box-shadow: 0 0 10px var(--color-orange-transparent-medium);
 }
 
 .quick-filter-btn.protection:hover i,
 .quick-filter-btn.protection.active i {
-    color: #ffaa00;
+    color: var(--color-orange-amber);
 }
 
 .quick-filter-btn.protection.active {
-    background: rgba(255, 170, 0, 0.15);
-    border-color: #ffaa00;
-    box-shadow: 0 0 12px rgba(255, 170, 0, 0.5);
+    background: var(--color-orange-transparent-subtle);
+    border-color: var(--color-orange-amber);
+    box-shadow: 0 0 12px var(--color-orange-glow);
 }
 
 .quick-filter-btn.weapons i {
-    color: rgba(204, 0, 0, 0.7);
+    color: var(--color-red-transparent-glow);
 }
 
 .quick-filter-btn.weapons:hover {
-    border-color: #cc0000;
-    box-shadow: 0 0 10px rgba(204, 0, 0, 0.4);
+    border-color: var(--color-red-neon);
+    box-shadow: 0 0 10px var(--color-red-transparent-glow);
 }
 
 .quick-filter-btn.weapons:hover i,
 .quick-filter-btn.weapons.active i {
-    color: #cc0000;
+    color: var(--color-red-neon);
 }
 
 .quick-filter-btn.weapons.active {
-    background: rgba(204, 0, 0, 0.15);
-    border-color: #cc0000;
-    box-shadow: 0 0 12px rgba(204, 0, 0, 0.5);
+    background: var(--color-red-transparent-subtle);
+    border-color: var(--color-red-neon);
+    box-shadow: 0 0 12px var(--color-red-transparent-glow);
 }
 
 .quick-filter-btn.body i {
-    color: rgba(150, 150, 150, 0.7);
+    color: var(--color-white-transparent-70);
 }
 
 .quick-filter-btn.body:hover {
-    border-color: #ffffff;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    border-color: var(--color-white);
+    box-shadow: 0 0 10px var(--color-white-transparent-30);
 }
 
 .quick-filter-btn.body:hover i,
 .quick-filter-btn.body.active i {
-    color: #ffffff;
+    color: var(--color-white);
 }
 
 .quick-filter-btn.body.active {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: #ffffff;
-    box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+    background: var(--color-white-transparent-15);
+    border-color: var(--color-white);
+    box-shadow: 0 0 12px var(--color-white-transparent-35);
 }
 
 .quick-filter-btn.electronics i {
-    color: rgba(0, 255, 102, 0.7);
+    color: var(--color-green-transparent-glow);
 }
 
 .quick-filter-btn.electronics:hover {
-    border-color: #00ff66;
-    box-shadow: 0 0 10px rgba(0, 255, 102, 0.4);
+    border-color: var(--color-green-neon);
+    box-shadow: 0 0 10px var(--color-green-transparent-glow);
 }
 
 .quick-filter-btn.electronics:hover i,
 .quick-filter-btn.electronics.active i {
-    color: #00ff66;
+    color: var(--color-green-neon);
 }
 
 .quick-filter-btn.electronics.active {
-    background: rgba(0, 255, 102, 0.15);
-    border-color: #00ff66;
-    box-shadow: 0 0 12px rgba(0, 255, 102, 0.5);
+    background: var(--color-green-transparent-subtle);
+    border-color: var(--color-green-neon);
+    box-shadow: 0 0 12px var(--color-green-transparent-glow);
 }
 
 .quick-filter-btn.cosmetic i {
-    color: rgba(255, 0, 255, 0.7);
+    color: var(--color-magenta-neon);
 }
 
 .quick-filter-btn.cosmetic:hover {
-    border-color: #ff00ff;
-    box-shadow: 0 0 10px rgba(255, 0, 255, 0.4);
+    border-color: var(--color-magenta-neon);
+    box-shadow: 0 0 10px var(--color-magenta-neon);
 }
 
 .quick-filter-btn.cosmetic:hover i,
 .quick-filter-btn.cosmetic.active i {
-    color: #ff00ff;
+    color: var(--color-magenta-neon);
 }
 
 .quick-filter-btn.cosmetic.active {
-    background: rgba(255, 0, 255, 0.15);
-    border-color: #ff00ff;
-    box-shadow: 0 0 12px rgba(255, 0, 255, 0.5);
+    background: var(--color-purple-border-transparent);
+    border-color: var(--color-magenta-neon);
+    box-shadow: 0 0 12px var(--color-magenta-neon);
 }
 
 .quick-filter-btn.reset {
@@ -1084,20 +1084,20 @@
 }
 
 .quick-filter-btn.reset i {
-    color: rgba(255, 85, 85, 0.7);
+    color: var(--color-red-soft);
 }
 
 .quick-filter-btn.reset:hover {
-    border-color: #ff5555;
-    box-shadow: 0 0 10px rgba(255, 85, 85, 0.4);
+    border-color: var(--color-red-soft);
+    box-shadow: 0 0 10px var(--color-red-transparent-glow);
 }
 
 .quick-filter-btn.reset:hover i {
-    color: #ff5555;
+    color: var(--color-red-soft);
 }
 
 .quick-filter-btn.reset:active {
-    background: rgba(255, 85, 85, 0.15);
+    background: var(--color-red-transparent-subtle);
 }
 
 /* Category Header Icon Styles in Left Sidebar */
@@ -1107,27 +1107,27 @@
 }
 
 .installed-mods-category-group.drive .category-group-header i {
-    color: #00f0ff;
+    color: var(--color-cyan-bright);
 }
 
 .installed-mods-category-group.protection .category-group-header i {
-    color: #ffaa00;
+    color: var(--color-orange-amber);
 }
 
 .installed-mods-category-group.weapons .category-group-header i {
-    color: #cc0000;
+    color: var(--color-red-neon);
 }
 
 .installed-mods-category-group.electronics .category-group-header i {
-    color: #00ff66;
+    color: var(--color-green-neon);
 }
 
 .installed-mods-category-group.body .category-group-header i {
-    color: #969696;
+    color: var(--color-grey-medium-light);
 }
 
 .installed-mods-category-group.cosmetic .category-group-header i {
-    color: #ff00ff;
+    color: var(--color-magenta-neon);
 }
 
 /* Category Header Icon Styles in Visualizer Category Boxes */
@@ -1142,7 +1142,7 @@
     display: flex !important;
     justify-content: space-between;
     align-items: center;
-    background: rgba(0, 0, 0, 0.4) !important;
+    background: var(--color-black-transparent-45) !important;
     padding: 8px 15px !important;
     border-bottom: 1px solid var(--border-color-medium, #444) !important;
     min-height: 52px;
@@ -1151,9 +1151,9 @@
 
 /* Styling for Modify Vehicle Button */
 .modify-vehicle-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: rgba(255, 255, 255, 0.4);
+    background: var(--color-white-transparent-05);
+    border: 1px solid var(--color-white-transparent-15);
+    color: var(--color-white-transparent-35);
     border-radius: 4px;
     font-weight: bold;
     cursor: not-allowed;
@@ -1164,28 +1164,28 @@
 }
 
 .modify-vehicle-btn.ready {
-    background: rgba(0, 255, 102, 0.12);
-    border: 1px solid rgba(0, 255, 102, 0.5);
-    color: #00ff66;
+    background: var(--color-green-transparent-subtle);
+    border: 1px solid var(--color-green-transparent-glow);
+    color: var(--color-green-neon);
     cursor: pointer;
-    box-shadow: 0 0 10px rgba(0, 255, 102, 0.2);
-    text-shadow: 0 0 5px rgba(0, 255, 102, 0.4);
+    box-shadow: 0 0 10px var(--color-green-transparent-subtle);
+    text-shadow: 0 0 5px var(--color-green-transparent-glow);
 }
 
 .modify-vehicle-btn.ready:hover {
-    background: rgba(0, 255, 102, 0.22);
-    border-color: #00ff66;
-    box-shadow: 0 0 15px rgba(0, 255, 102, 0.5);
-    color: #ffffff;
+    background: var(--color-green-transparent-subtle);
+    border-color: var(--color-green-neon);
+    box-shadow: 0 0 15px var(--color-green-transparent-glow);
+    color: var(--color-white);
 }
 
 /* Styling for virtual mod items */
 .installed-mod-item.virtual-mod {
     position: relative;
-    border: 1.5px dashed rgba(255, 170, 0, 0.7) !important;
+    border: 1.5px dashed var(--color-orange-amber) !important;
     border-radius: 5px;
     padding: 0;
-    box-shadow: 0 0 6px rgba(255, 170, 0, 0.15);
+    box-shadow: 0 0 6px var(--color-orange-transparent-subtle);
 }
 
 .installed-mod-item.virtual-mod .installed-mod-img {
@@ -1203,8 +1203,8 @@
     position: absolute;
     bottom: -5px;
     right: -5px;
-    background: #ffaa00;
-    color: #111111;
+    background: var(--color-orange-amber);
+    color: var(--color-black-almost);
     border-radius: 50%;
     width: 15px;
     height: 15px;
@@ -1212,75 +1212,75 @@
     align-items: center;
     justify-content: center;
     font-size: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 1px 3px var(--color-black-transparent-50);
     pointer-events: none;
-    border: 1px solid rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--color-black-transparent-30);
 }
 
 /* Styled virtual summary item on left side */
 .installed-mods-summary-item.virtual-mod {
-    border-left: 2px dashed #ffaa00 !important;
-    background: rgba(255, 170, 0, 0.05);
+    border-left: 2px dashed var(--color-orange-amber) !important;
+    background: var(--color-orange-transparent-subtle);
 }
 
 .installed-mods-summary-item.virtual-mod .mod-name {
-    color: #ffaa00 !important;
+    color: var(--color-orange-amber) !important;
     font-style: italic;
 }
 
 .installed-mods-summary-item.virtual-mod .remove-virtual-btn {
-    color: rgba(255, 85, 85, 0.6);
+    color: var(--color-red-soft);
     transition: color 0.2s ease, transform 0.2s ease;
 }
 
 .installed-mods-summary-item.virtual-mod .remove-virtual-btn:hover {
-    color: #ff5555;
+    color: var(--color-red-soft);
     transform: scale(1.15);
 }
 
 /* Category Specific Borders for Shelf Modification Cards */
 .mod-card.drive:not(.owner-mod) {
-    border-color: rgba(0, 240, 255, 0.25);
+    border-color: var(--color-cyan-border-transparent);
 }
 .mod-card.protection:not(.owner-mod) {
-    border-color: rgba(255, 170, 0, 0.25);
+    border-color: var(--color-orange-transparent-medium);
 }
 .mod-card.weapons:not(.owner-mod) {
-    border-color: rgba(204, 0, 0, 0.25);
+    border-color: var(--color-red-transparent-subtle);
 }
 .mod-card.body:not(.owner-mod) {
-    border-color: rgba(150, 150, 150, 0.25);
+    border-color: var(--color-white-transparent-20);
 }
 .mod-card.electronics:not(.owner-mod) {
-    border-color: rgba(0, 255, 102, 0.25);
+    border-color: var(--color-green-transparent-subtle);
 }
 .mod-card.cosmetic:not(.owner-mod) {
-    border-color: rgba(255, 0, 255, 0.25);
+    border-color: var(--color-purple-border-transparent);
 }
 
 .mod-card.drive:not(.owner-mod):hover {
-    border-color: rgba(0, 240, 255, 0.8);
-    box-shadow: 0 0 8px rgba(0, 240, 255, 0.25);
+    border-color: var(--color-cyan-bright);
+    box-shadow: 0 0 8px var(--color-cyan-transparent-subtle);
 }
 .mod-card.protection:not(.owner-mod):hover {
-    border-color: rgba(255, 170, 0, 0.8);
-    box-shadow: 0 0 8px rgba(255, 170, 0, 0.25);
+    border-color: var(--color-orange-amber);
+    box-shadow: 0 0 8px var(--color-orange-transparent-medium);
 }
 .mod-card.weapons:not(.owner-mod):hover {
-    border-color: rgba(204, 0, 0, 0.8);
-    box-shadow: 0 0 8px rgba(204, 0, 0, 0.25);
+    border-color: var(--color-red-neon);
+    box-shadow: 0 0 8px var(--color-red-transparent-subtle);
 }
 .mod-card.body:not(.owner-mod):hover {
-    border-color: rgba(150, 150, 150, 0.8);
-    box-shadow: 0 0 8px rgba(150, 150, 150, 0.25);
+    border-color: var(--color-white-transparent-85);
+    box-shadow: 0 0 8px var(--color-white-transparent-20);
 }
 .mod-card.electronics:not(.owner-mod):hover {
-    border-color: rgba(0, 255, 102, 0.8);
-    box-shadow: 0 0 8px rgba(0, 255, 102, 0.25);
+    border-color: var(--color-green-neon);
+    box-shadow: 0 0 8px var(--color-green-transparent-subtle);
 }
 .mod-card.cosmetic:not(.owner-mod):hover {
-    border-color: rgba(255, 0, 255, 0.8);
-    box-shadow: 0 0 8px rgba(255, 0, 255, 0.25);
+    border-color: var(--color-magenta-neon);
+    box-shadow: 0 0 8px var(--color-purple-border-transparent);
 }
 
 /* Drag and Drop States for Category Boxes */
@@ -1289,26 +1289,26 @@
 .category-box.initial-invalid {
     filter: grayscale(80%) brightness(0.6);
     opacity: 0.45;
-    border-color: rgba(255, 255, 255, 0.08) !important;
-    background: rgba(10, 10, 10, 0.6) !important;
+    border-color: var(--color-white-transparent-08) !important;
+    background: var(--color-black-glass) !important;
     box-shadow: none !important;
 }
 
 /* Matching slot gets a subtle pulse/glow of its category color */
 .category-box.initial-valid {
-    box-shadow: 0 0 18px rgba(var(--glow-color, 255, 255, 255), 0.6);
-    border-color: rgba(var(--glow-color, 255, 255, 255), 0.9) !important;
+    box-shadow: 0 0 18px var(--glow-color, var(--color-white-transparent-70));
+    border-color: var(--glow-color, var(--color-white-transparent-85)) !important;
     animation: pulse-glow 2s infinite ease-in-out;
 }
 
 @keyframes pulse-glow {
     0% {
-        box-shadow: 0 0 12px rgba(var(--glow-color, 255, 255, 255), 0.4);
+        box-shadow: 0 0 12px var(--glow-color, var(--color-white-transparent-35));
     }
     50% {
-        box-shadow: 0 0 22px rgba(var(--glow-color, 255, 255, 255), 0.7);
+        box-shadow: 0 0 22px var(--glow-color, var(--color-white-transparent-70));
     }
     100% {
-        box-shadow: 0 0 12px rgba(var(--glow-color, 255, 255, 255), 0.4);
+        box-shadow: 0 0 12px var(--glow-color, var(--color-white-transparent-35));
     }
 }

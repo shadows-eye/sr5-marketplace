@@ -85,7 +85,7 @@ a.builder-tabs.item.active {
   width: fit-content;
   padding-left: 1em;
   padding-right: 1em;
-  border: 1px solid black;
+  border: 1px solid var(--color-black);
   border-radius: 5px;
 }
 
@@ -93,13 +93,13 @@ a.builder-tabs.item {
   width: fit-content;
   padding-left: 1em;
   padding-right: 1em;
-  border: 1px solid rgba(0, 0, 0, 0);
+  border: 1px solid transparent;
   border-radius: 5px;
 }
 
 a.builder-tabs.item:hover {
   background: var(--color-white-transparent-05);
-  border: 1px solid black;
+  border: 1px solid var(--color-black);
 }
 
 a.builder-tabs.item.active:hover {
@@ -479,8 +479,8 @@ a.builder-tabs.item.active:hover {
   transform: translate(-50%, -50%);
   font-size: 1.35em;
   font-weight: 700;
-  color: #ffffff;
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.95), 0 0 4px rgba(0, 0, 0, 0.8);
+  color: var(--color-white);
+  text-shadow: 0 0 10px var(--color-black-transparent-80), 0 0 4px var(--color-black-transparent-75);
   pointer-events: none;
   user-select: none;
   letter-spacing: 0.05em;
@@ -492,18 +492,18 @@ a.builder-tabs.item.active:hover {
 }
 
 .itemBuilder .mod-slot[data-action="clickSlotFilter"]:hover {
-  filter: drop-shadow(0 0 8px rgba(255, 100, 0, 0.5));
+  filter: drop-shadow(0 0 8px var(--color-orange-glow));
 }
 
 .itemBuilder .mod-slot.filter-active {
-  filter: drop-shadow(0 0 10px rgba(255, 170, 0, 0.9)) !important;
+  filter: drop-shadow(0 0 10px var(--color-orange-glow)) !important;
 }
 
 .itemBuilder .mod-mount-filter {
-  background: rgba(18, 18, 18, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--color-black-glass);
+  border: 1px solid var(--color-white-transparent-15);
   border-radius: 4px;
-  color: #ffffff;
+  color: var(--color-white);
   padding: 4px 8px;
   font-size: 0.9em;
   height: 32px;
@@ -514,8 +514,8 @@ a.builder-tabs.item.active:hover {
 
 .itemBuilder .mod-mount-filter:focus,
 .itemBuilder .mod-mount-filter:hover {
-  border-color: rgba(255, 100, 0, 0.6);
-  background: rgba(25, 25, 25, 0.95);
+  border-color: var(--color-orange-glow);
+  background: var(--color-black-glass);
   outline: none;
 }
 
@@ -527,10 +527,10 @@ a.builder-tabs.item.active:hover {
   align-items: center;
   gap: 8px;
   padding: 6px 14px;
-  background: rgba(0, 0, 0, 0.85);
-  border: 2px solid #cc0000;
+  background: var(--color-black-glass);
+  border: 2px solid var(--color-red-neon);
   border-radius: 4px;
-  box-shadow: 0 0 12px rgba(204, 0, 0, 0.5), inset 0 0 8px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 0 12px var(--color-red-transparent-glow), inset 0 0 8px var(--color-black-transparent-80);
   font-family: 'Outfit', 'Inter', monospace, sans-serif;
   font-size: 1.05em;
   letter-spacing: 0.03em;
@@ -545,25 +545,25 @@ a.builder-tabs.item.active:hover {
 }
 
 .itemBuilder .weapon-stats-hud .stat-label {
-  color: #ffaa00;
+  color: var(--color-orange-amber);
   font-weight: 700;
 }
 
 .itemBuilder .weapon-stats-hud .stat-value {
-  color: #ffffff;
+  color: var(--color-white);
   font-weight: 600;
 }
 
 .itemBuilder .weapon-stats-hud .stat-icon-segment {
-  color: #70d44b;
+  color: var(--color-green-button);
 }
 
 .itemBuilder .weapon-stats-hud .stat-icon-segment i {
-  color: #ffaa00;
+  color: var(--color-orange-amber);
 }
 
 .itemBuilder .weapon-stats-hud .stat-pipe {
-  color: #555555;
+  color: var(--color-grey-tab-active);
   font-weight: 300;
 }
 
@@ -592,7 +592,7 @@ a.builder-tabs.item.active:hover {
 
 /* Initial blue outline when the override setting is active */
 .itemBuilder.dragging-mod .mod-slot.initial-override {
-  outline: 2px dashed #00bfff;
+  outline: 2px dashed var(--color-blue-sky);
   /* Deep sky blue */
 }
 
@@ -602,15 +602,15 @@ a.builder-tabs.item.active:hover {
 }
 
 .itemBuilder.dragging-mod .mod-slot.valid-drop {
-  filter: drop-shadow(0 0 6px rgba(76, 175, 80, 0.85));
+  filter: drop-shadow(0 0 6px var(--color-green-button-glow));
 }
 
 .itemBuilder.dragging-mod .mod-slot.invalid-drop {
-  filter: drop-shadow(0 0 6px rgba(220, 53, 69, 0.85));
+  filter: drop-shadow(0 0 6px var(--color-red-transparent-glow));
 }
 
 .itemBuilder.dragging-mod .mod-slot.override-drop {
-  filter: drop-shadow(0 0 6px rgba(0, 191, 255, 0.85));
+  filter: drop-shadow(0 0 6px var(--color-cyan-glow));
 }
 
 /* Fade all non-hovered slots when one slot is hovered during a drag operation */
@@ -718,8 +718,8 @@ a.builder-tabs.item.active:hover {
 
 /* --- General Layout --- */
 .itemBuilder .effects-header {
-  background: linear-gradient(90deg, var(--color-red-darkest, #5d142b) 0%, rgba(0, 0, 0, 0.85) 100%);
-  border-bottom: 2px solid var(--border-color-highlight, #5d142b);
+  background: linear-gradient(90deg, var(--color-red-darkest) 0%, var(--color-black-glass) 100%);
+  border-bottom: 2px solid var(--border-color-highlight);
   padding: 6px 12px;
   margin-bottom: 10px;
   border-radius: 4px;
@@ -727,12 +727,12 @@ a.builder-tabs.item.active:hover {
 
 .itemBuilder .effects-header h2 {
   margin: 0;
-  color: var(--text-color-primary, #fff);
+  color: var(--text-color-primary);
   font-size: 14px;
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  text-shadow: 1px 1px 2px var(--color-black-transparent-80);
   border: none;
 }
 
@@ -749,7 +749,7 @@ a.builder-tabs.item.active:hover {
   flex-wrap: wrap;
   align-items: flex-start;
   padding: 10px;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--color-black-transparent-30);
   border-radius: 6px;
   margin-bottom: 15px;
 }
@@ -768,8 +768,8 @@ a.builder-tabs.item.active:hover {
 .dashboard-base-item {
   display: flex;
   align-items: center;
-  background: linear-gradient(90deg, rgba(93, 20, 43, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%);
-  border: 1px solid var(--color-red-darkest, #5d142b);
+  background: linear-gradient(90deg, var(--color-red-base-transparent) 0%, var(--color-black-transparent-50) 100%);
+  border: 1px solid var(--color-red-darkest);
   border-radius: 6px;
   padding: 4px 10px;
   gap: 8px;
@@ -814,8 +814,8 @@ a.builder-tabs.item.active:hover {
   position: relative;
   display: flex;
   align-items: center;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px dashed var(--border-color-medium, #434345);
+  background: var(--color-black-transparent-50);
+  border: 1px dashed var(--border-color-medium);
   border-radius: 6px;
   padding: 4px 10px;
   gap: 8px;
@@ -825,7 +825,7 @@ a.builder-tabs.item.active:hover {
 }
 
 .dashboard-mod-badge:hover {
-  border-color: var(--color-red-darkest, #5d142b);
+  border-color: var(--color-red-darkest);
 }
 
 .mod-add-overlay {
@@ -834,13 +834,13 @@ a.builder-tabs.item.active:hover {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(93, 20, 43, 0.9);
+  background: var(--color-red-deep);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   transition: opacity 0.2s;
-  color: #fff !important;
+  color: var(--color-white) !important;
   font-size: 14px;
 }
 
@@ -859,8 +859,8 @@ a.builder-tabs.item.active:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(93, 20, 43, 0.25);
-  border: 1px solid var(--color-red-darkest, #5d142b);
+  background: var(--color-red-transparent-subtle);
+  border: 1px solid var(--color-red-darkest);
   border-radius: 4px;
   padding: 2px 6px;
   font-size: 11px;
@@ -1449,18 +1449,18 @@ h4.category-header.mods-header {
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: #888;
+  color: var(--color-grey-light);
 }
 
 .itemBuilder .category-btn:hover {
-  border-color: var(--border-color-highlight, #555);
-  background: var(--bg-dark-section-hover, #2a2a2a);
+  border-color: var(--border-color-highlight);
+  background: var(--bg-dark-section-hover);
 }
 
 .itemBuilder .category-btn.active {
-  background: var(--color-red-dark, #8b0000);
-  border-color: var(--color-red-bright, #ff0000);
-  color: #fff;
+  background: var(--color-red-dark);
+  border-color: var(--color-red-bright);
+  color: var(--color-white);
 }
 
 .itemBuilder .category-icon {

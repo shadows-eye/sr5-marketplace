@@ -4,19 +4,20 @@
 
 /* Borderless transparent window wrapper */
 .marketshouter-app.window-app {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    pointer-events: none !important; /* Allow clicking through background */
-    overflow: visible !important;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    pointer-events: none;
+    /* Allow clicking through background */
+    overflow: visible;
 }
 
 .marketshouter-app .window-content {
-    background: transparent !important;
-    border: none !important;
-    padding: 0 !important;
-    overflow: visible !important;
+    background: transparent;
+    border: none;
+    padding: 0;
+    overflow: visible;
 }
 
 /* Container positioning variants */
@@ -24,7 +25,8 @@
     position: fixed;
     display: flex;
     flex-direction: column;
-    pointer-events: auto; /* Re-enable pointer events for the container */
+    pointer-events: auto;
+    /* Re-enable pointer events for the container */
     z-index: 1000;
     font-family: 'Outfit', 'Inter', 'Roboto', sans-serif;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -50,7 +52,12 @@
     align-items: center;
 }
 
-/* Bottom Left (above user latency & player list, aligned with shadows-hud) */
+/* Bottom Left (stay behind Shadows HUD and drawer purely via CSS specificity) */
+.marketshouter-app:has(.pos-bottom-left),
+.marketshouter-app .marketshouter-container.pos-bottom-left {
+    z-index: 90;
+}
+
 .marketshouter-container.pos-bottom-left {
     top: auto;
     bottom: 55px;
@@ -72,31 +79,39 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
     bottom: calc(0.5em + 2.2em + 8px);
 }
 
+/* When Shadows HUD drawer is open, ensure clicks pass cleanly to drawer */
+body:has(#shadows-hud-root .shadows-hud-drawer-container.open) .marketshouter-container.pos-bottom-left {
+    pointer-events: none;
+}
+
 /* Sleek glassmorphic pill capsule bar */
 .marketshouter-bar {
     display: flex;
     align-items: center;
-    background: rgba(18, 18, 18, 0.72);
+    background: var(--color-black-glass);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--color-white-transparent-08);
     border-radius: 28px;
     padding: 6px 14px;
     height: 46px;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+    box-shadow: 0 8px 32px 0 var(--color-black-transparent-45);
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     gap: 8px;
     overflow: hidden;
-    opacity: 0.35; /* Subtle transparency until hovered */
+    opacity: 0.35;
+    /* Subtle transparency until hovered */
 }
 
 /* Hovering the bar broadens its border contrast and shadow */
 .marketshouter-bar:hover,
 .marketshouter-bar:focus-within {
-    border-color: rgba(255, 100, 0, 0.35); /* Neon orange hint */
-    box-shadow: 0 8px 32px 0 rgba(255, 100, 0, 0.1), 0 12px 40px 0 rgba(0, 0, 0, 0.6);
-    background: rgba(15, 15, 15, 0.85);
-    opacity: 1; /* Fully visible on hover */
+    border-color: var(--color-orange-transparent-medium);
+    /* Neon orange hint */
+    box-shadow: 0 8px 32px 0 var(--color-orange-transparent-subtle), 0 12px 40px 0 var(--color-black-transparent-50);
+    background: var(--color-black-glass);
+    opacity: 1;
+    /* Fully visible on hover */
 }
 
 /* Expandable search input wrap */
@@ -127,64 +142,69 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
     height: 24px;
     object-fit: cover;
     border-radius: 50%;
-    border: 1px solid rgba(255, 100, 0, 0.6);
-    box-shadow: 0 0 6px rgba(255, 100, 0, 0.4);
+    border: 1px solid var(--color-orange-glow);
+    box-shadow: 0 0 6px var(--color-orange-glow);
     flex-shrink: 0;
     transition: all 0.3s ease;
 }
 
 .marketshouter-shop-indicator:hover {
     transform: scale(1.1);
-    border-color: #ff6400;
+    border-color: var(--color-orange-base);
 }
 
 /* Search search icon style */
 .marketshouter-search-icon {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-white-transparent-35);
     font-size: 14px;
     transition: color 0.3s;
 }
 
 .marketshouter-bar:focus-within .marketshouter-search-icon {
-    color: #ff6400; /* Signature orange glow */
+    color: var(--color-orange-base);
+    /* Signature orange glow */
 }
 
 /* Real search input element */
-.marketshouter-search {
-    background: rgba(255, 255, 255, 0.04) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 18px !important;
-    height: 32px !important;
-    width: 200px !important;
-    padding: 0 30px 0 12px !important;
-    color: #ffffff !important;
-    font-size: 13px !important;
-    outline: none !important;
-    transition: all 0.3s ease !important;
+.marketshouter-app .marketshouter-search {
+    background: var(--color-white-transparent-05);
+    border: 1px solid var(--color-white-transparent-15);
+    border-radius: 18px;
+    height: 32px;
+    width: 200px;
+    padding: 0 30px 0 12px;
+    color: var(--color-white);
+    font-size: 13px;
+    outline: none;
+    transition: all 0.3s ease;
 }
 
-.marketshouter-search::placeholder {
-    color: rgba(255, 255, 255, 0.35);
+.marketshouter-app .marketshouter-search::placeholder {
+    color: var(--color-white-transparent-35);
 }
 
-.marketshouter-search:focus {
-    background: rgba(0, 0, 0, 0.4) !important;
-    border-color: rgba(255, 100, 0, 0.6) !important;
-    box-shadow: 0 0 8px rgba(255, 100, 0, 0.25) !important;
+.marketshouter-app .marketshouter-search:focus {
+    background: var(--color-black-transparent-35);
+    border-color: var(--color-orange-glow);
+    box-shadow: 0 0 8px var(--color-orange-transparent-medium);
 }
 
 /* Clear button inside search wrap */
 .marketshouter-clear-btn {
     position: absolute;
     right: 15px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-white-transparent-35);
     cursor: pointer;
     font-size: 12px;
     transition: all 0.2s ease;
 }
 
+.marketshouter-clear-btn.is-hidden {
+    display: none;
+}
+
 .marketshouter-clear-btn:hover {
-    color: #ff6400;
+    color: var(--color-orange-base);
     transform: scale(1.1);
 }
 
@@ -196,33 +216,33 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
 }
 
 /* Shop and Cart/Basket Button styles */
-.marketshouter-icon-btn {
-    background: transparent !important;
-    border: none !important;
-    color: rgba(255, 255, 255, 0.75) !important;
-    font-size: 16px !important;
-    width: 34px !important;
-    height: 34px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border-radius: 50% !important;
-    cursor: pointer !important;
-    position: relative !important;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-    box-shadow: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
+.marketshouter-app .marketshouter-icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-white-transparent-70);
+    font-size: 16px;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
 }
 
-.marketshouter-icon-btn:hover {
-    color: #ffffff !important;
-    background: rgba(255, 100, 0, 0.15) !important;
+.marketshouter-app .marketshouter-icon-btn:hover {
+    color: var(--color-white);
+    background: var(--color-orange-transparent-subtle);
     transform: scale(1.1);
-    box-shadow: 0 0 10px rgba(255, 100, 0, 0.2) !important;
+    box-shadow: 0 0 10px var(--color-orange-transparent-medium);
 }
 
-.marketshouter-icon-btn:active {
+.marketshouter-app .marketshouter-icon-btn:active {
     transform: scale(0.95);
 }
 
@@ -231,8 +251,8 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
     position: absolute;
     top: -2px;
     right: -2px;
-    background: linear-gradient(135deg, #ff6400, #ff4500);
-    color: #ffffff;
+    background: linear-gradient(135deg, var(--color-orange-base), var(--color-orange-bright));
+    color: var(--color-white);
     font-size: 9px;
     font-weight: 800;
     width: 16px;
@@ -241,27 +261,38 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 8px rgba(255, 100, 0, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 8px var(--color-orange-glow);
+    border: 1px solid var(--color-white-transparent-85);
     animation: marketshouter-pulse 2s infinite ease-in-out;
 }
 
 @keyframes marketshouter-pulse {
-    0% { transform: scale(1); box-shadow: 0 0 8px rgba(255, 100, 0, 0.6); }
-    50% { transform: scale(1.1); box-shadow: 0 0 14px rgba(255, 100, 0, 0.85); }
-    100% { transform: scale(1); box-shadow: 0 0 8px rgba(255, 100, 0, 0.6); }
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 8px var(--color-orange-glow);
+    }
+
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 0 14px var(--color-orange-glow);
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 8px var(--color-orange-glow);
+    }
 }
 
 /* Live Floating Search Results Dropdown */
 .marketshouter-results {
     position: absolute;
     width: 320px;
-    background: rgba(14, 14, 14, 0.94);
+    background: var(--color-black-glass);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 100, 0, 0.35);
+    border: 1px solid var(--color-orange-transparent-medium);
     border-radius: 14px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    box-shadow: 0 12px 40px var(--color-black-transparent-75), inset 0 1px 0 var(--color-white-transparent-05);
     overflow: hidden;
     transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     pointer-events: auto;
@@ -277,12 +308,12 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
     transform-origin: top right;
 }
 
-.pos-top-right .marketshouter-results.hidden,
-.marketshouter-container:not(.pos-top-center):not(.pos-bottom-left) .marketshouter-results.hidden {
+.pos-top-right .marketshouter-results.is-hidden,
+.marketshouter-container:not(.pos-top-center):not(.pos-bottom-left) .marketshouter-results.is-hidden {
     opacity: 0;
     transform: scale(0.95) translateY(-10px);
     pointer-events: none;
-    display: block !important;
+    visibility: hidden;
 }
 
 /* Top Center Dropdown */
@@ -295,11 +326,11 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
     transform-origin: top center;
 }
 
-.pos-top-center .marketshouter-results.hidden {
+.pos-top-center .marketshouter-results.is-hidden {
     opacity: 0;
     transform: translateX(-50%) scale(0.95) translateY(-10px);
     pointer-events: none;
-    display: block !important;
+    visibility: hidden;
 }
 
 /* Bottom Left Dropdown (opens upwards) */
@@ -311,11 +342,11 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
     transform-origin: bottom left;
 }
 
-.pos-bottom-left .marketshouter-results.hidden {
+.pos-bottom-left .marketshouter-results.is-hidden {
     opacity: 0;
     transform: scale(0.95) translateY(10px);
     pointer-events: none;
-    display: block !important;
+    visibility: hidden;
 }
 
 .pos-bottom-left .marketshouter-results-list {
@@ -324,8 +355,8 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
 
 /* Header/Summary section of results dropdown */
 .marketshouter-results-header {
-    background: rgba(255, 100, 0, 0.06);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--color-orange-transparent-subtle);
+    border-bottom: 1px solid var(--color-white-transparent-05);
     padding: 8px 14px;
     display: flex;
     justify-content: space-between;
@@ -335,7 +366,7 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
 .marketshouter-results-header .results-count {
     font-size: 11px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--color-white-transparent-70);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -348,7 +379,7 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
     max-height: 380px;
     overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 100, 0, 0.3) rgba(0, 0, 0, 0.2);
+    scrollbar-color: var(--color-orange-transparent-medium) var(--color-black-transparent-20);
 }
 
 .marketshouter-results-list::-webkit-scrollbar {
@@ -356,17 +387,17 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
 }
 
 .marketshouter-results-list::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--color-black-transparent-20);
     border-radius: 0 0 14px 0;
 }
 
 .marketshouter-results-list::-webkit-scrollbar-thumb {
-    background: rgba(255, 100, 0, 0.35);
+    background: var(--color-orange-transparent-medium);
     border-radius: 3px;
 }
 
 .marketshouter-results-list::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 100, 0, 0.6);
+    background: var(--color-orange-glow);
 }
 
 /* Search results list item styles */
@@ -374,7 +405,7 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
     display: flex;
     align-items: center;
     padding: 9px 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--color-white-transparent-05);
     cursor: pointer;
     transition: all 0.25s ease;
     gap: 12px;
@@ -385,7 +416,7 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
 }
 
 .marketshouter-result-item:hover {
-    background: rgba(255, 100, 0, 0.14);
+    background: var(--color-orange-transparent-subtle);
     transform: translateX(4px);
 }
 
@@ -395,14 +426,14 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
     height: 28px;
     object-fit: cover;
     border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--color-white-transparent-15);
+    background: var(--color-black-transparent-30);
     transition: transform 0.3s;
 }
 
 .marketshouter-result-item:hover .item-thumb {
     transform: scale(1.12) rotate(6deg);
-    border-color: rgba(255, 100, 0, 0.5);
+    border-color: var(--color-orange-glow);
 }
 
 /* Item metadata titles */
@@ -416,7 +447,7 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
 .marketshouter-result-item .item-name {
     font-size: 13px;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--color-white);
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -424,13 +455,13 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
 }
 
 .marketshouter-result-item:hover .item-name {
-    color: #ffaa66;
+    color: var(--color-orange-light);
 }
 
 .marketshouter-result-item .item-type {
     font-size: 10px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-white-transparent-35);
     text-transform: uppercase;
     letter-spacing: 0.3px;
     margin-top: 1px;
@@ -440,12 +471,12 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
 .marketshouter-result-item .item-price {
     font-size: 11px;
     font-weight: 700;
-    color: #ffaa66;
-    background: rgba(255, 100, 0, 0.1);
-    border: 1px solid rgba(255, 100, 0, 0.2);
+    color: var(--color-orange-light);
+    background: var(--color-orange-transparent-subtle);
+    border: 1px solid var(--color-orange-transparent-medium);
     padding: 2px 7px;
     border-radius: 10px;
-    text-shadow: 0 0 4px rgba(255, 100, 0, 0.15);
+    text-shadow: 0 0 4px var(--color-orange-transparent-subtle);
 }
 
 /* No results state styling */
@@ -455,14 +486,14 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
     align-items: center;
     justify-content: center;
     padding: 24px 14px;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--color-white-transparent-35);
     gap: 8px;
     text-align: center;
 }
 
 .no-results-item i {
     font-size: 22px;
-    color: rgba(255, 100, 0, 0.5);
+    color: var(--color-orange-glow);
 }
 
 .no-results-item span {
@@ -472,21 +503,21 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
 
 /* GM Megaphone Button Hover and Blue Glow Badge styles */
 .marketshouter-megaphone-btn:hover {
-    color: #ffffff !important;
-    background: rgba(0, 150, 255, 0.15) !important;
-    box-shadow: 0 0 10px rgba(0, 150, 255, 0.2) !important;
+    color: var(--color-white);
+    background: var(--color-cyan-transparent-subtle);
+    box-shadow: 0 0 10px var(--color-cyan-transparent-medium);
 }
 
 .marketshouter-badge.megaphone-badge {
-    background: linear-gradient(135deg, #0096ff, #0055ff);
-    box-shadow: 0 0 8px rgba(0, 150, 255, 0.6);
+    background: linear-gradient(135deg, var(--color-blue-neon), var(--color-blue-deep));
+    box-shadow: 0 0 8px var(--color-cyan-glow);
 }
 
 /* Item Builder Button Hover and SVG animations */
 .marketshouter-builder-btn:hover {
-    color: #ffffff !important;
-    background: rgba(255, 215, 0, 0.15) !important;
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.2) !important;
+    color: var(--color-white);
+    background: var(--color-filter-save-bg);
+    box-shadow: 0 0 10px var(--color-filter-save-border);
 }
 
 .marketshouter-builder-btn svg {
@@ -505,5 +536,5 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
 /* Suppress MarketShouter bar when full-screen creation wizards are active */
 body:has(#shadows-creater-wizard) .marketshouter-container,
 body.has-shadows-creater .marketshouter-container {
-    display: none !important;
+    display: none;
 }

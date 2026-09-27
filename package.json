@@ -16,6 +16,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "test": "node helpers/test_css_no_important.mjs",
+    "test:colors": "node helpers/test_theme_colors.mjs",
     "context": "node helpers/generate-context.cjs",
     "test:live": "node helpers/test_live_embedded_skill_update.mjs",
     "pub": "node --env-file=.env helpers/publish.js"
