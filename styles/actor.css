@@ -452,7 +452,7 @@ add i:hover>hint {
 
 /* ==================================================================
 // Modern Marketplace Theme Elements (CSS Only Overrides)
-// No !important tags. Uses DOM Specificity to override Tailwind.
+// No  tags. Uses DOM Specificity to override Tailwind.
 // ================================================================== */
 
 /* 1. Header Gradient Bar */
@@ -652,12 +652,12 @@ add i:hover>hint {
 }
 
 .application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .markup-control-btn.btn-decrement i {
-    color: var(--color-green-button) !important;
+    color: var(--color-green-button);
     opacity: 0.8;
 }
 
 .application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .markup-control-btn.btn-increment i {
-    color: var(--color-red-bright) !important;
+    color: var(--color-red-bright);
     opacity: 0.8;
 }
 
@@ -666,7 +666,7 @@ add i:hover>hint {
 }
 
 .application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .markup-control-btn:hover i {
-    color: var(--color-white) !important;
+    color: var(--color-white);
     opacity: 1;
 }
 
@@ -686,7 +686,7 @@ add i:hover>hint {
 }
 
 .application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .clear-inventory-btn i {
-    color: var(--color-red-bright) !important;
+    color: var(--color-red-bright);
 }
 
 .application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .clear-inventory-btn:hover {
@@ -695,6 +695,6 @@ add i:hover>hint {
 }
 
 .application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .clear-inventory-btn:hover i {
-    color: var(--color-red-bright) !important;
+    color: var(--color-red-bright);
     filter: drop-shadow(0 0 4px var(--color-red-bright));
 }

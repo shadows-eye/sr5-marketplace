@@ -330,17 +330,17 @@
 }
 
 .shelf-search-bar {
-    background: transparent !important;
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    color: var(--color-white) !important;
-    font-size: 0.9em !important;
-    width: 100% !important;
-    height: 100% !important;
-    min-height: 24px !important;
-    padding: 0 !important;
-    margin: 0 !important;
+    background: transparent;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    color: var(--color-white);
+    font-size: 0.9em;
+    width: 100%;
+    height: 100%;
+    min-height: 24px;
+    padding: 0;
+    margin: 0;
     -webkit-appearance: none;
     appearance: none;
 }
@@ -348,10 +348,10 @@
 .shelf-search-bar:focus,
 .shelf-search-bar:active,
 .shelf-search-bar:focus-visible {
-    outline: none !important;
-    outline-width: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
+    outline: none;
+    outline-width: 0;
+    border: none;
+    box-shadow: none;
 }
 
 .shelf-search-bar::placeholder {
@@ -434,15 +434,15 @@
 }
 
 .category-box.valid-drop {
-    border: 1.5px solid var(--color-cyan-teal) !important;
-    background: var(--color-cyan-bg-transparent) !important;
-    box-shadow: 0 0 15px var(--color-cyan-glow) !important;
+    border: 1.5px solid var(--color-cyan-teal);
+    background: var(--color-cyan-bg-transparent);
+    box-shadow: 0 0 15px var(--color-cyan-glow);
 }
 
 .category-box.invalid-drop {
-    border: 1.5px solid var(--color-filter-clear-hover-bg) !important;
-    background: var(--color-filter-clear-bg) !important;
-    box-shadow: 0 0 15px var(--color-filter-clear-border) !important;
+    border: 1.5px solid var(--color-filter-clear-hover-bg);
+    background: var(--color-filter-clear-bg);
+    box-shadow: 0 0 15px var(--color-filter-clear-border);
 }
 
 .category-box.drag-hover {
@@ -851,10 +851,10 @@
 
 /* Workshop Custom Styling for Matrix Condition Monitor */
 .repair-panel .sr5v2.condition-monitor-container {
-    background: transparent !important;
-    padding: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
+    background: transparent;
+    padding: 0;
+    border: none;
+    box-shadow: none;
 }
 
 .repair-panel .sr5v2 .horizontal-cell-input,
@@ -863,10 +863,10 @@
     flex-flow: row nowrap;
     align-items: center;
     gap: 4px;
-    border: none !important;
-    box-shadow: none !important;
-    outline: none !important;
-    background: transparent !important;
+    border: none;
+    box-shadow: none;
+    outline: none;
+    background: transparent;
 }
 
 .repair-panel .sr5v2 .horizontal-cell-input .icon-container a,
@@ -890,36 +890,36 @@
 
 .repair-panel .sr5v2 .horizontal-cell-input .cell {
     cursor: pointer;
-    border: 1.5px solid var(--color-white-transparent-20) !important;
-    border-radius: 3px !important;
-    background: var(--color-black-transparent-30) !important;
-    width: 14px !important;
-    height: 14px !important;
-    margin: 0 !important;
-    transition: all 0.2s ease !important;
-    box-shadow: none !important;
+    border: 1.5px solid var(--color-white-transparent-20);
+    border-radius: 3px;
+    background: var(--color-black-transparent-30);
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    transition: all 0.2s ease;
+    box-shadow: none;
 }
 
 .repair-panel .sr5v2 .horizontal-cell-input .cell.filled {
-    border-color: var(--color-green-neon) !important;
-    background: linear-gradient(to bottom, var(--color-green-neon), var(--color-yellow-bright)) !important;
-    box-shadow: 0 0 6px var(--color-green-transparent-glow) !important;
-    position: relative !important;
+    border-color: var(--color-green-neon);
+    background: linear-gradient(to bottom, var(--color-green-neon), var(--color-yellow-bright));
+    box-shadow: 0 0 6px var(--color-green-transparent-glow);
+    position: relative;
 }
 
 .repair-panel .sr5v2 .horizontal-cell-input .cell.filled::after {
-    content: 'X' !important;
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    color: var(--color-grey-darkest) !important;
-    font-size: 8px !important;
-    font-weight: bold !important;
+    content: 'X';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--color-grey-darkest);
+    font-size: 8px;
+    font-weight: bold;
 }
 
 .repair-panel .sr5v2 .horizontal-cell-input .cell:hover {
-    border-color: var(--color-green-neon) !important;
+    border-color: var(--color-green-neon);
 }
 
 /* Quick Filter Buttons Section */
@@ -1139,12 +1139,12 @@
 
 /* Workshop Header Overrides inside ItemBuilder */
 .itemBuilder .builder-header.workshop-header {
-    display: flex !important;
+    display: flex;
     justify-content: space-between;
     align-items: center;
-    background: var(--color-black-transparent-45) !important;
-    padding: 8px 15px !important;
-    border-bottom: 1px solid var(--border-color-medium, #444) !important;
+    background: var(--color-black-transparent-45);
+    padding: 8px 15px;
+    border-bottom: 1px solid var(--border-color-medium, #444);
     min-height: 52px;
     /* Stable height to match two-row minimum */
 }
@@ -1182,7 +1182,7 @@
 /* Styling for virtual mod items */
 .installed-mod-item.virtual-mod {
     position: relative;
-    border: 1.5px dashed var(--color-orange-amber) !important;
+    border: 1.5px dashed var(--color-orange-amber);
     border-radius: 5px;
     padding: 0;
     box-shadow: 0 0 6px var(--color-orange-transparent-subtle);
@@ -1219,12 +1219,12 @@
 
 /* Styled virtual summary item on left side */
 .installed-mods-summary-item.virtual-mod {
-    border-left: 2px dashed var(--color-orange-amber) !important;
+    border-left: 2px dashed var(--color-orange-amber);
     background: var(--color-orange-transparent-subtle);
 }
 
 .installed-mods-summary-item.virtual-mod .mod-name {
-    color: var(--color-orange-amber) !important;
+    color: var(--color-orange-amber);
     font-style: italic;
 }
 
@@ -1242,18 +1242,23 @@
 .mod-card.drive:not(.owner-mod) {
     border-color: var(--color-cyan-border-transparent);
 }
+
 .mod-card.protection:not(.owner-mod) {
     border-color: var(--color-orange-transparent-medium);
 }
+
 .mod-card.weapons:not(.owner-mod) {
     border-color: var(--color-red-transparent-subtle);
 }
+
 .mod-card.body:not(.owner-mod) {
     border-color: var(--color-white-transparent-20);
 }
+
 .mod-card.electronics:not(.owner-mod) {
     border-color: var(--color-green-transparent-subtle);
 }
+
 .mod-card.cosmetic:not(.owner-mod) {
     border-color: var(--color-purple-border-transparent);
 }
@@ -1262,22 +1267,27 @@
     border-color: var(--color-cyan-bright);
     box-shadow: 0 0 8px var(--color-cyan-transparent-subtle);
 }
+
 .mod-card.protection:not(.owner-mod):hover {
     border-color: var(--color-orange-amber);
     box-shadow: 0 0 8px var(--color-orange-transparent-medium);
 }
+
 .mod-card.weapons:not(.owner-mod):hover {
     border-color: var(--color-red-neon);
     box-shadow: 0 0 8px var(--color-red-transparent-subtle);
 }
+
 .mod-card.body:not(.owner-mod):hover {
     border-color: var(--color-white-transparent-85);
     box-shadow: 0 0 8px var(--color-white-transparent-20);
 }
+
 .mod-card.electronics:not(.owner-mod):hover {
     border-color: var(--color-green-neon);
     box-shadow: 0 0 8px var(--color-green-transparent-subtle);
 }
+
 .mod-card.cosmetic:not(.owner-mod):hover {
     border-color: var(--color-magenta-neon);
     box-shadow: 0 0 8px var(--color-purple-border-transparent);
@@ -1289,15 +1299,15 @@
 .category-box.initial-invalid {
     filter: grayscale(80%) brightness(0.6);
     opacity: 0.45;
-    border-color: var(--color-white-transparent-08) !important;
-    background: var(--color-black-glass) !important;
-    box-shadow: none !important;
+    border-color: var(--color-white-transparent-08);
+    background: var(--color-black-glass);
+    box-shadow: none;
 }
 
 /* Matching slot gets a subtle pulse/glow of its category color */
 .category-box.initial-valid {
     box-shadow: 0 0 18px var(--glow-color, var(--color-white-transparent-70));
-    border-color: var(--glow-color, var(--color-white-transparent-85)) !important;
+    border-color: var(--glow-color, var(--color-white-transparent-85));
     animation: pulse-glow 2s infinite ease-in-out;
 }
 
@@ -1305,9 +1315,11 @@
     0% {
         box-shadow: 0 0 12px var(--glow-color, var(--color-white-transparent-35));
     }
+
     50% {
         box-shadow: 0 0 22px var(--glow-color, var(--color-white-transparent-70));
     }
+
     100% {
         box-shadow: 0 0 12px var(--glow-color, var(--color-white-transparent-35));
     }

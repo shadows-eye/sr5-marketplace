@@ -61,13 +61,13 @@ export default defineConfig({
     {
       name: 'test-no-important-css-plugin',
       buildStart() {
-        verifyNoImportant(['styles/marketshouter.css'], path.resolve(__dirname, '.'));
-        console.log('✅ [Vite Test] Verified zero !important statements in styles/marketshouter.css');
+        verifyNoImportant(null, path.resolve(__dirname, '.'));
+        console.log('✅ [Vite Test] Verified zero !important statements across all stylesheets in styles/');
       },
       handleHotUpdate({ file }) {
-        if (file.endsWith('marketshouter.css')) {
-          verifyNoImportant(['styles/marketshouter.css'], path.resolve(__dirname, '.'));
-          console.log('✅ [Vite Test] Verified zero !important statements in styles/marketshouter.css');
+        if (file.endsWith('.css')) {
+          verifyNoImportant(null, path.resolve(__dirname, '.'));
+          console.log('✅ [Vite Test] Verified zero !important statements across all stylesheets in styles/');
         }
       }
     },

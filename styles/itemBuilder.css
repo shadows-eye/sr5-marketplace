@@ -13,7 +13,7 @@
   /* prevent outer double-scroll */
   padding: 0;
   height: 100%;
-  overflow: hidden !important;
+  overflow: hidden;
 }
 
 div#itemBuilder.application.sr5-marketplace.itemBuilder {
@@ -29,8 +29,8 @@ div#itemBuilder.application.sr5-marketplace.itemBuilder {
 .itemBuilder .builder-main-content,
 .itemBuilder .item-selector-section,
 .itemBuilder .mod-selector-section {
-  min-height: 0 !important;
-  min-width: 0 !important;
+  min-height: 0;
+  min-width: 0;
 }
 
 /* 1) TOP-LEVEL APP LAYOUT ------------------------------------------ */
@@ -496,7 +496,7 @@ a.builder-tabs.item.active:hover {
 }
 
 .itemBuilder .mod-slot.filter-active {
-  filter: drop-shadow(0 0 10px var(--color-orange-glow)) !important;
+  filter: drop-shadow(0 0 10px var(--color-orange-glow));
 }
 
 .itemBuilder .mod-mount-filter {
@@ -801,7 +801,7 @@ a.builder-tabs.item.active:hover {
   height: 18px;
   border-radius: 3px;
   background: var(--color-red-darkest, #5d142b);
-  color: var(--color-white, #fff) !important;
+  color: var(--color-white, #fff);
   cursor: pointer;
   transition: background-color 0.2s;
 }
@@ -840,7 +840,7 @@ a.builder-tabs.item.active:hover {
   justify-content: center;
   opacity: 0;
   transition: opacity 0.2s;
-  color: var(--color-white) !important;
+  color: var(--color-white);
   font-size: 14px;
 }
 
@@ -1178,23 +1178,23 @@ a.builder-tabs.item.active:hover {
 }
 
 .itemBuilder .save-button {
-  background: var(--color-green-darkest, #015635) !important;
-  color: var(--color-white, #fff) !important;
-  border: 1px solid var(--color-green-dark, #028a4f) !important;
-  text-shadow: none !important;
+  background: var(--color-green-darkest, #015635);
+  color: var(--color-white, #fff);
+  border: 1px solid var(--color-green-dark, #028a4f);
+  text-shadow: none;
 }
 
 .itemBuilder .save-button:hover:not(:disabled) {
-  background: var(--color-green-dark, #028a4f) !important;
-  border-color: var(--color-green-light, #00ff87) !important;
+  background: var(--color-green-dark, #028a4f);
+  border-color: var(--color-green-light, #00ff87);
 }
 
 .itemBuilder .save-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background: var(--collapsible-content-bg) !important;
-  border-color: var(--border-color-dark) !important;
-  color: var(--text-color-primary) !important;
+  background: var(--collapsible-content-bg);
+  border-color: var(--border-color-dark);
+  color: var(--text-color-primary);
 }
 
 /* --- Collapsible Key Groups --- */

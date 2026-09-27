@@ -31,8 +31,8 @@
 
 .compendium-tab-btn.active {
     background: var(--header-gradient-bar);
-    border-color: var(--border-color-highlight) !important;
-    color: var(--header-gradient-text) !important;
+    border-color: var(--border-color-highlight);
+    color: var(--header-gradient-text);
     box-shadow: inset 0 1px 1px var(--color-white-transparent-20), 0 1px 3px var(--color-black-transparent-30);
     text-shadow: 1px 1px 2px var(--color-black-transparent-50);
 }
@@ -93,13 +93,13 @@
 .item-row {
     transition: all 0.2s ease;
     border: 1px solid transparent;
-    background-color: var(--color-black-transparent-15) !important;
+    background-color: var(--color-black-transparent-15);
 }
 
 .folder-row:hover,
 .item-row:hover {
-    background-color: var(--color-black-transparent-20) !important;
-    border-color: var(--border-color-medium) !important;
+    background-color: var(--color-black-transparent-20);
+    border-color: var(--border-color-medium);
     transform: translateY(-1px);
     box-shadow: 0 2px 4px var(--color-black-transparent-15);
 }
@@ -107,20 +107,20 @@
 /* Section styling */
 .folders-section h3,
 .items-section h3 {
-    color: var(--color-yellow-base) !important;
-    border-bottom: 1px solid var(--border-color-medium) !important;
+    color: var(--color-yellow-base);
+    border-bottom: 1px solid var(--border-color-medium);
 }
 
 /* Inputs */
 .search-input {
-    background-color: var(--input-bg-transparent) !important;
-    color: var(--input-color) !important;
-    border-color: var(--border-color-medium) !important;
+    background-color: var(--input-bg-transparent);
+    color: var(--input-color);
+    border-color: var(--border-color-medium);
     transition: all 0.2s ease;
 }
 
 .search-input:focus {
-    border-color: var(--color-yellow-base) !important;
+    border-color: var(--color-yellow-base);
     box-shadow: 0 0 5px var(--drop-target-bg-hover, var(--color-yellow-base));
 }
 
@@ -128,28 +128,28 @@
 .select-all-btn,
 .deselect-all-btn,
 .cancel-btn {
-    background-color: var(--tab-inactive-bg) !important;
-    color: var(--text-color-primary) !important;
-    border: 1px solid var(--border-color-medium) !important;
-    transition: all 0.2s ease !important;
+    background-color: var(--tab-inactive-bg);
+    color: var(--text-color-primary);
+    border: 1px solid var(--border-color-medium);
+    transition: all 0.2s ease;
 }
 
 .select-all-btn:hover,
 .deselect-all-btn:hover,
 .cancel-btn:hover {
-    background-color: var(--bg-dark-section-hover) !important;
+    background-color: var(--bg-dark-section-hover);
     filter: brightness(1.1);
 }
 
 .submit-btn {
-    background-color: var(--color-green-button) !important;
-    color: var(--color-white) !important;
-    transition: all 0.2s ease !important;
-    box-shadow: 0 2px 4px var(--color-black-transparent-20) !important;
+    background-color: var(--color-green-button);
+    color: var(--color-white);
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px var(--color-black-transparent-20);
 }
 
 .submit-btn:hover {
     filter: brightness(1.1);
-    box-shadow: 0 4px 8px var(--color-black-transparent-30) !important;
+    box-shadow: 0 4px 8px var(--color-black-transparent-30);
     transform: translateY(-1px);
 }

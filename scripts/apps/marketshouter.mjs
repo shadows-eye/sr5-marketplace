@@ -20,7 +20,7 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
     static get DEFAULT_OPTIONS() {
         return foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
             id: "marketshouter",
-            classes: ["marketshouter-app", "sr5-marketplace"],
+            classes: ["marketshouter-app", "sr5-marketplace", "window-app"],
             window: {
                 frame: false,
                 resizable: false
@@ -445,7 +445,7 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         }
 
         if (position === "bottom-left") {
-            this.element.style.zIndex = "90";
+            this.element.style.zIndex = "105";
             container.style.right = "";
             container.style.top = "";
 

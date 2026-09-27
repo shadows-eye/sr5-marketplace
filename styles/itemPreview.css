@@ -10,12 +10,12 @@ h1.sr5-marketplace-sr5Type-header {
 }
 
 .ItemPreviewApp .window-header button.header-control[data-action="close"] {
-    min-width: unset !important;
-    min-height: unset !important;
-    max-width: 14px !important;
-    height: 14px !important;
-    padding: 0 !important;
-    font-size: 0 !important;
+    min-width: unset;
+    min-height: unset;
+    max-width: 14px;
+    height: 14px;
+    padding: 0;
+    font-size: 0;
     color: transparent;
     background-image: var(--headerClose);
     background-color: transparent;
@@ -26,16 +26,17 @@ h1.sr5-marketplace-sr5Type-header {
     transition: transform 0.2s ease-in-out;
 }
 
-.ItemPreviewApp .window-header .window-title{
+.ItemPreviewApp .window-header .window-title {
     border-bottom: none
-
 }
+
 .ItemPreviewApp .item-header {
     display: grid;
     grid-template-columns: 80px 1fr;
     gap: 1rem;
     align-items: center;
 }
+
 .ItemPreviewApp .item-image img {
     width: 80px;
     height: 80px;
@@ -43,13 +44,15 @@ h1.sr5-marketplace-sr5Type-header {
 }
 
 .ItemPreviewApp .display {
-  display: flex;
-  flex-grow: 0;
-  margin-left: 1em;
+    display: flex;
+    flex-grow: 0;
+    margin-left: 1em;
 }
+
 .ItemPreviewApp .flexrow .item-name {
     flex-grow: 2;
 }
+
 .ItemPreviewApp .flexrow .item-type {
     display: block;
     width: 6em;
@@ -57,8 +60,8 @@ h1.sr5-marketplace-sr5Type-header {
     margin-top: 2em;
 }
 
-.sr5-marketplace-yen.preview{
-  margin-left: 0.2em;
+.sr5-marketplace-yen.preview {
+    margin-left: 0.2em;
 }
 
 /* --- Layout and Scroll Styles --- */
@@ -66,7 +69,7 @@ h1.sr5-marketplace-sr5Type-header {
 .ItemPreviewApp .wholesheet {
     display: flex;
     flex-direction: column;
-    height: 100% !important;
+    height: 100%;
     overflow: hidden;
 }
 
@@ -116,29 +119,35 @@ h1.sr5-marketplace-sr5Type-header {
 /* --- Tooltip specific styles and animations --- */
 
 .item-preview-tooltip {
-  z-index: 100;
-  
-  /* Fade-in transitions */
-  opacity: 0;
-  animation: tooltip-fade-in 0.25s ease-out forwards;
+    z-index: 100;
+
+    /* Fade-in transitions */
+    opacity: 0;
+    animation: tooltip-fade-in 0.25s ease-out forwards;
 }
 
 @keyframes tooltip-fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 /* Hide all scrollbars in tooltip mode */
 .item-preview-tooltip * {
-    scrollbar-width: none !important;
+    scrollbar-width: none;
 }
+
 .item-preview-tooltip *::-webkit-scrollbar {
-    display: none !important;
+    display: none;
 }
 
 .item-preview-tooltip .technology,
 .item-preview-tooltip .description {
-    overflow: hidden !important;
+    overflow: hidden;
 }
 
 /* Apply gradient mask to description for clean fade at boundaries */
@@ -150,10 +159,14 @@ h1.sr5-marketplace-sr5Type-header {
 
 /* Keyframes for text auto-scrolling */
 @keyframes tooltip-scroll-text {
-    0%, 15% {
+
+    0%,
+    15% {
         transform: translateY(0);
     }
-    85%, 100% {
+
+    85%,
+    100% {
         transform: translateY(var(--scroll-dist, 0px));
     }
 }
@@ -163,5 +176,5 @@ h1.sr5-marketplace-sr5Type-header {
 }
 
 .item-preview-tooltip .preview-footer {
-  display: none;
+    display: none;
 }

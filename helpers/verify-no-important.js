@@ -10,8 +10,15 @@ import path from 'path';
  * @returns {boolean}
  * @throws {Error} If any !important statements are found
  */
-export function verifyNoImportant(targetFiles = ['styles/marketshouter.css'], rootDir = process.cwd()) {
+export function verifyNoImportant(targetFiles = null, rootDir = process.cwd()) {
     const violations = [];
+
+    if (!targetFiles || targetFiles.length === 0) {
+        const stylesDir = path.resolve(rootDir, 'styles');
+        targetFiles = fs.readdirSync(stylesDir)
+            .filter(f => f.endsWith('.css'))
+            .map(f => path.join('styles', f));
+    }
 
     for (const relPath of targetFiles) {
         const fullPath = path.resolve(rootDir, relPath);

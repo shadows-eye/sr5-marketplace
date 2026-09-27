@@ -3,7 +3,7 @@
    ========================================================================== */
 
 /* Borderless transparent window wrapper */
-.marketshouter-app.window-app {
+:is(.marketshouter-app, .marketshouter-app.window-app, .application.marketshouter-app) {
     background: transparent;
     border: none;
     box-shadow: none;
@@ -30,6 +30,8 @@
     z-index: 1000;
     font-family: 'Outfit', 'Inter', 'Roboto', sans-serif;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 10px 14px;
+    margin: -10px -14px;
 }
 
 /* Default / Top Right */
@@ -52,10 +54,10 @@
     align-items: center;
 }
 
-/* Bottom Left (stay behind Shadows HUD and drawer purely via CSS specificity) */
-.marketshouter-app:has(.pos-bottom-left),
-.marketshouter-app .marketshouter-container.pos-bottom-left {
-    z-index: 90;
+/* Bottom Left (stay behind Shadows HUD drawer, but above canvas hotbar) */
+:is(.marketshouter-app, .application.marketshouter-app):has(.pos-bottom-left),
+:is(.marketshouter-app, .application.marketshouter-app) .marketshouter-container.pos-bottom-left {
+    z-index: 105;
 }
 
 .marketshouter-container.pos-bottom-left {
@@ -82,6 +84,7 @@ body:has(#shadows-hud-root.minimized) .marketshouter-container.pos-bottom-left {
 /* When Shadows HUD drawer is open, ensure clicks pass cleanly to drawer */
 body:has(#shadows-hud-root .shadows-hud-drawer-container.open) .marketshouter-container.pos-bottom-left {
     pointer-events: none;
+    z-index: 80;
 }
 
 /* Sleek glassmorphic pill capsule bar */
@@ -95,15 +98,23 @@ body:has(#shadows-hud-root .shadows-hud-drawer-container.open) .marketshouter-co
     border-radius: 28px;
     padding: 6px 14px;
     height: 46px;
+    width: max-content;
     box-shadow: 0 8px 32px 0 var(--color-black-transparent-45);
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                background 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.25s;
     gap: 8px;
     overflow: hidden;
     opacity: 0.35;
     /* Subtle transparency until hovered */
+    position: relative;
+    pointer-events: auto;
 }
 
-/* Hovering the bar broadens its border contrast and shadow */
+/* Hovering the container or bar broadens its border contrast and shadow */
+.marketshouter-container:hover .marketshouter-bar,
+.marketshouter-container:focus-within .marketshouter-bar,
 .marketshouter-bar:hover,
 .marketshouter-bar:focus-within {
     border-color: var(--color-orange-transparent-medium);
@@ -112,6 +123,7 @@ body:has(#shadows-hud-root .shadows-hud-drawer-container.open) .marketshouter-co
     background: var(--color-black-glass);
     opacity: 1;
     /* Fully visible on hover */
+    transition-delay: 0s;
 }
 
 /* Expandable search input wrap */
@@ -121,19 +133,22 @@ body:has(#shadows-hud-root .shadows-hud-drawer-container.open) .marketshouter-co
     position: relative;
     max-width: 0px;
     opacity: 0;
-    transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: max-width 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.25s, opacity 0.35s ease 0.25s;
     pointer-events: none;
     overflow: hidden;
     gap: 8px;
 }
 
-/* Expand search bar when hovering the bar or when focused */
+/* Expand search bar when hovering container/bar or when focused */
+.marketshouter-container:hover .marketshouter-search-wrap,
+.marketshouter-container:focus-within .marketshouter-search-wrap,
 .marketshouter-bar:hover .marketshouter-search-wrap,
 .marketshouter-bar:focus-within .marketshouter-search-wrap {
     max-width: 280px;
     opacity: 1;
     pointer-events: auto;
     padding-right: 6px;
+    transition-delay: 0s;
 }
 
 /* Small shop actor image indicating boundary filter */
@@ -213,6 +228,8 @@ body:has(#shadows-hud-root .shadows-hud-drawer-container.open) .marketshouter-co
     display: flex;
     align-items: center;
     gap: 6px;
+    flex-shrink: 0;
+    pointer-events: auto;
 }
 
 /* Shop and Cart/Basket Button styles */
