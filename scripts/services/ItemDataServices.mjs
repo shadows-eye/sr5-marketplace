@@ -1,4 +1,5 @@
 import { MarketplaceSettingsService } from "./MarketplaceSettingsService.mjs";
+import { systemDataModel } from "./systemDataModel.mjs";
 
 /**
  * A helper function to safely retrieve a nested property from an object using a dot-notation string.
@@ -42,7 +43,6 @@ export default class ItemDataServices {
         if (this._indexPromise) return this._indexPromise;
 
         this._indexPromise = (async () => {
-            const excludedTypes = ["call_in_action", "critter_power", "host", "sprite_power", "contact", "skill"];
             let allItems = [];
 
             const allowWorldItems = MarketplaceSettingsService.isWorldItemsAllowed();
@@ -50,7 +50,7 @@ export default class ItemDataServices {
             // 1. Fetch custom items created in the local World (if enabled)
             if (allowWorldItems) {
                 for (const item of game.items.contents) {
-                    if (!excludedTypes.includes(item.type) && !item.name.includes('#[CF_tempEntity]')) {
+                    if (!systemDataModel.isIgnoredItemType(item.type) && !item.name.includes('#[CF_tempEntity]')) {
                         const itemData = item.toObject(false);
                         itemData.uuid = item.uuid;
                         // Normalize mount_point from mod_weapon if present
@@ -75,17 +75,7 @@ export default class ItemDataServices {
 
             // 2. Fetch from all visible and allowed Item Compendiums concurrently
             const itemPacks = game.packs.filter(p => p.metadata.type === "Item" && p.visible && MarketplaceSettingsService.isCompendiumAllowed(p.collection));
-            const itemFields = [
-                "system.category", "system.type", "system.technology.cost", 
-                "system.technology.rating", "system.technology.availability", 
-                "system.karma", "system.essence", "system.quantity", 
-                "system.range.ranges.category",
-                "system.drain",
-                "system.mount_point",
-                "system.mod_weapon.mount_point",
-                "system.slots",
-                "system.modification_category"
-            ];
+            const itemFields = systemDataModel.getItemIndexFields();
             const itemIndexes = await Promise.all(
                 itemPacks.map(pack => pack.getIndex({ fields: itemFields }).catch(err => {
                     console.error(`SR5 Marketplace | Error indexing item pack ${pack.collection}:`, err);
@@ -97,7 +87,7 @@ export default class ItemDataServices {
                 const pack = itemPacks[i];
                 const index = itemIndexes[i] || [];
                 for (const entry of index) {
-                    if (!excludedTypes.includes(entry.type) && !entry.name.includes('#[CF_tempEntity]')) {
+                    if (!systemDataModel.isIgnoredItemType(entry.type) && !entry.name.includes('#[CF_tempEntity]')) {
                         entry.uuid = entry.uuid || `Compendium.${pack.collection}.${entry._id}`;
                         // Normalize mount_point from mod_weapon if present
                         if (entry.system?.mod_weapon?.mount_point) {

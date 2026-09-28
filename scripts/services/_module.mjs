@@ -13,6 +13,8 @@ import { ActorSelectionService } from './ActorSelectionService.mjs';
 import { FactoryFlow } from './factoryFlow.mjs';
 import { BuildService } from './buildService.mjs';
 
+import { SystemDataModel, systemDataModel } from './systemDataModel.mjs';
+
 // 2. Instantiate and Export the Singletons (Use lowercase for instances!)
 export const actorItemServices = new ActorItemServices();
 export const itemDataServices = new ItemDataServicesClass(); // Lowercase instance
@@ -24,6 +26,7 @@ export const deliveryTimeService = new DeliveryTimeService();
 export const diceHelperService = new DiceHelperService();
 export const themeService = new ThemeService();
 export const systemDataMapperService = new SystemDataMapperService();
+export { systemDataModel };
 export const factoryFlow = new FactoryFlow();
 export const buildService = new BuildService();
 export { InventoryRules } from './inventory-rules.mjs';
@@ -38,6 +41,7 @@ export {
  BasketService, 
  PurchaseService, 
  SystemDataMapperService,
+ SystemDataModel,
  ItemDataServicesClass as ItemDataServices, // Aliased back so marketHooks.js can use `new ItemDataServices()`
  ActorSelectionService,
  FactoryFlow,

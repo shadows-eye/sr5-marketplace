@@ -1,5 +1,6 @@
 import { MODULE_ID, FLAGKEY_Basket } from "../lib/constants.mjs";
 import { MarketplaceSettingsService } from "./MarketplaceSettingsService.mjs";
+import { systemDataModel } from "./systemDataModel.mjs";
 
 export class BasketService {
 
@@ -98,8 +99,7 @@ export class BasketService {
         const item = await fromUuid(itemUuid);
         if (!item) return ui.notifications.warn(`Item with UUID ${itemUuid} not found.`);
 
-        const itemBehaviors = game.settings.get("sr5-marketplace", "itemTypeBehaviors") || {};
-        const behavior = itemBehaviors[item.type] || 'single';
+        const behavior = systemDataModel.getItemBehavior(item);
         const existingItemInCart = basket.shoppingCartItems.find(i => i.itemUuid === item.uuid && (!i.isWorkshopMod || i.vehicleActorUuid === options.vehicleActorUuid));
 
         if (behavior === 'unique') {
@@ -107,7 +107,7 @@ export class BasketService {
                 return ui.notifications.warn(`'${item.name}' is a unique item and is already in your cart.`);
             }
             const actor = await fromUuid(basket.createdForActor);
-            if (actor && actor.items.some(i => i.name === item.name && i.type === item.type)) {
+            if (actor && systemDataModel.actorHasItem(actor, item)) {
                 return ui.notifications.warn(`Your character, ${actor.name}, already possesses the unique item: '${item.name}'.`);
             }
         }
@@ -204,7 +204,7 @@ export class BasketService {
                 karma: Number(calculatedKarma) || 0,
                 availability: finalAvailability,
                 essence: Number(finalEssence) || 0,
-                itemQuantity: behavior === 'stack' ? 10 : (item.system.quantity || 1),
+                itemQuantity: systemDataModel.getPackQuantity(item),
                 rating: defaultRating,
                 selectedRating: defaultRating,
                 isWorkshopMod: !!options.isWorkshopMod,
@@ -333,7 +333,7 @@ export class BasketService {
         const sourceItem = await fromUuid(targetItem.itemUuid);
         if (!sourceItem) return;
 
-        const behavior = itemBehaviors[sourceItem.type] || 'single';
+        const behavior = systemDataModel.getItemBehavior(sourceItem);
 
         // --- Shop Actor & Stock Limit Checks on Increase ---
         if (change > 0 && basket.shopActorUuid) {

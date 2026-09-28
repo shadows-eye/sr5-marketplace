@@ -3,6 +3,7 @@ import { BasketService } from "./basketService.mjs";
 import { BuildService } from "./buildService.mjs";
 import { AppTestFlagService } from "./AppTestFlagService.mjs";
 import { BuildTestApp } from "../apps/documents/dialog/BuildTestApp.mjs";
+import { systemDataModel } from "./systemDataModel.mjs";
 
 
 /**
@@ -146,7 +147,7 @@ export class FactoryFlow {
                     return uuidNorm === norm1 || uuidNorm === norm2 || sourceIdNorm === norm1 || sourceIdNorm === norm2;
                 });
                 purchasingItems.push(...characterMods);
-                return characterMods.reduce((sum, i) => sum + (i.system.quantity || 1), 0);
+                return characterMods.reduce((sum, i) => sum + systemDataModel.getItemQuantity(i), 0);
             };
 
             if (purchasingActor) {
@@ -383,9 +384,10 @@ export class FactoryFlow {
                 );
             }
             if (charItem) {
-                const qty = charItem.system.quantity || 1;
+                const qty = systemDataModel.getItemQuantity(charItem);
                 if (qty > 1) {
-                    await charItem.update({ "system.quantity": qty - 1 });
+                    const qtyPath = systemDataModel.getQuantityPath(charItem);
+                    await charItem.update({ [qtyPath]: qty - 1 });
                     console.log(`SR5 Marketplace | Decremented installed modification ${charItem.name} quantity to ${qty - 1} on character ${purchasingActor.name}`);
                 } else {
                     await purchasingActor.deleteEmbeddedDocuments("Item", [charItem.id]);

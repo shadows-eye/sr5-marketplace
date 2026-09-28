@@ -2,6 +2,7 @@ import { BasketService } from "./basketService.mjs";
 import { MODULE_ID, FLAGKEY_Basket } from "../lib/constants.mjs";
 import { AppTestFlagService } from "./AppTestFlagService.mjs";
 import { CredstickService } from "./credstickService.mjs";
+import { systemDataModel } from "./systemDataModel.mjs";
 import enrichHTML from "./enricher.mjs";
 
 
@@ -435,8 +436,8 @@ export class PurchaseService {
 
         this._recalculateTotals(basket);
 
-        const currentNuyen = actor.system.nuyen;
-        const currentKarma = actor.system.karma.value;
+        const currentNuyen = systemDataModel.getNuyen(actor);
+        const currentKarma = systemDataModel.getKarmaValue(actor);
         if (currentKarma < basket.totalKarma) {
             ui.notifications.warn(`${actor.name} does not have enough Karma. Needs ${basket.totalKarma} K.`);
             return false;
@@ -460,7 +461,7 @@ export class PurchaseService {
                 }
                 await CredstickService.deductCredstickFunds(credItem, basket.totalCost);
                 if (basket.totalKarma > 0) {
-                    await actor.update({ "system.karma.value": currentKarma - basket.totalKarma });
+                    await systemDataModel.setKarmaValue(actor, currentKarma - basket.totalKarma);
                 }
             }
         }
@@ -472,15 +473,17 @@ export class PurchaseService {
                     return false;
                 }
             }
-            await actor.update({
-                "system.nuyen": currentNuyen - basket.totalCost,
-                "system.karma.value": currentKarma - basket.totalKarma
-            });
+            await systemDataModel.setNuyen(actor, currentNuyen - basket.totalCost);
+            if (basket.totalKarma > 0) {
+                await systemDataModel.setKarmaValue(actor, currentKarma - basket.totalKarma);
+            }
         }
 
         const itemsToCreate = [];
+        const stackedExistingDocs = [];
         const workshopModsAdded = [];
         const userId = game.user.id;
+
         for (const basketItem of basketItems) {
             if (basketItem.isWorkshopMod) {
                 const factoryActor = basketItem.factoryActorUuid ? await fromUuid(basketItem.factoryActorUuid) : null;
@@ -505,37 +508,102 @@ export class PurchaseService {
                 }
             } else if (basketItem.isCustomBuild) {
                 const buildData = foundry.utils.deepClone(basketItem.customData);
-                if (buildData.system) {
-                    buildData.system.quantity = (Number(buildData.system.quantity) || 1) * (Number(basketItem.buyQuantity) || 1);
-                }
+                const buyQty = Math.max(1, Number(basketItem.buyQuantity) || 1);
+
                 if (buildData.type === "vehicle") {
-                    const buyQty = Number(basketItem.buyQuantity) || 1;
                     for (let q = 0; q < buyQty; q++) {
                         await this._createVehicleActor(foundry.utils.deepClone(buildData), userId);
                     }
                 } else {
                     delete buildData._id;
                     delete buildData._stats;
-                    itemsToCreate.push(buildData);
+
+                    const behavior = systemDataModel.getItemBehavior(buildData.type);
+                    const selectedRating = basketItem.selectedRating ?? systemDataModel.getRating(buildData);
+
+                    if (behavior === "stack") {
+                        const transferQty = systemDataModel.calculateTransferQuantity(basketItem);
+                        const existing = systemDataModel.findMatchingStackItem(actor, buildData, selectedRating);
+                        if (existing) {
+                            const currentQty = systemDataModel.getItemQuantity(existing);
+                            const qtyPath = systemDataModel.getQuantityPath(existing);
+                            await existing.update({ [qtyPath]: currentQty + transferQty });
+                            stackedExistingDocs.push(existing);
+                        } else {
+                            systemDataModel.setItemQuantity(buildData, transferQty);
+                            itemsToCreate.push(buildData);
+                        }
+                    } else if (behavior === "unique") {
+                        if (systemDataModel.actorHasItem(actor, buildData)) {
+                            ui.notifications.warn(`${actor.name} already possesses the unique item: '${buildData.name}'.`);
+                        } else {
+                            systemDataModel.setItemQuantity(buildData, 1);
+                            itemsToCreate.push(buildData);
+                        }
+                    } else {
+                        // "single" behavior: create separate instances
+                        for (let q = 0; q < buyQty; q++) {
+                            const singleItem = foundry.utils.deepClone(buildData);
+                            systemDataModel.setItemQuantity(singleItem, 1);
+                            itemsToCreate.push(singleItem);
+                        }
+                    }
                 }
             } else {
                 const sourceItem = await fromUuid(basketItem.itemUuid);
                 if (sourceItem) {
                     if (sourceItem.type === "vehicle") {
-                        const actorData = sourceItem.toObject();
-                        await this._createVehicleActor(actorData, userId);
-                    } else {
-                        const itemData = sourceItem.toObject();
-                        itemData.system.quantity = basketItem.buyQuantity * (itemData.system.quantity || 1);
-
-                        // --- FIX: Only set technology properties if the technology object exists. ---
-                        // This prevents errors for items like qualities, spells, and actions.
-                        if ("technology" in itemData.system) {
-                            itemData.system.technology.rating = basketItem.selectedRating;
-                            itemData.system.technology.cost = basketItem.cost;
+                        const buyQty = Math.max(1, Number(basketItem.buyQuantity) || 1);
+                        for (let q = 0; q < buyQty; q++) {
+                            const actorData = sourceItem.toObject();
+                            await this._createVehicleActor(actorData, userId);
                         }
+                    } else {
+                        const behavior = systemDataModel.getItemBehavior(sourceItem);
+                        const selectedRating = basketItem.selectedRating ?? systemDataModel.getRating(sourceItem);
 
-                        itemsToCreate.push(itemData);
+                        if (behavior === "stack") {
+                            const transferQty = systemDataModel.calculateTransferQuantity(basketItem, sourceItem);
+                            const existing = systemDataModel.findMatchingStackItem(actor, sourceItem, selectedRating);
+                            if (existing) {
+                                const currentQty = systemDataModel.getItemQuantity(existing);
+                                const qtyPath = systemDataModel.getQuantityPath(existing);
+                                await existing.update({ [qtyPath]: currentQty + transferQty });
+                                stackedExistingDocs.push(existing);
+                            } else {
+                                const itemData = sourceItem.toObject();
+                                systemDataModel.setItemQuantity(itemData, transferQty);
+                                if (systemDataModel.hasTechnology(itemData)) {
+                                    systemDataModel.setRating(itemData, selectedRating);
+                                    systemDataModel.setCost(itemData, basketItem.cost);
+                                }
+                                itemsToCreate.push(itemData);
+                            }
+                        } else if (behavior === "unique") {
+                            if (systemDataModel.actorHasItem(actor, sourceItem)) {
+                                ui.notifications.warn(`${actor.name} already possesses the unique item: '${sourceItem.name}'.`);
+                            } else {
+                                const itemData = sourceItem.toObject();
+                                systemDataModel.setItemQuantity(itemData, 1);
+                                if (systemDataModel.hasTechnology(itemData)) {
+                                    systemDataModel.setRating(itemData, selectedRating);
+                                    systemDataModel.setCost(itemData, basketItem.cost);
+                                }
+                                itemsToCreate.push(itemData);
+                            }
+                        } else {
+                            // "single" behavior: each buyQuantity represents a discrete item
+                            const buyQty = Math.max(1, Number(basketItem.buyQuantity) || 1);
+                            for (let q = 0; q < buyQty; q++) {
+                                const itemData = sourceItem.toObject();
+                                systemDataModel.setItemQuantity(itemData, 1);
+                                if (systemDataModel.hasTechnology(itemData)) {
+                                    systemDataModel.setRating(itemData, selectedRating);
+                                    systemDataModel.setCost(itemData, basketItem.cost);
+                                }
+                                itemsToCreate.push(itemData);
+                            }
+                        }
                     }
                 }
             }
@@ -557,6 +625,13 @@ export class PurchaseService {
                     name: d.name,
                     uuid: d.uuid
                 }));
+                for (const se of stackedExistingDocs) {
+                    chatItems.push({
+                        _id: se.id,
+                        name: se.name,
+                        uuid: se.uuid
+                    });
+                }
                 for (const wm of workshopModsAdded) {
                     chatItems.push({
                         _id: wm.basketItemUuid,

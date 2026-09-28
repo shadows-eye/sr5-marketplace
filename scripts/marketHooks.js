@@ -18,6 +18,8 @@ import {
     diceHelperService,
     themeService,
     systemDataMapperService,
+    systemDataModel,
+    SystemDataModel,
     ItemDataServices, // <-- We import the class here because you need 'new ItemDataServices()' for your API
     PurchaseService,
     BasketService,
@@ -36,6 +38,8 @@ export {
     diceHelperService,
     themeService,
     systemDataMapperService,
+    systemDataModel,
+    SystemDataModel,
     ItemDataServices,
     ItemBuilderApp
 };
@@ -877,6 +881,8 @@ Hooks.once("init", () => {
         factory: new MarketplaceAPI.Factory(),
         settings: MarketplaceSettingsService,
         CompendiumSettingsApp: CompendiumSettingsApp,
+        systemDataModel: systemDataModel,
+        SystemDataModel: SystemDataModel,
         registerShouterButton: (id, config) => MarketShouterApp.registerButton(id, config)
     };
 
@@ -885,6 +891,8 @@ Hooks.once("init", () => {
     game.sr5marketplace.itemData = game.sr5marketplace.api.itemData;
     game.sr5marketplace.PurchaseService = game.sr5marketplace.api.PurchaseService;
     game.sr5marketplace.BasketService = game.sr5marketplace.api.BasketService;
+    game.sr5marketplace.systemDataModel = systemDataModel;
+    game.sr5marketplace.SystemDataModel = SystemDataModel;
     //game.sr5marketplace.AppDialogBuilder = game.sr5marketplace.api.AppDialogBuilder;
     game.sr5marketplace.inGameMarketplace = game.sr5marketplace.api.inGameMarketplace;
     game.sr5marketplace.SR5CreateActorApp = game.sr5marketplace.api.SR5CreateActorApp;

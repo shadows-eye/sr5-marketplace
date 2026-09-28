@@ -11,6 +11,7 @@ import { AppTestFlagService } from '../services/AppTestFlagService.mjs';
 import { AppDialogBuilder } from '../apps/documents/dialog/AppDialogBuilder.mjs';
 import { BuildTestApp } from "./documents/dialog/BuildTestApp.mjs";
 import { MarketplaceSettingsService } from "../services/MarketplaceSettingsService.mjs";
+import { systemDataModel } from "../services/systemDataModel.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -1170,9 +1171,9 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                         entryId: mod.id,
                                         name: mod.name,
                                         img: mod.img || "systems/shadowrun5e/dist/icons/importer/equipment/modification.svg",
-                                        qty: mod.system.quantity ?? 1,
+                                        qty: systemDataModel.getItemQuantity(mod),
                                         category: ItemBuilderApp._getModificationCategory(mod),
-                                        rating: mod.system.rating ?? mod.system.technology?.rating ?? 1,
+                                        rating: systemDataModel.getRating(mod) || 1,
                                         slots: mod.system.slots ?? 0,
                                         isFromOwner: true
                                     });
