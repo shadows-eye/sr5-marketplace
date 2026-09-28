@@ -7,28 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [14.006.0] - 2026-09-27
+## [14.006.0] - 2026-09-28
 
 ### Added
 - **Custom Compendium Save Targets (GM Settings)**:
-  - Game Masters can now choose custom compendiums as the save location for custom-built or modified items and vehicles instead of saving them to the World directory.
-  - Configurable only by the GM directly in Foundry's Module Settings or via the Marketplace Compendium Sources window.
-  - Automatically unlocks the selected compendium upon selection and save so the GM never needs to manually unlock it first.
+  - Game Masters can now configure dedicated compendium packs as the save destination for custom-crafted items and vehicles directly in Module Settings and the Compendium Sources manager.
+  - Automatically verifies and unlocks the designated compendium upon selection so GMs never have to unlock packs manually.
+- **Dynamic System DataModel Compatibility**:
+  - Implemented dynamic schema resolution against the Shadowrun 5e system data models in `CONFIG`, ensuring reliable item property mapping (cost, quantity, availability, and rating) across all current and future system releases.
 
 ### Changed & Improved
-- **Unified Theme & Styling**:
-  - Enjoy a sleek, consistent visual style across the Marketplace, Item Builder, Item Preview, and Settings windows.
-  - Modernized headers and card layouts with distinctive dark orange accents matching the Shadows theme.
-  - Re-styled modifier sections and builder cards for clearer visibility and improved contrast.
-- **Smarter MarketShouter Interactions**:
-  - The MarketShouter bar now automatically recesses to the background when the Marketplace or Item Builder is open so it never blocks your dialogs or actions.
-  - Smoother hover behavior and responsive positioning prevent the bar from closing unexpectedly while browsing.
+- **Unified Theme & Visual Polish**:
+  - Consistent, high-contrast visual styling across the Marketplace, Item Builder, Item Preview, and Settings applications.
+  - Refined headers, modifier cards, and builder tabs with dedicated dark orange theme accents.
+- **MarketShouter Responsiveness**:
+  - The MarketShouter quick-access bar now automatically recedes behind active application windows so it never obstructs shopping or builder dialogs.
+  - Refined hover transitions and layout stability.
+- **Module Architecture & Reliability**:
+  - Streamlined service layer architecture providing instant API readiness on startup, resolving previous startup delays and initialization errors.
 
 ### Fixed
-- **Item Builder & Shopping Cart**:
+- **Item Builder & Cart Modifications**:
   - Fixed an issue where adding customized items or vehicles directly to the cart would lose applied modifications or recalculated prices. Cart purchases now accurately reflect all custom changes, combined availability, and total costs.
   - Fixed a display bug where price and availability values in item previews could occasionally show raw unformatted text.
   - Live combined totals for cost, essence, and availability now update dynamically in real time as you customize items.
+- **Module Initialization**:
+  - Resolved a startup dependency timing error that could cause system API bridge initialization to fail on initial world load.
 
 ---
 
