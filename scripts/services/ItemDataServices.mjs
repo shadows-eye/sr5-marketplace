@@ -38,6 +38,42 @@ export default class ItemDataServices {
         return this._globalItemsCache || [];
     }
 
+    /**
+     * Directly inserts or updates an item or vehicle in the active marketplace cache.
+     * Ensures instant visibility without waiting for a full compendium re-index.
+     * @param {object|Item|Actor} itemOrDoc
+     */
+    addOrUpdateItemToIndex(itemOrDoc) {
+        if (!itemOrDoc) return;
+        const entry = typeof itemOrDoc.toObject === "function" ? itemOrDoc.toObject(false) : foundry.utils.deepClone(itemOrDoc);
+        entry.uuid = itemOrDoc.uuid || entry.uuid;
+
+        if (entry.system?.mod_weapon?.mount_point) {
+            entry.system.mount_point = entry.system.mod_weapon.mount_point;
+        }
+
+        if (!this._globalItemsCache) {
+            this._globalItemsCache = [];
+        }
+
+        const existingIndex = this._globalItemsCache.findIndex(i => i.uuid === entry.uuid || (entry._id && i._id === entry._id));
+        if (existingIndex >= 0) {
+            this._globalItemsCache[existingIndex] = entry;
+        } else {
+            this._globalItemsCache.push(entry);
+        }
+
+        const allItems = this._globalItemsCache;
+        const categorizedAll = this._categorizeItems(allItems);
+        this._categorizedAll = this._transformToAllItems(categorizedAll, allItems);
+
+        const baseItems = allItems.filter(item => item.type !== "modification");
+        this._categorizedBase = this._transformToBaseItems(categorizedAll, baseItems);
+
+        const modItems = allItems.filter(item => item.type === "modification");
+        this._categorizedMods = this._transformToModifications(categorizedAll, modItems);
+    }
+
     async buildIndex() {
         if (this._globalItemsCache) return this._globalItemsCache;
         if (this._indexPromise) return this._indexPromise;
@@ -77,7 +113,7 @@ export default class ItemDataServices {
             const itemPacks = game.packs.filter(p => p.metadata.type === "Item" && p.visible && MarketplaceSettingsService.isCompendiumAllowed(p.collection));
             const itemFields = systemDataModel.getItemIndexFields();
             const itemIndexes = await Promise.all(
-                itemPacks.map(pack => pack.getIndex({ fields: itemFields }).catch(err => {
+                itemPacks.map(pack => pack.getIndex({ fields: itemFields, reload: true }).catch(err => {
                     console.error(`SR5 Marketplace | Error indexing item pack ${pack.collection}:`, err);
                     return [];
                 }))
@@ -108,7 +144,7 @@ export default class ItemDataServices {
                 "system.importFlags"
             ];
             const actorIndexes = await Promise.all(
-                actorPacks.map(pack => pack.getIndex({ fields: actorFields }).catch(err => {
+                actorPacks.map(pack => pack.getIndex({ fields: actorFields, reload: true }).catch(err => {
                     console.error(`SR5 Marketplace | Error indexing actor pack ${pack.collection}:`, err);
                     return [];
                 }))

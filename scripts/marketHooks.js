@@ -859,7 +859,7 @@ Hooks.once("init", () => {
     // 2. Nest all other API services under the '.api' property for compatibility with new code
     game.sr5marketplace.api = {
         system: new SR5SystemAPI(),
-        itemData: new services.ItemDataServices(), // Pulled perfectly from your services barrel!
+        itemData: services.itemDataServices,
         PurchaseService: services.PurchaseService,
         BasketService: services.BasketService,
         AppDialogBuilder: AppDialogBuilder,
@@ -874,6 +874,8 @@ Hooks.once("init", () => {
         CompendiumSettingsApp: CompendiumSettingsApp,
         systemDataModel: services.systemDataModel,
         SystemDataModel: services.SystemDataModel,
+        systemDataMapper: services.systemDataMapperService,
+        SystemDataMapperService: services.SystemDataMapperService,
         registerShouterButton: (id, config) => MarketShouterApp.registerButton(id, config)
     };
 

@@ -1689,42 +1689,16 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             type: item.type,
             system: item.system,
             technology: item.technology,
+            flags: item.flags ? foundry.utils.deepClone(item.flags) : {},
+            items: item.items ? Array.from(item.items).map(i => typeof i.toObject === 'function' ? i.toObject(false) : i) : [],
             effects: item.effects?.map(e => e.toObject(false)) ?? []
         };
 
-        // 3. Set the base item. This clears the builder state (which is what we want).
-        await game.sr5marketplace.api.factory.setBuilderBaseItem(cleanItemData);
+        // 3. Set the base item and load all existing modifications into builder slots
+        await game.sr5marketplace.api.factory.setBuilderBaseItem(cleanItemData, null, { document: item, forceReset: true });
 
-        // --- 4. NEW: Check for and load linked items ---
-        const linkedItems = item.getFlag("sr5-marketplace", "linkedItems");
-
-        if (linkedItems && Array.isArray(linkedItems) && linkedItems.length > 0) {
-            // If we have links, load them one by one into the state
-            for (const link of linkedItems) {
-                const { slotId, uuid } = link;
-                if (!slotId || !uuid) continue;
-
-                const linkedItem = await fromUuid(uuid);
-                if (linkedItem) {
-                    // Prepare the item data just as _onDrop would
-                    const linkedItemData = {
-                        uuid: linkedItem.uuid,
-                        name: linkedItem.name,
-                        img: linkedItem.img,
-                        type: linkedItem.type,
-                        system: linkedItem.system,
-                        effects: linkedItem.effects?.map(e => e.toObject(false)) ?? []
-                    };
-                    // Add this item to the correct slot in the state
-                    await game.sr5marketplace.api.factory.addBuilderChange(slotId, linkedItemData);
-                } else {
-                    console.warn(`Marketplace Builder | Could not find linked item with UUID: ${uuid}`);
-                }
-            }
-        }
-
-        // 5. Re-render the application.
-        // The UI will now show the base item AND any linked items in their slots.
+        // 4. Re-render the application.
+        // The UI will now show the base item AND all modifications in their slots.
         this.render();
     }
 
@@ -1937,6 +1911,15 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         // 2. Determine if it is a vehicle (Actor) or regular Item
         const isVehicle = baseItemData.type === "vehicle";
 
+        // Reset embedded modification containers to reflect current builder slots exactly
+        if (isVehicle) {
+            baseItemData.items = (baseItemData.items || []).filter(i => i.type !== "modification");
+        } else {
+            if (!baseItemData.flags) baseItemData.flags = {};
+            if (!baseItemData.flags.shadowrun5e) baseItemData.flags.shadowrun5e = {};
+            baseItemData.flags.shadowrun5e.embeddedItems = [];
+        }
+
         // A. Start with base item's effects
         const allEffects = [...(baseItemData.effects || [])];
 
@@ -1949,6 +1932,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const descriptionModList = [];
         const descriptionLinkList = [];
         const embeddedItemsToCreate = []; // for vehicles/drones
+        const embeddedModsToCreate = []; // for standard items
 
         // C. Loop through every single item in a slot
         for (const [slotId, item] of Object.entries(state.changes)) {
@@ -1967,15 +1951,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     // "Consumed" Mod/Ammo
                     descriptionModList.push(`<li>${item.name}</li>`);
                     if (item.type === 'modification') {
-                        if (!baseItemData.flags) baseItemData.flags = {};
-                        if (!baseItemData.flags.shadowrun5e) baseItemData.flags.shadowrun5e = {};
-                        if (!Array.isArray(baseItemData.flags.shadowrun5e.embeddedItems)) {
-                            baseItemData.flags.shadowrun5e.embeddedItems = [];
-                        }
-                        const modClone = foundry.utils.deepClone(item);
-                        modClone._id = modClone._id || foundry.utils.randomID();
-                        if (modClone.system) modClone.system.equipped = true;
-                        baseItemData.flags.shadowrun5e.embeddedItems.push(modClone);
+                        embeddedModsToCreate.push(foundry.utils.deepClone(item));
                     }
                 } else {
                     // "Linkable Item"
@@ -1988,15 +1964,11 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         }
 
-        // D. Finalize effects
-        baseItemData.effects = allEffects.map(effect => {
-            return services.buildService._normalizeEffect(foundry.utils.deepClone(effect));
-        });
-
-        // E. Update description
+        // D. Update description
         let description = "";
         if (isVehicle) {
             description = baseItemData.system?.description || "";
+            description = description.replace(/<hr><p><b>Installed Modifications:<\/b>[\s\S]*?<\/ul><\/p>/gi, "");
             if (descriptionModList.length > 0) {
                 description += `<hr><p><b>Installed Modifications:</b><ul>${descriptionModList.join('')}</ul></p>`;
             }
@@ -2005,6 +1977,8 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         } else {
             description = baseItemData.system?.description?.value || "";
+            description = description.replace(/<hr><p><b>Embedded Modifications:<\/b>[\s\S]*?<\/ul><\/p>/gi, "");
+            description = description.replace(/<hr><p><b>Linked Items:\s*<\/b>[\s\S]*?<\/p>/gi, "");
             if (descriptionModList.length > 0) {
                 description += `<hr><p><b>Embedded Modifications:</b><ul>${descriptionModList.join('')}</ul></p>`;
             }
@@ -2016,44 +1990,24 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         }
 
-        // F. Calculate and persist totals (cost, availability, essence)
+        // E. Calculate totals
         const totals = ItemBuilderApp.calculateTotals(state);
 
+        // F. Use SystemDataMapperService to map system DataModel, costs, availability, and active effects
         if (isVehicle) {
-            if (!baseItemData.system) baseItemData.system = {};
-            if (typeof baseItemData.system.cost === "object" && baseItemData.system.cost !== null) {
-                baseItemData.system.cost.value = totals.totalCost;
-            } else {
-                baseItemData.system.cost = totals.totalCost;
-            }
-            if (typeof baseItemData.system.availability === "object" && baseItemData.system.availability !== null) {
-                baseItemData.system.availability.value = totals.combinedAvailability;
-            } else {
-                baseItemData.system.availability = totals.combinedAvailability;
-            }
+            services.SystemDataMapperService.mapVehicleData(baseItemData, totals, {
+                embeddedItems: embeddedItemsToCreate,
+                effects: allEffects
+            });
         } else {
-            if (!baseItemData.system) baseItemData.system = {};
-            if (!baseItemData.system.technology) baseItemData.system.technology = {};
-            if (typeof baseItemData.system.technology.cost === "object" && baseItemData.system.technology.cost !== null) {
-                baseItemData.system.technology.cost.value = totals.totalCost;
-            } else {
-                baseItemData.system.technology.cost = totals.totalCost;
-            }
-            if (typeof baseItemData.system.technology.availability === "object" && baseItemData.system.technology.availability !== null) {
-                baseItemData.system.technology.availability.value = totals.combinedAvailability;
-            } else {
-                baseItemData.system.technology.availability = totals.combinedAvailability;
-            }
-            if (baseItemData.system.essence !== undefined) {
-                if (typeof baseItemData.system.essence === "object" && baseItemData.system.essence !== null) {
-                    baseItemData.system.essence.value = totals.totalEssence;
-                } else {
-                    baseItemData.system.essence = totals.totalEssence;
-                }
-            }
+            services.SystemDataMapperService.mapItemData(baseItemData, totals, {
+                embeddedMods: embeddedModsToCreate,
+                linkedItems: linkedItemsFlag,
+                effects: allEffects
+            });
         }
 
-        // G. Update flags
+        // G. Update marketplace flags
         if (!baseItemData.flags) baseItemData.flags = {};
         if (!baseItemData.flags['sr5-marketplace']) baseItemData.flags['sr5-marketplace'] = {};
         baseItemData.flags['sr5-marketplace'] = {
@@ -2065,12 +2019,6 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         if (!isVehicle) {
             baseItemData.flags['sr5-marketplace'].linkedItems = linkedItemsFlag;
-        } else {
-            // For vehicles, append embedded items
-            baseItemData.items = [
-                ...(baseItemData.items || []),
-                ...embeddedItemsToCreate
-            ];
         }
 
         return baseItemData;
@@ -2134,8 +2082,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 }
             });
 
-            // Invalidate marketplace index cache so the new/updated item appears immediately
-            game.sr5marketplace?.api?.itemData?.invalidateCache();
+            // Immediately add to index cache and rebuild index so the new/updated item appears immediately
+            services.itemDataServices.addOrUpdateItemToIndex(savedDoc);
+            services.itemDataServices.invalidateCache();
+            await services.itemDataServices.buildIndex();
 
             // Re-render inGameMarketplace if it is open
             const marketApp = foundry.applications.instances.get("inGameMarketplace");
@@ -2301,8 +2251,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 }
             });
 
-            // Invalidate marketplace index cache so the world item is immediately available
-            game.sr5marketplace?.api?.itemData?.invalidateCache();
+            // Immediately add to index cache and rebuild index so the item is available
+            services.itemDataServices.addOrUpdateItemToIndex(savedDoc);
+            services.itemDataServices.invalidateCache();
+            await services.itemDataServices.buildIndex();
 
             // Add the created world item directly to the basket
             await game.sr5marketplace.api.marketplace.addToBasket(savedDoc.uuid, actor.uuid);

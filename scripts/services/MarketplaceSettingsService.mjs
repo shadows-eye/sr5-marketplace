@@ -366,6 +366,18 @@ export class MarketplaceSettingsService {
             }
         }
 
+        if (savedDoc) {
+            if (targetPack) {
+                targetPack.indexed = false;
+            }
+            const itemDataService = game.sr5marketplace?.api?.itemData;
+            if (itemDataService) {
+                itemDataService.addOrUpdateItemToIndex?.(savedDoc);
+                itemDataService.invalidateCache?.();
+                await itemDataService.buildIndex?.();
+            }
+        }
+
         return savedDoc;
     }
 
@@ -441,6 +453,18 @@ export class MarketplaceSettingsService {
             });
             if (notify) {
                 ui.notifications?.info(`Request sent to GM to create vehicle "${vehicleData.name}".`);
+            }
+        }
+
+        if (savedDoc) {
+            if (targetPack) {
+                targetPack.indexed = false;
+            }
+            const itemDataService = game.sr5marketplace?.api?.itemData;
+            if (itemDataService) {
+                itemDataService.addOrUpdateItemToIndex?.(savedDoc);
+                itemDataService.invalidateCache?.();
+                await itemDataService.buildIndex?.();
             }
         }
 

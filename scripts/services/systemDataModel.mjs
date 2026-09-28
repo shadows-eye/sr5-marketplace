@@ -1,3 +1,5 @@
+import { SystemDataMapperService } from "./SystemDataMapperService.mjs";
+
 /**
  * SystemDataModel Service
  *
@@ -322,6 +324,52 @@ export class SystemDataModel {
     }
 
     /**
+     * Parses an availability representation into the standard system structure.
+     * @param {string|number|object} avail
+     * @returns {{base: number, value: number, restriction: string, label: string}}
+     */
+    parseAvailability(avail) {
+        return SystemDataMapperService.parseAvailability(avail);
+    }
+
+    /**
+     * Sets availability on an item or actor data object using the system's schema.
+     * @param {object} itemData - Item or Actor data object.
+     * @param {string|number|object} availability - Availability value or string.
+     */
+    setAvailability(itemData, availability) {
+        if (!itemData) return;
+        const parsed = SystemDataMapperService.parseAvailability(availability);
+        const path = this.getAvailabilityPath(itemData);
+        const current = foundry.utils.getProperty(itemData, path);
+        if (current !== null && typeof current === "object") {
+            foundry.utils.setProperty(itemData, path, {
+                ...current,
+                base: parsed.base,
+                value: parsed.value,
+                restriction: parsed.restriction,
+                label: parsed.label
+            });
+        } else {
+            const schema = this.getItemSchema(itemData);
+            const isObjectSchema = schema && (
+                schema.fields?.technology?.fields?.availability ||
+                schema.fields?.availability
+            );
+            if (isObjectSchema) {
+                foundry.utils.setProperty(itemData, path, {
+                    base: parsed.base,
+                    value: parsed.value,
+                    restriction: parsed.restriction,
+                    label: parsed.label
+                });
+            } else {
+                foundry.utils.setProperty(itemData, path, parsed.label);
+            }
+        }
+    }
+
+    /**
      * Reads essence cost from an item.
      * @param {object} item
      * @returns {number}
@@ -445,6 +493,10 @@ export class SystemDataModel {
             "system.technology.rating",
             "system.technology.availability",
             "system.technology.quantity",
+            "system.cost",
+            "system.availability",
+            "system.rating",
+            "system.quantity",
             "system.karma",
             "system.essence",
             "system.range.ranges.category",

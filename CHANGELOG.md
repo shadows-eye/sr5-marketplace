@@ -9,30 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [14.006.0] - 2026-09-28
 
-### Added
-- **Custom Compendium Save Targets (GM Settings)**:
-  - Game Masters can now configure dedicated compendium packs as the save destination for custom-crafted items and vehicles directly in Module Settings and the Compendium Sources manager.
-  - Automatically verifies and unlocks the designated compendium upon selection so GMs never have to unlock packs manually.
-- **Dynamic System DataModel Compatibility**:
-  - Implemented dynamic schema resolution against the Shadowrun 5e system data models in `CONFIG`, ensuring reliable item property mapping (cost, quantity, availability, and rating) across all current and future system releases.
+### 🚀 **What's New in v14.006.0**
 
-### Changed & Improved
-- **Unified Theme & Visual Polish**:
-  - Consistent, high-contrast visual styling across the Marketplace, Item Builder, Item Preview, and Settings applications.
-  - Refined headers, modifier cards, and builder tabs with dedicated dark orange theme accents.
-- **MarketShouter Responsiveness**:
-  - The MarketShouter quick-access bar now automatically recedes behind active application windows so it never obstructs shopping or builder dialogs.
-  - Refined hover transitions and layout stability.
-- **Module Architecture & Reliability**:
-  - Streamlined service layer architecture providing instant API readiness on startup, resolving previous startup delays and initialization errors.
+Hey chummers! Here's what just dropped in this update:
 
-### Fixed
-- **Item Builder & Cart Modifications**:
-  - Fixed an issue where adding customized items or vehicles directly to the cart would lose applied modifications or recalculated prices. Cart purchases now accurately reflect all custom changes, combined availability, and total costs.
-  - Fixed a display bug where price and availability values in item previews could occasionally show raw unformatted text.
-  - Live combined totals for cost, essence, and availability now update dynamically in real time as you customize items.
-- **Module Initialization**:
-  - Resolved a startup dependency timing error that could cause system API bridge initialization to fail on initial world load.
+#### ✨ **New Features & Improvements**
+* **Custom Compendium Save Destinations** 📦
+  * GMs can now pick specific compendium packs as save targets for custom items and vehicles. Target compendiums auto-unlock on save.
+* **Instant Marketplace Catalog Sync** ⚡
+  * Newly built items and vehicles now appear in the marketplace and cart immediately—no page refresh or server restart needed.
+* **System DataModel & Active Effect Mapping** ⚙️
+  * Full integration with `SystemDataMapperService`. Items, vehicles, and active effects are automatically mapped and normalized to SR5 0.38+ / Foundry v14 standards with linked `system.targets` and `system.changes`.
+
+#### 🎨 **UI & Polish**
+* **Unified Cyberpunk Theme** 🖌️
+  * High-contrast dark orange styling across the Marketplace, Item Builder, Preview cards, and Settings.
+* **Smarter MarketShouter Bar** 📱
+  * The quick-access capsule bar automatically recedes behind active modals so it never obstructs your workspace.
+
+#### 🐛 **Bug Fixes**
+* **Auto-Loading Modifications**: Selecting weapons, armor, or vehicles that already have mods now properly populates them into the builder slots right away.
+* **Cart & Totals Accuracy**: Custom item modifications, combined availabilities, and prices now transfer into the cart without getting lost or reset.
+* **Preview Cleanups**: Fixed cases where cost and availability objects could render as raw text in preview sheets.
+* **Startup Stability**: Resolved a system API bridge initialization race condition during initial load.
 
 ---
 

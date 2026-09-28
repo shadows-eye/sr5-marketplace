@@ -51,8 +51,8 @@ export class BuilderStateService {
      * @param {string|null} [userId=null] - The ID of the user.
      * @returns {Promise<void>}
      */
-    static async setBaseItem(itemData, userId = null) {
-        return await buildService.setBuilderBaseItem(itemData, userId);
+    static async setBaseItem(itemData, userId = null, options = {}) {
+        return await buildService.setBuilderBaseItem(itemData, userId, options);
     }
 
     /**

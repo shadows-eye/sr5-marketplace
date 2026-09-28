@@ -405,8 +405,8 @@ class FactoryAPI {
      * @param {string|null} [userId=null] - The ID of the user.
      * @returns {Promise<void>}
      */
-    async setBuilderBaseItem(itemData, userId = null) {
-        return await this.buildService.setBuilderBaseItem(itemData, userId);
+    async setBuilderBaseItem(itemData, userId = null, options = {}) {
+        return await this.buildService.setBuilderBaseItem(itemData, userId, options);
     }
 
     /**
@@ -589,10 +589,12 @@ class ItemBuilderAPI {
         const cleanItemData = {
             uuid: item.uuid, name: item.name, img: item.img, type: item.type,
             system: item.system, technology: item.technology,
+            flags: item.flags ? foundry.utils.deepClone(item.flags) : {},
+            items: item.items ? Array.from(item.items).map(i => typeof i.toObject === 'function' ? i.toObject(false) : i) : [],
             effects: item.effects?.map(e => e.toObject(false)) ?? []
         };
 
-        await this.buildService.setBuilderBaseItem(cleanItemData);
+        await this.buildService.setBuilderBaseItem(cleanItemData, null, { document: item, forceReset: true });
 
         let itemBuilder = foundry.applications.instances.get("itemBuilder");
         if (itemBuilder) {
