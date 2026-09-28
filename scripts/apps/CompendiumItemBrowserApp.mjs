@@ -1,5 +1,8 @@
-import { ThemeService } from "../services/themeService.mjs";
-import { InventoryRules } from "../services/_module.mjs";
+/**
+ * @services Holds all services in a folder namespaced imported.
+ * @example services.basketService
+ */
+import * as services from "../services/_module.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -104,7 +107,7 @@ export class CompendiumItemBrowserApp extends HandlebarsApplicationMixin(Applica
     /** @override */
     _onRender(context, options) {
         super._onRender(context, options);
-        ThemeService.applyTheme("#actors", this.element, this.shopActor);
+        services.ThemeService.applyTheme("#actors", this.element, this.shopActor);
 
         // Listeners for Sidebar
         const sidebar = this.element.querySelector(".compendium-list");
@@ -265,7 +268,7 @@ export class CompendiumItemBrowserApp extends HandlebarsApplicationMixin(Applica
             if (this.shopActor.findInventoryItem(item.uuid)) continue;
 
             const newItemId = foundry.utils.randomID();
-            const calculatedData = await InventoryRules.getCalculatedItemData(this.shopActor, item);
+            const calculatedData = await services.InventoryRules.getCalculatedItemData(this.shopActor, item);
 
             const itemPriceVal = calculatedData.itemPrice?.value ?? calculatedData.itemPrice ?? 0;
             const sellPriceVal = calculatedData.sellPrice?.value ?? calculatedData.sellPrice ?? 0;

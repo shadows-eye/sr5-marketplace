@@ -1,4 +1,8 @@
-import { MarketplaceSettingsService } from "../services/MarketplaceSettingsService.mjs";
+/**
+ * @services Holds all services in a folder namespaced imported.
+ * @example services.basketService
+ */
+import * as services from "../services/_module.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -14,9 +18,9 @@ export class CompendiumSettingsApp extends HandlebarsApplicationMixin(Applicatio
 
         this.searchQuery = "";
         this.enabledMap = null; // Map<string, boolean>
-        this.allowWorldItems = MarketplaceSettingsService.isWorldItemsAllowed();
-        this.customItemCompendium = MarketplaceSettingsService.getCustomItemCompendium();
-        this.customVehicleCompendium = MarketplaceSettingsService.getCustomVehicleCompendium();
+        this.allowWorldItems = services.MarketplaceSettingsService.isWorldItemsAllowed();
+        this.customItemCompendium = services.MarketplaceSettingsService.getCustomItemCompendium();
+        this.customVehicleCompendium = services.MarketplaceSettingsService.getCustomVehicleCompendium();
         this._compendiumsCache = null;
     }
 
@@ -56,7 +60,7 @@ export class CompendiumSettingsApp extends HandlebarsApplicationMixin(Applicatio
         const context = await super._prepareContext(options);
 
         if (!this._compendiumsCache) {
-            this._compendiumsCache = await MarketplaceSettingsService.getEnrichedCompendiumList();
+            this._compendiumsCache = await services.MarketplaceSettingsService.getEnrichedCompendiumList();
         }
 
         // Initialize state map if not yet created
@@ -87,8 +91,8 @@ export class CompendiumSettingsApp extends HandlebarsApplicationMixin(Applicatio
         context.allowWorldItems = this.allowWorldItems;
         context.customItemCompendium = this.customItemCompendium;
         context.customVehicleCompendium = this.customVehicleCompendium;
-        context.itemCompendiumChoices = MarketplaceSettingsService.getItemCompendiumChoices();
-        context.vehicleCompendiumChoices = MarketplaceSettingsService.getVehicleCompendiumChoices();
+        context.itemCompendiumChoices = services.MarketplaceSettingsService.getItemCompendiumChoices();
+        context.vehicleCompendiumChoices = services.MarketplaceSettingsService.getVehicleCompendiumChoices();
         context.isGM = game.user?.isGM ?? false;
         context.searchQuery = this.searchQuery;
         context.totalCount = mapped.length;
@@ -243,16 +247,16 @@ export class CompendiumSettingsApp extends HandlebarsApplicationMixin(Applicatio
         if (game.user?.isGM) {
             const customItemSelect = this.element.querySelector(".custom-item-compendium-select");
             if (customItemSelect) {
-                await MarketplaceSettingsService.setCustomItemCompendium(customItemSelect.value);
+                await services.MarketplaceSettingsService.setCustomItemCompendium(customItemSelect.value);
             }
             const customVehicleSelect = this.element.querySelector(".custom-vehicle-compendium-select");
             if (customVehicleSelect) {
-                await MarketplaceSettingsService.setCustomVehicleCompendium(customVehicleSelect.value);
+                await services.MarketplaceSettingsService.setCustomVehicleCompendium(customVehicleSelect.value);
             }
         }
 
-        await MarketplaceSettingsService.setAllowedCompendiums(allowedIds);
-        await MarketplaceSettingsService.setWorldItemsAllowed(this.allowWorldItems);
+        await services.MarketplaceSettingsService.setAllowedCompendiums(allowedIds);
+        await services.MarketplaceSettingsService.setWorldItemsAllowed(this.allowWorldItems);
 
         ui.notifications.info(game.i18n.localize("SR5Marketplace.CompendiumSettings.SavedNotification"));
         this.close();

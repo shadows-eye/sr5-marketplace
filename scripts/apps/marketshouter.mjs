@@ -1,4 +1,8 @@
-import { BasketService } from "../services/basketService.mjs";
+/**
+ * @services Holds all services in a folder namespaced imported.
+ * @example services.basketService
+ */
+import * as services from "../services/_module.mjs";
 import { inGameMarketplace } from "./inGameMarketplace.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -6,7 +10,7 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     constructor(options = {}) {
         super(options);
-        this.basketService = new BasketService();
+        this.basketService = new services.BasketService();
         this.searchQuery = "";
         this.matchedItems = [];
         this.currentShopActorUuid = null;
@@ -78,9 +82,9 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
                     shopActorImg = shopActor.img;
                     shopActorName = shopActor.name;
                     this.currentShopActorUuid = shopActorUuid;
-                    
+
                     // Pre-cache shop items
-                    const shopData = await game.sr5marketplace.api.itemData.getShopItems(shopActorUuid);
+                    const shopData = await services.itemDataServices.getShopItems(shopActorUuid);
                     this.searchableItems = shopData?.filteredItems?.items || [];
                 }
             } catch (err) {
@@ -96,8 +100,8 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
 
         let showItemBuilder = isGM;
         if (!isGM && canvas.ready && canvas.tokens) {
-            const hasFactoryOnScene = canvas.tokens.placeables.some(t => 
-                t.actor?.type === "sr5-marketplace.shop" && 
+            const hasFactoryOnScene = canvas.tokens.placeables.some(t =>
+                t.actor?.type === "sr5-marketplace.shop" &&
                 t.actor?.system?.shop?.isFactory
             );
             if (hasFactoryOnScene) {
@@ -247,8 +251,8 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         }
 
         // Get indexed items or shop-specific items
-        const allItems = this.searchableItems || game.sr5marketplace.api.itemData.getItems();
-        
+        const allItems = this.searchableItems || services.itemDataServices.getItems();
+
         // Filter items
         this.matchedItems = allItems.filter(item => {
             const nameMatch = item.name?.toLowerCase().includes(this.searchQuery);
@@ -276,11 +280,11 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
             `;
         } else {
             resultsList.innerHTML = displayItems.map(item => {
-                const img = game.sr5marketplace.api.itemData.getRepresentativeImage(item);
+                const img = services.itemDataServices.getRepresentativeImage(item);
                 const cost = item.system?.technology?.cost ?? item.system?.karma ?? "";
                 const isKarma = item.system?.karma !== undefined && item.system?.karma !== null;
                 const costDisplay = cost ? `${cost} ${isKarma ? "Karma" : "¥"}` : "";
-                
+
                 // Format type beautifully
                 const formattedType = item.type.charAt(0).toUpperCase() + item.type.slice(1).replace(/_/g, " ");
 
@@ -333,10 +337,10 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
 
         // Determine correct category key for inGameMarketplace
         const categoryKey = this._getCategoryKeyForRawItem(item);
-        
+
         let marketplace = foundry.applications.instances.get("inGameMarketplace");
         if (!marketplace) {
-            marketplace = new inGameMarketplace({ 
+            marketplace = new inGameMarketplace({
                 initialSearchTerm: item.name,
                 shopActorUuid: this.currentShopActorUuid
             });
@@ -397,7 +401,7 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         if (type === "quality") return "qualitys";
         if (type === "spell") return "spells";
         if (type === "device") return "devices";
-        
+
         if (["armor", "cyberware", "bioware", "equipment", "metamagic", "echo", "complex_form"].includes(type)) {
             return type === "armor" ? "armor" : type === "cyberware" ? "cyberware" : type === "bioware" ? "bioware" : type === "equipment" ? "equipment" : type === "metamagic" ? "metamagic" : type === "echo" ? "echo" : "complex_form";
         }

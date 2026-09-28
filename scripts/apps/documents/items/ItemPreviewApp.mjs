@@ -1,5 +1,8 @@
-import { BasketService } from "../../../services/basketService.mjs";
-import { ActorSelectionService } from "../../../services/ActorSelectionService.mjs";
+/**
+ * @services Holds all services in a folder namespaced imported.
+ * @example services.basketService
+ */
+import * as services from "../../../services/_module.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -11,7 +14,7 @@ export class ItemPreviewApp extends HandlebarsApplicationMixin(ApplicationV2) {
         super(options);
         this.itemUuid = itemUuid;
         this.customItemData = options.itemData || null;
-        this.basketService = new BasketService();
+        this.basketService = new services.BasketService();
         this.purchasingActor = null;
     }
 
@@ -76,7 +79,7 @@ export class ItemPreviewApp extends HandlebarsApplicationMixin(ApplicationV2) {
             itemData.system.availability = (t && !String(v).includes(t)) ? `${v}${t}` : (v || "0");
         }
 
-        this.purchasingActor = await ActorSelectionService.getSelectedActor();
+        this.purchasingActor = await services.ActorSelectionService.getSelectedActor();
 
         //options.window.title = itemData.name;
 

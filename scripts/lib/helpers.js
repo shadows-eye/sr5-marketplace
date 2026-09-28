@@ -1,7 +1,11 @@
-import ItemData from '../services/ItemDataServices.mjs';
+/**
+ * @services Holds all services in a folder namespaced imported.
+ * @example services.basketService
+ */
+import * as services from '../services/_module.mjs';
 export const registerBasicHelpers = () => {
-    Handlebars.registerHelper('hasItemType', function(type, options) {
-        const itemData = new ItemData();
+    Handlebars.registerHelper('hasItemType', function (type, options) {
+        const itemData = new services.ItemDataServices();
         if (itemData.itemsByType[type] && itemData.itemsByType[type].length > 0) {
             console.log(`Type found: ${type}`);
             return options.fn(this);
@@ -21,114 +25,114 @@ export const registerBasicHelpers = () => {
     });
     // Add other helpers here if needed  
     Handlebars.registerHelper('for', function (from, to, options) {
-            let accum = '';
-            for (let i = from; i < to; i += 1) {
-                accum += options.fn(i);
-            }
-    
-            return accum;
-    }); 
-    Handlebars.registerHelper('getTechnologyCost', function(item) {
+        let accum = '';
+        for (let i = from; i < to; i += 1) {
+            accum += options.fn(i);
+        }
+
+        return accum;
+    });
+    Handlebars.registerHelper('getTechnologyCost', function (item) {
         return item?.system?.technology?.cost || 0;  // Fallback to 0 if not found
     });
-    Handlebars.registerHelper('getKarma', function(item) {
+    Handlebars.registerHelper('getKarma', function (item) {
         return item?.system?.karma || item?.flags?.["sr5-marketplace"]?.karma || 0;  // Fallback to 0 if not found
     });
-    
-    Handlebars.registerHelper('getAvailability', function(item) {
+
+    Handlebars.registerHelper('getAvailability', function (item) {
         return item?.system?.technology?.availability || "Unknown";
     });
-    
-    Handlebars.registerHelper('getEssence', function(item) {
+
+    Handlebars.registerHelper('getEssence', function (item) {
         return item?.system?.essence || 0;
     });
-    Handlebars.registerHelper('getField', function(item, field) {
+    Handlebars.registerHelper('getField', function (item, field) {
         return item?.system?.[field] || "";
-    });  
-    Handlebars.registerHelper('range', function(min, max, block) {
+    });
+    Handlebars.registerHelper('range', function (min, max, block) {
         let accum = '';
         for (let i = min; i <= max; i++) {
             accum += block.fn(i);
         }
         return accum;
-    });   
+    });
     Handlebars.registerHelper('hasprop', function (obj, prop, options) {
-            if (obj.hasOwnProperty(prop)) {
-                return options.fn(this);
-            } else return options.inverse(this);
-        });
+        if (obj.hasOwnProperty(prop)) {
+            return options.fn(this);
+        } else return options.inverse(this);
+    });
     Handlebars.registerHelper('ifin', function (val, arr, options) {
-            if (arr.includes(val)) return options.fn(this);
-            else return options.inverse(this);
-        });
-        // if greater than
+        if (arr.includes(val)) return options.fn(this);
+        else return options.inverse(this);
+    });
+    // if greater than
     Handlebars.registerHelper('ifgt', function (v1, v2, options) {
-            if (v1 > v2) return options.fn(this);
-            else return options.inverse(this);
-        });
-        // if less than
+        if (v1 > v2) return options.fn(this);
+        else return options.inverse(this);
+    });
+    // if less than
     Handlebars.registerHelper('iflt', function (v1, v2, options) {
-            if (v1 < v2) return options.fn(this);
-            else return options.inverse(this);
-        });
-        // if less than or equal
+        if (v1 < v2) return options.fn(this);
+        else return options.inverse(this);
+    });
+    // if less than or equal
     Handlebars.registerHelper('iflte', function (v1, v2, options) {
-            if (v1 <= v2) return options.fn(this);
-            else return options.inverse(this);
-        });
-        // if not equal
+        if (v1 <= v2) return options.fn(this);
+        else return options.inverse(this);
+    });
+    // if not equal
     Handlebars.registerHelper('ifne', function (v1, v2, options) {
-            if (v1 !== v2) return options.fn(this);
-            else return options.inverse(this);
-        });
-        // if equal
+        if (v1 !== v2) return options.fn(this);
+        else return options.inverse(this);
+    });
+    // if equal
     Handlebars.registerHelper('ife', function (v1, v2, options) {
-            if (v1 === v2) return options.fn(this);
-            else return options.inverse(this);
-        });
-        // if then
+        if (v1 === v2) return options.fn(this);
+        else return options.inverse(this);
+    });
+    // if then
     Handlebars.registerHelper('ift', function (v1, v2) {
-            if (v1) return v2;
-        });
-    
+        if (v1) return v2;
+    });
+
     Handlebars.registerHelper('sum', function (v1, v2) {
-            return v1 + v2;
-        });
-    Handlebars.registerHelper('multiply', function(v1, v2) {
-            return (Number(v1) || 0) * (Number(v2) || 0);
-        });
-    Handlebars.registerHelper('range', function(from, to, options) {
+        return v1 + v2;
+    });
+    Handlebars.registerHelper('multiply', function (v1, v2) {
+        return (Number(v1) || 0) * (Number(v2) || 0);
+    });
+    Handlebars.registerHelper('range', function (from, to, options) {
         let accum = '';
         for (let i = from; i < to; i++) {
-                accum += options.fn(i);
+            accum += options.fn(i);
         }
-            return accum;
+        return accum;
     });
-    Handlebars.registerHelper('ifeq', function(a, b, options) {
+    Handlebars.registerHelper('ifeq', function (a, b, options) {
         if (a === b) {
             return options.fn(this);
         }
         return options.inverse(this);
     });
-    Handlebars.registerHelper('toLowerCase', function(str) {
+    Handlebars.registerHelper('toLowerCase', function (str) {
         return str ? str.toLowerCase() : '';
     });
-    Handlebars.registerHelper('eq', function(a, b) {
+    Handlebars.registerHelper('eq', function (a, b) {
         return a === b;
     });
-    Handlebars.registerHelper('neq', function(a, b) {
+    Handlebars.registerHelper('neq', function (a, b) {
         return a !== b;
     });
-    Handlebars.registerHelper('ge', function(a, b) {
+    Handlebars.registerHelper('ge', function (a, b) {
         return a >= b;
     });
-    Handlebars.registerHelper('gt', function(a, b) {
+    Handlebars.registerHelper('gt', function (a, b) {
         return a > b;
     });
-    Handlebars.registerHelper('le', function(a, b) {
+    Handlebars.registerHelper('le', function (a, b) {
         return a <= b;
     });
-    Handlebars.registerHelper('lt', function(a, b) {
+    Handlebars.registerHelper('lt', function (a, b) {
         return a < b;
     });
     // Register a Handlebars helper called 'capitalizeFirst'
@@ -147,7 +151,7 @@ export const registerBasicHelpers = () => {
         });
     });
 
-    Handlebars.registerHelper("jsonParse", function(jsonString) {
+    Handlebars.registerHelper("jsonParse", function (jsonString) {
         try {
             return JSON.parse(jsonString);
         } catch (e) {
@@ -155,15 +159,15 @@ export const registerBasicHelpers = () => {
             return {}; // Return an empty object on failure
         }
     });
-    Handlebars.registerHelper("isModifierActive", function(label, modifiersArray) {
+    Handlebars.registerHelper("isModifierActive", function (label, modifiersArray) {
         if (!Array.isArray(modifiersArray)) return false;
         return modifiersArray.some(mod => mod.label === label);
     });
-    Handlebars.registerHelper('loc', function(key, options) {
+    Handlebars.registerHelper('loc', function (key, options) {
         // 'options.hash' contains all the key=value pairs from the helper call (e.g., rolls=totalRolls)
         return game.i18n.format(key, options.hash);
     });
-    Handlebars.registerHelper('formatNumber', function(num) {
+    Handlebars.registerHelper('formatNumber', function (num) {
         if (num !== null && typeof num === 'object') {
             num = num.value ?? num.base ?? 0;
         }
@@ -175,7 +179,7 @@ export const registerBasicHelpers = () => {
         }
         return val;
     });
-    Handlebars.registerHelper('statVal', function(statObj) {
+    Handlebars.registerHelper('statVal', function (statObj) {
         if (statObj === undefined || statObj === null) return 0;
         if (typeof statObj !== 'object') return statObj;
         if (statObj.value !== undefined) {
@@ -185,7 +189,7 @@ export const registerBasicHelpers = () => {
         }
         return statObj.base !== undefined ? statObj.base : 0;
     });
-    Handlebars.registerHelper('formatAvail', function(avail) {
+    Handlebars.registerHelper('formatAvail', function (avail) {
         if (avail === undefined || avail === null) return "";
         if (typeof avail === 'object') {
             const val = avail.value ?? avail.base ?? "";
@@ -196,7 +200,7 @@ export const registerBasicHelpers = () => {
         }
         return String(avail);
     });
-    Handlebars.registerHelper('formatVal', function(val) {
+    Handlebars.registerHelper('formatVal', function (val) {
         if (val === undefined || val === null) return "";
         if (typeof val === 'object') {
             if (val.value !== undefined) return val.value;

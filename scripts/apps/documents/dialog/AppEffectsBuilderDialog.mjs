@@ -1,5 +1,9 @@
 import { AppDialogBuilder } from './AppDialogBuilder.mjs';
-import { SystemDataMapperService } from '../../../services/SystemDataMapperService.mjs';
+/**
+ * @services Holds all services in a folder namespaced imported.
+ * @example services.basketService
+ */
+import * as services from '../../../services/_module.mjs';
 
 /**
  * A specialized dialog builder for the "Effects" tab of the Item Builder.
@@ -41,7 +45,7 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
             context.selectedKey = selectedKey;
             context.selectedChange = primaryChange;
 
-            const mappableKeys = SystemDataMapperService.getMappableKeys();
+            const mappableKeys = services.SystemDataMapperService.getMappableKeys();
             const characterActorKeys = mappableKeys.actors.character || {};
             context.actorKeyGroups = this.#_prepareGroupsForGrid(characterActorKeys, selectedKey);
             context.rollKeyGroups = this.#_prepareGroupsForGrid(mappableKeys.rolls, selectedKey);

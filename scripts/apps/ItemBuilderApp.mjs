@@ -1,17 +1,12 @@
-import { ItemPreviewApp } from "../apps/documents/items/ItemPreviewApp.mjs";
-import { SearchService as itemSearchService } from '../services/searchTag.mjs';
-import { VehicleSearchService } from "../services/vehicleSearchService.mjs";
-import { AppEffectsBuilderDialog } from '../apps/documents/dialog/AppEffectsBuilderDialog.mjs';
-import { BuildService } from "../services/buildService.mjs";
-
-const buildService = new BuildService();
-
-import { ActorSelectionService } from "../services/ActorSelectionService.mjs";
-import { AppTestFlagService } from '../services/AppTestFlagService.mjs';
-import { AppDialogBuilder } from '../apps/documents/dialog/AppDialogBuilder.mjs';
+/**
+ * @services Holds all services in a folder namespaced imported.
+ * @example services.basketService
+ */
+import * as services from "../services/_module.mjs";
+import { ItemPreviewApp } from "./documents/items/ItemPreviewApp.mjs";
+import { AppEffectsBuilderDialog } from './documents/dialog/AppEffectsBuilderDialog.mjs';
+import { AppDialogBuilder } from './documents/dialog/AppDialogBuilder.mjs';
 import { BuildTestApp } from "./documents/dialog/BuildTestApp.mjs";
-import { MarketplaceSettingsService } from "../services/MarketplaceSettingsService.mjs";
-import { systemDataModel } from "../services/systemDataModel.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -34,14 +29,13 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         super(options);
 
         // --- State and Services ---
-        this.itemData = game.sr5marketplace.api.itemData; // Use the global item data service
-        console.log(this.itemData);
+        this.itemData = services.itemDataServices;
+        this.buildService = services.buildService;
         this.purchasingActor = null;
         this.itemSearchService = null;
         this.activeTestState = null;
         this.activeDialogId = null;
         this.modSearchService = null;
-        // this.builderService = new BuilderService(); // To be added later no builder data needed here
         this.tabGroups = { main: "builder" }; // Default to the 'builder' tab
 
         this.workshopActorUuid = options.workshopActorUuid || null;
@@ -523,7 +517,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             // Initialize Search Services scoped to their sections
             const itemSection = this.element.querySelector(".item-selector-section");
             if (itemSection) {
-                const searchClass = this.tabGroups.main === "vehicle" ? VehicleSearchService : itemSearchService;
+                const searchClass = this.tabGroups.main === "vehicle" ? services.VehicleSearchService : services.SearchService;
                 this.itemSearchService = new searchClass(itemSection, (tags, query) => {
                     this.itemSearchQuery = query;
                     this.itemSearchTags = tags;
@@ -542,7 +536,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
             const modSection = this.element.querySelector(".mod-selector-section");
             if (modSection) {
-                this.modSearchService = new itemSearchService(modSection, (tags, query) => {
+                this.modSearchService = new services.SearchService(modSection, (tags, query) => {
                     this.modSearchQuery = query;
                     this.modSearchTags = tags;
                     this._filterItemsDOM('.mod-selector-section .item-content-grid', tags, query);
@@ -604,7 +598,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
 
             if (workshopContainer) {
-                this.workshopSearchService = new itemSearchService(this.element, (tags, query) => {
+                this.workshopSearchService = new services.SearchService(this.element, (tags, query) => {
                     this.workshopSearchQuery = query;
                     this.workshopSearchTags = tags;
 
@@ -650,7 +644,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 // Pre-populate the search service before initializing to preserve tags and query across renders
                 const savedTags = [...(this.workshopSearchTags || [])];
                 const savedQuery = this.workshopSearchQuery || "";
-                
+
                 this.workshopSearchService.activeFilters = savedTags;
                 const sBox = this.element.querySelector("#search-box");
                 if (sBox) sBox.value = savedQuery;
@@ -818,11 +812,11 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         }
 
-        this.purchasingActor = await ActorSelectionService.getSelectedActor();
+        this.purchasingActor = await services.ActorSelectionService.getSelectedActor();
 
         const AppUserId = game.user.id;
-        const testStates = await AppTestFlagService.readState(AppUserId);
-        const unresolvedTest = await AppTestFlagService.getActiveBuildTest(AppUserId, this.purchasingActor);
+        const testStates = await services.AppTestFlagService.readState(AppUserId);
+        const unresolvedTest = await services.AppTestFlagService.getActiveBuildTest(AppUserId, this.purchasingActor);
         this.activeDialogId = unresolvedTest?.id || null;
 
         const activeTestState = this.activeDialogId ? testStates[this.activeDialogId] : null;
@@ -929,7 +923,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                 if (!this.purchasingActor || !validUuids.includes(this.purchasingActor.uuid)) {
                                     const defaultChar = characters.find(c => c.id === game.user.character?.id) || characters[0];
                                     if (defaultChar) {
-                                        await ActorSelectionService.setSelectedActor(defaultChar.uuid);
+                                        await services.ActorSelectionService.setSelectedActor(defaultChar.uuid);
                                         this.purchasingActor = defaultChar;
                                     }
                                 }
@@ -1023,24 +1017,24 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                     }
                                 }
 
-                                 // Sync the virtual modifications stock flags via Factory API
-                                 await game.sr5marketplace.api.factory.syncVirtualModificationsStock(activeVehicle, workshopActor, this.purchasingActor);
+                                // Sync the virtual modifications stock flags via Factory API
+                                await game.sr5marketplace.api.factory.syncVirtualModificationsStock(activeVehicle, workshopActor, this.purchasingActor);
 
-                                 const virtualMods = game.sr5marketplace.api.factory.getVirtualModifications(activeVehicle);
+                                const virtualMods = game.sr5marketplace.api.factory.getVirtualModifications(activeVehicle);
 
-                                 let anyMissingAndNotInBasket = false;
-                                 let allInStock = true;
-                                 let anyUntestedInStock = false;
+                                let anyMissingAndNotInBasket = false;
+                                let allInStock = true;
+                                let anyUntestedInStock = false;
 
-                                 console.log("SR5 Marketplace | Workshop Render Evaluation - Virtual Mods:", virtualMods.map(m => {
-                                     const stockResult = game.sr5marketplace.api.factory.checkInventoryStock(activeVehicle, workshopActor, this.purchasingActor, m.id);
-                                     return {
-                                         name: m.name,
-                                         inStockFlag: m.inStock,
-                                         allInStockCheck: stockResult.allInStock,
-                                         resolvedInStock: m.inStock || stockResult.allInStock
-                                     };
-                                 }));
+                                console.log("SR5 Marketplace | Workshop Render Evaluation - Virtual Mods:", virtualMods.map(m => {
+                                    const stockResult = game.sr5marketplace.api.factory.checkInventoryStock(activeVehicle, workshopActor, this.purchasingActor, m.id);
+                                    return {
+                                        name: m.name,
+                                        inStockFlag: m.inStock,
+                                        allInStockCheck: stockResult.allInStock,
+                                        resolvedInStock: m.inStock || stockResult.allInStock
+                                    };
+                                }));
 
 
                                 for (const vMod of virtualMods) {
@@ -1119,7 +1113,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                 };
                             }
 
-                            const allGlobalItems = game.sr5marketplace.api.itemData.getItems() || [];
+                            const allGlobalItems = services.itemDataServices.getItems() || [];
                             const shopInv = workshopActor.system.shop.inventory || {};
                             const shopInvEntries = Object.entries(shopInv);
 
@@ -1171,9 +1165,9 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                         entryId: mod.id,
                                         name: mod.name,
                                         img: mod.img || "systems/shadowrun5e/dist/icons/importer/equipment/modification.svg",
-                                        qty: systemDataModel.getItemQuantity(mod),
+                                        qty: services.systemDataModel.getItemQuantity(mod),
                                         category: ItemBuilderApp._getModificationCategory(mod),
-                                        rating: systemDataModel.getRating(mod) || 1,
+                                        rating: services.systemDataModel.getRating(mod) || 1,
                                         slots: mod.system.slots ?? 0,
                                         isFromOwner: true
                                     });
@@ -1996,7 +1990,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         // D. Finalize effects
         baseItemData.effects = allEffects.map(effect => {
-            return buildService._normalizeEffect(foundry.utils.deepClone(effect));
+            return services.buildService._normalizeEffect(foundry.utils.deepClone(effect));
         });
 
         // E. Update description
@@ -2112,14 +2106,14 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         let savedDoc = null;
         if (buildData.type === "vehicle") {
-            savedDoc = await MarketplaceSettingsService.saveOrUpdateVehicle(buildData, {
+            savedDoc = await services.MarketplaceSettingsService.saveOrUpdateVehicle(buildData, {
                 notify: true,
                 existingUuid: state.baseItem.uuid
             });
         } else {
             console.log("Marketplace Builder | Saving item:", buildData);
             try {
-                savedDoc = await MarketplaceSettingsService.saveOrUpdateItem(buildData, {
+                savedDoc = await services.MarketplaceSettingsService.saveOrUpdateItem(buildData, {
                     notify: true,
                     existingUuid: state.baseItem.uuid
                 });
@@ -2216,7 +2210,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const rating = Number(buildData.system?.rating || buildData.system?.technology?.rating || 6);
         const threshold = rating > 0 ? rating * 2 : 12;
 
-        const actor = await ActorSelectionService.getSelectedActor();
+        const actor = await services.ActorSelectionService.getSelectedActor();
         if (!actor) {
             ui.notifications.warn("Please select a character/actor to perform the test.");
             return;
@@ -2250,7 +2244,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             buildTestApp.close();
         }
 
-        this.activeDialogId = await AppTestFlagService.createTest(initialData);
+        this.activeDialogId = await services.AppTestFlagService.createTest(initialData);
 
         console.log("SR5 Marketplace | Starting item build test...");
         await new Promise((resolve) => {
@@ -2271,7 +2265,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             return;
         }
 
-        const actor = await ActorSelectionService.getSelectedActor();
+        const actor = await services.ActorSelectionService.getSelectedActor();
         if (!actor) {
             ui.notifications.warn("Please select a character/actor to shop on behalf of.");
             return;
@@ -2281,7 +2275,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         let savedDoc = null;
         if (buildData.type === "vehicle") {
-            savedDoc = await MarketplaceSettingsService.saveOrUpdateVehicle(buildData, {
+            savedDoc = await services.MarketplaceSettingsService.saveOrUpdateVehicle(buildData, {
                 notify: false,
                 existingUuid: state.baseItem.uuid
             });
@@ -2290,7 +2284,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 return;
             }
         } else {
-            savedDoc = await MarketplaceSettingsService.saveOrUpdateItem(buildData, {
+            savedDoc = await services.MarketplaceSettingsService.saveOrUpdateItem(buildData, {
                 notify: false,
                 existingUuid: state.baseItem.uuid
             });
@@ -2328,7 +2322,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     static async #onClearBuild(event, target) {
         await game.sr5marketplace.api.factory.clearBuilderState();
         if (this.activeDialogId) {
-            await AppTestFlagService.deleteTest(this.activeDialogId, game.user.id);
+            await services.AppTestFlagService.deleteTest(this.activeDialogId, game.user.id);
             this.activeDialogId = null;
         }
 
@@ -2936,14 +2930,14 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const virtualId = target.dataset.virtualId;
         if (!virtualId) return;
 
-        const unresolvedTest = Object.values(await AppTestFlagService.readState(game.user.id)).find(t => {
+        const unresolvedTest = Object.values(await services.AppTestFlagService.readState(game.user.id)).find(t => {
             return !t.resolved && t.testType === "BuildTest" && t.virtualModId === virtualId;
         });
 
         if (unresolvedTest) {
             // Unsuppress the dialog so that it can be shown/rendered again
-            AppTestFlagService._suppressedDialogIds.delete(unresolvedTest.id);
-            await AppTestFlagService.updateTest(unresolvedTest.id, { showDialog: true });
+            services.AppTestFlagService._suppressedDialogIds.delete(unresolvedTest.id);
+            await services.AppTestFlagService.updateTest(unresolvedTest.id, { showDialog: true });
 
             const buildTestApp = foundry.applications.instances.get("build-test-dialog-app");
             if (buildTestApp) {
@@ -3036,10 +3030,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         // Delete any active build tests associated with this virtual modification
         try {
-            const testStates = await AppTestFlagService.readState(game.user.id);
+            const testStates = await services.AppTestFlagService.readState(game.user.id);
             const associatedTest = Object.values(testStates).find(t => t.virtualModId === virtualId);
             if (associatedTest) {
-                await AppTestFlagService.deleteTest(associatedTest.id, game.user.id);
+                await services.AppTestFlagService.deleteTest(associatedTest.id, game.user.id);
             }
         } catch (err) {
             console.error("SR5 Marketplace | Failed to clean up associated build test:", err);
@@ -3133,15 +3127,15 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     static async #onSelectActor(event, target) {
         const actorUuid = target.dataset.actorUuid;
-        await ActorSelectionService.setSelectedActor(actorUuid);
+        await services.ActorSelectionService.setSelectedActor(actorUuid);
         target.closest(".marketplace-user-actor")?.classList.remove("expanded");
-        this.purchasingActor = await ActorSelectionService.getSelectedActor();
+        this.purchasingActor = await services.ActorSelectionService.getSelectedActor();
         this.render();
     }
 
     static async #onClearActor(event, target) {
         event.stopPropagation();
-        await ActorSelectionService.clearSelectedActor();
+        await services.ActorSelectionService.clearSelectedActor();
         this.purchasingActor = null;
         this.render();
     }

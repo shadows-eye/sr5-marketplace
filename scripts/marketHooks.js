@@ -8,27 +8,16 @@ import {
     registerBasicHelpers
 } from './lib/_module.mjs';
 import { defineShopActorClass } from '../models/actor/shopActor.mjs';
-import {
-    actorItemServices,
-    basketService,
-    purchaseService,
-    indexService,
-    builderStateService,
-    deliveryTimeService,
-    diceHelperService,
-    themeService,
-    systemDataMapperService,
-    systemDataModel,
-    SystemDataModel,
-    ItemDataServices, // <-- We import the class here because you need 'new ItemDataServices()' for your API
-    PurchaseService,
-    BasketService,
-    factoryFlow
-} from './services/_module.mjs';
+/**
+ * @services Holds all services in a folder namespaced imported.
+ * @example services.basketService
+ */
+import * as services from './services/_module.mjs';
 
 // Re-export instances/classes as well ONLY IF you need them available globally 
 // to other modules/scripts that import marketHooks directly.
-export {
+export { services };
+export const {
     actorItemServices,
     basketService,
     purchaseService,
@@ -41,13 +30,16 @@ export {
     systemDataModel,
     SystemDataModel,
     ItemDataServices,
-    ItemBuilderApp
-};
+    MarketplaceSettingsService,
+    AppTestFlagService,
+    PurchaseService,
+    BasketService
+} = services;
+export { ItemBuilderApp };
 
 import { inGameMarketplace } from "./apps/inGameMarketplace.mjs";
 import { MarketplaceSettingsApp } from "./apps/MarketplaceSettingsApp.mjs";
 import { CompendiumSettingsApp } from "./apps/CompendiumSettingsApp.mjs";
-import { MarketplaceSettingsService } from "./services/MarketplaceSettingsService.mjs";
 import { MarketShouterApp } from "./apps/marketshouter.mjs";
 import { registerShopRegionHooks } from "./apps/documents/sceneRegions/shopRegions.mjs";
 import { ShopActorSheet } from "../sheets/ShopActorSheet.mjs";
@@ -58,7 +50,6 @@ import { ItemBuilderApp } from "./apps/ItemBuilderApp.mjs";
 import { BuildTestApp } from "./apps/documents/dialog/BuildTestApp.mjs";
 import { SR5CreateActorApp } from "./apps/SR5CreateActorApp.mjs";
 import { AppDialogBuilder } from "./apps/documents/dialog/AppDialogBuilder.mjs";
-import { AppTestFlagService } from "./services/AppTestFlagService.mjs";
 import { registerMarketplaceTour } from "./tours/marketplaceTour.mjs";
 
 
@@ -868,9 +859,9 @@ Hooks.once("init", () => {
     // 2. Nest all other API services under the '.api' property for compatibility with new code
     game.sr5marketplace.api = {
         system: new SR5SystemAPI(),
-        itemData: new ItemDataServices(), // Pulled perfectly from your services barrel!
-        PurchaseService: PurchaseService,
-        BasketService: BasketService,
+        itemData: new services.ItemDataServices(), // Pulled perfectly from your services barrel!
+        PurchaseService: services.PurchaseService,
+        BasketService: services.BasketService,
         AppDialogBuilder: AppDialogBuilder,
         inGameMarketplace: inGameMarketplace,
         SR5CreateActorApp: SR5CreateActorApp,
@@ -879,10 +870,10 @@ Hooks.once("init", () => {
         marketplace: new MarketplaceAPI.Marketplace(),
         itemBuilder: new MarketplaceAPI.ItemBuilder(),
         factory: new MarketplaceAPI.Factory(),
-        settings: MarketplaceSettingsService,
+        settings: services.MarketplaceSettingsService,
         CompendiumSettingsApp: CompendiumSettingsApp,
-        systemDataModel: systemDataModel,
-        SystemDataModel: SystemDataModel,
+        systemDataModel: services.systemDataModel,
+        SystemDataModel: services.SystemDataModel,
         registerShouterButton: (id, config) => MarketShouterApp.registerButton(id, config)
     };
 
