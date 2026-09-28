@@ -257,34 +257,284 @@ export class BuildService {
     /**
      * Sets the base item, its image, and the dynamic title.
      * If the new item is DIFFERENT from the current base item, this clears any previous build state.
-     * If the new item is the SAME as the current one, the state is preserved.
+    /**
+     * Resolves a default icon path for a modification based on its mount point.
+     * @param {string} [mountKey=""]
+     * @returns {string}
+     * @private
+     */
+    _getDefaultModImage(mountKey = "") {
+        const key = String(mountKey).toLowerCase().trim();
+        const validMounts = ["top", "under", "barrel", "stock", "side"];
+        if (validMounts.includes(key)) {
+            return `systems/shadowrun5e/dist/icons/importer/modification/${key}.svg`;
+        }
+        return "icons/svg/item-bag.svg";
+    }
+
+    /**
+     * Extracts existing modifications from an item or actor document/data and maps
+     * them into builder slots.
+     * @param {object} itemOrData - Item document or plain data object.
+     * @returns {Promise<object>} Map of slotId -> modification item data.
+     */
+    async extractItemModifications(itemOrData) {
+        if (!itemOrData) return {};
+
+        // If it's a data object with a uuid, attempt to fetch the full document
+        let doc = null;
+        if (typeof itemOrData.getFlag === "function") {
+            doc = itemOrData;
+        } else if (itemOrData.uuid) {
+            try {
+                doc = await fromUuid(itemOrData.uuid);
+            } catch (err) {
+                console.warn(`SR5 Marketplace | Could not fetch document for UUID: ${itemOrData.uuid}`, err);
+            }
+        }
+
+        const changes = {};
+        const slottedIds = new Set();
+        const slottedUuids = new Set();
+        const slottedNameCounts = new Map();
+
+        const baseType = doc?.type || itemOrData.type || "";
+        const isWeapon = ['rangedWeapon', 'meleeWeapon', 'weapon'].includes(baseType);
+
+        const MOUNT_SLOT_MAP = {
+            top: "topLeft",
+            under: "bottomLeft",
+            barrel: "topRight",
+            stock: "middleRight",
+            side: "bottomRight"
+        };
+
+        const BOTTOM_SLOTS = ["bottomSlot1", "bottomSlot2", "bottomSlot3", "bottomSlot4"];
+        const PERIMETER_SLOTS = ["topLeft", "bottomLeft", "topRight", "middleRight", "bottomRight"];
+        const ALL_SLOTS = [...BOTTOM_SLOTS, ...PERIMETER_SLOTS];
+
+        const markSlotted = (slotId, mod) => {
+            changes[slotId] = mod;
+            if (mod._id) slottedIds.add(String(mod._id));
+            if (mod.id) slottedIds.add(String(mod.id));
+            if (mod.uuid) slottedUuids.add(String(mod.uuid));
+            if (mod.flags?.core?.sourceId) slottedUuids.add(String(mod.flags.core.sourceId));
+            if (mod.name) {
+                const n = String(mod.name).toLowerCase().trim();
+                slottedNameCounts.set(n, (slottedNameCounts.get(n) || 0) + 1);
+            }
+        };
+
+        const isAlreadySlotted = (mod) => {
+            if (!mod) return true;
+            const id = mod._id || mod.id;
+            if (id && slottedIds.has(String(id))) return true;
+            if (mod.uuid && slottedUuids.has(String(mod.uuid))) return true;
+            if (mod.flags?.core?.sourceId && slottedUuids.has(String(mod.flags.core.sourceId))) return true;
+            const name = String(mod.name || "").toLowerCase().trim();
+            if (name && (slottedNameCounts.get(name) || 0) > 0) {
+                slottedNameCounts.set(name, slottedNameCounts.get(name) - 1);
+                return true;
+            }
+            return false;
+        };
+
+        // 1. Existing Marketplace Changes (if previously customized in builder)
+        const savedChanges = doc?.getFlag?.("sr5-marketplace", "changes") ||
+            doc?.flags?.["sr5-marketplace"]?.changes ||
+            itemOrData?.flags?.["sr5-marketplace"]?.changes;
+
+        if (savedChanges && typeof savedChanges === "object") {
+            for (const [slotId, rawModData] of Object.entries(savedChanges)) {
+                if (rawModData && ALL_SLOTS.includes(slotId)) {
+                    const modData = foundry.utils.deepClone(rawModData);
+                    if (modData.system) {
+                        const mount = modData.system.mod_weapon?.mount_point || modData.system.mount_point;
+                        if (mount) {
+                            modData.system.mount_point = mount;
+                            if (modData.system.mod_weapon && !modData.system.mod_weapon.mount_point) {
+                                modData.system.mod_weapon.mount_point = mount;
+                            }
+                        }
+                    }
+                    markSlotted(slotId, modData);
+                }
+            }
+        }
+
+        // 2. Existing Marketplace Linked Items (if any links were recorded)
+        const linkedItems = doc?.getFlag?.("sr5-marketplace", "linkedItems") ||
+            doc?.flags?.["sr5-marketplace"]?.linkedItems ||
+            itemOrData?.flags?.["sr5-marketplace"]?.linkedItems;
+
+        if (Array.isArray(linkedItems) && linkedItems.length > 0) {
+            for (const link of linkedItems) {
+                const { slotId, uuid } = link || {};
+                if (!slotId || !uuid || changes[slotId]) continue;
+                try {
+                    const linkedDoc = await fromUuid(uuid);
+                    if (linkedDoc && !isAlreadySlotted(linkedDoc)) {
+                        const linkedData = {
+                            uuid: linkedDoc.uuid,
+                            name: linkedDoc.name,
+                            img: linkedDoc.img || "icons/svg/item-bag.svg",
+                            type: linkedDoc.type,
+                            system: foundry.utils.deepClone(linkedDoc.system || {}),
+                            effects: linkedDoc.effects ? (Array.isArray(linkedDoc.effects) ? linkedDoc.effects.map(e => typeof e?.toObject === 'function' ? e.toObject(false) : foundry.utils.deepClone(e)) : []) : []
+                        };
+                        if (linkedData.system?.mod_weapon?.mount_point) {
+                            linkedData.system.mount_point = linkedData.system.mod_weapon.mount_point;
+                        }
+                        markSlotted(slotId, linkedData);
+                    }
+                } catch (err) {
+                    console.warn(`SR5 Marketplace | Could not resolve linked item ${uuid}:`, err);
+                }
+            }
+        }
+
+        // 3. Collect all embedded and attached modifications
+        const rawModsToProcess = [];
+
+        // 3a. System embeddedItems on weapons/armor (flags.shadowrun5e.embeddedItems)
+        const embeddedItems = doc?.getFlag?.("shadowrun5e", "embeddedItems") ||
+            doc?.flags?.shadowrun5e?.embeddedItems ||
+            itemOrData?.flags?.shadowrun5e?.embeddedItems;
+
+        if (Array.isArray(embeddedItems)) {
+            for (const mod of embeddedItems) {
+                if (mod && (mod.type === "modification" || !mod.type)) {
+                    rawModsToProcess.push(mod);
+                }
+            }
+        }
+
+        // 3b. Nested items if provided by system helper
+        if (typeof doc?.getNestedItems === "function") {
+            try {
+                const nested = doc.getNestedItems();
+                if (Array.isArray(nested)) {
+                    for (const n of nested) {
+                        if (n && n.type === "modification") rawModsToProcess.push(n);
+                    }
+                }
+            } catch (e) {
+                // ignore
+            }
+        }
+
+        // 3c. Actor items (e.g. for Vehicles / Drones)
+        if (doc?.items) {
+            const vehicleMods = doc.items.filter(i => i.type === "modification");
+            for (const m of vehicleMods) {
+                rawModsToProcess.push(typeof m.toObject === "function" ? m.toObject(false) : m);
+            }
+        } else if (Array.isArray(itemOrData.items)) {
+            for (const m of itemOrData.items) {
+                if (m && m.type === "modification") rawModsToProcess.push(m);
+            }
+        }
+
+        // 3d. Virtual modifications on vehicles
+        const virtualMods = doc?.getFlag?.("sr5-marketplace", "virtualModifications") ||
+            doc?.flags?.["sr5-marketplace"]?.virtualModifications ||
+            itemOrData?.flags?.["sr5-marketplace"]?.virtualModifications;
+
+        if (Array.isArray(virtualMods)) {
+            for (const vm of virtualMods) {
+                if (vm) rawModsToProcess.push(vm);
+            }
+        }
+
+        // 4. Assign each unprocessed modification to an appropriate slot
+        for (const rawMod of rawModsToProcess) {
+            if (isAlreadySlotted(rawMod)) continue;
+
+            const modObj = typeof rawMod.toObject === 'function' ? rawMod.toObject(false) : rawMod;
+            const mount = modObj.system?.mod_weapon?.mount_point || modObj.system?.mount_point || "";
+            const mountKey = String(mount).toLowerCase().trim();
+
+            let modUuid = modObj.uuid || modObj.flags?.core?.sourceId || "";
+            if (!modUuid && doc?.uuid) {
+                modUuid = `${doc.uuid}#${modObj._id || modObj.id || foundry.utils.randomID()}`;
+            }
+
+            const cleanModData = {
+                _id: modObj._id || modObj.id || foundry.utils.randomID(),
+                uuid: modUuid,
+                name: modObj.name || "Modification",
+                img: modObj.img || this._getDefaultModImage(mountKey),
+                type: modObj.type || "modification",
+                system: foundry.utils.deepClone(modObj.system || {}),
+                effects: modObj.effects ? (Array.isArray(modObj.effects) ? modObj.effects.map(e => typeof e?.toObject === 'function' ? e.toObject(false) : foundry.utils.deepClone(e)) : []) : []
+            };
+
+            if (cleanModData.system?.mod_weapon?.mount_point) {
+                cleanModData.system.mount_point = cleanModData.system.mod_weapon.mount_point;
+            } else if (cleanModData.system?.mount_point && cleanModData.system.mod_weapon) {
+                cleanModData.system.mod_weapon.mount_point = cleanModData.system.mount_point;
+            }
+
+            let assignedSlot = null;
+
+            // Weapon mount logic
+            if (isWeapon && mountKey && MOUNT_SLOT_MAP[mountKey]) {
+                const preferredSlot = MOUNT_SLOT_MAP[mountKey];
+                if (!changes[preferredSlot]) {
+                    assignedSlot = preferredSlot;
+                }
+            }
+
+            // Fallback placement:
+            if (!assignedSlot) {
+                assignedSlot = BOTTOM_SLOTS.find(s => !changes[s]) || PERIMETER_SLOTS.find(s => !changes[s]);
+            }
+
+            if (assignedSlot) {
+                markSlotted(assignedSlot, cleanModData);
+            } else {
+                console.warn(`SR5 Marketplace | No empty slot available for modification "${cleanModData.name}"`);
+            }
+        }
+
+        return changes;
+    }
+
+    /**
+     * Sets the base item, its image, and the dynamic title.
+     * Automatically extracts and populates any pre-existing modifications into slots.
+     * If the new item is the SAME as the current one, the state is preserved unless forceReset is true.
      * @param {object|null} itemData - The data object for the base item.
      * @param {string|null} [userId=null] - The ID of the user.
+     * @param {object} [options={}] - Optional configuration (document, forceReset).
      * @returns {Promise<void>}
      */
-    async setBuilderBaseItem(itemData, userId = null) {
+    async setBuilderBaseItem(itemData, userId = null, options = {}) {
         const user = userId ? game.users.get(userId) : game.user;
         if (!user) return;
         const currentState = await this.getBuilderState(userId);
         const newBaseItemUuid = itemData?.uuid || null;
         const oldBaseItemUuid = currentState.baseItem?.uuid || null;
 
-        if (newBaseItemUuid === oldBaseItemUuid) {
+        if (newBaseItemUuid === oldBaseItemUuid && !options.forceReset) {
             return; 
         }
 
-        // --- IT'S A DIFFERENT ITEM (or null) ---
+        // --- IT'S A DIFFERENT ITEM (or null, or forceReset) ---
         await user.unsetFlag(FLAG_SCOPE, FLAG_KEY);
 
         if (itemData) {
             const newState = this._getDefaultBuilderState();
             newState.baseItem = itemData;
             
-            let itemTypeImagePath = game.sr5marketplace.api.itemData.getRepresentativeImage(itemData);
+            let itemTypeImagePath = game.sr5marketplace?.api?.itemData?.getRepresentativeImage(itemData) || itemData.img;
             newState.itemTypeImage = itemTypeImagePath;
 
-            const typeLabel = itemData.type.charAt(0).toUpperCase() + itemData.type.slice(1);
+            const typeLabel = itemData.type ? (itemData.type.charAt(0).toUpperCase() + itemData.type.slice(1)) : "Item";
             newState.title = `${typeLabel}: ${itemData.name}`;
+
+            // Extract and map all pre-existing modifications into builder slots
+            newState.changes = await this.extractItemModifications(options.document || itemData);
 
             await user.setFlag(FLAG_SCOPE, FLAG_KEY, newState);
         }
@@ -333,123 +583,13 @@ export class BuildService {
      * Begins the effect creation process by creating a default draft effect in the state.
      * @param {string} sourceUuid - The UUID of the item the effect will belong to.
     /**
-     * Normalizes an ActiveEffect object (innate, custom, or legacy) to the SR5 0.37.0 / Foundry v14 schema.
+     * Normalizes an ActiveEffect object (innate, custom, or legacy) to the SR5 0.38+ / Foundry v14 schema.
+     * Delegates to the authoritative SystemDataMapperService.
      * @param {object} effect - The raw or partially updated effect object.
      * @returns {object} The normalized effect object.
      */
     _normalizeEffect(effect) {
-        if (!effect || typeof effect !== 'object') return effect;
-
-        effect._id = effect._id || foundry.utils.randomID();
-        effect.type = effect.type || "base";
-        effect.name = effect.name || "New Effect";
-        effect.img = effect.img || "icons/svg/aura.svg";
-        effect.disabled = effect.disabled ?? false;
-        effect.transfer = effect.transfer ?? true;
-        effect.statuses = Array.isArray(effect.statuses) ? effect.statuses : [];
-        effect.duration = effect.duration || { startTime: null, combat: null };
-
-        effect.system = effect.system || {};
-        effect.system.appliedByTest = effect.system.appliedByTest ?? false;
-        effect.system.onlyForEquipped = effect.system.onlyForEquipped ?? true;
-        effect.system.onlyForWireless = effect.system.onlyForWireless ?? false;
-        effect.system.expiryAction = effect.system.expiryAction || "default";
-
-        // 1. Normalize Targets
-        let targets = effect.system.targets;
-        if (!Array.isArray(targets) || targets.length === 0) {
-            const legacyApplyTo = effect.system.applyTo || effect.targetType || "actor";
-            const conditions = [];
-
-            if (Array.isArray(effect.system.selection_tests) && effect.system.selection_tests.length) {
-                conditions.push({ type: "tests", mode: "include", values: [...effect.system.selection_tests] });
-            }
-            if (Array.isArray(effect.system.selection_categories) && effect.system.selection_categories.length) {
-                conditions.push({ type: "categories", mode: "include", values: [...effect.system.selection_categories] });
-            }
-            if (Array.isArray(effect.system.selection_skills) && effect.system.selection_skills.length) {
-                conditions.push({ type: "skills", mode: "include", values: [...effect.system.selection_skills] });
-            }
-            if (Array.isArray(effect.system.selection_attributes) && effect.system.selection_attributes.length) {
-                conditions.push({ type: "attributes", mode: "include", values: [...effect.system.selection_attributes] });
-            }
-            if (Array.isArray(effect.system.selection_limits) && effect.system.selection_limits.length) {
-                conditions.push({ type: "limits", mode: "include", values: [...effect.system.selection_limits] });
-            }
-
-            const targetId = foundry.utils.randomID();
-            targets = [{
-                id: targetId,
-                name: "Target",
-                applyTo: legacyApplyTo,
-                conditions: conditions,
-                onlyForItemTest: legacyApplyTo === "modifier" ? !!effect.system.onlyForItemTest : false
-            }];
-            effect.system.targets = targets;
-        } else {
-            effect.system.targets = targets.map((t, idx) => ({
-                id: t.id || foundry.utils.randomID(),
-                name: t.name || `Target ${idx + 1}`,
-                applyTo: t.applyTo || "actor",
-                conditions: Array.isArray(t.conditions) ? t.conditions : [],
-                onlyForItemTest: !!t.onlyForItemTest
-            }));
-        }
-
-        const primaryTargetId = effect.system.targets[0]?.id || "actor";
-        const primaryApplyTo = effect.system.targets[0]?.applyTo || "actor";
-        effect.targetType = primaryApplyTo;
-
-        // 2. Normalize Changes (from system.changes or legacy top-level changes)
-        let rawChanges = effect.system.changes;
-        if (!rawChanges && effect.changes) {
-            rawChanges = effect.changes;
-        }
-
-        const changesList = this._changesToArray(rawChanges);
-        const modeMap = { 0: 'add', 1: 'multiply', 2: 'add', 3: 'downgrade', 4: 'upgrade', 5: 'override' };
-
-        if (changesList.length === 0) {
-            effect.system.changes = [{
-                key: "",
-                type: "add",
-                value: "",
-                priority: null,
-                target: primaryTargetId
-            }];
-        } else {
-            effect.system.changes = changesList.map(c => {
-                let changeType = "add";
-                if (typeof c.type === "string" && c.type) {
-                    changeType = c.type === "custom" ? "add" : c.type;
-                } else if (c.mode !== undefined && modeMap[c.mode]) {
-                    changeType = modeMap[c.mode];
-                }
-                return {
-                    key: c.key || "",
-                    type: changeType,
-                    value: c.value !== undefined && c.value !== null ? String(c.value) : "",
-                    priority: c.priority !== undefined ? c.priority : null,
-                    target: c.target || primaryTargetId
-                };
-            });
-        }
-
-        // Clean up legacy flat keys
-        delete effect.system.applyTo;
-        delete effect.system.selection_tests;
-        delete effect.system.selection_categories;
-        delete effect.system.selection_skills;
-        delete effect.system.selection_attributes;
-        delete effect.system.selection_limits;
-        delete effect.changes;
-
-        effect.system.appliedByTest = effect.system.appliedByTest ?? false;
-        effect.system.onlyForEquipped = effect.system.onlyForEquipped ?? false;
-        effect.system.onlyForWireless = effect.system.onlyForWireless ?? false;
-        effect.system.expiryAction = effect.system.expiryAction ?? "default";
-
-        return effect;
+        return SystemDataMapperService.normalizeActiveEffect(effect);
     }
 
     /**

@@ -9,6 +9,7 @@ import { registerItemBuilderBatch } from "./itemBuilder.spec.mjs";
 import { registerSystemDataModelBatch } from "./systemDataModel.spec.mjs";
 import { registerItemDataBatch } from "./itemData.spec.mjs";
 import { registerSettingsBatch } from "./settings.spec.mjs";
+import { registerSystemDataMapperBatch } from "./systemDataMapper.spec.mjs";
 
 /**
  * Registers all SR5 Marketplace Quench test batches.
@@ -23,6 +24,7 @@ export function registerMarketplaceQuenchBatches(quench) {
     registerFactoryBatch(quench);
     registerItemBuilderBatch(quench);
     registerSystemDataModelBatch(quench);
+    registerSystemDataMapperBatch(quench);
     registerItemDataBatch(quench);
     registerSettingsBatch(quench);
 
