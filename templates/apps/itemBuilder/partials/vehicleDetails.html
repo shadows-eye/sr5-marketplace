@@ -119,15 +119,15 @@
     <div class="stat-block">
         <label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Availability"}}</label>
         {{#if isEditingBaseItem}}
-            <input type="text" name="system.availability" value="{{displayItem.system.availability}}" class="item-input"/> 
+            <input type="text" name="system.availability" value="{{formatAvail displayItem.system.availability}}" class="item-input"/> 
         {{else}}
-            <span>{{displayItem.system.availability}}</span>
+            <span>{{formatAvail displayItem.system.availability}}</span>
         {{/if}}
     </div>
     <div class="stat-block">
         <label>{{localize "SR5Marketplace.ItemBuilder.Vehicle.Cost"}}</label>
         {{#if isEditingBaseItem}}
-            <input type="text" name="system.cost" value="{{displayItem.system.cost}}" class="item-input"/>
+            <input type="text" name="system.cost" value="{{formatVal displayItem.system.cost}}" class="item-input"/>
             <i class="fa-duotone fa-solid fa-circle-yen sr5-marketplace-yen details"></i> 
         {{else}}
             <span>{{formatNumber displayItem.system.cost}}</span>

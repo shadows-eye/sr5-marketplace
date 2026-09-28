@@ -50,7 +50,7 @@ add i:hover>hint {
 .sr5-marketplace-shop .window-header {
     background: var(--app-window-header-bg);
     border-bottom: 2px solid var(--app-window-header-border);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 5px var(--color-black-transparent-20);
 }
 
 /* Style the title in the window header */
@@ -452,7 +452,7 @@ add i:hover>hint {
 
 /* ==================================================================
 // Modern Marketplace Theme Elements (CSS Only Overrides)
-// No !important tags. Uses DOM Specificity to override Tailwind.
+// No  tags. Uses DOM Specificity to override Tailwind.
 // ================================================================== */
 
 /* 1. Header Gradient Bar */
@@ -470,7 +470,7 @@ add i:hover>hint {
 .application.sr5-marketplace-shop .window-content .marketplace-gradient-bar span,
 .application.sr5-marketplace-shop .window-content .marketplace-gradient-bar i {
     color: var(--header-gradient-text);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+    text-shadow: 1px 1px 2px var(--color-black-transparent-50);
 }
 
 /* 2. Target Foundry's Generic Tabs (Smaller, Tighter & Glassy) */
@@ -500,7 +500,7 @@ add i:hover>hint {
     margin: 0;
     cursor: pointer;
     text-decoration: none;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 1px var(--color-white-transparent-10);
     transition: filter 0.2s ease, transform 0.1s ease;
 }
 
@@ -519,8 +519,8 @@ add i:hover>hint {
     color: var(--header-gradient-text);
 
     /* The Glassy Highlight Magic: Top white reflection + Dark inner bottom */
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -10px 10px rgba(0, 0, 0, 0.2), 0 -2px 5px rgba(0, 0, 0, 0.3);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    box-shadow: inset 0 1px 1px var(--color-white-transparent-30), inset 0 -10px 10px var(--color-black-transparent-20), 0 -2px 5px var(--color-black-transparent-30);
+    text-shadow: 1px 1px 2px var(--color-black-transparent-80);
 
     /* Zeroed out bottom margin to keep it perfectly aligned with inactive tabs and the 2px padding */
     margin-bottom: 0;
@@ -541,15 +541,15 @@ add i:hover>hint {
     margin: 0.25em 0.5em 0.25em 0.5em;
 
     /* The Glassy Highlight Magic */
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -10px 10px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.4);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    box-shadow: inset 0 1px 1px var(--color-white-transparent-30), inset 0 -10px 10px var(--color-black-transparent-25), 0 2px 4px var(--color-black-transparent-35);
+    text-shadow: 1px 1px 2px var(--color-black-transparent-80);
     transition: filter 0.2s ease;
 }
 
 .application.sr5-marketplace-shop .window-content .skills-list .glossy-red-btn span {
     color: var(--header-gradient-text);
     font-size: 11px;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    text-shadow: 1px 1px 2px var(--color-black-transparent-80);
 }
 
 .application.sr5-marketplace-shop .window-content .skills-list .glossy-red-btn:hover {
@@ -580,7 +580,7 @@ add i:hover>hint {
     background-color: var(--color-grey-darkest);
     border-radius: 9999px;
     transition: background-color 0.3s;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8);
+    box-shadow: inset 0 1px 3px var(--color-black-transparent-80);
     border: 1px solid var(--color-black);
 }
 
@@ -652,12 +652,12 @@ add i:hover>hint {
 }
 
 .application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .markup-control-btn.btn-decrement i {
-    color: var(--color-green-button) !important;
+    color: var(--color-green-button);
     opacity: 0.8;
 }
 
 .application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .markup-control-btn.btn-increment i {
-    color: var(--color-red-bright) !important;
+    color: var(--color-red-bright);
     opacity: 0.8;
 }
 
@@ -666,7 +666,7 @@ add i:hover>hint {
 }
 
 .application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .markup-control-btn:hover i {
-    color: #ffffff !important;
+    color: var(--color-white);
     opacity: 1;
 }
 
@@ -686,7 +686,7 @@ add i:hover>hint {
 }
 
 .application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .clear-inventory-btn i {
-    color: var(--color-red-bright) !important;
+    color: var(--color-red-bright);
 }
 
 .application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .clear-inventory-btn:hover {
@@ -695,6 +695,6 @@ add i:hover>hint {
 }
 
 .application.sr5-marketplace-shop .window-content .marketplace-gradient-bar .clear-inventory-btn:hover i {
-    color: var(--color-red-bright) !important;
+    color: var(--color-red-bright);
     filter: drop-shadow(0 0 4px var(--color-red-bright));
 }

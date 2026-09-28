@@ -125,15 +125,20 @@ export class SR5CreateActorApp extends HandlebarsApplicationMixin(ApplicationV2)
      * @returns {string} The theme class name.
      */
     static _getThemeFromSetting() {
-        if (typeof game === "undefined" || !game.settings) return "theme-light";
+        if (typeof game === "undefined" || !game.settings) return "shadows-theme";
         try {
             const uiConfig = game.settings.get("core", "uiConfig");
-            const themeValue = uiConfig?.colorScheme?.applications || "light";
-            return `theme-${themeValue}`;
+            const themeValue = uiConfig?.colorScheme?.applications;
+            if (themeValue === "shadows-theme" || themeValue === "shadows") {
+                return "shadows-theme";
+            }
+            if (themeValue && themeValue !== "light" && themeValue !== "dark") {
+                return themeValue.startsWith("theme-") ? themeValue : `theme-${themeValue}`;
+            }
         } catch (err) {
             console.warn("SR5CreateActorApp | Failed to read theme from settings:", err);
-            return "theme-light";
         }
+        return "shadows-theme";
     }
 
     /**

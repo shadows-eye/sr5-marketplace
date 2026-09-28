@@ -1,14 +1,11 @@
-import { ItemPreviewApp } from "../apps/documents/items/ItemPreviewApp.mjs";
-import { SearchService as itemSearchService } from '../services/searchTag.mjs';
-import { VehicleSearchService } from "../services/vehicleSearchService.mjs";
-import { AppEffectsBuilderDialog } from '../apps/documents/dialog/AppEffectsBuilderDialog.mjs';
-import { BuildService } from "../services/buildService.mjs";
-
-const buildService = new BuildService();
-
-import { ActorSelectionService } from "../services/ActorSelectionService.mjs";
-import { AppTestFlagService } from '../services/AppTestFlagService.mjs';
-import { AppDialogBuilder } from '../apps/documents/dialog/AppDialogBuilder.mjs';
+/**
+ * @services Holds all services in a folder namespaced imported.
+ * @example services.basketService
+ */
+import * as services from "../services/_module.mjs";
+import { ItemPreviewApp } from "./documents/items/ItemPreviewApp.mjs";
+import { AppEffectsBuilderDialog } from './documents/dialog/AppEffectsBuilderDialog.mjs';
+import { AppDialogBuilder } from './documents/dialog/AppDialogBuilder.mjs';
 import { BuildTestApp } from "./documents/dialog/BuildTestApp.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -32,14 +29,13 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         super(options);
 
         // --- State and Services ---
-        this.itemData = game.sr5marketplace.api.itemData; // Use the global item data service
-        console.log(this.itemData);
+        this.itemData = services.itemDataServices;
+        this.buildService = services.buildService;
         this.purchasingActor = null;
         this.itemSearchService = null;
         this.activeTestState = null;
         this.activeDialogId = null;
         this.modSearchService = null;
-        // this.builderService = new BuilderService(); // To be added later no builder data needed here
         this.tabGroups = { main: "builder" }; // Default to the 'builder' tab
 
         this.workshopActorUuid = options.workshopActorUuid || null;
@@ -64,6 +60,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.hoverTimeout = null;
         // To hold a reference to the active tooltip application
         this.tooltipApp = null;
+
+        // Mount point filter & weapon stats
+        this.selectedMountPointFilter = "";
+        this.showWeaponStats = true;
 
         //Drag data
         this.draggedModData = null;
@@ -108,11 +108,15 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 selectBaseItem: this.#onSelectBaseItem,
                 removeChange: this.#onRemoveChange,
                 selectCategory: this.#onSelectCategory,
+                clickSlotFilter: this.#onClickSlotFilter,
+                filterByMountPoint: this.#onFilterByMountPoint,
+                toggleWeaponStats: this.#onToggleWeaponStats,
                 // Effects Tab
                 createEffect: this.#onCreateEffect,
                 editEffect: this.#onEditEffect,
                 deleteEffect: this.#onDeleteEffect,
                 updateDraftField: this.#onUpdateDraftField,
+                toggleDraftCheckbox: this.#onToggleDraftCheckbox,
                 selectDraftKey: this.#onSelectDraftKey,
                 saveDraftEffect: this.#onSaveDraftEffect,
                 cancelDraftEffect: this.#onCancelDraftEffect,
@@ -513,7 +517,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             // Initialize Search Services scoped to their sections
             const itemSection = this.element.querySelector(".item-selector-section");
             if (itemSection) {
-                const searchClass = this.tabGroups.main === "vehicle" ? VehicleSearchService : itemSearchService;
+                const searchClass = this.tabGroups.main === "vehicle" ? services.VehicleSearchService : services.SearchService;
                 this.itemSearchService = new searchClass(itemSection, (tags, query) => {
                     this.itemSearchQuery = query;
                     this.itemSearchTags = tags;
@@ -532,7 +536,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
             const modSection = this.element.querySelector(".mod-selector-section");
             if (modSection) {
-                this.modSearchService = new itemSearchService(modSection, (tags, query) => {
+                this.modSearchService = new services.SearchService(modSection, (tags, query) => {
                     this.modSearchQuery = query;
                     this.modSearchTags = tags;
                     this._filterItemsDOM('.mod-selector-section .item-content-grid', tags, query);
@@ -551,6 +555,25 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             const categorySelector = this.element.querySelector("#item-type-selector");
             if (categorySelector) {
                 categorySelector.addEventListener("change", this.onChangeCategory.bind(this));
+            }
+
+            // Sync mount filter dropdown and slot highlight
+            const modMountFilter = this.element.querySelector("#mod-mount-filter");
+            if (modMountFilter) {
+                modMountFilter.value = this.selectedMountPointFilter || "";
+            }
+
+            if (this.selectedMountPointFilter) {
+                const allSlots = this.element.querySelectorAll(".mod-slot[data-action='clickSlotFilter']");
+                allSlots.forEach(s => {
+                    const sm = (s.dataset.mountPoint || "").toLowerCase().trim();
+                    if (sm === this.selectedMountPointFilter) {
+                        s.classList.add("filter-active");
+                    } else {
+                        s.classList.remove("filter-active");
+                    }
+                });
+                this._filterItemsDOM('.mod-selector-section .item-content-grid', this.modSearchTags, this.modSearchQuery);
             }
 
             // --- UNIFIED TOOLTIP LISTENERS ---
@@ -575,7 +598,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
 
             if (workshopContainer) {
-                this.workshopSearchService = new itemSearchService(this.element, (tags, query) => {
+                this.workshopSearchService = new services.SearchService(this.element, (tags, query) => {
                     this.workshopSearchQuery = query;
                     this.workshopSearchTags = tags;
 
@@ -621,7 +644,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 // Pre-populate the search service before initializing to preserve tags and query across renders
                 const savedTags = [...(this.workshopSearchTags || [])];
                 const savedQuery = this.workshopSearchQuery || "";
-                
+
                 this.workshopSearchService.activeFilters = savedTags;
                 const sBox = this.element.querySelector("#search-box");
                 if (sBox) sBox.value = savedQuery;
@@ -676,7 +699,18 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 matchesTags = tagTerms.every(tag => name.includes(tag));
             }
 
-            if (matchesQuery && matchesTags) {
+            let matchesMountPoint = true;
+            if (containerSelector.includes(".mod-selector-section") && this.selectedMountPointFilter) {
+                const cardMount = (card.dataset.mountPoint || "").toLowerCase().trim();
+                const filterMount = this.selectedMountPointFilter.toLowerCase().trim();
+                if (filterMount === "none") {
+                    matchesMountPoint = (!cardMount || cardMount === "none");
+                } else {
+                    matchesMountPoint = (cardMount === filterMount);
+                }
+            }
+
+            if (matchesQuery && matchesTags && matchesMountPoint) {
                 card.style.display = "";
             } else {
                 card.style.display = "none";
@@ -778,11 +812,11 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         }
 
-        this.purchasingActor = await ActorSelectionService.getSelectedActor();
+        this.purchasingActor = await services.ActorSelectionService.getSelectedActor();
 
         const AppUserId = game.user.id;
-        const testStates = await AppTestFlagService.readState(AppUserId);
-        const unresolvedTest = await AppTestFlagService.getActiveBuildTest(AppUserId, this.purchasingActor);
+        const testStates = await services.AppTestFlagService.readState(AppUserId);
+        const unresolvedTest = await services.AppTestFlagService.getActiveBuildTest(AppUserId, this.purchasingActor);
         this.activeDialogId = unresolvedTest?.id || null;
 
         const activeTestState = this.activeDialogId ? testStates[this.activeDialogId] : null;
@@ -889,7 +923,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                 if (!this.purchasingActor || !validUuids.includes(this.purchasingActor.uuid)) {
                                     const defaultChar = characters.find(c => c.id === game.user.character?.id) || characters[0];
                                     if (defaultChar) {
-                                        await ActorSelectionService.setSelectedActor(defaultChar.uuid);
+                                        await services.ActorSelectionService.setSelectedActor(defaultChar.uuid);
                                         this.purchasingActor = defaultChar;
                                     }
                                 }
@@ -983,24 +1017,24 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                     }
                                 }
 
-                                 // Sync the virtual modifications stock flags via Factory API
-                                 await game.sr5marketplace.api.factory.syncVirtualModificationsStock(activeVehicle, workshopActor, this.purchasingActor);
+                                // Sync the virtual modifications stock flags via Factory API
+                                await game.sr5marketplace.api.factory.syncVirtualModificationsStock(activeVehicle, workshopActor, this.purchasingActor);
 
-                                 const virtualMods = game.sr5marketplace.api.factory.getVirtualModifications(activeVehicle);
+                                const virtualMods = game.sr5marketplace.api.factory.getVirtualModifications(activeVehicle);
 
-                                 let anyMissingAndNotInBasket = false;
-                                 let allInStock = true;
-                                 let anyUntestedInStock = false;
+                                let anyMissingAndNotInBasket = false;
+                                let allInStock = true;
+                                let anyUntestedInStock = false;
 
-                                 console.log("SR5 Marketplace | Workshop Render Evaluation - Virtual Mods:", virtualMods.map(m => {
-                                     const stockResult = game.sr5marketplace.api.factory.checkInventoryStock(activeVehicle, workshopActor, this.purchasingActor, m.id);
-                                     return {
-                                         name: m.name,
-                                         inStockFlag: m.inStock,
-                                         allInStockCheck: stockResult.allInStock,
-                                         resolvedInStock: m.inStock || stockResult.allInStock
-                                     };
-                                 }));
+                                console.log("SR5 Marketplace | Workshop Render Evaluation - Virtual Mods:", virtualMods.map(m => {
+                                    const stockResult = game.sr5marketplace.api.factory.checkInventoryStock(activeVehicle, workshopActor, this.purchasingActor, m.id);
+                                    return {
+                                        name: m.name,
+                                        inStockFlag: m.inStock,
+                                        allInStockCheck: stockResult.allInStock,
+                                        resolvedInStock: m.inStock || stockResult.allInStock
+                                    };
+                                }));
 
 
                                 for (const vMod of virtualMods) {
@@ -1079,7 +1113,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                 };
                             }
 
-                            const allGlobalItems = game.sr5marketplace.api.itemData.getItems() || [];
+                            const allGlobalItems = services.itemDataServices.getItems() || [];
                             const shopInv = workshopActor.system.shop.inventory || {};
                             const shopInvEntries = Object.entries(shopInv);
 
@@ -1131,9 +1165,9 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                         entryId: mod.id,
                                         name: mod.name,
                                         img: mod.img || "systems/shadowrun5e/dist/icons/importer/equipment/modification.svg",
-                                        qty: mod.system.quantity ?? 1,
+                                        qty: services.systemDataModel.getItemQuantity(mod),
                                         category: ItemBuilderApp._getModificationCategory(mod),
-                                        rating: mod.system.rating ?? mod.system.technology?.rating ?? 1,
+                                        rating: services.systemDataModel.getRating(mod) || 1,
                                         slots: mod.system.slots ?? 0,
                                         isFromOwner: true
                                     });
@@ -1205,6 +1239,44 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     displayItem = foundry.utils.deepClone(builderData.baseItem);
                     // Merge the overrides on top for display
                     foundry.utils.mergeObject(displayItem, builderData.baseItemOverrides);
+
+                    // When not actively editing the base item in edit mode, display the combined totals including slotted mods
+                    if (!builderData.isEditingBaseItem) {
+                        const totals = ItemBuilderApp.calculateTotals(builderData);
+                        if (displayItem.type === "vehicle") {
+                            if (!displayItem.system) displayItem.system = {};
+                            if (typeof displayItem.system.cost === "object" && displayItem.system.cost !== null) {
+                                displayItem.system.cost.value = totals.totalCost;
+                            } else {
+                                displayItem.system.cost = totals.totalCost;
+                            }
+                            if (typeof displayItem.system.availability === "object" && displayItem.system.availability !== null) {
+                                displayItem.system.availability.value = totals.combinedAvailability;
+                            } else {
+                                displayItem.system.availability = totals.combinedAvailability;
+                            }
+                        } else {
+                            if (!displayItem.system) displayItem.system = {};
+                            if (!displayItem.system.technology) displayItem.system.technology = {};
+                            if (typeof displayItem.system.technology.cost === "object" && displayItem.system.technology.cost !== null) {
+                                displayItem.system.technology.cost.value = totals.totalCost;
+                            } else {
+                                displayItem.system.technology.cost = totals.totalCost;
+                            }
+                            if (typeof displayItem.system.technology.availability === "object" && displayItem.system.technology.availability !== null) {
+                                displayItem.system.technology.availability.value = totals.combinedAvailability;
+                            } else {
+                                displayItem.system.technology.availability = totals.combinedAvailability;
+                            }
+                            if (displayItem.system.essence !== undefined) {
+                                if (typeof displayItem.system.essence === "object" && displayItem.system.essence !== null) {
+                                    displayItem.system.essence.value = totals.totalEssence;
+                                } else {
+                                    displayItem.system.essence = totals.totalEssence;
+                                }
+                            }
+                        }
+                    }
                 }
                 partialContext.displayItem = displayItem;
                 partialContext.isEditingBaseItem = builderData.isEditingBaseItem;
@@ -1251,27 +1323,6 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
                 let selectedItems = this.selectedKey ? (itemsByType[this.selectedKey]?.items || []) : [];
 
-                // Filter functions using tags and queries
-                const filterBySearch = (items, tags = [], query = "") => {
-                    const queryTerm = query.trim().toLowerCase();
-                    const tagTerms = tags.map(t => t.trim().toLowerCase());
-                    if (!queryTerm && tagTerms.length === 0) return items;
-                    return items.filter(item => {
-                        const name = (item.name || "").trim().toLowerCase();
-                        const matchesQuery = !queryTerm || name.includes(queryTerm);
-                        const matchesTags = tagTerms.every(tag => name.includes(tag));
-                        return matchesQuery && matchesTags;
-                    });
-                };
-
-                // Apply search filters
-                if (this.tabGroups.main === "vehicle") {
-                    selectedItems = VehicleSearchService.filter(selectedItems, this.itemSearchTags, this.itemSearchQuery);
-                } else {
-                    selectedItems = filterBySearch(selectedItems, this.itemSearchTags, this.itemSearchQuery);
-                }
-                allMods = filterBySearch(allMods, this.modSearchTags, this.modSearchQuery);
-
                 partialContext.selectedItems = selectedItems;
 
                 // --- Logic for when a Base Item IS Selected ---
@@ -1280,6 +1331,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     const isDrone = builderData.baseItem.system?.isDrone || builderData.baseItem.system?.isdrone || false;
 
                     partialContext.isWeapon = ['rangedWeapon', 'meleeWeapon', 'weapon'].includes(baseItemType);
+                    partialContext.showWeaponStats = this.showWeaponStats !== false;
+                    if (partialContext.isWeapon) {
+                        partialContext.weaponStats = this._calculateWeaponStats(displayItem, builderData.changes);
+                    }
 
                     const weaponTypes = ['rangedWeapon', 'meleeWeapon', 'weapon'];
 
@@ -1405,9 +1460,21 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     // --- Static Helpers ---
 
     static _getThemeFromSetting() {
-        const uiConfig = game.settings.get("core", "uiConfig");
-        const themeValue = uiConfig?.colorScheme.applications || "light";
-        return `theme-${themeValue}`;
+        if (typeof game !== "undefined" && game.settings) {
+            try {
+                const uiConfig = game.settings.get("core", "uiConfig");
+                const themeValue = uiConfig?.colorScheme?.applications;
+                if (themeValue === "shadows-theme" || themeValue === "shadows") {
+                    return "shadows-theme";
+                }
+                if (themeValue && themeValue !== "light" && themeValue !== "dark") {
+                    return themeValue.startsWith("theme-") ? themeValue : `theme-${themeValue}`;
+                }
+            } catch (err) {
+                // ignore
+            }
+        }
+        return "shadows-theme";
     }
 
     // --- Event Listeners (Bound in _onRender) ---
@@ -1416,6 +1483,99 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.selectedKey = event.currentTarget.value;
         this.itemSearchService?.clearAllFilters(); // Clear search when changing category
         await this.render();
+    }
+
+    // --- Weapon Stats Calculation ---
+
+    /**
+     * Calculates combined weapon stats (DV, ACC, Range, Mode, RC) from base item and slotted mods.
+     * @param {object} baseItem - Base weapon item data.
+     * @param {object} changes - Slotted modifications.
+     * @returns {object} Weapon statistics object.
+     * @private
+     */
+    _calculateWeaponStats(baseItem, changes = {}) {
+        if (!baseItem) return null;
+
+        const actionData = baseItem.system?.action || {};
+        const rangeData = actionData.range || baseItem.system?.range || {};
+        const damageData = actionData.damage || baseItem.system?.damage || {};
+
+        let baseDamage = Number(damageData.value ?? 0);
+        let baseAcc = Number(actionData.accuracy?.value ?? baseItem.system?.accuracy?.value ?? 0);
+        let baseRc = Number(rangeData.rc?.base ?? rangeData.rc?.value ?? 0);
+
+        let bonusDv = 0;
+        let bonusAcc = 0;
+        let bonusRc = 0;
+
+        for (const mod of Object.values(changes || {})) {
+            if (!mod) continue;
+            if (mod.system?.mod_weapon) {
+                if (mod.system.mod_weapon.dv) bonusDv += Number(mod.system.mod_weapon.dv) || 0;
+                if (mod.system.mod_weapon.accuracy) bonusAcc += Number(mod.system.mod_weapon.accuracy) || 0;
+                if (mod.system.mod_weapon.rc) bonusRc += Number(mod.system.mod_weapon.rc) || 0;
+            }
+            const effects = mod.effects || [];
+            for (const eff of effects) {
+                const effChanges = eff.system?.changes || eff.changes || [];
+                for (const ch of effChanges) {
+                    const val = Number(ch.value) || 0;
+                    if (!val) continue;
+                    const key = ch.key || "";
+                    if (key.includes("damage.value") || key === "system.damage") {
+                        if (ch.type === "add" || ch.mode === 2) bonusDv += val;
+                        else if (ch.type === "subtract") bonusDv -= val;
+                    } else if (key.includes("accuracy.value") || key === "system.accuracy") {
+                        if (ch.type === "add" || ch.mode === 2) bonusAcc += val;
+                        else if (ch.type === "subtract") bonusAcc -= val;
+                    } else if (key.includes("rc.value") || key.includes("range.rc")) {
+                        if (ch.type === "add" || ch.mode === 2) bonusRc += val;
+                        else if (ch.type === "subtract") bonusRc -= val;
+                    }
+                }
+            }
+        }
+
+        const totalDv = baseDamage + bonusDv;
+        const totalAcc = baseAcc + bonusAcc;
+        const totalRc = baseRc + bonusRc;
+
+        // Damage type: P or S
+        const rawType = damageData.type?.value || damageData.type || "physical";
+        const damageType = String(rawType).toLowerCase().startsWith("s") ? "S" : "P";
+
+        // Ranges: formatted as "5/20/40/60m"
+        let ranges = null;
+        const rangesObj = rangeData.ranges?.value || rangeData.ranges;
+        if (rangesObj && typeof rangesObj === "object") {
+            if (rangesObj.short !== undefined && rangesObj.medium !== undefined) {
+                ranges = `${rangesObj.short}/${rangesObj.medium}/${rangesObj.long}/${rangesObj.extreme}m`;
+            } else if (Array.isArray(rangesObj)) {
+                ranges = `${rangesObj.join('/')}m`;
+            }
+        }
+
+        // Firing modes
+        const modesData = actionData.modes || rangeData.modes || baseItem.system?.modes || {};
+        const activeModes = [];
+        if (modesData.single_shot || modesData.ss) activeModes.push("SS");
+        if (modesData.semi_auto || modesData.sa) activeModes.push("SA");
+        if (modesData.burst_fire || modesData.bf) activeModes.push("BF");
+        if (modesData.full_auto || modesData.fa) activeModes.push("FA");
+        const modes = activeModes.join("/") || (typeof modesData === "string" ? modesData : null);
+
+        // RC display: "0 (3)" if bonus exists, else "0"
+        const rcDisplay = bonusRc > 0 ? `${baseRc} (${totalRc})` : `${baseRc}`;
+
+        return {
+            dv: totalDv,
+            damageType: damageType,
+            acc: totalAcc > 0 ? totalAcc : null,
+            ranges: ranges,
+            modes: modes,
+            rc: rcDisplay
+        };
     }
 
     // --- Action Handlers (from DEFAULT_OPTIONS) ---
@@ -1427,6 +1587,65 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             this.itemSearchService?.clearAllFilters(); // Clear search when changing category
             this.render();
         }
+    }
+
+    static #onClickSlotFilter(event, target) {
+        if (event.target.closest(".delete-mod-link")) return;
+
+        const mountPoint = (target.dataset.mountPoint || "").toLowerCase().trim();
+        if (!mountPoint) return;
+
+        if (this.selectedMountPointFilter === mountPoint) {
+            this.selectedMountPointFilter = "";
+        } else {
+            this.selectedMountPointFilter = mountPoint;
+        }
+
+        const filterSelect = this.element.querySelector("#mod-mount-filter");
+        if (filterSelect) {
+            filterSelect.value = this.selectedMountPointFilter;
+        }
+
+        const allSlots = this.element.querySelectorAll(".mod-slot[data-action='clickSlotFilter']");
+        allSlots.forEach(s => {
+            const sm = (s.dataset.mountPoint || "").toLowerCase().trim();
+            if (this.selectedMountPointFilter && sm === this.selectedMountPointFilter) {
+                s.classList.add("filter-active");
+            } else {
+                s.classList.remove("filter-active");
+            }
+        });
+
+        this._filterItemsDOM('.mod-selector-section .item-content-grid', this.modSearchTags, this.modSearchQuery);
+    }
+
+    static #onFilterByMountPoint(event, target) {
+        this.selectedMountPointFilter = (target.value || "").toLowerCase().trim();
+
+        const allSlots = this.element.querySelectorAll(".mod-slot[data-action='clickSlotFilter']");
+        allSlots.forEach(s => {
+            const sm = (s.dataset.mountPoint || "").toLowerCase().trim();
+            if (this.selectedMountPointFilter && sm === this.selectedMountPointFilter) {
+                s.classList.add("filter-active");
+            } else {
+                s.classList.remove("filter-active");
+            }
+        });
+
+        this._filterItemsDOM('.mod-selector-section .item-content-grid', this.modSearchTags, this.modSearchQuery);
+    }
+
+    static async #onToggleWeaponStats(event, target) {
+        this.showWeaponStats = !this.showWeaponStats;
+        await this.render();
+    }
+
+    static async #onToggleDraftCheckbox(event, target) {
+        const fieldName = target.name;
+        const isChecked = target.checked;
+        const updateData = foundry.utils.expandObject({ [fieldName]: isChecked });
+        await game.sr5marketplace.api.factory.updateBuilderDraftEffect(updateData);
+        await this.render();
     }
 
     static #onChangeTab(event, target) {
@@ -1558,7 +1777,14 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
                 // 2. Build the update object from all input values
                 inputs.forEach(input => {
-                    updateData[input.name] = input.value;
+                    let val = input.value;
+                    if (input.name.includes("cost") || input.name.includes("rating")) {
+                        const cleanStr = String(val).replace(/,/g, '').trim();
+                        if (!isNaN(Number(cleanStr)) && cleanStr !== "") {
+                            val = Number(cleanStr);
+                        }
+                    }
+                    updateData[input.name] = val;
                 });
 
                 // 3. Save all overrides in one go
@@ -1601,6 +1827,99 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
      * @param {*} target 
      * @returns 
      */
+    /**
+     * Calculates the total cost, combined availability, and total essence for the given builder state.
+     * Combines base item, overrides, and all slotted modifications.
+     * @param {object} state - Current builder state.
+     * @returns {{ totalCost: number, combinedAvailability: string, totalEssence: number, allAvails: string[] }}
+     */
+    static calculateTotals(state) {
+        if (!state?.baseItem) {
+            return { totalCost: 0, combinedAvailability: "0", totalEssence: 0, allAvails: ["0"] };
+        }
+
+        const baseItem = foundry.utils.deepClone(state.baseItem);
+        if (state.baseItemOverrides) {
+            foundry.utils.mergeObject(baseItem, state.baseItemOverrides);
+        }
+
+        const isVehicle = baseItem.type === "vehicle";
+
+        // 1. Base Cost
+        let rawBaseCost = isVehicle
+            ? baseItem.system?.cost
+            : (baseItem.system?.technology?.cost ?? baseItem.system?.cost);
+        let baseCost = 0;
+        if (typeof rawBaseCost === "object" && rawBaseCost !== null) {
+            baseCost = Number(String(rawBaseCost.value ?? rawBaseCost.base ?? 0).replace(/,/g, '')) || 0;
+        } else {
+            baseCost = Number(String(rawBaseCost ?? 0).replace(/,/g, '')) || 0;
+        }
+
+        // 2. Base Availability
+        let rawBaseAvail = isVehicle
+            ? baseItem.system?.availability
+            : (baseItem.system?.technology?.availability ?? baseItem.system?.availability);
+        let baseAvail = "0";
+        if (typeof rawBaseAvail === "object" && rawBaseAvail !== null) {
+            const v = rawBaseAvail.value ?? rawBaseAvail.base ?? "0";
+            const t = rawBaseAvail.type ?? "";
+            baseAvail = (t && !String(v).includes(t)) ? `${v}${t}` : String(v || "0");
+        } else {
+            baseAvail = String(rawBaseAvail || "0");
+        }
+
+        // 3. Base Essence
+        const rawEssence = baseItem.system?.essence;
+        const baseEssence = typeof rawEssence === "object" && rawEssence !== null
+            ? (Number(rawEssence.value) || 0)
+            : (Number(rawEssence) || 0);
+
+        let totalCost = baseCost;
+        let totalEssence = isVehicle ? 0 : baseEssence;
+        const allAvails = [baseAvail];
+
+        // 4. Sum up all slotted changes
+        for (const mod of Object.values(state.changes || {})) {
+            if (!mod) continue;
+
+            let rawModCost = mod.system?.technology?.cost ?? mod.system?.cost;
+            let modCost = 0;
+            if (typeof rawModCost === "object" && rawModCost !== null) {
+                modCost = Number(String(rawModCost.value ?? rawModCost.base ?? 0).replace(/,/g, '')) || 0;
+            } else {
+                modCost = Number(String(rawModCost ?? 0).replace(/,/g, '')) || 0;
+            }
+            totalCost += modCost;
+
+            let rawModAvail = mod.system?.technology?.availability ?? mod.system?.availability;
+            let modAvail = "0";
+            if (typeof rawModAvail === "object" && rawModAvail !== null) {
+                const v = rawModAvail.value ?? rawModAvail.base ?? "0";
+                const t = rawModAvail.type ?? "";
+                modAvail = (t && !String(v).includes(t)) ? `${v}${t}` : String(v || "0");
+            } else {
+                modAvail = String(rawModAvail || "0");
+            }
+            allAvails.push(modAvail);
+
+            let rawModEssence = mod.system?.essence;
+            let modEssence = typeof rawModEssence === "object" && rawModEssence !== null
+                ? (Number(rawModEssence.value) || 0)
+                : (Number(rawModEssence) || 0);
+            totalEssence += modEssence;
+        }
+
+        const combinedAvailability = game.sr5marketplace?.api?.marketplace?.combineAvailabilities(allAvails) ?? allAvails[0];
+
+        return {
+            totalCost,
+            combinedAvailability,
+            totalEssence,
+            allAvails
+        };
+    }
+
     /**
      * Compiles the complete build data payload (Item or Actor) from the current state.
      * @param {object} state - The current builder state.
@@ -1647,6 +1966,17 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 if (item.type === 'modification' || item.type === 'ammo') {
                     // "Consumed" Mod/Ammo
                     descriptionModList.push(`<li>${item.name}</li>`);
+                    if (item.type === 'modification') {
+                        if (!baseItemData.flags) baseItemData.flags = {};
+                        if (!baseItemData.flags.shadowrun5e) baseItemData.flags.shadowrun5e = {};
+                        if (!Array.isArray(baseItemData.flags.shadowrun5e.embeddedItems)) {
+                            baseItemData.flags.shadowrun5e.embeddedItems = [];
+                        }
+                        const modClone = foundry.utils.deepClone(item);
+                        modClone._id = modClone._id || foundry.utils.randomID();
+                        if (modClone.system) modClone.system.equipped = true;
+                        baseItemData.flags.shadowrun5e.embeddedItems.push(modClone);
+                    }
                 } else {
                     // "Linkable Item"
                     linkedItemsFlag.push({
@@ -1660,13 +1990,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         // D. Finalize effects
         baseItemData.effects = allEffects.map(effect => {
-            return buildService._normalizeEffect(foundry.utils.deepClone(effect));
+            return services.buildService._normalizeEffect(foundry.utils.deepClone(effect));
         });
 
-        // E. Update name
-        // (Do not append anything to the name automatically)
-
-        // F. Update description
+        // E. Update description
         let description = "";
         if (isVehicle) {
             description = baseItemData.system?.description || "";
@@ -1689,13 +2016,55 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         }
 
+        // F. Calculate and persist totals (cost, availability, essence)
+        const totals = ItemBuilderApp.calculateTotals(state);
+
+        if (isVehicle) {
+            if (!baseItemData.system) baseItemData.system = {};
+            if (typeof baseItemData.system.cost === "object" && baseItemData.system.cost !== null) {
+                baseItemData.system.cost.value = totals.totalCost;
+            } else {
+                baseItemData.system.cost = totals.totalCost;
+            }
+            if (typeof baseItemData.system.availability === "object" && baseItemData.system.availability !== null) {
+                baseItemData.system.availability.value = totals.combinedAvailability;
+            } else {
+                baseItemData.system.availability = totals.combinedAvailability;
+            }
+        } else {
+            if (!baseItemData.system) baseItemData.system = {};
+            if (!baseItemData.system.technology) baseItemData.system.technology = {};
+            if (typeof baseItemData.system.technology.cost === "object" && baseItemData.system.technology.cost !== null) {
+                baseItemData.system.technology.cost.value = totals.totalCost;
+            } else {
+                baseItemData.system.technology.cost = totals.totalCost;
+            }
+            if (typeof baseItemData.system.technology.availability === "object" && baseItemData.system.technology.availability !== null) {
+                baseItemData.system.technology.availability.value = totals.combinedAvailability;
+            } else {
+                baseItemData.system.technology.availability = totals.combinedAvailability;
+            }
+            if (baseItemData.system.essence !== undefined) {
+                if (typeof baseItemData.system.essence === "object" && baseItemData.system.essence !== null) {
+                    baseItemData.system.essence.value = totals.totalEssence;
+                } else {
+                    baseItemData.system.essence = totals.totalEssence;
+                }
+            }
+        }
+
         // G. Update flags
+        if (!baseItemData.flags) baseItemData.flags = {};
+        if (!baseItemData.flags['sr5-marketplace']) baseItemData.flags['sr5-marketplace'] = {};
+        baseItemData.flags['sr5-marketplace'] = {
+            ...baseItemData.flags['sr5-marketplace'],
+            isCustomBuild: true,
+            customTotals: totals,
+            changes: foundry.utils.deepClone(state.changes || {})
+        };
+
         if (!isVehicle) {
-            if (!baseItemData.flags) baseItemData.flags = {};
-            baseItemData.flags['sr5-marketplace'] = {
-                ...baseItemData.flags['sr5-marketplace'],
-                linkedItems: linkedItemsFlag
-            };
+            baseItemData.flags['sr5-marketplace'].linkedItems = linkedItemsFlag;
         } else {
             // For vehicles, append embedded items
             baseItemData.items = [
@@ -1735,24 +2104,43 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         const buildData = ItemBuilderApp._prepareBuildData(state);
 
+        let savedDoc = null;
         if (buildData.type === "vehicle") {
-            // Send socket event to GM client to create actor and grant ownership
-            game.socket.emit(`module.sr5-marketplace`, {
-                action: "create_actor",
-                actorData: buildData,
-                userId: game.user.id
+            savedDoc = await services.MarketplaceSettingsService.saveOrUpdateVehicle(buildData, {
+                notify: true,
+                existingUuid: state.baseItem.uuid
             });
-            ui.notifications.info(`Request sent to GM to create vehicle "${buildData.name}".`);
         } else {
-            console.log("Marketplace Builder | Creating new item in World:", buildData);
+            console.log("Marketplace Builder | Saving item:", buildData);
             try {
-                const createdItem = await Item.create(buildData);
-                if (createdItem) {
-                    ui.notifications.info(`Item "${createdItem.name}" was successfully created in the World directory.`);
-                }
+                savedDoc = await services.MarketplaceSettingsService.saveOrUpdateItem(buildData, {
+                    notify: true,
+                    existingUuid: state.baseItem.uuid
+                });
             } catch (err) {
-                console.error("Marketplace Builder | Failed to create item in world:", err);
-                ui.notifications.error("Failed to create the item in the World directory.");
+                console.error("Marketplace Builder | Failed to save item:", err);
+                ui.notifications.error("Failed to save the item.");
+            }
+        }
+
+        if (savedDoc) {
+            // Update builder base item to point to the saved item
+            await game.sr5marketplace.api.factory.updateBuilderState({
+                baseItem: {
+                    ...state.baseItem,
+                    uuid: savedDoc.uuid,
+                    name: savedDoc.name,
+                    img: savedDoc.img
+                }
+            });
+
+            // Invalidate marketplace index cache so the new/updated item appears immediately
+            game.sr5marketplace?.api?.itemData?.invalidateCache();
+
+            // Re-render inGameMarketplace if it is open
+            const marketApp = foundry.applications.instances.get("inGameMarketplace");
+            if (marketApp && marketApp.rendered) {
+                marketApp.render();
             }
         }
     }
@@ -1822,7 +2210,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const rating = Number(buildData.system?.rating || buildData.system?.technology?.rating || 6);
         const threshold = rating > 0 ? rating * 2 : 12;
 
-        const actor = await ActorSelectionService.getSelectedActor();
+        const actor = await services.ActorSelectionService.getSelectedActor();
         if (!actor) {
             ui.notifications.warn("Please select a character/actor to perform the test.");
             return;
@@ -1856,7 +2244,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             buildTestApp.close();
         }
 
-        this.activeDialogId = await AppTestFlagService.createTest(initialData);
+        this.activeDialogId = await services.AppTestFlagService.createTest(initialData);
 
         console.log("SR5 Marketplace | Starting item build test...");
         await new Promise((resolve) => {
@@ -1868,7 +2256,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     /**
-     * Adds the compiled build data to the active shopping cart.
+     * Saves the modified item to the World and adds it directly to the active shopping cart.
      */
     static async #onAddToCart(event, target) {
         const state = await game.sr5marketplace.api.factory.getBuilderState();
@@ -1877,7 +2265,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             return;
         }
 
-        const actor = await ActorSelectionService.getSelectedActor();
+        const actor = await services.ActorSelectionService.getSelectedActor();
         if (!actor) {
             ui.notifications.warn("Please select a character/actor to shop on behalf of.");
             return;
@@ -1885,56 +2273,46 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         const buildData = ItemBuilderApp._prepareBuildData(state);
 
-        // Pre-calculate totals for the custom item
-        const baseItem = state.baseItem;
-        const isVehicle = baseItem.type === "vehicle";
-
-        let totalCost = 0;
-        if (isVehicle) {
-            totalCost = typeof baseItem.system.cost === "object" ? (baseItem.system.cost.value ?? 0) : (baseItem.system.cost ?? 0);
-        } else {
-            totalCost = typeof baseItem.system.technology?.cost === "object" ? (baseItem.system.technology?.cost.value ?? 0) : (baseItem.system.technology?.cost ?? 0);
-        }
-
-        let allAvails = [];
-        let baseAvail = "0";
-        if (isVehicle) {
-            baseAvail = typeof baseItem.system.availability === "object" ? (baseItem.system.availability.value ?? "0") : (baseItem.system.availability ?? "0");
-        } else {
-            baseAvail = typeof baseItem.system.technology?.availability === "object" ? (baseItem.system.technology?.availability.value ?? "0") : (baseItem.system.technology?.availability ?? "0");
-        }
-        allAvails.push(baseAvail);
-
-        let totalEssence = isVehicle ? 0 : (baseItem.system.essence || 0);
-
-        // Sum up modifications
-        for (const mod of Object.values(state.changes)) {
-            let modCost = typeof mod.system.technology?.cost === "object" ? (mod.system.technology?.cost.value ?? 0) : (mod.system.technology?.cost ?? 0);
-            if (modCost === undefined || modCost === null || modCost === 0) {
-                modCost = typeof mod.system.cost === "object" ? (mod.system.cost.value ?? 0) : (mod.system.cost ?? 0);
+        let savedDoc = null;
+        if (buildData.type === "vehicle") {
+            savedDoc = await services.MarketplaceSettingsService.saveOrUpdateVehicle(buildData, {
+                notify: false,
+                existingUuid: state.baseItem.uuid
+            });
+            if (!savedDoc && !game.user.isGM) {
+                ui.notifications.info(`Request sent to GM to create vehicle "${buildData.name}".`);
+                return;
             }
-            totalCost += Number(modCost) || 0;
-
-            let modAvail = typeof mod.system.technology?.availability === "object" ? (mod.system.technology?.availability.value ?? "0") : (mod.system.technology?.availability ?? "0");
-            if (modAvail === undefined || modAvail === null || modAvail === "0") {
-                modAvail = typeof mod.system.availability === "object" ? (mod.system.availability.value ?? "0") : (mod.system.availability ?? "0");
-            }
-            allAvails.push(modAvail);
-
-            let modEssence = mod.system.essence || 0;
-            totalEssence += Number(modEssence) || 0;
+        } else {
+            savedDoc = await services.MarketplaceSettingsService.saveOrUpdateItem(buildData, {
+                notify: false,
+                existingUuid: state.baseItem.uuid
+            });
         }
 
-        const combinedAvailability = game.sr5marketplace.api.marketplace.combineAvailabilities(allAvails);
+        if (savedDoc) {
+            // Update builder base item to point to the saved world item
+            await game.sr5marketplace.api.factory.updateBuilderState({
+                baseItem: {
+                    ...state.baseItem,
+                    uuid: savedDoc.uuid,
+                    name: savedDoc.name,
+                    img: savedDoc.img
+                }
+            });
 
-        const totals = {
-            cost: totalCost,
-            availability: combinedAvailability,
-            essence: totalEssence
-        };
+            // Invalidate marketplace index cache so the world item is immediately available
+            game.sr5marketplace?.api?.itemData?.invalidateCache();
 
-        // Add custom item/actor to cart
-        await game.sr5marketplace.api.marketplace.addCustom(buildData, actor.uuid, totals);
+            // Add the created world item directly to the basket
+            await game.sr5marketplace.api.marketplace.addToBasket(savedDoc.uuid, actor.uuid);
+            ui.notifications.info(`"${savedDoc.name}" added to cart.`);
+
+            const marketApp = foundry.applications.instances.get("inGameMarketplace");
+            if (marketApp && marketApp.rendered) {
+                marketApp.render();
+            }
+        }
     }
 
     /**
@@ -1944,7 +2322,7 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
     static async #onClearBuild(event, target) {
         await game.sr5marketplace.api.factory.clearBuilderState();
         if (this.activeDialogId) {
-            await AppTestFlagService.deleteTest(this.activeDialogId, game.user.id);
+            await services.AppTestFlagService.deleteTest(this.activeDialogId, game.user.id);
             this.activeDialogId = null;
         }
 
@@ -2552,14 +2930,14 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const virtualId = target.dataset.virtualId;
         if (!virtualId) return;
 
-        const unresolvedTest = Object.values(await AppTestFlagService.readState(game.user.id)).find(t => {
+        const unresolvedTest = Object.values(await services.AppTestFlagService.readState(game.user.id)).find(t => {
             return !t.resolved && t.testType === "BuildTest" && t.virtualModId === virtualId;
         });
 
         if (unresolvedTest) {
             // Unsuppress the dialog so that it can be shown/rendered again
-            AppTestFlagService._suppressedDialogIds.delete(unresolvedTest.id);
-            await AppTestFlagService.updateTest(unresolvedTest.id, { showDialog: true });
+            services.AppTestFlagService._suppressedDialogIds.delete(unresolvedTest.id);
+            await services.AppTestFlagService.updateTest(unresolvedTest.id, { showDialog: true });
 
             const buildTestApp = foundry.applications.instances.get("build-test-dialog-app");
             if (buildTestApp) {
@@ -2652,10 +3030,10 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         // Delete any active build tests associated with this virtual modification
         try {
-            const testStates = await AppTestFlagService.readState(game.user.id);
+            const testStates = await services.AppTestFlagService.readState(game.user.id);
             const associatedTest = Object.values(testStates).find(t => t.virtualModId === virtualId);
             if (associatedTest) {
-                await AppTestFlagService.deleteTest(associatedTest.id, game.user.id);
+                await services.AppTestFlagService.deleteTest(associatedTest.id, game.user.id);
             }
         } catch (err) {
             console.error("SR5 Marketplace | Failed to clean up associated build test:", err);
@@ -2749,15 +3127,15 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     static async #onSelectActor(event, target) {
         const actorUuid = target.dataset.actorUuid;
-        await ActorSelectionService.setSelectedActor(actorUuid);
+        await services.ActorSelectionService.setSelectedActor(actorUuid);
         target.closest(".marketplace-user-actor")?.classList.remove("expanded");
-        this.purchasingActor = await ActorSelectionService.getSelectedActor();
+        this.purchasingActor = await services.ActorSelectionService.getSelectedActor();
         this.render();
     }
 
     static async #onClearActor(event, target) {
         event.stopPropagation();
-        await ActorSelectionService.clearSelectedActor();
+        await services.ActorSelectionService.clearSelectedActor();
         this.purchasingActor = null;
         this.render();
     }

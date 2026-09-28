@@ -40,11 +40,11 @@
 
 .form-input-custom,
 .form-select-custom {
-    background-color: var(--input-bg-transparent) !important;
-    color: var(--input-color) !important;
-    border: 1px solid var(--border-color-medium) !important;
+    background-color: var(--input-bg-transparent);
+    color: var(--input-color);
+    border: 1px solid var(--border-color-medium);
     border-radius: 4px;
-    padding: 8px 12px !important;
+    padding: 8px 12px;
     font-size: 13px;
     outline: none;
     transition: all 0.2s ease;
@@ -54,13 +54,13 @@
 
 .form-input-custom:focus,
 .form-select-custom:focus {
-    border-color: var(--color-yellow-base) !important;
-    box-shadow: 0 0 8px rgba(231, 201, 62, 0.3);
+    border-color: var(--color-yellow-base);
+    box-shadow: 0 0 8px var(--drop-target-bg-hover, var(--color-yellow-base));
 }
 
 .form-select-custom option {
-    background-color: var(--app-window-content-bg) !important;
-    color: var(--text-color-primary) !important;
+    background-color: var(--app-window-content-bg);
+    color: var(--text-color-primary);
 }
 
 /* Collapsible Section styles */
@@ -80,20 +80,22 @@
     align-items: center;
     padding: 10px 15px;
     cursor: pointer;
-    list-style: none; /* Hide default triangle */
+    list-style: none;
+    /* Hide default triangle */
     user-select: none;
 }
 
 .actor-creator-collapsible-header::-webkit-details-marker {
-    display: none; /* Hide default triangle in Safari */
+    display: none;
+    /* Hide default triangle in Safari */
 }
 
 .actor-creator-collapsible-header h3 {
     margin: 0;
-    color: var(--color-yellow-base) !important;
+    color: var(--color-yellow-base);
     font-size: 14px;
-    border: none !important;
-    padding: 0 !important;
+    border: none;
+    padding: 0;
 }
 
 .actor-creator-collapsible-header .toggle-icon {
@@ -107,7 +109,7 @@
 }
 
 .actor-creator-collapsible-section.collapsed .actor-creator-collapsible-content {
-    display: none !important;
+    display: none;
 }
 
 .actor-creator-collapsible-content {
@@ -274,8 +276,8 @@
 }
 
 .matching-item-card.checked {
-    background-color: rgba(212, 175, 55, 0.05);
-    border-color: rgba(212, 175, 55, 0.2);
+    background-color: var(--color-white-transparent-05);
+    border-color: var(--color-card-enabled-border, var(--color-gold-base));
 }
 
 .matching-item-checkbox-wrapper {
@@ -425,7 +427,7 @@
 .actor-img-picker .img-hover-overlay {
     position: absolute;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: var(--color-black-transparent-50);
     display: none;
     align-items: center;
     justify-content: center;
@@ -544,28 +546,28 @@
 }
 
 .create-btn {
-    background-color: var(--color-green-button) !important;
-    color: var(--color-white) !important;
-    transition: all 0.2s ease !important;
+    background-color: var(--color-green-button);
+    color: var(--color-white);
+    transition: all 0.2s ease;
     font-weight: bold;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+    box-shadow: 0 2px 4px var(--color-black-transparent-20);
 }
 
 .create-btn:hover {
     filter: brightness(1.1);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+    box-shadow: 0 4px 8px var(--color-black-transparent-30);
     transform: translateY(-1px);
 }
 
 .cancel-btn-custom {
-    background-color: var(--tab-inactive-bg) !important;
-    color: var(--text-color-primary) !important;
-    border: 1px solid var(--border-color-medium) !important;
+    background-color: var(--tab-inactive-bg);
+    color: var(--text-color-primary);
+    border: 1px solid var(--border-color-medium);
     font-weight: bold;
-    transition: all 0.2s ease !important;
+    transition: all 0.2s ease;
 }
 
 .cancel-btn-custom:hover {
-    background-color: var(--bg-dark-section-hover) !important;
+    background-color: var(--bg-dark-section-hover);
     filter: brightness(1.1);
 }

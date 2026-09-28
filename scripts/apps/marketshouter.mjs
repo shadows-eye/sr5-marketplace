@@ -1,4 +1,8 @@
-import { BasketService } from "../services/basketService.mjs";
+/**
+ * @services Holds all services in a folder namespaced imported.
+ * @example services.basketService
+ */
+import * as services from "../services/_module.mjs";
 import { inGameMarketplace } from "./inGameMarketplace.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -6,18 +10,21 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     constructor(options = {}) {
         super(options);
-        this.basketService = new BasketService();
+        this.basketService = new services.BasketService();
         this.searchQuery = "";
         this.matchedItems = [];
         this.currentShopActorUuid = null;
         this.searchableItems = null;
+        this._sidebarObserver = null;
+        this._bottomLeftObserver = null;
+        this._onWindowResize = () => this.updatePosition();
     }
 
     /** @override */
     static get DEFAULT_OPTIONS() {
         return foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
             id: "marketshouter",
-            classes: ["marketshouter-app", "sr5-marketplace"],
+            classes: ["marketshouter-app", "sr5-marketplace", "window-app"],
             window: {
                 frame: false,
                 resizable: false
@@ -75,9 +82,9 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
                     shopActorImg = shopActor.img;
                     shopActorName = shopActor.name;
                     this.currentShopActorUuid = shopActorUuid;
-                    
+
                     // Pre-cache shop items
-                    const shopData = await game.sr5marketplace.api.itemData.getShopItems(shopActorUuid);
+                    const shopData = await services.itemDataServices.getShopItems(shopActorUuid);
                     this.searchableItems = shopData?.filteredItems?.items || [];
                 }
             } catch (err) {
@@ -93,8 +100,8 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
 
         let showItemBuilder = isGM;
         if (!isGM && canvas.ready && canvas.tokens) {
-            const hasFactoryOnScene = canvas.tokens.placeables.some(t => 
-                t.actor?.type === "sr5-marketplace.shop" && 
+            const hasFactoryOnScene = canvas.tokens.placeables.some(t =>
+                t.actor?.type === "sr5-marketplace.shop" &&
                 t.actor?.system?.shop?.isFactory
             );
             if (hasFactoryOnScene) {
@@ -106,6 +113,8 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
             .filter(btn => typeof btn.visible === "function" ? btn.visible() : (btn.visible !== false))
             .sort((a, b) => (a.order || 100) - (b.order || 100));
 
+        const positionClass = game.settings.get("sr5-marketplace", "marketshouterPosition") || "top-right";
+
         return {
             itemCount,
             shopActorImg,
@@ -113,7 +122,8 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
             isGM,
             pendingCount,
             showItemBuilder,
-            customButtons
+            customButtons,
+            positionClass
         };
     }
 
@@ -130,20 +140,39 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
 
         if (!container || !searchInput || !resultsPanel) return;
 
-        // Dynamic sidebar-aware positioning calculation
+        // Dynamic positioning calculation and observers
         if (this._sidebarObserver) {
             this._sidebarObserver.disconnect();
             this._sidebarObserver = null;
         }
+        if (this._bottomLeftObserver) {
+            this._bottomLeftObserver.disconnect();
+            this._bottomLeftObserver = null;
+        }
+        window.removeEventListener("resize", this._onWindowResize);
 
         this.updatePosition();
 
-        const sidebar = document.getElementById("sidebar");
-        if (sidebar) {
-            this._sidebarObserver = new ResizeObserver(() => {
+        const position = game.settings.get("sr5-marketplace", "marketshouterPosition") || "top-right";
+        if (position === "top-right") {
+            const sidebar = document.getElementById("sidebar");
+            if (sidebar) {
+                this._sidebarObserver = new ResizeObserver(() => {
+                    this.updatePosition();
+                });
+                this._sidebarObserver.observe(sidebar);
+            }
+        } else if (position === "bottom-left") {
+            window.addEventListener("resize", this._onWindowResize);
+            this._bottomLeftObserver = new MutationObserver(() => {
                 this.updatePosition();
             });
-            this._sidebarObserver.observe(sidebar);
+            this._bottomLeftObserver.observe(document.body, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ["class", "style"]
+            });
         }
 
         // Add action button listeners
@@ -177,7 +206,7 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
 
         searchInput.addEventListener("focus", () => {
             if (this.searchQuery.length >= 2) {
-                resultsPanel.classList.remove("hidden");
+                resultsPanel.classList.remove("is-hidden");
             }
         });
 
@@ -192,7 +221,7 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         // Global Outside click listener to dismiss search dropdown
         const outsideClickListener = (event) => {
             if (!this.element.contains(event.target)) {
-                resultsPanel.classList.add("hidden");
+                resultsPanel.classList.add("is-hidden");
             }
         };
 
@@ -209,21 +238,21 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
 
         // Toggle clear button
         if (this.searchQuery.length > 0) {
-            clearBtn.classList.remove("hidden");
+            clearBtn.classList.remove("is-hidden");
         } else {
-            clearBtn.classList.add("hidden");
+            clearBtn.classList.add("is-hidden");
         }
 
         // Must have at least 2 characters to trigger search
         if (this.searchQuery.length < 2) {
-            resultsPanel.classList.add("hidden");
+            resultsPanel.classList.add("is-hidden");
             resultsList.innerHTML = "";
             return;
         }
 
         // Get indexed items or shop-specific items
-        const allItems = this.searchableItems || game.sr5marketplace.api.itemData.getItems();
-        
+        const allItems = this.searchableItems || services.itemDataServices.getItems();
+
         // Filter items
         this.matchedItems = allItems.filter(item => {
             const nameMatch = item.name?.toLowerCase().includes(this.searchQuery);
@@ -251,11 +280,11 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
             `;
         } else {
             resultsList.innerHTML = displayItems.map(item => {
-                const img = game.sr5marketplace.api.itemData.getRepresentativeImage(item);
+                const img = services.itemDataServices.getRepresentativeImage(item);
                 const cost = item.system?.technology?.cost ?? item.system?.karma ?? "";
                 const isKarma = item.system?.karma !== undefined && item.system?.karma !== null;
                 const costDisplay = cost ? `${cost} ${isKarma ? "Karma" : "¥"}` : "";
-                
+
                 // Format type beautifully
                 const formattedType = item.type.charAt(0).toUpperCase() + item.type.slice(1).replace(/_/g, " ");
 
@@ -282,7 +311,7 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
             });
         }
 
-        resultsPanel.classList.remove("hidden");
+        resultsPanel.classList.remove("is-hidden");
     }
 
     /**
@@ -294,7 +323,7 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
 
         // Dismiss dropdown
         if (resultsPanel) {
-            resultsPanel.classList.add("hidden");
+            resultsPanel.classList.add("is-hidden");
         }
 
         // Clean search input
@@ -303,15 +332,15 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
             searchInput.value = "";
             this.searchQuery = "";
             const clearBtn = this.element.querySelector(".marketshouter-clear-btn");
-            if (clearBtn) clearBtn.classList.add("hidden");
+            if (clearBtn) clearBtn.classList.add("is-hidden");
         }
 
         // Determine correct category key for inGameMarketplace
         const categoryKey = this._getCategoryKeyForRawItem(item);
-        
+
         let marketplace = foundry.applications.instances.get("inGameMarketplace");
         if (!marketplace) {
-            marketplace = new inGameMarketplace({ 
+            marketplace = new inGameMarketplace({
                 initialSearchTerm: item.name,
                 shopActorUuid: this.currentShopActorUuid
             });
@@ -372,7 +401,7 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         if (type === "quality") return "qualitys";
         if (type === "spell") return "spells";
         if (type === "device") return "devices";
-        
+
         if (["armor", "cyberware", "bioware", "equipment", "metamagic", "echo", "complex_form"].includes(type)) {
             return type === "armor" ? "armor" : type === "cyberware" ? "cyberware" : type === "bioware" ? "bioware" : type === "equipment" ? "equipment" : type === "metamagic" ? "metamagic" : type === "echo" ? "echo" : "complex_form";
         }
@@ -388,17 +417,79 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         const container = this.element.querySelector(".marketshouter-container");
         if (!container) return;
 
-        const sidebar = document.getElementById("sidebar");
-        if (sidebar) {
-            const sidebarWidth = sidebar.offsetWidth || 0;
-            container.style.right = `${sidebarWidth + 8}px`;
+        const position = game.settings.get("sr5-marketplace", "marketshouterPosition") || "top-right";
+        const hasOpenWindow = !!document.querySelector(
+            "#inGameMarketplace:not(.minimized), #itemBuilder:not(.minimized), .itemBuilder:not(.minimized), .sr5-marketplace:not(.marketshouter-app):not(.minimized)"
+        );
+
+        if (hasOpenWindow) {
+            this.element.style.zIndex = "25";
+            container.style.zIndex = "25";
         } else {
-            const sidebarCollapsed = ui.sidebar?.collapsed ?? true;
-            if (sidebarCollapsed) {
-                container.style.right = "40px"; // Default fallback (32px sidebar + 8px gap)
+            container.style.zIndex = "";
+        }
+
+        if (position === "top-right") {
+            if (!hasOpenWindow) this.element.style.zIndex = "1000";
+            container.style.left = "";
+            container.style.bottom = "";
+            container.style.top = "";
+            const sidebar = document.getElementById("sidebar");
+            if (sidebar) {
+                const sidebarWidth = sidebar.offsetWidth || 0;
+                container.style.right = `${sidebarWidth + 8}px`;
             } else {
-                container.style.right = "308px"; // Default fallback (300px sidebar + 8px gap)
+                const sidebarCollapsed = ui.sidebar?.collapsed ?? true;
+                if (sidebarCollapsed) {
+                    container.style.right = "40px"; // Default fallback (32px sidebar + 8px gap)
+                } else {
+                    container.style.right = "308px"; // Default fallback (300px sidebar + 8px gap)
+                }
             }
+            return;
+        }
+
+        if (position === "top-center") {
+            if (!hasOpenWindow) this.element.style.zIndex = "1000";
+            container.style.right = "";
+            container.style.left = "";
+            container.style.bottom = "";
+            container.style.top = "";
+            return;
+        }
+
+        if (position === "bottom-left") {
+            if (!hasOpenWindow) this.element.style.zIndex = "105";
+            container.style.right = "";
+            container.style.top = "";
+
+            const shadowsHud = document.getElementById("shadows-hud-root");
+            if (shadowsHud && !shadowsHud.classList.contains("hidden")) {
+                const hudRect = shadowsHud.getBoundingClientRect();
+                if (hudRect.height > 0) {
+                    // Position cleanly 8px above the top of Shadows HUD
+                    const bottomGap = window.innerHeight - hudRect.top + 8;
+                    container.style.bottom = `${Math.round(bottomGap)}px`;
+                    container.style.left = `${Math.round(hudRect.left)}px`;
+                    return;
+                }
+            }
+
+            // Fallback to native Foundry player list / latency bar
+            const players = document.getElementById("players");
+            if (players && players.style.display !== "none") {
+                const playersRect = players.getBoundingClientRect();
+                if (playersRect.height > 0 && playersRect.top < window.innerHeight) {
+                    const bottomGap = window.innerHeight - playersRect.top + 8;
+                    container.style.bottom = `${Math.round(bottomGap)}px`;
+                    container.style.left = `${Math.round(playersRect.left)}px`;
+                    return;
+                }
+            }
+
+            // Default fallback for bottom-left if no element detected
+            container.style.bottom = "55px";
+            container.style.left = "15px";
         }
     }
 
@@ -411,6 +502,11 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
             this._sidebarObserver.disconnect();
             this._sidebarObserver = null;
         }
+        if (this._bottomLeftObserver) {
+            this._bottomLeftObserver.disconnect();
+            this._bottomLeftObserver = null;
+        }
+        window.removeEventListener("resize", this._onWindowResize);
         return super.close(options);
     }
 
@@ -426,6 +522,16 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
         if (!id || !config) return;
         MarketShouterApp.registeredButtons.set(id, { id, order: 100, ...config });
         console.log(`SR5 Marketplace | Registered MarketShouter button: ${id}`);
+        const app = foundry.applications.instances.get("marketshouter");
+        if (app && app.rendered) {
+            app.render(true);
+        }
+    }
+
+    /**
+     * Renders or re-renders the current MarketShouter application instance.
+     */
+    static renderApp() {
         const app = foundry.applications.instances.get("marketshouter");
         if (app && app.rendered) {
             app.render(true);

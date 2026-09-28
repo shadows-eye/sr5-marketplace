@@ -1,7 +1,9 @@
 import { DialogTestModifierService } from './DialogModifierService.mjs';
-import { DiceHelperService } from '../../../services/DiceHelperService.mjs';
-import { DeliveryTimeService } from '../../../services/DeliveryTimeService.mjs';
-import { AppTestFlagService } from '../../../services/AppTestFlagService.mjs';
+/**
+ * @services Holds all services in a folder namespaced imported.
+ * @example services.basketService
+ */
+import * as services from '../../../services/_module.mjs';
 import {parseAvailability} from '../../../lib/_module.mjs';
 
 /**
@@ -241,7 +243,7 @@ export class AppDialogBuilder {
             }
         };
         
-        const renderedDice = DiceHelperService.processDice(resultForHelper);
+        const renderedDice = services.DiceHelperService.processDice(resultForHelper);
 
         return {
             renderedDice: renderedDice,
@@ -272,7 +274,7 @@ export class AppDialogBuilder {
                 }
             }
         };
-        const renderedDice = DiceHelperService.processDice(resultForHelper);
+        const renderedDice = services.DiceHelperService.processDice(resultForHelper);
         
         // 4. Return the complete context for the "in-progress" template.
         return {
@@ -315,8 +317,8 @@ export class AppDialogBuilder {
             diceResults: initialDiceResults,
             values: { glitches: { value: initialGlitches } }
         };
-        const initialRenderedDice = DiceHelperService.processDice(initialResultForHelper);
-        const resistRenderedDice = DiceHelperService.processDice(resistResult);
+        const initialRenderedDice = services.DiceHelperService.processDice(initialResultForHelper);
+        const resistRenderedDice = services.DiceHelperService.processDice(resistResult);
 
         return {
             isAvailable: !resistResult.success,
@@ -342,7 +344,7 @@ export class AppDialogBuilder {
             diceResults: initialDiceResults,
             values: { glitches: { value: initialGlitches } }
         };
-        const initialRenderedDice = DiceHelperService.processDice(initialResultForHelper);
+        const initialRenderedDice = services.DiceHelperService.processDice(initialResultForHelper);
         const netHits = initialResult.values?.netHits?.value ?? 0;
 
         return {
@@ -376,13 +378,13 @@ export class AppDialogBuilder {
         if (!finalBasket || Object.keys(finalBasket).length === 0) {
             console.log("AppDialogBuilder | Basket not provided or empty, fetching from flag as a fallback.");
             // 3. If so, fetch it from the flag and assign it to our 'let' variable.
-            finalBasket = await AppTestFlagService.readBasket();
+            finalBasket = await services.AppTestFlagService.readBasket();
         }
         const totalCost = finalBasket.totalCost || 0;
         
         // 2. Use our service to get the delivery times.
-        const baseDeliveryTime = DeliveryTimeService.getBaseDeliveryTime(totalCost);
-        const finalDeliveryTime = DeliveryTimeService.calculateFinalDeliveryTime(baseDeliveryTime, this.testState.rollCount);
+        const baseDeliveryTime = services.DeliveryTimeService.getBaseDeliveryTime(totalCost);
+        const finalDeliveryTime = services.DeliveryTimeService.calculateFinalDeliveryTime(baseDeliveryTime, this.testState.rollCount);
         // --- Test Availability ---
         const localizedTimeUnit = game.i18n.localize(baseDeliveryTime.unit);
         
@@ -394,7 +396,7 @@ export class AppDialogBuilder {
             diceResults: lastDiceResults,
             values: { glitches: { value: lastGlitches } }
         };
-        const renderedDice = DiceHelperService.processDice(resultForHelper);
+        const renderedDice = services.DiceHelperService.processDice(resultForHelper);
 
         // 3. Return the complete context for the final "resolved" template.
         return {
@@ -432,10 +434,10 @@ export class AppDialogBuilder {
         let finalBasket = basket;
         if (!finalBasket || Object.keys(finalBasket).length === 0) {
             console.log("AppDialogBuilder | Basket not provided or empty, fetching from flag as a fallback.");
-            finalBasket = await AppTestFlagService.readBasket();
+            finalBasket = await services.AppTestFlagService.readBasket();
         }
         const totalCost = finalBasket?.totalCost || 0;
-        const baseDeliveryTime = DeliveryTimeService.getBaseDeliveryTime(totalCost);
+        const baseDeliveryTime = services.DeliveryTimeService.getBaseDeliveryTime(totalCost);
 
         let finalDeliveryTimeValue = baseDeliveryTime.value;
         if (isAvailable) {
@@ -459,8 +461,8 @@ export class AppDialogBuilder {
             diceResults: initialDiceResults,
             values: { glitches: { value: initialGlitches } }
         };
-        const initialRenderedDice = DiceHelperService.processDice(initialResultForHelper);
-        const resistRenderedDice = DiceHelperService.processDice(resistResult);
+        const initialRenderedDice = services.DiceHelperService.processDice(initialResultForHelper);
+        const resistRenderedDice = services.DiceHelperService.processDice(resistResult);
 
         return {
             isAvailable: isAvailable,
@@ -593,7 +595,7 @@ export class AppDialogBuilder {
         }
         if (hasModified) {
             this.testState.appliedModifiers = workingModifiers;
-            await AppTestFlagService.updateTest(this.testState.id, { appliedModifiers: workingModifiers });
+            await services.AppTestFlagService.updateTest(this.testState.id, { appliedModifiers: workingModifiers });
         }
 
         let workingConditions = 0;
@@ -665,7 +667,7 @@ export class AppDialogBuilder {
             diceResults: diceResults,
             values: { glitches: { value: glitches } }
         };
-        const renderedDice = DiceHelperService.processDice(resultForHelper);
+        const renderedDice = services.DiceHelperService.processDice(resultForHelper);
 
         const nextRollNumber = (this.testState.rollCount || rollsData?.length || 1) + 1;
         const penaltyVal = -(nextRollNumber - 1);
@@ -706,7 +708,7 @@ export class AppDialogBuilder {
             diceResults: diceResults,
             values: { glitches: { value: lastGlitches } }
         };
-        const renderedDice = DiceHelperService.processDice(resultForHelper);
+        const renderedDice = services.DiceHelperService.processDice(resultForHelper);
 
         const cumulativeHits = resultData.values?.extendedHits?.value ?? 0;
         const threshold = resultData.threshold?.value ?? 12;

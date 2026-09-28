@@ -1,5 +1,9 @@
 import { AppDialogBuilder } from './AppDialogBuilder.mjs';
-import { SystemDataMapperService } from '../../../services/SystemDataMapperService.mjs';
+/**
+ * @services Holds all services in a folder namespaced imported.
+ * @example services.basketService
+ */
+import * as services from '../../../services/_module.mjs';
 
 /**
  * A specialized dialog builder for the "Effects" tab of the Item Builder.
@@ -33,6 +37,7 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
             const activeMode = primaryTarget.applyTo || draft.system?.applyTo || draft.targetType || 'actor';
             context.activeApplyTo = activeMode;
             context.isActorMode = (activeMode === 'actor' || activeMode === 'targeted_actor');
+            context.isItemMode = (activeMode === 'item');
             context.isTestMode = (activeMode === 'test_all' || activeMode === 'test_item' || activeMode === 'test_target');
             context.isModifierMode = (activeMode === 'modifier');
 
@@ -40,16 +45,28 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
             context.selectedKey = selectedKey;
             context.selectedChange = primaryChange;
 
-            const mappableKeys = SystemDataMapperService.getMappableKeys();
+            const mappableKeys = services.SystemDataMapperService.getMappableKeys();
             const characterActorKeys = mappableKeys.actors.character || {};
             context.actorKeyGroups = this.#_prepareGroupsForGrid(characterActorKeys, selectedKey);
             context.rollKeyGroups = this.#_prepareGroupsForGrid(mappableKeys.rolls, selectedKey);
             context.modifierKeyGroups = this.#_prepareGroupsForGrid(mappableKeys.modifiers, selectedKey);
             
             const itemType = builderState.baseItem?.type;
-            if (itemType && mappableKeys.items[itemType]) {
-                const itemKeyData = { [`${builderState.baseItem.name} Keys`]: mappableKeys.items[itemType] };
+            if (itemType && mappableKeys.items[itemType] && mappableKeys.items[itemType].length > 0) {
+                const itemKeyData = { [`${builderState.baseItem.name || 'Item'} Keys`]: mappableKeys.items[itemType] };
                 context.itemKeyGroups = this.#_prepareGroupsForGrid(itemKeyData, selectedKey);
+            } else {
+                const commonItemKeys = [
+                    { label: game.i18n.localize("SR5.Cost") || "Cost", path: "system.technology.cost" },
+                    { label: game.i18n.localize("SR5.Availability") || "Availability", path: "system.technology.availability" },
+                    { label: game.i18n.localize("SR5.Rating") || "Rating", path: "system.technology.rating" },
+                    { label: game.i18n.localize("SR5.AccuracyAbbr") || "Accuracy", path: "system.accuracy" },
+                    { label: game.i18n.localize("SR5.DamageValueAbbr") || "Damage", path: "system.damage" },
+                    { label: game.i18n.localize("SR5.APAbbr") || "AP", path: "system.ap" },
+                    { label: game.i18n.localize("SR5.RecoilComp") || "Recoil Comp", path: "system.range.rc" },
+                    { label: game.i18n.localize("SR5.Armor") || "Armor", path: "system.armor.value" }
+                ];
+                context.itemKeyGroups = this.#_prepareGroupsForGrid({ "Item Keys": commonItemKeys }, selectedKey);
             }
 
             // Extract condition values from target.conditions or legacy flat fields
@@ -86,6 +103,10 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
             if (context.isActorMode) {
                 for (const group of Object.values(characterActorKeys)) {
                     for (const k of group) propertyKeys.add(k.label);
+                }
+            } else if (context.isItemMode) {
+                for (const group of (context.itemKeyGroups || [])) {
+                    for (const k of (group.groupData || [])) propertyKeys.add(k.label);
                 }
             } else if (context.isTestMode) {
                 for (const group of Object.values(mappableKeys.rolls)) {

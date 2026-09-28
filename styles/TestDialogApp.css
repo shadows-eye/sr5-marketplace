@@ -275,7 +275,7 @@
     flex-wrap: wrap;
     gap: 8px;
     padding: 10px;
-    background-color: rgba(0,0,0,0.2);
+    background-color: var(--color-black-transparent-20);
     border-radius: 5px;
     margin-bottom: 15px;
     min-height: 50px; /* Ensure tray has height even if empty */
@@ -290,32 +290,32 @@
     border-radius: 4px;
     font-weight: bold;
     font-size: 1.2em;
-    color: white;
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.4);
+    color: var(--color-white);
+    box-shadow: inset 0 0 5px var(--color-black-transparent-45);
 }
 
 .MarketAppDialog-die-text {
-    text-shadow: 1px 1px 2px black;
+    text-shadow: 1px 1px 2px var(--color-black);
 }
 
 /* Success: green text, black die */
 .MarketAppDialog-die-result.success {
-    background-color: #222;
-    color: #4CAF50;
-    border: 1px solid #376b0f
+    background-color: var(--color-grey-darkest);
+    color: var(--color-green-button);
+    border: 1px solid var(--color-green-dark);
 }
 
 /* Glitch: red text, grey die */
 .MarketAppDialog-die-result.glitch {
-    background-color: #555;
-    color: #F44336;
-    border: 1px solid #5f0303
+    background-color: var(--color-grey-tab-active);
+    color: var(--color-red-bright);
+    border: 1px solid var(--color-red-very-dark);
 }
 
 /* Failure: white text, grey die */
 .MarketAppDialog-die-result.failure {
-    background-color: #777;
-    color: #f0f0f0;
+    background-color: var(--color-grey-medium-light);
+    color: var(--color-grey-lightest);
 }
 
 
@@ -346,8 +346,8 @@
 
 .roll-button:hover {
     background: var(--color-green-button);
-    color: #fff;
-    box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+    color: var(--color-white);
+    box-shadow: 0 0 8px var(--color-green-button-glow);
 }
 
 /* ================================================================== */

@@ -20,7 +20,7 @@ export class DefaultEffect {
             type: "base",
             system: {
                 appliedByTest: false,
-                onlyForEquipped: false,
+                onlyForEquipped: true,
                 onlyForWireless: false,
                 expiryAction: "default",
                 targets: [

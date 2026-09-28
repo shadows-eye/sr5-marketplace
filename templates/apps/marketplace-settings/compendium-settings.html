@@ -47,6 +47,41 @@
             </div>
         </div>
 
+        {{!-- TARGET SAVE DESTINATIONS CARD (GM ONLY) --}}
+        {{#if isGM}}
+        <div class="compendium-card">
+            <div class="compendium-card-header flex-col items-start gap-2">
+                <div class="compendium-card-title-group w-full justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-floppy-disk compendium-card-icon"></i>
+                        <div class="compendium-card-name-wrap">
+                            <span class="compendium-card-title">{{localize "SR5Marketplace.CompendiumSettings.CustomBuildSaveLocationTitle"}}</span>
+                            <span class="compendium-card-pkg">{{localize "SR5Marketplace.CompendiumSettings.CustomBuildSaveLocationHint"}}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full pt-2 border-t border-[var(--border-color-medium)]">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-semibold text-[var(--color-yellow-base)]">{{localize "SR5Marketplace.CompendiumSettings.CustomItemCompendium.name"}}</label>
+                        <select class="custom-item-compendium-select text-xs p-1.5 rounded bg-[var(--input-bg-transparent)] text-[var(--text-color-primary)] border border-[var(--border-color-medium)] outline-none">
+                            {{#each itemCompendiumChoices}}
+                            <option value="{{@key}}" {{#if (eq @key ../customItemCompendium)}}selected{{/if}}>{{this}}</option>
+                            {{/each}}
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-semibold text-[var(--color-yellow-base)]">{{localize "SR5Marketplace.CompendiumSettings.CustomVehicleCompendium.name"}}</label>
+                        <select class="custom-vehicle-compendium-select text-xs p-1.5 rounded bg-[var(--input-bg-transparent)] text-[var(--text-color-primary)] border border-[var(--border-color-medium)] outline-none">
+                            {{#each vehicleCompendiumChoices}}
+                            <option value="{{@key}}" {{#if (eq @key ../customVehicleCompendium)}}selected{{/if}}>{{this}}</option>
+                            {{/each}}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{/if}}
+
         {{!-- COMPENDIUMS GRID --}}
         <div class="compendiums-card-grid grid grid-cols-1 md:grid-cols-2 gap-2.5">
             {{#each compendiums}}

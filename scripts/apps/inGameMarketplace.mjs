@@ -1,15 +1,12 @@
-import ItemDataServices from '../services/ItemDataServices.mjs';
+/**
+ * @services Holds all services in a folder namespaced imported.
+ * @example services.basketService
+ */
+import * as services from '../services/_module.mjs';
 import { AppDialogBuilder } from './documents/dialog/AppDialogBuilder.mjs';
 import { ItemPreviewApp } from "./documents/items/ItemPreviewApp.mjs";
-import { BasketService } from '../services/basketService.mjs';
-import { SearchService } from '../services/searchTag.mjs';
-import { DeliveryTimeService } from '../services/DeliveryTimeService.mjs';
-import { DialogTestModifierService as DialogModifierService } from '../apps/documents/dialog/DialogModifierService.mjs'; // Builder for Dialog For inline-Dialog in Apps
-import { AppTestFlagService } from '../services/AppTestFlagService.mjs';
+import { DialogTestModifierService as DialogModifierService } from './documents/dialog/DialogModifierService.mjs'; // Builder for Dialog For inline-Dialog in Apps
 import { MODULE_ID } from '../lib/constants.mjs';
-import { ActorSelectionService } from '../services/ActorSelectionService.mjs';
-import { CredstickService } from '../services/credstickService.mjs';
-import { PurchaseService } from '../services/purchaseService.mjs';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -33,14 +30,14 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         this.testType = null;
         this.activeDialogId = null;
         this.activeTestState = null;
-        //this.itemData = new ItemDataServices();
+        //this.itemData = new services.ItemDataServices();
         this.skill = null;
         this.attribute = null;
         this.modifier = null;
         this.availabilityStr = null;
         // --- Services & App State ---
-        this.itemData = game.sr5marketplace.api.itemData;
-        this.basketService = new BasketService();
+        this.itemData = services.itemDataServices;
+        this.basketService = new services.BasketService();
         this.tabGroups = { main: "shop" };
         this.purchasingActor = null;
         this.searchService = null;
@@ -82,7 +79,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         return foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
             id: "inGameMarketplace",
             position: { width: 910, height: 800, top: 50, left: 120 },
-            window: { title: "SR5Marketplace.Marketplace.Title", resizable: true },
+            window: { icon: "fa-solid fa-cart-shopping", title: "SR5Marketplace.Marketplace.Title", resizable: true },
             actions: {
                 changeTab: this.#onChangeTab,
                 toggleActorList: this.#onToggleActorList,
@@ -144,7 +141,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         super._onRender(context, options);
 
         if (this.tabGroups.main === "shop") {
-            this.searchService = new SearchService(this.element, this._applySearchFilter.bind(this));
+            this.searchService = new services.SearchService(this.element, this._applySearchFilter.bind(this));
 
             if (this.initialSearchTerm) {
                 if (this.searchService) {
@@ -232,7 +229,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     async _prepareContext(options = {}) {
         const AppUserId = await game.user.id;
         //console.log(AppUserId);
-        this.purchasingActor = await ActorSelectionService.getSelectedActor();
+        this.purchasingActor = await services.ActorSelectionService.getSelectedActor();
 
         // Dynamically re-evaluate shop region context if no explicit shop context was set
         if (!this.shopActorUuid && this.purchasingActor && canvas.ready) {
@@ -271,7 +268,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         console.log(basket);
         const basketItemCount = basket.shoppingCartItems.length;
         //Initial Dialog States
-        const testStates = await AppTestFlagService.readState(AppUserId);
+        const testStates = await services.AppTestFlagService.readState(AppUserId);
         console.log(testStates);
         const unresolvedTest = Object.values(testStates).find(t => !t.resolved && t.testType !== "BuildTest");
         this.activeDialogId = unresolvedTest?.id || null;
@@ -342,9 +339,9 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
                     // 2b. Get available credsticks owned by actor
                     partialContext.credsticks = itemSource.items
-                        .filter(i => CredstickService.isCredstick(i))
+                        .filter(i => services.CredstickService.isCredstick(i))
                         .map(c => {
-                            const credData = CredstickService.getCredstickData(c);
+                            const credData = services.CredstickService.getCredstickData(c);
                             return {
                                 uuid: c.uuid,
                                 name: c.name,
@@ -469,7 +466,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 const groupedByActor = {};
                 for (const req of allPendingRequests) {
                     if (req.basket) {
-                        PurchaseService._recalculateTotals(req.basket);
+                        services.PurchaseService._recalculateTotals(req.basket);
                     }
                     const actorUuid = req.actor?.uuid || "unknown";
                     if (!groupedByActor[actorUuid]) {
@@ -496,7 +493,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                     if (req.basket.testContext && req.basket.testContext.deliveryTime) {
                         req.deliveryTime = req.basket.testContext.deliveryTime;
                     } else {
-                        const baseTime = DeliveryTimeService.getBaseDeliveryTime(req.basket.totalCost || 0);
+                        const baseTime = services.DeliveryTimeService.getBaseDeliveryTime(req.basket.totalCost || 0);
                         req.deliveryTime = {
                             value: baseTime.value,
                             unit: baseTime.unit
@@ -640,15 +637,28 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
                 const setting = game.settings.get("core", "sheetThemes");
                 const documentTheme = setting?.documents?.[shopActorUuid];
                 if (documentTheme) {
-                    return `theme-${documentTheme}`;
+                    if (documentTheme === "shadows-theme" || documentTheme === "shadows") return "shadows-theme";
+                    return documentTheme.startsWith("theme-") ? documentTheme : `theme-${documentTheme}`;
                 }
             } catch (err) {
                 console.warn("inGameMarketplace | Failed to read sheetThemes setting synchronously:", err);
             }
         }
-        const uiConfig = game.settings.get("core", "uiConfig");
-        const themeValue = uiConfig?.colorScheme.applications || "light";
-        return `theme-${themeValue}`;
+        if (typeof game !== "undefined" && game.settings) {
+            try {
+                const uiConfig = game.settings.get("core", "uiConfig");
+                const themeValue = uiConfig?.colorScheme?.applications;
+                if (themeValue === "shadows-theme" || themeValue === "shadows") {
+                    return "shadows-theme";
+                }
+                if (themeValue && themeValue !== "light" && themeValue !== "dark") {
+                    return themeValue.startsWith("theme-") ? themeValue : `theme-${themeValue}`;
+                }
+            } catch (err) {
+                // ignore
+            }
+        }
+        return "shadows-theme";
     }
     // --- ACTION HANDLERS ---
     static #onChangeTab(event, target) {
@@ -664,14 +674,14 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     }
 
     static async #onSelectActor(event, target) {
-        await ActorSelectionService.setSelectedActor(target.dataset.actorUuid);
+        await services.ActorSelectionService.setSelectedActor(target.dataset.actorUuid);
         target.closest(".marketplace-user-actor")?.classList.remove("expanded");
         this.render();
     }
 
     static async #onClearActor(event, target) {
         event.stopPropagation();
-        await ActorSelectionService.clearSelectedActor();
+        await services.ActorSelectionService.clearSelectedActor();
         this.render();
     }
 
@@ -679,6 +689,17 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
      * Passes only the item's UUID to the ItemPreviewApp.
      */
     static async #onOpenDocumentLink(event, target) {
+        const basketRow = target.closest("[data-basket-item-uuid]");
+        if (basketRow) {
+            const basketItemUuid = basketRow.dataset.basketItemUuid;
+            const basket = await this.basketService.getBasket();
+            const basketItem = basket.shoppingCartItems.find(i => i.basketItemUuid === basketItemUuid);
+            if (basketItem?.isCustomBuild && basketItem.customData) {
+                new ItemPreviewApp(null, { itemData: basketItem.customData }).render(true);
+                return;
+            }
+        }
+
         const uuid = target.dataset.uuid;
         if (!uuid) return;
         const item = await fromUuid(uuid);
@@ -720,10 +741,10 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         // 3. If the basket is now empty, clear any associated test flags.
         if (basket.shoppingCartItems.length === 0) {
             console.log("LOG: Basket is now empty, clearing any active availability test state flag.");
-            const testStates = await AppTestFlagService.readState(game.user.id);
+            const testStates = await services.AppTestFlagService.readState(game.user.id);
             const availTest = Object.values(testStates).find(t => t.testType !== "BuildTest");
             if (availTest) {
-                await AppTestFlagService.deleteTest(availTest.id, game.user.id);
+                await services.AppTestFlagService.deleteTest(availTest.id, game.user.id);
             }
 
             // Also clear the local instance state to prevent issues until the next render.
@@ -761,7 +782,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
     static async #onCancelRequest(event, target) {
         await this.basketService.clearBasket();
         if (this.activeDialogId) {
-            await AppTestFlagService.deleteTest(this.activeDialogId, game.user.id);
+            await services.AppTestFlagService.deleteTest(this.activeDialogId, game.user.id);
         }
         this.activeTestState = null;
         this.activeDialogId = null;
@@ -913,7 +934,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             };
 
             // 5. Update the flag with the new information.
-            await AppTestFlagService.updateTest(this.activeTestState.id, updateData);
+            await services.AppTestFlagService.updateTest(this.activeTestState.id, updateData);
         }
         // --- END OF NEW LOGIC ---
 
@@ -971,7 +992,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         };
 
         // Create the test record in the flag. This returns the new test's ID.
-        this.activeDialogId = await AppTestFlagService.createTest(initialData);
+        this.activeDialogId = await services.AppTestFlagService.createTest(initialData);
         console.log(`LOG: Created new test state with ID: ${this.activeDialogId}`);
 
         this.render();
@@ -1005,7 +1026,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         // 5. Save the complete, updated list of modifiers back to the flag.
         //    FIX: Pass the 'newModifiers' array under the 'modifier' key.
-        await AppTestFlagService.updateTest(this.activeTestState.id, { appliedModifiers: newModifiers });
+        await services.AppTestFlagService.updateTest(this.activeTestState.id, { appliedModifiers: newModifiers });
 
         // 6. Re-render the UI to reflect the change.
         this.render();
@@ -1059,7 +1080,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         const newModifiers = [...currentModifiers, newModifier];
         this.activeTestState.appliedModifiers = newModifiers;
 
-        await AppTestFlagService.updateTest(this.activeTestState.id, { appliedModifiers: newModifiers });
+        await services.AppTestFlagService.updateTest(this.activeTestState.id, { appliedModifiers: newModifiers });
         this.render();
     }
 
@@ -1072,7 +1093,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
 
         this.activeTestState.appliedModifiers = newModifiers;
 
-        await AppTestFlagService.updateTest(this.activeTestState.id, { appliedModifiers: newModifiers });
+        await services.AppTestFlagService.updateTest(this.activeTestState.id, { appliedModifiers: newModifiers });
         this.render();
     }
 
@@ -1095,7 +1116,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
         this.activeTestState[key] = value;
         console.log(this.activeTestState)
         // Save the change to the flag for persistence
-        await AppTestFlagService.updateTest(this.activeTestState.id, { [key]: value });
+        await services.AppTestFlagService.updateTest(this.activeTestState.id, { [key]: value });
 
         // Re-render the UI
         this.render(false);
@@ -1197,7 +1218,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             console.log("--- Marketplace | Availability Resist Result to be Saved ---", resistResultForFlag);
 
             // 9. Update the flag with the resist result and set the status to 'resolved'.
-            await AppTestFlagService.updateTest(this.activeTestState.id, {
+            await services.AppTestFlagService.updateTest(this.activeTestState.id, {
                 resistResult: resistResultForFlag,
                 status: 'resolved'
             });
@@ -1335,7 +1356,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             let userId = game.user.id;
 
             if (dialogIdToUpdate) {
-                await AppTestFlagService.updateTest(dialogIdToUpdate, {
+                await services.AppTestFlagService.updateTest(dialogIdToUpdate, {
                     result: resultForFlag,
                     rolls: test.rolls,
                     status: finalStatus, // Use the correct status
@@ -1429,7 +1450,7 @@ export class inGameMarketplace extends HandlebarsApplicationMixin(ApplicationV2)
             }
 
             // 7. Save everything back to the flag.
-            await AppTestFlagService.updateTest(this.activeTestState.id, {
+            await services.AppTestFlagService.updateTest(this.activeTestState.id, {
                 result: test.data,
                 rolls: test.rolls,
                 status: finalStatus,

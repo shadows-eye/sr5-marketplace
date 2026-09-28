@@ -1,4 +1,6 @@
 import { MODULE_ID, FLAGKEY_Basket } from "../lib/constants.mjs";
+import { MarketplaceSettingsService } from "./MarketplaceSettingsService.mjs";
+import { systemDataModel } from "./systemDataModel.mjs";
 
 export class BasketService {
 
@@ -97,8 +99,7 @@ export class BasketService {
         const item = await fromUuid(itemUuid);
         if (!item) return ui.notifications.warn(`Item with UUID ${itemUuid} not found.`);
 
-        const itemBehaviors = game.settings.get("sr5-marketplace", "itemTypeBehaviors") || {};
-        const behavior = itemBehaviors[item.type] || 'single';
+        const behavior = systemDataModel.getItemBehavior(item);
         const existingItemInCart = basket.shoppingCartItems.find(i => i.itemUuid === item.uuid && (!i.isWorkshopMod || i.vehicleActorUuid === options.vehicleActorUuid));
 
         if (behavior === 'unique') {
@@ -106,7 +107,7 @@ export class BasketService {
                 return ui.notifications.warn(`'${item.name}' is a unique item and is already in your cart.`);
             }
             const actor = await fromUuid(basket.createdForActor);
-            if (actor && actor.items.some(i => i.name === item.name && i.type === item.type)) {
+            if (actor && systemDataModel.actorHasItem(actor, item)) {
                 return ui.notifications.warn(`Your character, ${actor.name}, already possesses the unique item: '${item.name}'.`);
             }
         }
@@ -203,7 +204,7 @@ export class BasketService {
                 karma: Number(calculatedKarma) || 0,
                 availability: finalAvailability,
                 essence: Number(finalEssence) || 0,
-                itemQuantity: behavior === 'stack' ? 10 : (item.system.quantity || 1),
+                itemQuantity: systemDataModel.getPackQuantity(item),
                 rating: defaultRating,
                 selectedRating: defaultRating,
                 isWorkshopMod: !!options.isWorkshopMod,
@@ -227,33 +228,55 @@ export class BasketService {
      * @param {string} actorUuid - The UUID of the actor this basket is for.
      * @param {object} totals - Pre-calculated totals (cost, availability, essence).
      */
-    async addCustomToBasket(customData, actorUuid, totals) {
+    async addCustomToBasket(customData, actorUuid, totals = {}) {
         if (!customData || !actorUuid) {
-            ui.notifications.error("Cannot add custom build to cart without a purchasing actor.");
+            //ui.notifications.error("Cannot add custom build to cart without a purchasing actor.");
             return;
         }
 
+        // 1. Create or update the item in the configured target compendium or World
+        let savedDoc = null;
+        if (customData.type === "vehicle") {
+            savedDoc = await MarketplaceSettingsService.saveOrUpdateVehicle(customData, {
+                existingUuid: customData.uuid
+            });
+        } else {
+            savedDoc = await MarketplaceSettingsService.saveOrUpdateItem(customData, {
+                existingUuid: customData.uuid
+            });
+        }
+
+        if (savedDoc) {
+            game.sr5marketplace?.api?.itemData?.invalidateCache();
+            return await this.addToBasket(savedDoc.uuid, actorUuid);
+        }
+
+        // Fallback for non-GM or detached data
         const basket = await this.getBasket();
         basket.createdForActor = actorUuid;
 
         const isVehicle = customData.type === "vehicle";
         const defaultRating = !isVehicle ? (customData.system.technology?.rating || 0) : 0;
 
+        const costVal = totals.cost ?? totals.totalCost ?? 0;
+        const availVal = totals.availability ?? totals.combinedAvailability ?? "0";
+        const essenceVal = totals.essence ?? totals.totalEssence ?? 0;
+
         const basketItem = {
             basketItemUuid: "basket." + foundry.utils.randomID(),
-            itemUuid: customData.uuid || ("custom." + foundry.utils.randomID()),
+            itemUuid: "custom." + foundry.utils.randomID(),
             buyQuantity: 1,
             name: customData.name,
             img: customData.img || "icons/svg/item-bag.svg",
-            cost: totals.cost,
+            cost: Number(costVal) || 0,
             karma: 0,
-            availability: totals.availability,
-            essence: totals.essence,
+            availability: String(availVal),
+            essence: Number(essenceVal) || 0,
             itemQuantity: 1,
             rating: defaultRating,
             selectedRating: defaultRating,
             isCustomBuild: true,
-            customData: customData
+            customData: foundry.utils.deepClone(customData)
         };
 
         basket.shoppingCartItems.push(basketItem);
@@ -295,10 +318,22 @@ export class BasketService {
         const targetItem = basket.shoppingCartItems.find(i => i.basketItemUuid === basketItemUuid);
         if (!targetItem) return;
 
+        // Custom builds are handled directly without compendium lookup
+        if (targetItem.isCustomBuild) {
+            targetItem.buyQuantity += change;
+            if (targetItem.buyQuantity <= 0) {
+                await this.removeFromBasket(basketItemUuid);
+                return;
+            }
+            const updatedBasket = this._recalculateTotals(basket);
+            await this.saveBasket(updatedBasket);
+            return;
+        }
+
         const sourceItem = await fromUuid(targetItem.itemUuid);
         if (!sourceItem) return;
 
-        const behavior = itemBehaviors[sourceItem.type] || 'single';
+        const behavior = systemDataModel.getItemBehavior(sourceItem);
 
         // --- Shop Actor & Stock Limit Checks on Increase ---
         if (change > 0 && basket.shopActorUuid) {

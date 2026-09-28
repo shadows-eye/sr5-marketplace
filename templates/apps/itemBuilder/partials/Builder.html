@@ -96,6 +96,16 @@
         <header class="component-header">
             <h3>{{localize "SR5Marketplace.ItemBuilder.Modifications.Header"}}</h3>
             <div class="header-controls">
+                <select id="mod-mount-filter" name="modMountFilter" class="itemBuilder mod-mount-filter" data-action="filterByMountPoint">
+                    <option value="">{{localize "SR5Marketplace.ItemBuilder.AllMounts"}}</option>
+                    <option value="top">{{localize "SR5.Top"}}</option>
+                    <option value="barrel">{{localize "SR5.Barrel"}}</option>
+                    <option value="under">{{localize "SR5.UnderBarrel"}}</option>
+                    <option value="stock">{{localize "SR5.Stock"}}</option>
+                    <option value="side">{{localize "SR5.Side"}}</option>
+                    <option value="internal">{{localize "SR5.Internal"}}</option>
+                    <option value="none">{{localize "SR5Marketplace.ItemBuilder.NoMount"}}</option>
+                </select>
                 <input id="search-box" type="search" class="mod-search"
                     placeholder="{{localize 'SR5Marketplace.ItemBuilder.SearchAllMods'}}" />
                 <div id="filter-tags-container" class="flex flex-wrap gap-1 w-full mt-0.5 empty:hidden"></div>
@@ -172,8 +182,8 @@
             {{> "modules/sr5-marketplace/templates/apps/itemBuilder/partials/ItemDetails.html"}}
             {{/if}}
             <!--</div>-->
-            {{!-- These slots now have unique IDs and conditional mount points for weapons --}}
-            <div class="mod-slot slot-top-left" data-slot-id="topLeft" {{#if isWeapon}}data-mount-point="top" {{/if}}>
+            {{!-- These slots now have unique IDs, mount points, empty point names, and click-to-filter --}}
+            <div class="mod-slot slot-top-left" data-slot-id="topLeft" data-action="clickSlotFilter" {{#if isWeapon}}data-mount-point="top"{{/if}}>
                 {{#with builderData.changes.topLeft}}
                 <div class="slot-content-containment" data-item-uuid="{{this.uuid}}" data-hover-delay="1000">
                     <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}" />
@@ -182,10 +192,11 @@
                         <i class="SR5Marketplace fas fa-trash"></i>
                     </div>
                 </div>
+                {{else}}
+                <span class="slot-name-label">{{#if isWeapon}}TOP{{else}}Top{{/if}}</span>
                 {{/with}}
             </div>
-            <div class="mod-slot slot-bottom-left" data-slot-id="bottomLeft" {{#if isWeapon}}data-mount-point="under"
-                {{/if}}>
+            <div class="mod-slot slot-bottom-left" data-slot-id="bottomLeft" data-action="clickSlotFilter" {{#if isWeapon}}data-mount-point="under"{{/if}}>
                 {{#with builderData.changes.bottomLeft}}
                 <div class="slot-content-containment" data-item-uuid="{{this.uuid}}" data-hover-delay="1000">
                     <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}" />
@@ -194,17 +205,37 @@
                         <i class="SR5Marketplace fas fa-trash"></i>
                     </div>
                 </div>
+                {{else}}
+                <span class="slot-name-label">{{#if isWeapon}}Under{{else}}Under{{/if}}</span>
                 {{/with}}
             </div>
 
             <div class="center-display">
                 <img src="modules/sr5-marketplace/assets/frames/ItemRing.svg"
                     alt="{{localize 'SR5Marketplace.ItemBuilder.ItemBuild'}}" class="ring-image" />
-                <img src="{{builderData.itemTypeImage}}" alt="{{builderData.baseItem.name}}" class="base-item-image" />
+                <img src="{{builderData.itemTypeImage}}" alt="{{builderData.baseItem.name}}" class="base-item-image {{#if isWeapon}}cursor-pointer{{/if}}" {{#if isWeapon}}data-action="toggleWeaponStats" title="{{localize 'SR5Marketplace.ItemBuilder.ToggleWeaponStats'}}"{{/if}} />
+                {{#if (and isWeapon showWeaponStats weaponStats)}}
+                <div class="weapon-stats-hud">
+                    <span class="stat-segment"><span class="stat-label">DV</span> <span class="stat-value">{{weaponStats.dv}} {{weaponStats.damageType}}</span></span>
+                    {{#if weaponStats.acc}}
+                    <span class="stat-pipe">|</span>
+                    <span class="stat-segment"><span class="stat-label">ACC</span> <span class="stat-value">{{weaponStats.acc}}</span></span>
+                    {{/if}}
+                    {{#if weaponStats.ranges}}
+                    <span class="stat-pipe">|</span>
+                    <span class="stat-segment stat-icon-segment"><i class="fas fa-ruler-horizontal"></i> <span class="stat-value">{{weaponStats.ranges}}</span></span>
+                    {{/if}}
+                    {{#if weaponStats.modes}}
+                    <span class="stat-pipe">|</span>
+                    <span class="stat-segment stat-icon-segment"><i class="fas fa-gun"></i> <span class="stat-value">{{weaponStats.modes}}</span></span>
+                    {{/if}}
+                    <span class="stat-pipe">|</span>
+                    <span class="stat-segment"><span class="stat-label">RC</span> <span class="stat-value">{{weaponStats.rc}}</span></span>
+                </div>
+                {{/if}}
             </div>
 
-            <div class="mod-slot slot-top-right" data-slot-id="topRight" {{#if isWeapon}}data-mount-point="barrel"
-                {{/if}}>
+            <div class="mod-slot slot-top-right" data-slot-id="topRight" data-action="clickSlotFilter" {{#if isWeapon}}data-mount-point="barrel"{{/if}}>
                 {{#with builderData.changes.topRight}}
                 <div class="slot-content-containment" data-item-uuid="{{this.uuid}}" data-hover-delay="1000">
                     <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}" />
@@ -213,10 +244,11 @@
                         <i class="SR5Marketplace fas fa-trash"></i>
                     </div>
                 </div>
+                {{else}}
+                <span class="slot-name-label">{{#if isWeapon}}Barrel{{else}}Barrel{{/if}}</span>
                 {{/with}}
             </div>
-            <div class="mod-slot slot-middle-right" data-slot-id="middleRight" {{#if
-                isWeapon}}data-mount-point="internal" {{/if}}>
+            <div class="mod-slot slot-middle-right" data-slot-id="middleRight" data-action="clickSlotFilter" {{#if isWeapon}}data-mount-point="stock"{{/if}}>
                 {{#with builderData.changes.middleRight}}
                 <div class="slot-content-containment" data-item-uuid="{{this.uuid}}" data-hover-delay="1000">
                     <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}" />
@@ -225,10 +257,11 @@
                         <i class="SR5Marketplace fas fa-trash"></i>
                     </div>
                 </div>
+                {{else}}
+                <span class="slot-name-label">{{#if isWeapon}}Stock{{else}}Stock{{/if}}</span>
                 {{/with}}
             </div>
-            <div class="mod-slot slot-bottom-right" data-slot-id="bottomRight" {{#if isWeapon}}data-mount-point="side"
-                {{/if}}>
+            <div class="mod-slot slot-bottom-right" data-slot-id="bottomRight" data-action="clickSlotFilter" {{#if isWeapon}}data-mount-point="side"{{/if}}>
                 {{#with builderData.changes.bottomRight}}
                 <div class="slot-content-containment" data-item-uuid="{{this.uuid}}" data-hover-delay="1000">
                     <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}" />
@@ -237,6 +270,8 @@
                         <i class="SR5Marketplace fas fa-trash"></i>
                     </div>
                 </div>
+                {{else}}
+                <span class="slot-name-label">{{#if isWeapon}}Side{{else}}Side{{/if}}</span>
                 {{/with}}
             </div>
             <!-- Bottom Slots -->
@@ -244,7 +279,7 @@
             <div class="bottom-slots">
                 <div class="bottom-slots">
                     {{!-- Slot 1 --}}
-                    <div class="mod-slot" data-slot-id="bottomSlot1">
+                    <div class="mod-slot" data-slot-id="bottomSlot1" data-action="clickSlotFilter" data-mount-point="none">
                         {{#with builderData.changes.bottomSlot1}}
                         <div class="slot-content-containment" data-item-uuid="{{this.uuid}}" data-hover-delay="1000">
                             <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}" />
@@ -264,7 +299,7 @@
                         {{/with}}
                     </div>
                     {{!-- Slot 2 --}}
-                    <div class="mod-slot" data-slot-id="bottomSlot2">
+                    <div class="mod-slot" data-slot-id="bottomSlot2" data-action="clickSlotFilter" data-mount-point="none">
                         {{#with builderData.changes.bottomSlot2}}
                         <div class="slot-content-containment" data-item-uuid="{{this.uuid}}" data-hover-delay="1000">
                             <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}" />
@@ -284,7 +319,7 @@
                         {{/with}}
                     </div>
                     {{!-- Slot 3 --}}
-                    <div class="mod-slot" data-slot-id="bottomSlot3">
+                    <div class="mod-slot" data-slot-id="bottomSlot3" data-action="clickSlotFilter" data-mount-point="none">
                         {{#with builderData.changes.bottomSlot3}}
                         <div class="slot-content-containment" data-item-uuid="{{this.uuid}}" data-hover-delay="1000">
                             <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}" />
@@ -304,7 +339,7 @@
                         {{/with}}
                     </div>
                     {{!-- Slot 4--}}
-                    <div class="mod-slot" data-slot-id="bottomSlot4">
+                    <div class="mod-slot" data-slot-id="bottomSlot4" data-action="clickSlotFilter" data-mount-point="none">
                         {{#with builderData.changes.bottomSlot4}}
                         <div class="slot-content-containment" data-item-uuid="{{this.uuid}}" data-hover-delay="1000">
                             <img src="{{this.img}}" class="slot-item-img" title="{{this.name}}" />

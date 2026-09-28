@@ -1,4 +1,4 @@
-<div class="marketshouter-container">
+<div class="marketshouter-container pos-{{positionClass}}">
     <div class="marketshouter-bar">
         <!-- Search Input Wrap (Slides out on hover of the capsule bar) -->
         <div class="marketshouter-search-wrap">
@@ -11,7 +11,7 @@
             <input type="text" class="marketshouter-search"
                 placeholder="{{#if shopActorName}}{{localize 'SR5Marketplace.Marketshouter.SearchShop' name=shopActorName}}{{else}}{{localize 'SR5Marketplace.Marketshouter.SearchCompendiumItems'}}{{/if}}"
                 autocomplete="off">
-            <i class="fas fa-times marketshouter-clear-btn hidden"
+            <i class="fas fa-times marketshouter-clear-btn is-hidden"
                 title="{{localize 'SR5Marketplace.Marketshouter.ClearSearch'}}"></i>
         </div>
 
@@ -91,7 +91,7 @@
     </div>
 
     <!-- Live Floating Search Results Dropdown -->
-    <div class="marketshouter-results hidden">
+    <div class="marketshouter-results is-hidden">
         <div class="marketshouter-results-header">
             <span class="results-count">{{localize "SR5Marketplace.Marketshouter.NoMatchingItemsFound"}}</span>
         </div>

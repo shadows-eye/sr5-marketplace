@@ -179,6 +179,7 @@
     },
     "SR5Marketplace": {
         "Themes": {
+            "ShadowsTheme": "Shadows HUD Theme (Standard)",
             "Neon": "Cyber-Neon (Dunkel)",
             "NeonLight": "Cyber-Neon (Hell)",
             "Silicon": "Silicon"
@@ -338,7 +339,21 @@
             "AllowWorldItems": {
                 "name": "Welt-Gegenstände auf Marktplatz erlauben",
                 "hint": "Interne Einstellung, ob Gegenstände aus der Welt auf dem Marktplatz erscheinen."
-            }
+            },
+            "WorldDirectory": "Welt-Verzeichnis (Standard)",
+            "CustomBuildSaveLocationTitle": "Speicherort für eigene Bauten",
+            "CustomBuildSaveLocationHint": "Konfiguriere Ziel-Kompendien, in denen eigene Gegenstände und Fahrzeuge anstelle des Welt-Verzeichnisses gespeichert werden.",
+            "CustomItemCompendium": {
+                "name": "Ziel-Kompendium für eigene Gegenstände",
+                "hint": "Wähle ein entsperrtes Kompendium, in dem modifizierte oder neu gebaute Gegenstände anstelle des Welt-Verzeichnisses gespeichert werden sollen. Wähle 'Welt-Verzeichnis', um Gegenstände in der Welt zu speichern."
+            },
+            "CustomVehicleCompendium": {
+                "name": "Ziel-Kompendium für eigene Fahrzeuge",
+                "hint": "Wähle ein entsperrtes Kompendium, in dem modifizierte oder neu gebaute Fahrzeuge/Drohnen anstelle des Welt-Verzeichnisses gespeichert werden sollen. Wähle 'Welt-Verzeichnis', um Fahrzeuge in der Welt zu speichern."
+            },
+            "PackLockedWarning": "Das Ziel-Kompendium \"{name}\" ist gesperrt und kann nicht geändert werden. Stattdessen im Welt-Verzeichnis gespeichert.",
+            "SavedToCompendium": "\"{name}\" wurde erfolgreich im Kompendium \"{pack}\" gespeichert.",
+            "UpdatedInCompendium": "\"{name}\" wurde erfolgreich im Kompendium \"{pack}\" aktualisiert."
         },
         "Marketplace": {
             "Title": "Marktplatz Fenster",
@@ -362,6 +377,13 @@
                 "OrderReview": "Überprf."
             },
             "Settings": {
+                "MarketshouterPosition": {
+                    "Name": "MarketShouter-Leistenposition",
+                    "Hint": "Wähle die Bildschirmposition für die schwebende MarketShouter-Kapselleiste.",
+                    "TopRight": "Oben rechts (Standard)",
+                    "TopCenter": "Oben Mitte",
+                    "BottomLeft": "Unten links (über HUD)"
+                },
                 "QuickBuildWhisperGM": {
                     "name": "Charakter-Schnellerstellung: Zusammenfassung an SL flüstern",
                     "hint": "Wenn ein Charakter über die Archetypen-Schnellerstellung erstellt wird, wird automatisch eine Übersichtskarte mit Attributen und Gegenständen an den Spielleiter geflüstert."
@@ -915,6 +937,9 @@
             "SelectAsBase": "Als Basisartikel auswählen",
             "AddToBuilder": "Zum Builder hinzufügen",
             "SearchAllMods": "Alle Modifikationen durchsuchen...",
+            "AllMounts": "Alle Halterungen",
+            "NoMount": "Keine Halterung",
+            "ToggleWeaponStats": "Waffenwerte umschalten",
             "SelectImage": "Bild auswählen",
             "DoneEditing": "Bearbeitung beendet",
             "EditBaseItem": "Basisartikel bearbeiten",
@@ -950,11 +975,16 @@
                 "ApplyToLabel": "Anwenden auf",
                 "ApplyTo": {
                     "actor": "Charakter",
+                    "item": "Artikel",
                     "targeted_actor": "Ziel-Charakter",
                     "test_all": "Alle Proben",
                     "test_item": "Artikel-Proben",
                     "modifier": "Modifikator"
                 },
+                "OnlyForEquipped": "Nur bei Ausrüstung",
+                "OnlyForEquippedHint": "Der Effekt wird nur aktiv, wenn der Artikel oder die Modifikation ausgerüstet ist.",
+                "OnlyForWireless": "Nur bei WiFi / Drahtlos",
+                "OnlyForWirelessHint": "Der Effekt wird nur aktiv, wenn die WiFi-Funktion des Artikels aktiv ist.",
                 "TestFilterLabel": "Nach Probe filtern",
                 "SelectTestsPlaceholder": "Jede Probe",
                 "CategoryFilterLabel": "Nach Kategorie filtern",

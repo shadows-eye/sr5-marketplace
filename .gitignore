@@ -5,4 +5,5 @@
 /foundry
 /SR5-FoundryVTT
 .env
+.env.local
 /docRules

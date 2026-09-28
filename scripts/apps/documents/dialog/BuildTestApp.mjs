@@ -1,4 +1,8 @@
-import { AppTestFlagService } from '../../../services/AppTestFlagService.mjs';
+/**
+ * @services Holds all services in a folder namespaced imported.
+ * @example services.basketService
+ */
+import * as services from '../../../services/_module.mjs';
 import { AppDialogBuilder } from './AppDialogBuilder.mjs';
 
 
@@ -11,9 +15,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     constructor(options = {}) {
         // Apply theme classes
-        const currentTheme = game.settings.get("sr5-marketplace", "enablePremiumThemes")
-            ? (game.user.getFlag("sr5-marketplace", "theme") || "theme-dark")
-            : "theme-dark";
+        const currentTheme = game.user?.getFlag("sr5-marketplace", "theme") || "shadows-theme";
         options.classes = [
             ...(options.classes || []),
             "sr5-marketplace",
@@ -66,7 +68,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
             ? builderApp.purchasingActor
             : null;
 
-        const unresolvedTest = await AppTestFlagService.getActiveBuildTest(AppUserId, builderPurchasingActor);
+        const unresolvedTest = await services.AppTestFlagService.getActiveBuildTest(AppUserId, builderPurchasingActor);
         this.activeDialogId = unresolvedTest?.id || null;
 
         if (!this.activeDialogId) {
@@ -74,7 +76,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
             return { activeTestState: null };
         }
 
-        const testStates = await AppTestFlagService.readState(AppUserId);
+        const testStates = await services.AppTestFlagService.readState(AppUserId);
         const activeTestState = this.activeDialogId ? testStates[this.activeDialogId] : null;
         this.activeTestState = activeTestState;
 
@@ -119,7 +121,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 const newName = e.target.value.trim();
                 if (newName && this.activeTestState) {
                     this.activeTestState.buildData.name = newName;
-                    await AppTestFlagService.updateTest(this.activeTestState.id, { buildData: this.activeTestState.buildData });
+                    await services.AppTestFlagService.updateTest(this.activeTestState.id, { buildData: this.activeTestState.buildData });
                     this.render();
                 }
             });
@@ -132,8 +134,8 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const value = target.value;
         console.log(`[onChangeBuildTestParameter] BEFORE: key = "${key}", value = "${this.activeTestState[key]}"`, this.activeTestState);
         this.activeTestState[key] = value;
-        await AppTestFlagService.updateTest(this.activeTestState.id, { [key]: value });
-        const updatedState = (await AppTestFlagService.readState(game.user.id))[this.activeTestState.id];
+        await services.AppTestFlagService.updateTest(this.activeTestState.id, { [key]: value });
+        const updatedState = (await services.AppTestFlagService.readState(game.user.id))[this.activeTestState.id];
         console.log(`[onChangeBuildTestParameter] AFTER: key = "${key}", value = "${updatedState?.[key]}"`, updatedState);
         this.render(false);
     }
@@ -146,8 +148,8 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const skill = target.dataset.skill;
         console.log(`[selectBuildTestSkill] BEFORE: skill = "${this.activeTestState.skill}"`, this.activeTestState);
         this.activeTestState.skill = skill;
-        await AppTestFlagService.updateTest(this.activeTestState.id, { skill: skill });
-        const updatedState = (await AppTestFlagService.readState(game.user.id))[this.activeTestState.id];
+        await services.AppTestFlagService.updateTest(this.activeTestState.id, { skill: skill });
+        const updatedState = (await services.AppTestFlagService.readState(game.user.id))[this.activeTestState.id];
         console.log(`[selectBuildTestSkill] AFTER: skill = "${updatedState?.skill}"`, updatedState);
         this.render();
     }
@@ -194,8 +196,8 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
         }
 
         this.activeTestState.appliedModifiers = newModifiers;
-        await AppTestFlagService.updateTest(this.activeTestState.id, { appliedModifiers: newModifiers });
-        const updatedState = (await AppTestFlagService.readState(game.user.id))[this.activeTestState.id];
+        await services.AppTestFlagService.updateTest(this.activeTestState.id, { appliedModifiers: newModifiers });
+        const updatedState = (await services.AppTestFlagService.readState(game.user.id))[this.activeTestState.id];
         console.log(`[selectBuildTestCondition] AFTER: key = "${key}", value = ${value}, appliedModifiers =`, updatedState?.appliedModifiers);
         this.render();
     }
@@ -237,9 +239,9 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
         }
 
         this.activeTestState.appliedModifiers = newModifiers;
-        await AppTestFlagService.updateTest(this.activeTestState.id, { appliedModifiers: newModifiers });
+        await services.AppTestFlagService.updateTest(this.activeTestState.id, { appliedModifiers: newModifiers });
 
-        const updatedState = (await AppTestFlagService.readState(game.user.id))[this.activeTestState.id];
+        const updatedState = (await services.AppTestFlagService.readState(game.user.id))[this.activeTestState.id];
         console.log(`[onChangeBuildTestCondition] AFTER: appliedModifiers =`, updatedState?.appliedModifiers);
         this.render(false);
     }
@@ -330,7 +332,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 finalStatus = 'resolved';
             }
 
-            await AppTestFlagService.updateTest(this.activeDialogId, {
+            await services.AppTestFlagService.updateTest(this.activeDialogId, {
                 result: test.data,
                 rolls: test.rolls,
                 status: finalStatus,
@@ -457,7 +459,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 finalStatus = 'resolved';
             }
 
-            await AppTestFlagService.updateTest(this.activeDialogId, {
+            await services.AppTestFlagService.updateTest(this.activeDialogId, {
                 result: test.data,
                 rolls: test.rolls,
                 status: finalStatus,
@@ -482,7 +484,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.activeDialogId = null;
 
         // Hide dialog immediately so parent app renders won't reopen it, keeping the test state
-        await AppTestFlagService.updateTest(activeDialogId, { showDialog: false }, game.user.id);
+        await services.AppTestFlagService.updateTest(activeDialogId, { showDialog: false }, game.user.id);
 
         if (activeState.isWorkshopMod) {
             const vehicleDoc = activeState.vehicleUuid ? await fromUuid(activeState.vehicleUuid) : null;
@@ -605,7 +607,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     static async #onClearBuildTest(event, target) {
         const activeDialogId = this.activeDialogId;
-        const state = await AppTestFlagService.readState(game.user.id);
+        const state = await services.AppTestFlagService.readState(game.user.id);
         const activeTest = Object.values(state).find(t => t.id === activeDialogId);
 
         if (activeTest && activeTest.isWorkshopMod) {
@@ -645,7 +647,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         }
 
-        await AppTestFlagService.deleteTest(activeDialogId, game.user.id);
+        await services.AppTestFlagService.deleteTest(activeDialogId, game.user.id);
         this.activeTestState = null;
         this.activeDialogId = null;
 
@@ -698,7 +700,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const newModifiers = [...currentModifiers, { label, value }];
         this.activeTestState.appliedModifiers = newModifiers;
 
-        await AppTestFlagService.updateTest(this.activeTestState.id, { appliedModifiers: newModifiers });
+        await services.AppTestFlagService.updateTest(this.activeTestState.id, { appliedModifiers: newModifiers });
         this.render();
     }
 
@@ -711,7 +713,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         this.activeTestState.appliedModifiers = newModifiers;
 
-        await AppTestFlagService.updateTest(this.activeTestState.id, { appliedModifiers: newModifiers });
+        await services.AppTestFlagService.updateTest(this.activeTestState.id, { appliedModifiers: newModifiers });
         this.render();
     }
 
@@ -725,7 +727,7 @@ export class BuildTestApp extends HandlebarsApplicationMixin(ApplicationV2) {
             this.activeDialogId = null;
 
             // Hide dialog immediately so parent app renders won't reopen it, keeping the test state
-            await AppTestFlagService.updateTest(activeDialogId, { showDialog: false }, game.user.id);
+            await services.AppTestFlagService.updateTest(activeDialogId, { showDialog: false }, game.user.id);
 
             try {
                 if (activeState && activeState.status === 'resolved') {

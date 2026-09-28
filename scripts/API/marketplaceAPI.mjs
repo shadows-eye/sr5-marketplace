@@ -2,12 +2,11 @@
 import { ItemBuilderApp } from "../apps/ItemBuilderApp.mjs";
 import { inGameMarketplace } from "../apps/inGameMarketplace.mjs";
 import { MarketShouterApp } from "../apps/marketshouter.mjs";
-import { BasketService } from "../services/basketService.mjs";
-import { PurchaseService } from "../services/purchaseService.mjs";
-import { MODULE_ID, SELECTED_ACTOR } from "../lib/constants.mjs";
-import { ActorSelectionService } from "../services/ActorSelectionService.mjs";
-import { BuildService } from "../services/buildService.mjs";
-import { factoryFlow } from "../services/_module.mjs";
+/**
+ * @services Holds all services in a folder namespaced imported.
+ * @example services.basketService
+ */
+import * as services from "../services/_module.mjs";
 
 
 /**
@@ -15,8 +14,8 @@ import { factoryFlow } from "../services/_module.mjs";
  * @private
  */
 class inGameMarketplaceAPI {
-    constructor(){
-        this.basketService = new BasketService();
+    constructor() {
+        this.basketService = new services.BasketService();
     }
 
     /**
@@ -71,12 +70,12 @@ class inGameMarketplaceAPI {
     async open(options = {}) {
         const { actorUuid, itemUuid } = options;
         if (actorUuid) {
-            await ActorSelectionService.setSelectedActor(actorUuid);
+            await services.ActorSelectionService.setSelectedActor(actorUuid);
         }
         if (itemUuid && actorUuid) {
             await this.addItemToBasket(itemUuid, actorUuid);
         }
-        
+
         let marketplace = foundry.applications.instances.get("inGameMarketplace");
         if (!marketplace) {
             marketplace = new inGameMarketplace();
@@ -103,8 +102,8 @@ class inGameMarketplaceAPI {
      */
     async setActor(actorUuid) {
         if (!actorUuid) return;
-        await ActorSelectionService.setSelectedActor(actorUuid);
-        
+        await services.ActorSelectionService.setSelectedActor(actorUuid);
+
         const marketplace = foundry.applications.instances.get("inGameMarketplace");
         if (marketplace) {
             marketplace.render();
@@ -116,8 +115,8 @@ class inGameMarketplaceAPI {
      * @returns {Promise<void>}
      */
     async clearActor() {
-        await ActorSelectionService.clearSelectedActor();
-        
+        await services.ActorSelectionService.clearSelectedActor();
+
         const marketplace = foundry.applications.instances.get("inGameMarketplace");
         if (marketplace) {
             marketplace.render();
@@ -129,7 +128,7 @@ class inGameMarketplaceAPI {
      * @returns {Promise<Array<object>>} An array of shopping cart item objects.
      */
     async getBasket() {
-        const basket = await new BasketService().getBasket();
+        const basket = await new services.BasketService().getBasket();
         return basket.shoppingCartItems || [];
     }
 
@@ -140,8 +139,8 @@ class inGameMarketplaceAPI {
      */
     async remove(basketItemUuid) {
         if (!basketItemUuid) return;
-        await new BasketService().removeFromBasket(basketItemUuid);
-        
+        await new services.BasketService().removeFromBasket(basketItemUuid);
+
         const marketplace = foundry.applications.instances.get("inGameMarketplace");
         if (marketplace) {
             marketplace.render();
@@ -155,7 +154,7 @@ class inGameMarketplaceAPI {
      */
     async submitForReview(userId) {
         if (!userId) return;
-        await PurchaseService.submitForReview(userId);
+        await services.PurchaseService.submitForReview(userId);
     }
 
     /**
@@ -167,7 +166,7 @@ class inGameMarketplaceAPI {
      */
     async rejectItemFromRequest(userId, basketUUID, basketItemUuid) {
         if (!userId || !basketUUID || !basketItemUuid) return;
-        await PurchaseService.rejectItemFromRequest(userId, basketUUID, basketItemUuid);
+        await services.PurchaseService.rejectItemFromRequest(userId, basketUUID, basketItemUuid);
     }
 
     /**
@@ -178,7 +177,7 @@ class inGameMarketplaceAPI {
      */
     async rejectBasket(userId, basketUUID) {
         if (!userId || !basketUUID) return;
-        await PurchaseService.rejectBasket(userId, basketUUID);
+        await services.PurchaseService.rejectBasket(userId, basketUUID);
     }
 
     /**
@@ -190,7 +189,7 @@ class inGameMarketplaceAPI {
      */
     async directPurchase(actor, basket, options = {}) {
         if (!actor || !basket) return false;
-        return await PurchaseService.directPurchase(actor, basket, options);
+        return await services.PurchaseService.directPurchase(actor, basket, options);
     }
 
     /**
@@ -198,7 +197,7 @@ class inGameMarketplaceAPI {
      * @returns {number} The count of pending requests.
      */
     getPendingRequestCount() {
-        return PurchaseService.getPendingRequestCount();
+        return services.PurchaseService.getPendingRequestCount();
     }
 
     /**
@@ -206,7 +205,7 @@ class inGameMarketplaceAPI {
      * @returns {Promise<Array<object>>} A promise resolving to an array of pending requests.
      */
     async getAllPendingRequests() {
-        return await PurchaseService.getAllPendingRequests();
+        return await services.PurchaseService.getAllPendingRequests();
     }
 
     /**
@@ -217,7 +216,7 @@ class inGameMarketplaceAPI {
      */
     async approveBasket(userId, basketUUID) {
         if (!userId || !basketUUID) return;
-        await PurchaseService.approveBasket(userId, basketUUID);
+        await services.PurchaseService.approveBasket(userId, basketUUID);
     }
 
     /**
@@ -231,7 +230,7 @@ class inGameMarketplaceAPI {
      */
     async updatePendingItem(userId, basketUUID, basketItemUuid, property, value) {
         if (!userId || !basketUUID || !basketItemUuid) return;
-        await PurchaseService.updatePendingItem(userId, basketUUID, basketItemUuid, property, value);
+        await services.PurchaseService.updatePendingItem(userId, basketUUID, basketItemUuid, property, value);
     }
 
     /**
@@ -265,7 +264,7 @@ class inGameMarketplaceAPI {
  */
 class FactoryAPI {
     constructor() {
-        this.buildService = new BuildService();
+        this.buildService = new services.BuildService();
     }
 
     /**
@@ -345,7 +344,7 @@ class FactoryAPI {
      * @returns {object} Stock results.
      */
     checkInventoryStock(vehicle, workshopActor, purchasingActor, targetModId = null) {
-        return factoryFlow.checkInventoryStock(vehicle, workshopActor, purchasingActor, targetModId);
+        return services.factoryFlow.checkInventoryStock(vehicle, workshopActor, purchasingActor, targetModId);
     }
 
     /**
@@ -357,7 +356,7 @@ class FactoryAPI {
      * @returns {Promise<string>} The active dialog ID of the created test.
      */
     async startModificationTest(vehicle, workshopActor, purchasingActor, vMod) {
-        return await factoryFlow.startModificationTest(vehicle, workshopActor, purchasingActor, vMod);
+        return await services.factoryFlow.startModificationTest(vehicle, workshopActor, purchasingActor, vMod);
     }
 
     /**
@@ -369,7 +368,7 @@ class FactoryAPI {
      * @returns {Promise<boolean>} Whether the modification was successfully installed.
      */
     async installModification(vehicle, workshopActor, purchasingActor, vMod) {
-        return await factoryFlow.installModification(vehicle, workshopActor, purchasingActor, vMod);
+        return await services.factoryFlow.installModification(vehicle, workshopActor, purchasingActor, vMod);
     }
 
     /**
@@ -378,7 +377,7 @@ class FactoryAPI {
      * @returns {Actor[]} List of character actors.
      */
     getEligiblePurchasers(vehicle) {
-        return factoryFlow.getEligiblePurchasers(vehicle);
+        return services.factoryFlow.getEligiblePurchasers(vehicle);
     }
 
     /**
@@ -565,7 +564,7 @@ class FactoryAPI {
  */
 class ItemBuilderAPI {
     constructor() {
-        this.buildService = new BuildService();
+        this.buildService = new services.BuildService();
     }
 
     /**
@@ -594,7 +593,7 @@ class ItemBuilderAPI {
         };
 
         await this.buildService.setBuilderBaseItem(cleanItemData);
-        
+
         let itemBuilder = foundry.applications.instances.get("itemBuilder");
         if (itemBuilder) {
             itemBuilder.render(true);
@@ -641,8 +640,8 @@ class ItemBuilderAPI {
 
             // Check token distance if not found via region
             if (!workshopActorUuid) {
-                const factoryTokens = canvas.tokens.placeables.filter(t => 
-                    t.actor?.type === "sr5-marketplace.shop" && 
+                const factoryTokens = canvas.tokens.placeables.filter(t =>
+                    t.actor?.type === "sr5-marketplace.shop" &&
                     t.actor?.system?.shop?.isFactory
                 );
                 for (const controlledToken of canvas.tokens.controlled) {
@@ -662,8 +661,8 @@ class ItemBuilderAPI {
         }
 
         if (!workshopActorUuid && canvas.ready && canvas.tokens) {
-            const factoryTokens = canvas.tokens.placeables.filter(t => 
-                t.actor?.type === "sr5-marketplace.shop" && 
+            const factoryTokens = canvas.tokens.placeables.filter(t =>
+                t.actor?.type === "sr5-marketplace.shop" &&
                 t.actor?.system?.shop?.isFactory
             );
             if (factoryTokens.length > 0) {
@@ -704,11 +703,11 @@ class ItemBuilderAPI {
      */
     async clear() {
         await this.buildService.clearBuilderState();
-        
+
 
         const itemBuilder = foundry.applications.instances.get("itemBuilder");
         if (itemBuilder) {
-            itemBuilder.render(); 
+            itemBuilder.render();
         }
     }
 
@@ -724,7 +723,7 @@ class ItemBuilderAPI {
         if (clearState) {
             await this.clear();
         }
-        
+
 
         const itemBuilder = foundry.applications.instances.get("itemBuilder");
         if (itemBuilder) {
@@ -738,13 +737,13 @@ class ItemBuilderAPI {
  * Public-facing API Container.
  */
 export class MarketplaceAPI {
-    
+
     /**
      * The API for the in-game marketplace, shopping cart, and actor selection.
      * @type {typeof inGameMarketplaceAPI}
      */
     static Marketplace = inGameMarketplaceAPI;
-    
+
     /**
      * The API for the Item Builder, including setting/clearing its state.
      * @type {typeof ItemBuilderAPI}
@@ -766,7 +765,7 @@ export class MarketplaceAPI {
         MarketShouterApp.registerButton(id, config);
     }
 
-    constructor() {}
+    constructor() { }
 
     /**
      * Initializes the root Marketplace API container.

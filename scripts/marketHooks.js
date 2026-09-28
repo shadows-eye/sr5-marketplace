@@ -8,25 +8,16 @@ import {
     registerBasicHelpers
 } from './lib/_module.mjs';
 import { defineShopActorClass } from '../models/actor/shopActor.mjs';
-import {
-    actorItemServices,
-    basketService,
-    purchaseService,
-    indexService,
-    builderStateService,
-    deliveryTimeService,
-    diceHelperService,
-    themeService,
-    systemDataMapperService,
-    ItemDataServices, // <-- We import the class here because you need 'new ItemDataServices()' for your API
-    PurchaseService,
-    BasketService,
-    factoryFlow
-} from './services/_module.mjs';
+/**
+ * @services Holds all services in a folder namespaced imported.
+ * @example services.basketService
+ */
+import * as services from './services/_module.mjs';
 
 // Re-export instances/classes as well ONLY IF you need them available globally 
 // to other modules/scripts that import marketHooks directly.
-export {
+export { services };
+export const {
     actorItemServices,
     basketService,
     purchaseService,
@@ -36,14 +27,19 @@ export {
     diceHelperService,
     themeService,
     systemDataMapperService,
+    systemDataModel,
+    SystemDataModel,
     ItemDataServices,
-    ItemBuilderApp
-};
+    MarketplaceSettingsService,
+    AppTestFlagService,
+    PurchaseService,
+    BasketService
+} = services;
+export { ItemBuilderApp };
 
 import { inGameMarketplace } from "./apps/inGameMarketplace.mjs";
 import { MarketplaceSettingsApp } from "./apps/MarketplaceSettingsApp.mjs";
 import { CompendiumSettingsApp } from "./apps/CompendiumSettingsApp.mjs";
-import { MarketplaceSettingsService } from "./services/MarketplaceSettingsService.mjs";
 import { MarketShouterApp } from "./apps/marketshouter.mjs";
 import { registerShopRegionHooks } from "./apps/documents/sceneRegions/shopRegions.mjs";
 import { ShopActorSheet } from "../sheets/ShopActorSheet.mjs";
@@ -54,7 +50,6 @@ import { ItemBuilderApp } from "./apps/ItemBuilderApp.mjs";
 import { BuildTestApp } from "./apps/documents/dialog/BuildTestApp.mjs";
 import { SR5CreateActorApp } from "./apps/SR5CreateActorApp.mjs";
 import { AppDialogBuilder } from "./apps/documents/dialog/AppDialogBuilder.mjs";
-import { AppTestFlagService } from "./services/AppTestFlagService.mjs";
 import { registerMarketplaceTour } from "./tours/marketplaceTour.mjs";
 
 
@@ -334,6 +329,56 @@ const initializeSettings = () => {
         default: {}
     });
 
+    game.settings.register("sr5-marketplace", MarketplaceSettingsService.SETTING_CUSTOM_ITEM_COMPENDIUM, {
+        name: game.i18n.localize("SR5Marketplace.CompendiumSettings.CustomItemCompendium.name"),
+        hint: game.i18n.localize("SR5Marketplace.CompendiumSettings.CustomItemCompendium.hint"),
+        scope: "world",
+        config: true,
+        restricted: true,
+        type: String,
+        default: "world",
+        choices: MarketplaceSettingsService.getItemCompendiumChoices(),
+        onChange: async (value) => {
+            if (value && value !== "world" && typeof game !== "undefined" && game.packs) {
+                const pack = game.packs.get(value);
+                if (pack?.locked) {
+                    try {
+                        await pack.configure({ locked: false });
+                        console.log(`SR5 Marketplace | Automatically unlocked compendium: ${pack.metadata.label}`);
+                    } catch (err) {
+                        console.warn(`SR5 Marketplace | Could not unlock compendium ${value}:`, err);
+                    }
+                }
+            }
+            MarketplaceSettingsService.invalidateItemCache();
+        }
+    });
+
+    game.settings.register("sr5-marketplace", MarketplaceSettingsService.SETTING_CUSTOM_VEHICLE_COMPENDIUM, {
+        name: game.i18n.localize("SR5Marketplace.CompendiumSettings.CustomVehicleCompendium.name"),
+        hint: game.i18n.localize("SR5Marketplace.CompendiumSettings.CustomVehicleCompendium.hint"),
+        scope: "world",
+        config: true,
+        restricted: true,
+        type: String,
+        default: "world",
+        choices: MarketplaceSettingsService.getVehicleCompendiumChoices(),
+        onChange: async (value) => {
+            if (value && value !== "world" && typeof game !== "undefined" && game.packs) {
+                const pack = game.packs.get(value);
+                if (pack?.locked) {
+                    try {
+                        await pack.configure({ locked: false });
+                        console.log(`SR5 Marketplace | Automatically unlocked compendium: ${pack.metadata.label}`);
+                    } catch (err) {
+                        console.warn(`SR5 Marketplace | Could not unlock compendium ${value}:`, err);
+                    }
+                }
+            }
+            MarketplaceSettingsService.invalidateItemCache();
+        }
+    });
+
     game.settings.register("sr5-marketplace", "availabilityTestRule", {
         name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.AvailabilityRule.name"),
         hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.AvailabilityRule.hint"),
@@ -359,6 +404,23 @@ const initializeSettings = () => {
         restricted: true,
         type: Boolean,
         default: false,
+    });
+
+    game.settings.register("sr5-marketplace", "marketshouterPosition", {
+        name: game.i18n.localize("SR5Marketplace.Marketplace.Settings.MarketshouterPosition.Name"),
+        hint: game.i18n.localize("SR5Marketplace.Marketplace.Settings.MarketshouterPosition.Hint"),
+        scope: "client",
+        config: true,
+        type: String,
+        choices: {
+            "top-right": game.i18n.localize("SR5Marketplace.Marketplace.Settings.MarketshouterPosition.TopRight"),
+            "top-center": game.i18n.localize("SR5Marketplace.Marketplace.Settings.MarketshouterPosition.TopCenter"),
+            "bottom-left": game.i18n.localize("SR5Marketplace.Marketplace.Settings.MarketshouterPosition.BottomLeft")
+        },
+        default: "top-right",
+        onChange: () => {
+            MarketShouterApp.renderApp();
+        }
     });
 
     game.settings.register("sr5-marketplace", "quickBuildWhisperGM", {
@@ -392,6 +454,8 @@ const initializeSettings = () => {
  * This hook injects our custom button into the settings menu using standard JavaScript.
  */
 Hooks.on("renderSettingsConfig", (app, html, data) => {
+    MarketplaceSettingsService.updateCompendiumSettingChoices();
+
     // 'html' is a standard HTMLElement.
     const settingInput = html.querySelector(`[name="sr5-marketplace.openSettingsMenu"]`);
     if (!settingInput) return;
@@ -520,7 +584,7 @@ function wrapConfigureUI() {
 
     const originalConfigureUI = game.configureUI;
     game.configureUI = function (config) {
-        const ourThemeClasses = ["theme-neon", "theme-neon-light", "theme-silicon"];
+        const ourThemeClasses = ["shadows-theme", "theme-shadows", "theme-neon", "theme-neon-light", "theme-silicon"];
 
         // Remove from body
         if (document.body) {
@@ -555,16 +619,20 @@ function wrapConfigureUI() {
                     if (app.element) {
                         app.element.classList.remove(...ourThemeClasses, "theme-light", "theme-dark");
 
-                        let newTheme = "theme-light";
+                        let newTheme = "shadows-theme";
                         const appColorTheme = config?.colorScheme?.applications;
 
                         if (isShopSheet && app.document) {
                             const sheetTheme = foundry.applications.apps.DocumentSheetConfig.getSheetThemeForDocument(app.document);
-                            newTheme = sheetTheme ? `theme-${sheetTheme}` : `theme-${appColorTheme || "light"}`;
+                            newTheme = sheetTheme
+                                ? ((sheetTheme === "shadows-theme" || sheetTheme === "shadows") ? "shadows-theme" : `theme-${sheetTheme}`)
+                                : ((appColorTheme === "shadows-theme" || appColorTheme === "shadows") ? "shadows-theme" : `theme-${appColorTheme || "dark"}`);
                         } else if (isMarketplace) {
                             newTheme = app.constructor._getThemeFromSetting(app.shopActorUuid);
                         } else {
-                            newTheme = `theme-${appColorTheme || "light"}`;
+                            newTheme = (appColorTheme === "shadows-theme" || appColorTheme === "shadows")
+                                ? "shadows-theme"
+                                : (appColorTheme ? `theme-${appColorTheme}` : "shadows-theme");
                         }
 
                         app.element.classList.add(newTheme);
@@ -594,28 +662,46 @@ function wrapConfigureUI() {
 
 function injectThemeChoices() {
     try {
-        if (typeof game !== "undefined" && game.settings && game.settings.settings.has("sr5-marketplace.enablePremiumThemes")) {
-            if (!game.settings.get("sr5-marketplace", "enablePremiumThemes")) {
-                return; // Do not inject themes if setting is disabled
-            }
-        }
-
         wrapConfigureUI();
+
+        const enablePremium = typeof game !== "undefined" && game.settings?.settings?.has("sr5-marketplace.enablePremiumThemes")
+            ? game.settings.get("sr5-marketplace", "enablePremiumThemes")
+            : true;
+
+        const themesToInject = [
+            { key: "shadows-theme", label: "SR5Marketplace.Themes.ShadowsTheme" }
+        ];
+
+        if (enablePremium) {
+            themesToInject.push(
+                { key: "neon", label: "SR5Marketplace.Themes.Neon" },
+                { key: "neon-light", label: "SR5Marketplace.Themes.NeonLight" },
+                { key: "silicon", label: "SR5Marketplace.Themes.Silicon" }
+            );
+        }
 
         if (typeof CONFIG !== "undefined" && CONFIG.ui?.menu) {
             if (!CONFIG.ui.menu.classes) {
                 CONFIG.ui.menu.classes = [];
             }
             if (Array.isArray(CONFIG.ui.menu.classes)) {
-                if (!CONFIG.ui.menu.classes.includes("theme-neon")) CONFIG.ui.menu.classes.push("theme-neon");
-                if (!CONFIG.ui.menu.classes.includes("theme-neon-light")) CONFIG.ui.menu.classes.push("theme-neon-light");
-                if (!CONFIG.ui.menu.classes.includes("theme-silicon")) CONFIG.ui.menu.classes.push("theme-silicon");
+                if (!CONFIG.ui.menu.classes.includes("shadows-theme")) CONFIG.ui.menu.classes.push("shadows-theme");
+                if (!CONFIG.ui.menu.classes.includes("theme-shadows")) CONFIG.ui.menu.classes.push("theme-shadows");
+                if (enablePremium) {
+                    if (!CONFIG.ui.menu.classes.includes("theme-neon")) CONFIG.ui.menu.classes.push("theme-neon");
+                    if (!CONFIG.ui.menu.classes.includes("theme-neon-light")) CONFIG.ui.menu.classes.push("theme-neon-light");
+                    if (!CONFIG.ui.menu.classes.includes("theme-silicon")) CONFIG.ui.menu.classes.push("theme-silicon");
+                }
             }
 
             try {
                 const originalDefaultOptions = CONFIG.ui.menu.DEFAULT_OPTIONS || {};
                 const originalClasses = originalDefaultOptions.classes || [];
-                const newClasses = [...new Set([...originalClasses, "theme-neon", "theme-neon-light", "theme-silicon"])];
+                const extraClasses = ["shadows-theme", "theme-shadows"];
+                if (enablePremium) {
+                    extraClasses.push("theme-neon", "theme-neon-light", "theme-silicon");
+                }
+                const newClasses = [...new Set([...originalClasses, ...extraClasses])];
 
                 Object.defineProperty(CONFIG.ui.menu, "DEFAULT_OPTIONS", {
                     get() {
@@ -637,15 +723,15 @@ function injectThemeChoices() {
             if (schema.fields) {
                 const appField = schema.fields.colorScheme?.fields?.applications;
                 if (appField) {
-                    safeAddChoice(appField, "choices", "neon", "SR5Marketplace.Themes.Neon");
-                    safeAddChoice(appField, "choices", "neon-light", "SR5Marketplace.Themes.NeonLight");
-                    safeAddChoice(appField, "choices", "silicon", "SR5Marketplace.Themes.Silicon");
+                    for (const theme of themesToInject) {
+                        safeAddChoice(appField, "choices", theme.key, theme.label);
+                    }
                 }
                 const intField = schema.fields.colorScheme?.fields?.interface;
                 if (intField) {
-                    safeAddChoice(intField, "choices", "neon", "SR5Marketplace.Themes.Neon");
-                    safeAddChoice(intField, "choices", "neon-light", "SR5Marketplace.Themes.NeonLight");
-                    safeAddChoice(intField, "choices", "silicon", "SR5Marketplace.Themes.Silicon");
+                    for (const theme of themesToInject) {
+                        safeAddChoice(intField, "choices", theme.key, theme.label);
+                    }
                 }
             }
         }
@@ -654,36 +740,54 @@ function injectThemeChoices() {
         if (typeof game !== "undefined" && game.settings?.settings) {
             const uiConfigSetting = game.settings.settings.get("core.uiConfig");
             if (uiConfigSetting) {
-                safeAddChoice(uiConfigSetting, "choices", "neon", "SR5Marketplace.Themes.Neon");
-                safeAddChoice(uiConfigSetting, "choices", "neon-light", "SR5Marketplace.Themes.NeonLight");
-                safeAddChoice(uiConfigSetting, "choices", "silicon", "SR5Marketplace.Themes.Silicon");
+                for (const theme of themesToInject) {
+                    safeAddChoice(uiConfigSetting, "choices", theme.key, theme.label);
+                }
 
                 const schemaField = uiConfigSetting.type;
                 if (schemaField && schemaField.fields) {
                     const appField = schemaField.fields.colorScheme?.fields?.applications;
                     if (appField) {
-                        safeAddChoice(appField, "choices", "neon", "SR5Marketplace.Themes.Neon");
-                        safeAddChoice(appField, "choices", "neon-light", "SR5Marketplace.Themes.NeonLight");
-                        safeAddChoice(appField, "choices", "silicon", "SR5Marketplace.Themes.Silicon");
+                        for (const theme of themesToInject) {
+                            safeAddChoice(appField, "choices", theme.key, theme.label);
+                        }
                     }
                     const intField = schemaField.fields.colorScheme?.fields?.interface;
                     if (intField) {
-                        safeAddChoice(intField, "choices", "neon", "SR5Marketplace.Themes.Neon");
-                        safeAddChoice(intField, "choices", "neon-light", "SR5Marketplace.Themes.NeonLight");
-                        safeAddChoice(intField, "choices", "silicon", "SR5Marketplace.Themes.Silicon");
+                        for (const theme of themesToInject) {
+                            safeAddChoice(intField, "choices", theme.key, theme.label);
+                        }
                     }
                 }
             }
         }
 
-        injectSheetThemeChoices();
+        injectSheetThemeChoices(themesToInject);
     } catch (err) {
         console.warn("SR5 Marketplace | Failed to inject theme choices:", err);
     }
 }
 
-function injectSheetThemeChoices() {
+function injectSheetThemeChoices(themesToInject = null) {
     if (typeof CONFIG === "undefined" || !CONFIG.Actor?.sheetClasses) return;
+
+    if (!themesToInject) {
+        const enablePremium = typeof game !== "undefined" && game.settings?.settings?.has("sr5-marketplace.enablePremiumThemes")
+            ? game.settings.get("sr5-marketplace", "enablePremiumThemes")
+            : true;
+
+        themesToInject = [
+            { key: "shadows-theme", label: "SR5Marketplace.Themes.ShadowsTheme" }
+        ];
+
+        if (enablePremium) {
+            themesToInject.push(
+                { key: "neon", label: "SR5Marketplace.Themes.Neon" },
+                { key: "neon-light", label: "SR5Marketplace.Themes.NeonLight" },
+                { key: "silicon", label: "SR5Marketplace.Themes.Silicon" }
+            );
+        }
+    }
 
     // Inject themes into Actor, Item, and other document sheet configurations
     const documentTypes = ["Actor", "Item", "JournalEntry", "RollTable", "Cards"];
@@ -698,9 +802,9 @@ function injectSheetThemeChoices() {
             for (const sheetId in sheets) {
                 const sheetDesc = sheets[sheetId];
                 if (sheetDesc && sheetDesc.themes) {
-                    safeAddChoice(sheetDesc, "themes", "neon", "SR5Marketplace.Themes.Neon");
-                    safeAddChoice(sheetDesc, "themes", "neon-light", "SR5Marketplace.Themes.NeonLight");
-                    safeAddChoice(sheetDesc, "themes", "silicon", "SR5Marketplace.Themes.Silicon");
+                    for (const theme of themesToInject) {
+                        safeAddChoice(sheetDesc, "themes", theme.key, theme.label);
+                    }
                 }
             }
         }
@@ -755,9 +859,9 @@ Hooks.once("init", () => {
     // 2. Nest all other API services under the '.api' property for compatibility with new code
     game.sr5marketplace.api = {
         system: new SR5SystemAPI(),
-        itemData: new ItemDataServices(), // Pulled perfectly from your services barrel!
-        PurchaseService: PurchaseService,
-        BasketService: BasketService,
+        itemData: new services.ItemDataServices(), // Pulled perfectly from your services barrel!
+        PurchaseService: services.PurchaseService,
+        BasketService: services.BasketService,
         AppDialogBuilder: AppDialogBuilder,
         inGameMarketplace: inGameMarketplace,
         SR5CreateActorApp: SR5CreateActorApp,
@@ -766,8 +870,10 @@ Hooks.once("init", () => {
         marketplace: new MarketplaceAPI.Marketplace(),
         itemBuilder: new MarketplaceAPI.ItemBuilder(),
         factory: new MarketplaceAPI.Factory(),
-        settings: MarketplaceSettingsService,
+        settings: services.MarketplaceSettingsService,
         CompendiumSettingsApp: CompendiumSettingsApp,
+        systemDataModel: services.systemDataModel,
+        SystemDataModel: services.SystemDataModel,
         registerShouterButton: (id, config) => MarketShouterApp.registerButton(id, config)
     };
 
@@ -776,6 +882,8 @@ Hooks.once("init", () => {
     game.sr5marketplace.itemData = game.sr5marketplace.api.itemData;
     game.sr5marketplace.PurchaseService = game.sr5marketplace.api.PurchaseService;
     game.sr5marketplace.BasketService = game.sr5marketplace.api.BasketService;
+    game.sr5marketplace.systemDataModel = systemDataModel;
+    game.sr5marketplace.SystemDataModel = SystemDataModel;
     //game.sr5marketplace.AppDialogBuilder = game.sr5marketplace.api.AppDialogBuilder;
     game.sr5marketplace.inGameMarketplace = game.sr5marketplace.api.inGameMarketplace;
     game.sr5marketplace.SR5CreateActorApp = game.sr5marketplace.api.SR5CreateActorApp;
@@ -816,6 +924,7 @@ Hooks.on("ready", async () => {
     console.log("SR5 Marketplace | Module is ready - Registering MarketplaceEquipmentSheet extending SR5ItemSheet...");
     registerMarketplaceEquipmentSheet();
     injectThemeChoices();
+    MarketplaceSettingsService.updateCompendiumSettingChoices();
 
     try {
         await game.sr5marketplace.api.system.init();
@@ -862,9 +971,24 @@ Hooks.on("ready", async () => {
                 const actorData = foundry.utils.deepClone(data.actorData);
                 actorData.ownership = actorData.ownership || {};
                 actorData.ownership[data.userId] = CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER;
-                const newActor = await Actor.create(actorData);
+                const targetPackCollection = data.targetPack || MarketplaceSettingsService.getCustomVehicleCompendium();
+                const pack = (targetPackCollection && targetPackCollection !== "world") ? game.packs.get(targetPackCollection) : null;
+                if (pack?.locked) {
+                    try {
+                        await pack.configure({ locked: false });
+                    } catch (err) {
+                        console.warn("SR5 Marketplace | GM failed to unlock compendium:", err);
+                    }
+                }
+                let newActor = null;
+                if (pack && !pack.locked) {
+                    newActor = await Actor.create(actorData, { pack: pack.collection });
+                } else {
+                    newActor = await Actor.create(actorData);
+                }
                 if (newActor) {
                     console.log(`SR5 Marketplace | GM created actor: ${newActor.name} for user ${data.userId}`);
+                    game.sr5marketplace?.api?.itemData?.invalidateCache();
                 }
             } else if (data.action === "update_actor_field") {
                 const actor = await fromUuid(data.actorUuid);
@@ -1043,6 +1167,31 @@ Hooks.on("collapseSidebar", (sidebar, collapsed) => {
     }
 });
 
+/**
+ * Reactively adjust MarketShouter z-index when Marketplace or ItemBuilder windows open or close.
+ */
+const refreshMarketShouterPosition = () => {
+    const shouter = foundry.applications.instances.get("marketshouter");
+    if (shouter && shouter.rendered && typeof shouter.updatePosition === "function") {
+        shouter.updatePosition();
+    }
+};
+
+Hooks.on("renderInGameMarketplace", refreshMarketShouterPosition);
+Hooks.on("closeInGameMarketplace", refreshMarketShouterPosition);
+Hooks.on("renderItemBuilderApp", refreshMarketShouterPosition);
+Hooks.on("closeItemBuilderApp", refreshMarketShouterPosition);
+Hooks.on("renderApplicationV2", (app) => {
+    if (app?.id === "inGameMarketplace" || app?.id === "itemBuilder") {
+        refreshMarketShouterPosition();
+    }
+});
+Hooks.on("closeApplicationV2", (app) => {
+    if (app?.id === "inGameMarketplace" || app?.id === "itemBuilder") {
+        refreshMarketShouterPosition();
+    }
+});
+
 // --- Seed default skills on new Shop Actor creation ---
 async function seedDefaultSkills(actor) {
     const SYSTEM_ID = 'shadowrun5e';
@@ -1099,9 +1248,26 @@ async function seedDefaultSkills(actor) {
 }
 
 Hooks.on("createActor", async (actor, options, userId) => {
+    if (actor.type === "vehicle") {
+        game.sr5marketplace?.api?.itemData?.invalidateCache();
+        const marketApp = foundry.applications.instances.get("inGameMarketplace");
+        if (marketApp && marketApp.rendered) {
+            marketApp.render();
+        }
+    }
     if (game.user.id !== userId) return;
     if (actor.type !== "sr5-marketplace.shop") return;
     await seedDefaultSkills(actor);
+});
+
+Hooks.on("deleteActor", async (actor, options, userId) => {
+    if (actor.type === "vehicle") {
+        game.sr5marketplace?.api?.itemData?.invalidateCache();
+        const marketApp = foundry.applications.instances.get("inGameMarketplace");
+        if (marketApp && marketApp.rendered) {
+            marketApp.render();
+        }
+    }
 });
 
 function getShopsForEmployee(actor) {
@@ -1121,6 +1287,14 @@ Hooks.on("updateActor", async (actor, changes, options, userId) => {
         const selectedUuid = builderApp.selectedVehicleActorUuid;
         if (selectedUuid && (actor.uuid === selectedUuid || actor.id === selectedUuid.split(".").pop())) {
             builderApp.render();
+        }
+    }
+
+    if (actor.type === "vehicle") {
+        game.sr5marketplace?.api?.itemData?.invalidateCache();
+        const marketApp = foundry.applications.instances.get("inGameMarketplace");
+        if (marketApp && marketApp.rendered) {
+            marketApp.render();
         }
     }
 
@@ -1195,7 +1369,14 @@ Hooks.on("createItem", async (item, options, userId) => {
     }
 
     if (game.user.id !== userId) return;
-    if (!item.parent) return;
+    if (!item.parent) {
+        game.sr5marketplace?.api?.itemData?.invalidateCache();
+        const marketApp = foundry.applications.instances.get("inGameMarketplace");
+        if (marketApp && marketApp.rendered) {
+            marketApp.render();
+        }
+        return;
+    }
 
     const actor = item.parent;
     if (actor.type === "sr5-marketplace.shop" && item.type === "host") {
@@ -1244,7 +1425,14 @@ Hooks.on("updateItem", async (item, changes, options, userId) => {
     }
 
     if (game.user.id !== userId) return;
-    if (!item.parent) return;
+    if (!item.parent) {
+        game.sr5marketplace?.api?.itemData?.invalidateCache();
+        const marketApp = foundry.applications.instances.get("inGameMarketplace");
+        if (marketApp && marketApp.rendered) {
+            marketApp.render();
+        }
+        return;
+    }
 
     const actor = item.parent;
     if (actor.type === "sr5-marketplace.shop" && item.type === "host") {
@@ -1293,7 +1481,14 @@ Hooks.on("deleteItem", async (item, options, userId) => {
     }
 
     if (game.user.id !== userId) return;
-    if (!item.parent) return;
+    if (!item.parent) {
+        game.sr5marketplace?.api?.itemData?.invalidateCache();
+        const marketApp = foundry.applications.instances.get("inGameMarketplace");
+        if (marketApp && marketApp.rendered) {
+            marketApp.render();
+        }
+        return;
+    }
 
     const actor = item.parent;
     if (item.type === "skill") {

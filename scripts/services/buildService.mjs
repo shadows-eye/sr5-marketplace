@@ -350,6 +350,10 @@ export class BuildService {
         effect.duration = effect.duration || { startTime: null, combat: null };
 
         effect.system = effect.system || {};
+        effect.system.appliedByTest = effect.system.appliedByTest ?? false;
+        effect.system.onlyForEquipped = effect.system.onlyForEquipped ?? true;
+        effect.system.onlyForWireless = effect.system.onlyForWireless ?? false;
+        effect.system.expiryAction = effect.system.expiryAction || "default";
 
         // 1. Normalize Targets
         let targets = effect.system.targets;

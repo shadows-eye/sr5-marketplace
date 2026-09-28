@@ -1,12 +1,15 @@
 {
   "name": "sr5-marketplace",
-  "version": "14.005.1",
+  "version": "14.006.0",
   "type": "module",
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",
+    "@types/chai": "^5.2.3",
+    "@types/mocha": "^10.0.10",
     "autoprefixer": "^10.4.27",
     "ignore": "^7.0.5",
     "js-yaml": "^4.2.0",
+    "playwright": "^1.63.0",
     "postcss": "^8.5.8",
     "puppeteer": "^25.1.0",
     "tailwindcss": "^4.2.2",
@@ -16,6 +19,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "test": "node helpers/test_css_no_important.mjs",
+    "test:colors": "node helpers/test_theme_colors.mjs",
+    "quench": "node scripts/quench.mjs",
+    "test:quench": "node scripts/quench.mjs",
     "context": "node helpers/generate-context.cjs",
     "test:live": "node helpers/test_live_embedded_skill_update.mjs",
     "pub": "node --env-file=.env helpers/publish.js"

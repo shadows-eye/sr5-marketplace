@@ -8,6 +8,134 @@ export class MarketplaceSettingsService {
     static SETTING_ALLOWED_COMPENDIUMS = "allowedCompendiums";
     static SETTING_ALLOW_WORLD_ITEMS = "allowWorldItemsInMarket";
     static SETTING_GLOBAL_FILTER_TAGS = "globalDefaultFilterTags";
+    static SETTING_CUSTOM_ITEM_COMPENDIUM = "customItemCompendium";
+    static SETTING_CUSTOM_VEHICLE_COMPENDIUM = "customVehicleCompendium";
+
+    /**
+     * Retrieves the configured compendium collection ID for custom items, or "world".
+     * @returns {string}
+     */
+    static getCustomItemCompendium() {
+        if (typeof game === "undefined" || !game.settings) return "world";
+        try {
+            return game.settings.get("sr5-marketplace", this.SETTING_CUSTOM_ITEM_COMPENDIUM) || "world";
+        } catch (err) {
+            return "world";
+        }
+    }
+
+    /**
+     * Sets the target compendium for custom items.
+     * @param {string} collectionId
+     * @returns {Promise<void>}
+     */
+    /**
+     * Sets the target compendium for custom items.
+     * @param {string} collectionId
+     * @returns {Promise<void>}
+     */
+    static async setCustomItemCompendium(collectionId) {
+        if (!game.settings || !game.user?.isGM) return;
+        const targetId = collectionId || "world";
+        await game.settings.set("sr5-marketplace", this.SETTING_CUSTOM_ITEM_COMPENDIUM, targetId);
+        if (targetId !== "world" && typeof game !== "undefined" && game.packs) {
+            const pack = game.packs.get(targetId);
+            if (pack?.locked) {
+                try {
+                    await pack.configure({ locked: false });
+                    console.log(`SR5 Marketplace | Automatically unlocked compendium: ${pack.metadata.label}`);
+                } catch (err) {
+                    console.warn(`SR5 Marketplace | Could not unlock compendium ${targetId}:`, err);
+                }
+            }
+        }
+        this.invalidateItemCache();
+    }
+
+    /**
+     * Retrieves the configured compendium collection ID for custom vehicles, or "world".
+     * @returns {string}
+     */
+    static getCustomVehicleCompendium() {
+        if (typeof game === "undefined" || !game.settings) return "world";
+        try {
+            return game.settings.get("sr5-marketplace", this.SETTING_CUSTOM_VEHICLE_COMPENDIUM) || "world";
+        } catch (err) {
+            return "world";
+        }
+    }
+
+    /**
+     * Sets the target compendium for custom vehicles.
+     * @param {string} collectionId
+     * @returns {Promise<void>}
+     */
+    static async setCustomVehicleCompendium(collectionId) {
+        if (!game.settings || !game.user?.isGM) return;
+        const targetId = collectionId || "world";
+        await game.settings.set("sr5-marketplace", this.SETTING_CUSTOM_VEHICLE_COMPENDIUM, targetId);
+        if (targetId !== "world" && typeof game !== "undefined" && game.packs) {
+            const pack = game.packs.get(targetId);
+            if (pack?.locked) {
+                try {
+                    await pack.configure({ locked: false });
+                    console.log(`SR5 Marketplace | Automatically unlocked compendium: ${pack.metadata.label}`);
+                } catch (err) {
+                    console.warn(`SR5 Marketplace | Could not unlock compendium ${targetId}:`, err);
+                }
+            }
+        }
+        this.invalidateItemCache();
+    }
+
+    /**
+     * Returns a map of choices for custom item compendiums (World Directory + Item compendiums).
+     * @returns {Record<string, string>}
+     */
+    static getItemCompendiumChoices() {
+        const defaultLabel = game.i18n?.localize("SR5Marketplace.CompendiumSettings.WorldDirectory") || "World Directory (Default)";
+        const choices = { "world": defaultLabel };
+        if (typeof game !== "undefined" && game.packs) {
+            for (const pack of game.packs) {
+                if (pack.metadata.type === "Item") {
+                    choices[pack.collection] = `${pack.metadata.label} (${pack.collection})`;
+                }
+            }
+        }
+        return choices;
+    }
+
+    /**
+     * Returns a map of choices for custom vehicle compendiums (World Directory + Actor compendiums).
+     * @returns {Record<string, string>}
+     */
+    static getVehicleCompendiumChoices() {
+        const defaultLabel = game.i18n?.localize("SR5Marketplace.CompendiumSettings.WorldDirectory") || "World Directory (Default)";
+        const choices = { "world": defaultLabel };
+        if (typeof game !== "undefined" && game.packs) {
+            for (const pack of game.packs) {
+                if (pack.metadata.type === "Actor") {
+                    choices[pack.collection] = `${pack.metadata.label} (${pack.collection})`;
+                }
+            }
+        }
+        return choices;
+    }
+
+    /**
+     * Refreshes the choices map on the registered game settings dynamically.
+     */
+    static updateCompendiumSettingChoices() {
+        if (typeof game === "undefined" || !game.settings?.settings) return;
+        const itemSetting = game.settings.settings.get("sr5-marketplace.customItemCompendium");
+        if (itemSetting) {
+            itemSetting.choices = this.getItemCompendiumChoices();
+        }
+        const vehicleSetting = game.settings.settings.get("sr5-marketplace.customVehicleCompendium");
+        if (vehicleSetting) {
+            vehicleSetting.choices = this.getVehicleCompendiumChoices();
+        }
+    }
 
     /**
      * Retrieves the set of explicitly allowed compendium collection IDs.
@@ -35,6 +163,12 @@ export class MarketplaceSettingsService {
      */
     static isCompendiumAllowed(collectionId) {
         if (!collectionId) return false;
+        // Always allow the configured custom save destinations
+        const customItemPack = this.getCustomItemCompendium();
+        if (customItemPack && customItemPack !== "world" && customItemPack === collectionId) return true;
+        const customVehiclePack = this.getCustomVehicleCompendium();
+        if (customVehiclePack && customVehiclePack !== "world" && customVehiclePack === collectionId) return true;
+
         const allowedSet = this.getAllowedCompendiums();
         if (!allowedSet) return true; // Default: all allowed
         return allowedSet.has(collectionId);
@@ -168,4 +302,149 @@ export class MarketplaceSettingsService {
         enriched.sort((a, b) => a.title.localeCompare(b.title, game.i18n.lang));
         return enriched;
     }
+
+    /**
+     * Saves or updates an item document according to the custom compendium settings.
+     * @param {object} itemData The data representing the item.
+     * @param {object} [options]
+     * @param {boolean} [options.notify=false] Whether to trigger UI notifications.
+     * @param {string} [options.existingUuid=null] UUID of the source item.
+     * @returns {Promise<Item|null>}
+     */
+    static async saveOrUpdateItem(itemData, { notify = false, existingUuid = null } = {}) {
+        if (!itemData) return null;
+        const targetId = this.getCustomItemCompendium();
+        let targetPack = null;
+        if (targetId && targetId !== "world" && typeof game !== "undefined" && game.packs) {
+            targetPack = game.packs.get(targetId);
+            if (targetPack?.locked) {
+                try {
+                    await targetPack.configure({ locked: false });
+                    console.log(`SR5 Marketplace | Automatically unlocked compendium on save: ${targetPack.metadata.label}`);
+                } catch (err) {
+                    console.warn(`SR5 Marketplace | Failed to unlock compendium ${targetPack.metadata.label}:`, err);
+                }
+            }
+            if (targetPack?.locked) {
+                if (notify) {
+                    const warnMsg = game.i18n?.format("SR5Marketplace.CompendiumSettings.PackLockedWarning", { name: targetPack.metadata.label })
+                        || `Target compendium "${targetPack.metadata.label}" is locked. Saving to World directory instead.`;
+                    ui.notifications?.warn(warnMsg);
+                }
+                targetPack = null;
+            }
+        }
+
+        const lookupUuid = existingUuid || itemData.uuid;
+        const existingItem = lookupUuid ? await fromUuid(lookupUuid).catch(() => null) : null;
+        const canUpdateExisting = existingItem && existingItem.isOwner && !existingItem.compendium?.locked && (
+            (targetPack && existingItem.pack === targetPack.collection) ||
+            (!targetPack && !existingItem.pack)
+        );
+
+        let savedDoc = null;
+        if (canUpdateExisting) {
+            savedDoc = await existingItem.update(itemData);
+            if (notify) {
+                const locName = targetPack ? targetPack.metadata.label : (game.i18n?.localize("SR5Marketplace.CompendiumSettings.WorldDirectory") || "World directory");
+                ui.notifications?.info(`Item "${savedDoc.name}" was successfully updated in ${locName}.`);
+            }
+        } else {
+            const clone = foundry.utils.deepClone(itemData);
+            delete clone._id;
+            delete clone._stats;
+            if (targetPack) {
+                savedDoc = await Item.create(clone, { pack: targetPack.collection });
+                if (notify) {
+                    ui.notifications?.info(`Item "${savedDoc.name}" was successfully saved to compendium "${targetPack.metadata.label}".`);
+                }
+            } else {
+                savedDoc = await Item.create(clone);
+                if (notify) {
+                    ui.notifications?.info(`Item "${savedDoc.name}" was successfully created in the World directory.`);
+                }
+            }
+        }
+
+        return savedDoc;
+    }
+
+    /**
+     * Saves or updates a vehicle actor according to the custom compendium settings.
+     * @param {object} vehicleData The data representing the vehicle actor.
+     * @param {object} [options]
+     * @param {boolean} [options.notify=false] Whether to trigger UI notifications.
+     * @param {string} [options.existingUuid=null] UUID of the source vehicle.
+     * @param {string} [options.userId=null] Requesting user ID for non-GM creation.
+     * @returns {Promise<Actor|null>}
+     */
+    static async saveOrUpdateVehicle(vehicleData, { notify = false, existingUuid = null, userId = null } = {}) {
+        if (!vehicleData) return null;
+        const targetId = this.getCustomVehicleCompendium();
+        let targetPack = null;
+        if (targetId && targetId !== "world" && typeof game !== "undefined" && game.packs) {
+            targetPack = game.packs.get(targetId);
+            if (targetPack?.locked) {
+                try {
+                    await targetPack.configure({ locked: false });
+                    console.log(`SR5 Marketplace | Automatically unlocked compendium on save: ${targetPack.metadata.label}`);
+                } catch (err) {
+                    console.warn(`SR5 Marketplace | Failed to unlock compendium ${targetPack.metadata.label}:`, err);
+                }
+            }
+            if (targetPack?.locked) {
+                if (notify) {
+                    const warnMsg = game.i18n?.format("SR5Marketplace.CompendiumSettings.PackLockedWarning", { name: targetPack.metadata.label })
+                        || `Target compendium "${targetPack.metadata.label}" is locked. Saving to World directory instead.`;
+                    ui.notifications?.warn(warnMsg);
+                }
+                targetPack = null;
+            }
+        }
+
+        const lookupUuid = existingUuid || vehicleData.uuid;
+        const existingActor = lookupUuid ? await fromUuid(lookupUuid).catch(() => null) : null;
+        const canUpdateExisting = existingActor && existingActor.isOwner && !existingActor.compendium?.locked && (
+            (targetPack && existingActor.pack === targetPack.collection) ||
+            (!targetPack && !existingActor.pack)
+        );
+
+        let savedDoc = null;
+        if (canUpdateExisting) {
+            savedDoc = await existingActor.update(vehicleData);
+            if (notify) {
+                const locName = targetPack ? targetPack.metadata.label : (game.i18n?.localize("SR5Marketplace.CompendiumSettings.WorldDirectory") || "World directory");
+                ui.notifications?.info(`Vehicle "${savedDoc.name}" was successfully updated in ${locName}.`);
+            }
+        } else if (game.user?.isGM) {
+            const clone = foundry.utils.deepClone(vehicleData);
+            delete clone._id;
+            delete clone._stats;
+            if (targetPack) {
+                savedDoc = await Actor.create(clone, { pack: targetPack.collection });
+                if (notify) {
+                    ui.notifications?.info(`Vehicle "${savedDoc.name}" was successfully saved to compendium "${targetPack.metadata.label}".`);
+                }
+            } else {
+                savedDoc = await Actor.create(clone);
+                if (notify) {
+                    ui.notifications?.info(`Vehicle "${savedDoc.name}" was successfully created in the World directory.`);
+                }
+            }
+        } else {
+            // Non-GM request to GM via socket
+            game.socket.emit(`module.sr5-marketplace`, {
+                action: "create_actor",
+                actorData: vehicleData,
+                targetPack: targetPack ? targetPack.collection : null,
+                userId: userId || game.user.id
+            });
+            if (notify) {
+                ui.notifications?.info(`Request sent to GM to create vehicle "${vehicleData.name}".`);
+            }
+        }
+
+        return savedDoc;
+    }
 }
+

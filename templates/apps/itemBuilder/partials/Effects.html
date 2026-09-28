@@ -83,11 +83,22 @@
                                             <label>{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyToLabel'}}</label>
                                             <div class="button-group applyTo">
                                                 <button type="button" class="{{#if (eq @root.activeApplyTo 'actor')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="actor" title="{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.actor'}}"><i class="fas fa-user"></i></button>
+                                                <button type="button" class="{{#if (eq @root.activeApplyTo 'item')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="item" title="{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.item'}}"><i class="fas fa-cube"></i></button>
                                                 <button type="button" class="{{#if (eq @root.activeApplyTo 'targeted_actor')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="targeted_actor" title="{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.targeted_actor'}}"><i class="fas fa-crosshairs"></i></button>
                                                 <button type="button" class="{{#if (eq @root.activeApplyTo 'test_all')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="test_all" title="{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.test_all'}}"><i class="fas fa-dice"></i></button>
                                                 <button type="button" class="{{#if (eq @root.activeApplyTo 'test_item')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="test_item" title="{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.test_item'}}"><i class="fas fa-dice-d20"></i></button>
                                                 <button type="button" class="{{#if (eq @root.activeApplyTo 'modifier')}}active{{/if}}" data-action="setEffectTargetType" data-target-type="modifier" title="{{localize 'SR5Marketplace.ItemBuilder.Effects.ApplyTo.modifier'}}"><i class="fas fa-sliders-h"></i></button>
                                             </div>
+                                        </div>
+                                        <div class="form-group effect-conditions-row" style="display: flex; gap: 12px; margin-top: 6px;">
+                                            <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85em; cursor: pointer;" title="{{localize 'SR5.ActiveEffect.FIELDS.onlyForEquipped.hint'}}">
+                                                <input type="checkbox" name="system.onlyForEquipped" data-action="toggleDraftCheckbox" data-field="system.onlyForEquipped" {{#if draftEffect.system.onlyForEquipped}}checked{{/if}} style="width: auto; margin: 0; cursor: pointer;"/>
+                                                <span>{{localize 'SR5.ActiveEffect.FIELDS.onlyForEquipped.label'}}</span>
+                                            </label>
+                                            <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85em; cursor: pointer;" title="{{localize 'SR5.ActiveEffect.FIELDS.onlyForWireless.hint'}}">
+                                                <input type="checkbox" name="system.onlyForWireless" data-action="toggleDraftCheckbox" data-field="system.onlyForWireless" {{#if draftEffect.system.onlyForWireless}}checked{{/if}} style="width: auto; margin: 0; cursor: pointer;"/>
+                                                <span>{{localize 'SR5.ActiveEffect.FIELDS.onlyForWireless.label'}}</span>
+                                            </label>
                                         </div>
                                     </div>
                                     
@@ -162,6 +173,18 @@
                                                     <div class="key-group collapsible">
                                                         <input type="checkbox" id="toggle-group-actor-{{group.groupName}}" class="toggle-checkbox" {{#if group.isExpanded}}checked{{/if}}>
                                                         <label for="toggle-group-actor-{{group.groupName}}" class="toggle-label"><h5>{{group.groupName}}</h5><i class="fas fa-chevron-right expand-icon"></i></label>
+                                                        <div class="key-buttons toggle-content">
+                                                            {{#each group.groupData}}<button type="button" class="key-btn {{#if (eq this.path @root.selectedKey)}}selected{{/if}}" data-action="selectDraftKey" data-path="{{this.path}}">{{this.label}}</button>{{/each}}
+                                                        </div>
+                                                    </div>
+                                                {{/each}}
+                                            {{/if}}
+
+                                            {{#if @root.isItemMode}}
+                                                {{#each @root.itemKeyGroups as |group|}}
+                                                    <div class="key-group collapsible">
+                                                        <input type="checkbox" id="toggle-group-item-{{group.groupName}}" class="toggle-checkbox" checked>
+                                                        <label for="toggle-group-item-{{group.groupName}}" class="toggle-label"><h5>{{group.groupName}}</h5><i class="fas fa-chevron-right expand-icon"></i></label>
                                                         <div class="key-buttons toggle-content">
                                                             {{#each group.groupData}}<button type="button" class="key-btn {{#if (eq this.path @root.selectedKey)}}selected{{/if}}" data-action="selectDraftKey" data-path="{{this.path}}">{{this.label}}</button>{{/each}}
                                                         </div>
