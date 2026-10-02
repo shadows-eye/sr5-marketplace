@@ -750,7 +750,8 @@
 }
 
 body.vtt .window-app.theme-neon-light .marketplace-item.grid-item,
-body.vtt .window-app.theme-neon-light .item-card {
+body.vtt .window-app.theme-neon-light .sr5-marketplace .item-card,
+body.vtt .window-app.theme-neon-light .itemBuilder .item-card {
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
@@ -864,7 +865,8 @@ body.vtt .window-app.theme-neon-light button {
 }
 
 body.vtt .window-app.theme-silicon .marketplace-item.grid-item,
-body.vtt .window-app.theme-silicon .item-card {
+body.vtt .window-app.theme-silicon .sr5-marketplace .item-card,
+body.vtt .window-app.theme-silicon .itemBuilder .item-card {
     background-color: #ffffff;
     border: 1px solid #e5e5e7;
     border-radius: 12px;

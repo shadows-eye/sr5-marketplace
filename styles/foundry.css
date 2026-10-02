@@ -4,14 +4,16 @@
 
 /* Cyber Neon Custom Details */
 body.vtt .window-app.theme-neon .marketplace-item.grid-item,
-body.vtt .window-app.theme-neon .item-card {
+body.vtt .window-app.theme-neon .sr5-marketplace .item-card,
+body.vtt .window-app.theme-neon .itemBuilder .item-card {
     background-color: var(--color-slate-card);
     border: 1px solid var(--border-color-medium);
     border-radius: 8px;
 }
 
 body.vtt .window-app.theme-neon .marketplace-item.grid-item:hover,
-body.vtt .window-app.theme-neon .item-card:hover {
+body.vtt .window-app.theme-neon .sr5-marketplace .item-card:hover,
+body.vtt .window-app.theme-neon .itemBuilder .item-card:hover {
     border-color: var(--color-cyan-bright);
     box-shadow: 0 0 10px var(--color-cyan-transparent-subtle);
 }
