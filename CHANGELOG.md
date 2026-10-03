@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [14.006.1] - 2026-10-02
+
+### 🐛 Bug Fixes
+* **Minor Bug Fixes**:
+  * Resolved minor display and styling bugs to ensure smooth compatibility across the system.
+
+---
+
 ## [14.006.0] - 2026-09-28
 
 ### 🚀 **What's New in v14.006.0**
