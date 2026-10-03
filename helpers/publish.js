@@ -27,6 +27,7 @@ async function publishRelease() {
 
         // Construct the version-locked URL that Foundry will save
         const releaseManifestUrl = `https://shadowplays.de/api/sr5-marketplace/${version}/module.json`;
+        const releaseNotesUrl = `https://shadowplays.de/api/sr5-marketplace/${version}/release`;
 
         // 2. Construct the payload matching the official endpoint structure
         const payload = {
@@ -35,7 +36,7 @@ async function publishRelease() {
             release: {
                 version: version,
                 manifest: releaseManifestUrl, // Uses the versioned URL here
-                notes: `https://shadowplays.de/api/sr5-marketplace/${version}`,
+                notes: releaseNotesUrl,
                 compatibility: {
                     minimum: minCompatibility,
                     verified: verifiedCompatibility
