@@ -37,6 +37,17 @@ export function registerItemDataBatch(quench) {
                     }, "Invalidating cache should execute cleanly");
                 });
             });
+
+            describe("Item Categorization and Types", () => {
+                it("includes ammo category in global categorized items", async () => {
+                    const api = game.sr5marketplace.api.itemData;
+                    const categorizedAll = await api.fetchGlobalItems("all");
+                    assert.isOk(categorizedAll, "Categorized items should be returned");
+                    assert.property(categorizedAll, "ammo", "ammo category should exist on categorized items");
+                    assert.isArray(categorizedAll.ammo.items, "ammo items should be an array");
+                    assert.isString(categorizedAll.ammo.label, "ammo category should have a label");
+                });
+            });
         },
         { displayName: "SR5 Marketplace: ItemData Service API" }
     );
