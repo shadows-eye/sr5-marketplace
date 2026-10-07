@@ -279,6 +279,7 @@ export default class ItemDataServices {
                 living_persona: { label: "SR5.LivingPersona", items: [] },
             }
         },
+        ammo: { label: "SR5Marketplace.Marketplace.ItemTypes.Ammo", items: [] },
         equipment: { label: "SR5Marketplace.Marketplace.ItemTypes.Equipment", items: [] },
         metamagic: { label: "SR5Marketplace.Marketplace.ItemTypes.Metamagic", items: [] },
         adept_power: { label: "SR5Marketplace.Marketplace.ItemTypes.AdeptPowers", items: [] },
@@ -304,6 +305,7 @@ export default class ItemDataServices {
         cyberware: "modules/sr5-marketplace/assets/icons/types/cyberware.webp",
         bioware: "modules/sr5-marketplace/assets/icons/types/bioware.webp",
         equipment: "modules/sr5-marketplace/assets/icons/types/equipment.webp",
+        ammo: "modules/sr5-marketplace/assets/icons/types/equipment.webp",
         spell: "modules/sr5-marketplace/assets/icons/types/spell.webp",
         modification: "modules/sr5-marketplace/assets/icons/types/modification.webp",
         vehicle: "modules/sr5-marketplace/assets/icons/types/equipment.webp",
@@ -486,6 +488,7 @@ export default class ItemDataServices {
             filteredItems: { label: "SR5Marketplace.Marketplace.ItemTypes.AllItems", items: allIncludedItems },
             rangedWeapons: this._createEnrichedCategory(getNested(categorized, 'weapon.subcategories.range'), "SR5Marketplace.Marketplace.ItemTypes.RangedWeapons"),
             meleeWeapons: this._createEnrichedCategory(getNested(categorized, 'weapon.subcategories.melee'), "SR5Marketplace.Marketplace.ItemTypes.MeleeWeapons"),
+            ammo: this._createEnrichedCategory(categorized.ammo, "SR5Marketplace.Marketplace.ItemTypes.Ammo"),
             armor: this._createEnrichedCategory(categorized.armor, "SR5Marketplace.Marketplace.ItemTypes.Armor"),
             cyberware: this._createEnrichedCategory(categorized.cyberware, "SR5Marketplace.Marketplace.ItemTypes.Cyberware"),
             bioware: this._createEnrichedCategory(categorized.bioware, "SR5Marketplace.Marketplace.ItemTypes.Bioware"),

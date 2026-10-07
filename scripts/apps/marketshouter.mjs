@@ -397,13 +397,18 @@ export class MarketShouterApp extends HandlebarsApplicationMixin(ApplicationV2) 
             if (sub === "vehicle" || sub === "drone") return "vehicleMods";
             return "weaponMods";
         }
+        if (type === "ammo") return "ammo";
         if (type === "adept_power") return "adeptPower";
         if (type === "quality") return "qualitys";
         if (type === "spell") return "spells";
         if (type === "device") return "devices";
+        if (type === "vehicle") {
+            const isDrone = item.system?.isDrone || item.system?.isdrone || false;
+            return isDrone ? "drones" : "vehicles";
+        }
 
         if (["armor", "cyberware", "bioware", "equipment", "metamagic", "echo", "complex_form"].includes(type)) {
-            return type === "armor" ? "armor" : type === "cyberware" ? "cyberware" : type === "bioware" ? "bioware" : type === "equipment" ? "equipment" : type === "metamagic" ? "metamagic" : type === "echo" ? "echo" : "complex_form";
+            return type;
         }
         return null;
     }
