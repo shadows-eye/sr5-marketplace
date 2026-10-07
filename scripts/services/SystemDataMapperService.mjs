@@ -24,15 +24,17 @@ export class SystemDataMapperService {
     }
 
     /**
-     * Tries to find a localized label for a data model group key.
+     * Tries to find a localized label for a data model group key using the system's localization.
      * @param {string} key The key from the data model.
      * @returns {string} The localized label or a formatted fallback.
      * @private
      */
     static #createGroupLabel(key) {
-        // Prioritize specific, known localization keys
+        // Prioritize specific, known system localization keys from Shadowrun 5e
         const keyMap = {
             skills: "SR5.ActiveSkills",
+            movement: "SR5.Movement",
+            armor: "SR5.ItemTypes.Armor",
             matrix: "SR5.Labels.ActorSheet.Matrix",
             limits: "SR5.Limit",
             attributes: "SR5.Attributes",
@@ -43,17 +45,149 @@ export class SystemDataMapperService {
         const specificKey = keyMap[key];
         if (specificKey) {
             const localized = game.i18n.localize(specificKey);
-            if (localized !== specificKey) return localized;
+            if (localized && localized !== specificKey) return localized;
+        }
+
+        if (key === 'armor') {
+            const altArmor = game.i18n.localize("SR5.ArmorValue") || game.i18n.localize("SR5.Vehicle.Armor");
+            if (altArmor && !altArmor.startsWith("SR5.")) return altArmor;
         }
 
         // Fallback for other keys, e.g., 'movement'
         const fallbackKey = `SR5.${key.charAt(0).toUpperCase() + key.slice(1)}`;
         const fallbackLocalized = game.i18n.localize(fallbackKey);
-        if (fallbackLocalized !== fallbackKey) return fallbackLocalized;
+        if (fallbackLocalized && fallbackLocalized !== fallbackKey) return fallbackLocalized;
 
         return this.#createFallbackLabel(key); // Final fallback if nothing else is found
     }
     
+    /**
+     * Resolves a localized label for a field key and path, using system localization keys.
+     * @param {string} key The field key.
+     * @param {string} path The full field path.
+     * @param {object} localizedMap An optional lookup map.
+     * @returns {string} The localized label.
+     */
+    static _resolveFieldLabel(key, path = "", localizedMap = {}) {
+        if (localizedMap && localizedMap[key]) return localizedMap[key];
+
+        // Specific system mappings for movement, armor, tracks, and attributes
+        const pathLookup = {
+            // Movement
+            "system.movement.walk": "SR5.Walk",
+            "system.movement.run": "SR5.MovementTypes.Run",
+            "system.movement.sprint": "SR5.MovementTypes.Sprint",
+            "system.movement.swimming": "SR5.Skill.Swimming",
+
+            // Actor Armor
+            "system.armor.rating": "SR5.ArmorValue",
+            "system.armor.hardened": "SR5.Armor.FIELDS.armor.hardened.label",
+            "system.armor.elements.acid": "SR5.Armor.FIELDS.armor.acid.label",
+            "system.armor.elements.cold": "SR5.Armor.FIELDS.armor.cold.label",
+            "system.armor.elements.electricity": "SR5.Armor.FIELDS.armor.electricity.label",
+            "system.armor.elements.fire": "SR5.Armor.FIELDS.armor.fire.label",
+            "system.armor.elements.pollutant": "SR5.Armor.FIELDS.armor.pollutant.label",
+            "system.armor.elements.radiation": "SR5.Armor.FIELDS.armor.radiation.label",
+            "system.armor.elements.water": "SR5.Armor.FIELDS.armor.water.label",
+            "system.armor.immunities.acid": "SR5.Element.Acid",
+            "system.armor.immunities.cold": "SR5.Element.Cold",
+            "system.armor.immunities.electricity": "SR5.Element.Electricity",
+            "system.armor.immunities.fire": "SR5.Element.Fire",
+            "system.armor.immunities.pollutant": "SR5.Element.Pollutant",
+            "system.armor.immunities.radiation": "SR5.Element.Radiation",
+            "system.armor.immunities.water": "SR5.Element.Water",
+            "system.armor.immunities.normal_weapons": "SR5.Armor.Immunity.NormalWeapons",
+            "system.armor.mod": "SR5.ModifiedArmor",
+            "system.armor.label": "SR5.Armor.label",
+
+            // Item Armor (system.armor.armor.*)
+            "system.armor.armor.base": "SR5.Base",
+            "system.armor.armor.value": "SR5.Armor.FIELDS.armor.value.label",
+            "system.armor.armor.accessory": "SR5.Armor.FIELDS.armor.accessory.label",
+            "system.armor.armor.hardened": "SR5.Armor.FIELDS.armor.hardened.label",
+            "system.armor.armor.is_hardened": "SR5.Armor.FIELDS.armor.is_hardened.label",
+            "system.armor.armor.elements.acid": "SR5.Armor.FIELDS.armor.acid.label",
+            "system.armor.armor.elements.cold": "SR5.Armor.FIELDS.armor.cold.label",
+            "system.armor.armor.elements.electricity": "SR5.Armor.FIELDS.armor.electricity.label",
+            "system.armor.armor.elements.fire": "SR5.Armor.FIELDS.armor.fire.label",
+            "system.armor.armor.elements.pollutant": "SR5.Armor.FIELDS.armor.pollutant.label",
+            "system.armor.armor.elements.radiation": "SR5.Armor.FIELDS.armor.radiation.label",
+            "system.armor.armor.elements.water": "SR5.Armor.FIELDS.armor.water.label",
+            "system.armor.armor.immunities.base": "SR5.Armor.FIELDS.armor.immunities.label",
+            "system.armor.armor.immunities.value": "SR5.Armor.FIELDS.armor.immunities.label",
+
+            // Knowledge Skills
+            "system.skills.knowledge.street": "SR5.KnowledgeSkillStreet",
+            "system.skills.knowledge.academic": "SR5.KnowledgeSkillAcademic",
+            "system.skills.knowledge.professional": "SR5.KnowledgeSkillProfessional",
+            "system.skills.knowledge.interests": "SR5.KnowledgeSkillInterests"
+        };
+
+        const cleanPath = path.replace(/\.value$/, '');
+        if (pathLookup[cleanPath]) {
+            const loc = typeof game !== 'undefined' && game.i18n ? game.i18n.localize(pathLookup[cleanPath]) : null;
+            if (loc && !loc.startsWith("SR5.")) return loc;
+        }
+        if (pathLookup[path]) {
+            const loc = typeof game !== 'undefined' && game.i18n ? game.i18n.localize(pathLookup[path]) : null;
+            if (loc && !loc.startsWith("SR5.")) return loc;
+        }
+
+        // Active skills path matching: system.skills.active.<skillKey>
+        if (path.includes('skills.active.') || key in (typeof CONFIG !== 'undefined' && CONFIG.SR5?.activeSkills ? CONFIG.SR5.activeSkills : {})) {
+            const skillMatch = path.match(/skills\.active\.([^.]+)/);
+            const skillKey = (skillMatch ? skillMatch[1] : key).toLowerCase();
+            const locKey = (typeof CONFIG !== 'undefined' && CONFIG.SR5?.activeSkills?.[skillKey]) || `SR5.Skill.${skillKey.charAt(0).toUpperCase() + skillKey.slice(1)}`;
+            const loc = typeof game !== 'undefined' && game.i18n ? game.i18n.localize(locKey) : null;
+            if (loc && !loc.startsWith("SR5.Skill.")) return loc;
+        }
+
+        // Check key-based system localizations
+        const keyLookup = {
+            walk: "SR5.Walk",
+            run: "SR5.MovementTypes.Run",
+            sprint: "SR5.MovementTypes.Sprint",
+            swimming: "SR5.Skill.Swimming",
+            rating: "SR5.ArmorValue",
+            hardened: "SR5.Armor.FIELDS.armor.hardened.label",
+            is_hardened: "SR5.Armor.FIELDS.armor.is_hardened.label",
+            accessory: "SR5.Armor.FIELDS.armor.accessory.label",
+            acid: "SR5.Armor.FIELDS.armor.acid.label",
+            cold: "SR5.Armor.FIELDS.armor.cold.label",
+            electricity: "SR5.Armor.FIELDS.armor.electricity.label",
+            fire: "SR5.Armor.FIELDS.armor.fire.label",
+            pollutant: "SR5.Armor.FIELDS.armor.pollutant.label",
+            radiation: "SR5.Armor.FIELDS.armor.radiation.label",
+            water: "SR5.Armor.FIELDS.armor.water.label",
+            normal_weapons: "SR5.Armor.Immunity.NormalWeapons",
+            elements: "SR5.Elements",
+            immunities: "SR5.Armor.FIELDS.armor.immunities.label",
+            street: "SR5.KnowledgeSkillStreet",
+            academic: "SR5.KnowledgeSkillAcademic",
+            professional: "SR5.KnowledgeSkillProfessional",
+            interests: "SR5.KnowledgeSkillInterests"
+        };
+
+        if (keyLookup[key]) {
+            const loc = typeof game !== 'undefined' && game.i18n ? game.i18n.localize(keyLookup[key]) : null;
+            if (loc && !loc.startsWith("SR5.")) return loc;
+        }
+
+        const armorFieldLoc = typeof game !== 'undefined' && game.i18n ? game.i18n.localize(`SR5.Armor.FIELDS.armor.${key}.label`) : null;
+        if (armorFieldLoc && !armorFieldLoc.startsWith("SR5.Armor.")) return armorFieldLoc;
+
+        const elementLoc = typeof game !== 'undefined' && game.i18n ? game.i18n.localize(`SR5.Element.${key.charAt(0).toUpperCase() + key.slice(1)}`) : null;
+        if (elementLoc && !elementLoc.startsWith("SR5.Element.")) return elementLoc;
+
+        const skillLoc = typeof game !== 'undefined' && game.i18n ? game.i18n.localize(`SR5.Skill.${key.charAt(0).toUpperCase() + key.slice(1)}`) : null;
+        if (skillLoc && !skillLoc.startsWith("SR5.Skill.")) return skillLoc;
+
+        const genericLoc = typeof game !== 'undefined' && game.i18n ? game.i18n.localize(`SR5.${key.charAt(0).toUpperCase() + key.slice(1)}`) : null;
+        if (genericLoc && !genericLoc.startsWith("SR5.")) return genericLoc;
+
+        return this.#createFallbackLabel(key);
+    }
+
     /**
      * Recursively walks an object to find all valid data paths.
      * @param {object} obj The object to walk.
@@ -67,7 +201,7 @@ export class SystemDataMapperService {
             if (key.startsWith("_") || key === "flags") continue;
             const newPath = path ? `${path}.${key}` : key;
             const value = obj[key];
-            const label = localizedMap[key] || this.#createFallbackLabel(key);
+            const label = this._resolveFieldLabel(key, newPath, localizedMap);
 
             if (typeof value === 'object' && value !== null) {
                 if ("value" in value) {
@@ -95,7 +229,7 @@ export class SystemDataMapperService {
         for (const [key, field] of Object.entries(fields)) {
             if (key.startsWith("_") || key === "flags") continue;
             const newPath = path ? `${path}.${key}` : key;
-            const label = localizedMap[key] || this.#createFallbackLabel(key);
+            const label = this._resolveFieldLabel(key, newPath, localizedMap);
 
             if (field && typeof field === 'object') {
                 if (field.fields) {
@@ -122,6 +256,105 @@ export class SystemDataMapperService {
     }
 
     /**
+     * Dynamically resolves all active skill keys from the system configured skills compendium,
+     * respecting the 'SkillsPack' system setting (whether standard or custom compendium).
+     * @returns {Array<{label: string, path: string}>}
+     */
+    static _resolveActiveSkillsKeys() {
+        const results = [];
+        const seenKeys = new Set();
+        const SYSTEM_NAME = 'shadowrun5e';
+
+        // 1. First populate canonical active skills from CONFIG.SR5.activeSkills using system localization
+        const activeSkills = (typeof CONFIG !== 'undefined' && CONFIG.SR5?.activeSkills) || (typeof game !== 'undefined' && game.sr5marketplace?.api?.system?.activeSkills_l) || {};
+        for (const [key, labelKey] of Object.entries(activeSkills)) {
+            const normalizedKey = key.toLowerCase().replace(/[^a-z0-9_]/gi, '_');
+            const localizedLabel = (typeof game !== 'undefined' && game.i18n ? game.i18n.localize(labelKey) : labelKey) || labelKey;
+            seenKeys.add(normalizedKey);
+            results.push({
+                label: localizedLabel,
+                path: `system.skills.active.${normalizedKey}.value`
+            });
+        }
+
+        // 2. Supplement with any custom skills from system configured SkillsPack
+        try {
+            let packName = null;
+            if (typeof game !== 'undefined' && game.settings) {
+                try {
+                    packName = game.settings.get(SYSTEM_NAME, 'SkillsPack');
+                } catch (e) {}
+            }
+            if (!packName && typeof CONFIG !== 'undefined' && CONFIG.SR5?.packNames?.['SkillsPack']) {
+                packName = CONFIG.SR5.packNames['SkillsPack'];
+            }
+            if (!packName) {
+                packName = 'sr5e-skills';
+            }
+
+            let pack = null;
+            if (typeof game !== 'undefined' && game.packs) {
+                pack = game.packs.get(packName) || 
+                       game.packs.find(p => p.metadata?.name === packName || p.collection === packName);
+                
+                // Fallback to any active skill compendium if configured pack is not found
+                if (!pack) {
+                    pack = game.packs.find(p => 
+                        p.metadata?.type === 'Item' && 
+                        (p.metadata?.name === 'sr5e-skills' || p.metadata?.name === 'aktionsfertigkeiten' || p.metadata?.name === 'sr5e-skill-sets')
+                    ) || game.packs.find(p => 
+                        p.metadata?.type === 'Item' && 
+                        (p.metadata?.name?.includes('skill') || p.metadata?.name?.includes('fertigkeit'))
+                    );
+                }
+            }
+
+            if (pack?.index) {
+                for (const item of pack.index) {
+                    const rawKey = item.system?.key || item.name || "";
+                    const itemKey = rawKey.toLowerCase().replace(/[^a-z0-9_]/gi, '_');
+                    
+                    if (!seenKeys.has(itemKey)) {
+                        seenKeys.add(itemKey);
+                        const locKey = (typeof CONFIG !== 'undefined' && CONFIG.SR5?.activeSkills?.[itemKey]) || `SR5.Skill.${itemKey.charAt(0).toUpperCase() + itemKey.slice(1)}`;
+                        const loc = typeof game !== 'undefined' && game.i18n ? game.i18n.localize(locKey) : null;
+                        const label = (loc && !loc.startsWith("SR5.Skill.")) ? loc : (typeof game !== 'undefined' && game.i18n ? game.i18n.localize(item.name) : item.name) || item.name;
+                        results.push({
+                            label: label,
+                            path: `system.skills.active.${itemKey}.value`
+                        });
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn("SystemDataMapperService | Could not load skills from compendium:", e);
+        }
+
+        // 3. Supplement with world skill items if present
+        if (typeof game !== 'undefined' && game.items) {
+            for (const item of game.items) {
+                if (item.type === 'skill' || item.type === 'activeSkill') {
+                    const rawKey = item.system?.key || item.name || "";
+                    const itemKey = rawKey.toLowerCase().replace(/[^a-z0-9_]/gi, '_');
+                    if (!seenKeys.has(itemKey)) {
+                        seenKeys.add(itemKey);
+                        const locKey = (typeof CONFIG !== 'undefined' && CONFIG.SR5?.activeSkills?.[itemKey]) || `SR5.Skill.${itemKey.charAt(0).toUpperCase() + itemKey.slice(1)}`;
+                        const loc = typeof game !== 'undefined' && game.i18n ? game.i18n.localize(locKey) : null;
+                        const label = (loc && !loc.startsWith("SR5.Skill.")) ? loc : (typeof game !== 'undefined' && game.i18n ? game.i18n.localize(item.name) : item.name) || item.name;
+                        results.push({
+                            label: label,
+                            path: `system.skills.active.${itemKey}.value`
+                        });
+                    }
+                }
+            }
+        }
+
+        results.sort((a, b) => a.label.localeCompare(b.label));
+        return results;
+    }
+
+    /**
      * Gets a structured object of all mappable keys.
      * @returns {{actors: object, items: object, rolls: object, modifiers: object}}
      */
@@ -143,6 +376,7 @@ export class SystemDataMapperService {
                 if (fields) {
                     for (const groupKey in fields) {
                         if (this.#EXCLUDED_GROUPS.has(groupKey)) continue;
+                        if (groupKey === 'skills') continue; // Handled authoritatively via _resolveActiveSkillsKeys below
                         const groupField = fields[groupKey];
                         
                         let subFields = null;
@@ -163,23 +397,22 @@ export class SystemDataMapperService {
                         this._walkSchema(subFields, `system.${groupKey}`, results, localMap);
                         
                         if (results.length > 0) {
-                            // Post-filter for skills to ensure we only get relevant paths
-                            if (groupKey === 'skills') {
-                                results = results.filter(r => r.path.includes('.active.') || r.path.includes('.knowledge.') || r.path.includes('.language.'));
-                            }
-
-                            // Augment armor to ensure '.mod' is always included if it exists
                             if (groupKey === 'armor' && subFields.mod !== undefined) {
                                 const modPath = 'system.armor.mod';
                                 if (!results.some(r => r.path === modPath)) {
-                                    results.push({ label: game.i18n.localize('SR5.Armor.FIELDS.armor.mod.label'), path: modPath });
+                                    results.push({ label: game.i18n.localize('SR5.ModifiedArmor') || "Mod. Armor", path: modPath });
                                 }
                             }
                             
-                            if (results.length > 0) {
-                               typeResults[groupLabel] = results;
-                            }
+                            typeResults[groupLabel] = results;
                         }
+                    }
+
+                    // Ensure Aktionsfertigkeiten / Active Skills are fully populated from system compendium
+                    const skillsGroupName = game.i18n.localize("SR5.ActiveSkills") || "Active Skills";
+                    const resolvedSkills = this._resolveActiveSkillsKeys();
+                    if (resolvedSkills.length > 0) {
+                        typeResults[skillsGroupName] = resolvedSkills;
                     }
 
                     // Manually build and localize the Condition Tracks group
@@ -198,6 +431,7 @@ export class SystemDataMapperService {
                     if (model?.system) {
                         for (const groupKey in model.system) {
                             if (this.#EXCLUDED_GROUPS.has(groupKey)) continue;
+                            if (groupKey === 'skills') continue; // Handled authoritatively via _resolveActiveSkillsKeys below
                             const groupData = model.system[groupKey];
                             if (typeof groupData !== 'object' || groupData === null) continue;
 
@@ -208,19 +442,20 @@ export class SystemDataMapperService {
                             this._walkObject(groupData, `system.${groupKey}`, results, localMap);
                             
                             if (results.length > 0) {
-                                if (groupKey === 'skills') {
-                                    results = results.filter(r => r.path.includes('.active.') || r.path.includes('.knowledge.') || r.path.includes('.language.'));
-                                }
-                                if (groupKey === 'armor' && model.system.armor.mod !== undefined) {
+                                if (groupKey === 'armor' && model.system.armor?.mod !== undefined) {
                                     const modPath = 'system.armor.mod';
                                     if (!results.some(r => r.path === modPath)) {
-                                        results.push({ label: game.i18n.localize('SR5.Armor.FIELDS.armor.mod.label'), path: modPath });
+                                        results.push({ label: game.i18n.localize('SR5.ModifiedArmor') || "Mod. Armor", path: modPath });
                                     }
                                 }
-                                if (results.length > 0) {
-                                   typeResults[groupLabel] = results;
-                                }
+                                typeResults[groupLabel] = results;
                             }
+                        }
+
+                        const skillsGroupName = game.i18n.localize("SR5.ActiveSkills") || "Active Skills";
+                        const resolvedSkills = this._resolveActiveSkillsKeys();
+                        if (resolvedSkills.length > 0) {
+                            typeResults[skillsGroupName] = resolvedSkills;
                         }
 
                         const tracksGroupName = game.i18n.localize("SR5.ConditionMonitor") || "Condition Monitor";

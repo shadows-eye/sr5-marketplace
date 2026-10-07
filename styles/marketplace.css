@@ -699,8 +699,7 @@ select#item-type-selector option {
 }
 
 .marketplace-item.grid-item,
-.sr5-marketplace .item-card,
-.itemBuilder .item-card {
+.sr5-marketplace .item-card {
     background-color: var(--bg-item-card);
     padding: 0.7em;
     border: 1px solid var(--border-item-card);
@@ -714,8 +713,7 @@ select#item-type-selector option {
 }
 
 .marketplace-item.grid-item:hover,
-.sr5-marketplace .item-card:hover,
-.itemBuilder .item-card:hover {
+.sr5-marketplace .item-card:hover {
     background-color: var(--bg-item-card-hover);
     border-color: var(--border-item-card-hover);
     box-shadow: var(--shadow-item-card-hover);
@@ -723,15 +721,13 @@ select#item-type-selector option {
 }
 
 .marketplace-item.grid-item h4,
-.sr5-marketplace .item-card h4,
-.itemBuilder .item-card h4 {
+.sr5-marketplace .item-card h4 {
     color: var(--text-color-header);
     transition: color 0.15s ease, text-shadow 0.15s ease;
 }
 
 .marketplace-item.grid-item:hover h4,
-.sr5-marketplace .item-card:hover h4,
-.itemBuilder .item-card:hover h4 {
+.sr5-marketplace .item-card:hover h4 {
     color: var(--text-color-subheader);
     text-shadow: 0 0 6px var(--color-gold-glow);
 }
@@ -2273,16 +2269,6 @@ hr.marketplace-settings-hr {
 
 .shadows-theme.itemBuilder .item-card:hover .item-name,
 .shadows-theme .itemBuilder .item-card:hover .item-name {
-    color: var(--color-gold-bright);
-}
-
-.shadows-theme.itemBuilder .item-card .select-icon,
-.shadows-theme .itemBuilder .item-card .select-icon {
-    color: var(--color-gold-title);
-}
-
-.shadows-theme.itemBuilder .item-card:hover .select-icon,
-.shadows-theme .itemBuilder .item-card:hover .select-icon {
     color: var(--color-gold-bright);
 }
 

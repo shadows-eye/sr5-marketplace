@@ -278,6 +278,14 @@ export class AppEffectsBuilderDialog extends AppDialogBuilder {
     }
 
     _getSkillOptions() {
+        const resolvedSkills = services.SystemDataMapperService._resolveActiveSkillsKeys?.() || [];
+        if (resolvedSkills.length > 0) {
+            return resolvedSkills.map(s => {
+                const parts = s.path.split('.');
+                const val = parts[3] || s.label;
+                return { value: val, label: s.label };
+            });
+        }
         const options = game.sr5marketplace.api.system.activeSkills_l || {};
         return Object.entries(options).map(([value, label]) => ({ value, label }));
     }

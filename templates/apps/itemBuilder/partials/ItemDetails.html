@@ -29,13 +29,56 @@
             <input type="text" 
                    name="name" 
                    value="{{displayItem.name}}" 
-                   class="item-name-input" /> 
-            
-           {{else}}
+                   class="item-name-input" 
+                   placeholder="{{localize 'SR5.Name'}}" /> 
+            <select name="type" class="item-type-select" title="{{localize 'SR5Marketplace.UI.Type'}}">
+                <option value="weapon" {{#if (or (eq displayItem.type "weapon") (eq displayItem.type "ranged_weapon") (eq displayItem.type "melee_weapon"))}}selected{{/if}}>{{localize "SR5Marketplace.Marketplace.ItemTypes.Weapons"}}</option>
+                <option value="armor" {{#if (eq displayItem.type "armor")}}selected{{/if}}>{{localize "SR5Marketplace.Marketplace.ItemTypes.Armor"}}</option>
+                <option value="device" {{#if (eq displayItem.type "device")}}selected{{/if}}>{{localize "SR5Marketplace.Marketplace.ItemTypes.Devices"}}</option>
+                <option value="equipment" {{#if (eq displayItem.type "equipment")}}selected{{/if}}>{{localize "SR5Marketplace.Marketplace.ItemTypes.Equipment"}}</option>
+                <option value="ammo" {{#if (eq displayItem.type "ammo")}}selected{{/if}}>{{localize "SR5Marketplace.Marketplace.ItemTypes.Ammo"}}</option>
+                <option value="cyberware" {{#if (eq displayItem.type "cyberware")}}selected{{/if}}>{{localize "SR5Marketplace.Marketplace.ItemTypes.Cyberware"}}</option>
+                <option value="bioware" {{#if (eq displayItem.type "bioware")}}selected{{/if}}>{{localize "SR5Marketplace.Marketplace.ItemTypes.Bioware"}}</option>
+                <option value="modification" {{#if (eq displayItem.type "modification")}}selected{{/if}}>{{localize "SR5Marketplace.Marketplace.ItemTypes.Modifications"}}</option>
+            </select>
+        {{else}}
             <h4>{{displayItem.name}}</h4>
-            
-           {{/if}}
+        {{/if}}
     </div>
+
+    {{!-- Aliases & Company Tags Badges (Read-Only) --}}
+    {{#unless isEditingBaseItem}}
+        {{#if displayItem.flags.sr5-marketplace.aliases.length}}
+            <div class="alias-pill-badges">
+                {{#each displayItem.flags.sr5-marketplace.aliases}}
+                    <span class="alias-pill-badge" title="Alternative Branding">
+                        <i class="fas fa-tag"></i> <b>{{this.name}}</b>{{#if this.company}} <span class="badge-company">({{this.company}})</span>{{/if}}
+                    </span>
+                {{/each}}
+            </div>
+        {{/if}}
+    {{/unless}}
+
+    {{!-- Aliases & Company Tags Editor (Edit Mode) --}}
+    {{#if isEditingBaseItem}}
+        <div class="aliases-section">
+            <div class="aliases-header">
+                <span><i class="fas fa-tags"></i> Alternative Brandings / Aliases</span>
+            </div>
+            <div class="aliases-list">
+                {{#each displayItem.flags.sr5-marketplace.aliases}}
+                    <div class="alias-tag-row" data-index="{{@index}}">
+                        <input type="text" class="alias-name-input" data-action="updateAliasName" data-index="{{@index}}" value="{{this.name}}" placeholder="Model Tag (e.g. SK-9M)" />
+                        <input type="text" class="alias-company-input" data-action="updateAliasCompany" data-index="{{@index}}" value="{{this.company}}" placeholder="Company (e.g. Saeder-Krupp)" />
+                        <button type="button" class="remove-alias-btn" data-action="removeAlias" data-index="{{@index}}" title="Remove"><i class="fas fa-trash"></i></button>
+                    </div>
+                {{/each}}
+            </div>
+            <button type="button" class="add-alias-btn" data-action="addAlias">
+                <i class="fas fa-plus"></i> Add Model / Company Tag
+            </button>
+        </div>
+    {{/if}}
 
     {{!-- For Cyberware & Bioware --}}
     {{#if (or (eq displayItem.type "cyberware") (eq displayItem.type "bioware"))}}

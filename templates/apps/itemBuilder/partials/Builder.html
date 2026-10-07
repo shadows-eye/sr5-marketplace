@@ -72,16 +72,13 @@
         </header>
         <div class="item-content-grid">
             {{#each selectedItems}}
-            <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}"
+            <div class="item-card" draggable="true" data-action="selectBaseItem" data-item-uuid="{{this.uuid}}"
                 data-category="{{this.system.importFlags.category}}"
                 data-is-drone="{{#if (or this.system.isDrone this.system.isdrone)}}true{{else}}false{{/if}}"
-                data-hover-delay="500">
-                <img src="{{this.img}}" alt="{{this.name}}" class="item-image" loading="lazy" />
-                <a class="item-name" data-action="clickItemName" data-item-uuid="{{this.uuid}}">{{this.name}}</a>
-                <a class="select-icon" data-action="selectBaseItem" data-item-uuid="{{this.uuid}}"
-                    title="{{localize 'SR5Marketplace.ItemBuilder.SelectAsBase'}}">
-                    <i class="fas fa-crosshairs"></i>
-                </a>
+                data-hover-delay="500"
+                title="{{this.name}}">
+                <img src="{{#if this.representativeImg}}{{this.representativeImg}}{{else}}{{this.img}}{{/if}}" alt="{{this.name}}" class="item-image" loading="lazy" data-action="clickItemName" data-item-uuid="{{this.uuid}}" />
+                <span class="item-name">{{this.name}}</span>
             </div>
             {{/each}}
         </div>
@@ -119,9 +116,10 @@
             <h4 class="category-header mods-header">{{categorizedMods.specific.label}}</h4>
             {{#each categorizedMods.specific.items}}
             <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}"
-                data-mount-point="{{this.system.mount_point}}" data-hover-delay="500">
-                <img src="{{this.img}}" alt="{{this.name}}" class="item-image" loading="lazy" />
-                <a class="item-name" data-action="clickItemName" data-item-uuid="{{this.uuid}}">{{this.name}}</a>
+                data-mount-point="{{this.system.mount_point}}" data-hover-delay="500"
+                title="{{this.name}}">
+                <img src="{{#if this.representativeImg}}{{this.representativeImg}}{{else}}{{this.img}}{{/if}}" alt="{{this.name}}" class="item-image" loading="lazy" data-action="clickItemName" data-item-uuid="{{this.uuid}}" />
+                <span class="item-name">{{this.name}}</span>
             </div>
             {{/each}}
             {{/if}}
@@ -131,9 +129,10 @@
             <h4 class="category-header mods-header">{{categorizedMods.general.label}}</h4>
             {{#each categorizedMods.general.items}}
             <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}"
-                data-mount-point="{{this.system.mount_point}}" data-hover-delay="500">
-                <img src="{{this.img}}" alt="{{this.name}}" class="item-image" loading="lazy" />
-                <a class="item-name" data-action="clickItemName" data-item-uuid="{{this.uuid}}">{{this.name}}</a>
+                data-mount-point="{{this.system.mount_point}}" data-hover-delay="500"
+                title="{{this.name}}">
+                <img src="{{#if this.representativeImg}}{{this.representativeImg}}{{else}}{{this.img}}{{/if}}" alt="{{this.name}}" class="item-image" loading="lazy" data-action="clickItemName" data-item-uuid="{{this.uuid}}" />
+                <span class="item-name">{{this.name}}</span>
             </div>
             {{/each}}
             {{/if}}
@@ -142,9 +141,10 @@
             {{else}}
             {{#each mods}}
             <div class="item-card" draggable="true" data-item-uuid="{{this.uuid}}"
-                data-mount-point="{{this.system.mount_point}}" data-hover-delay="500">
-                <img src="{{this.img}}" alt="{{this.name}}" class="item-image" loading="lazy" />
-                <a class="item-name" data-action="clickItemName" data-item-uuid="{{this.uuid}}">{{this.name}}</a>
+                data-mount-point="{{this.system.mount_point}}" data-hover-delay="500"
+                title="{{this.name}}">
+                <img src="{{#if this.representativeImg}}{{this.representativeImg}}{{else}}{{this.img}}{{/if}}" alt="{{this.name}}" class="item-image" loading="lazy" data-action="clickItemName" data-item-uuid="{{this.uuid}}" />
+                <span class="item-name">{{this.name}}</span>
             </div>
             {{/each}}
             {{/if}}

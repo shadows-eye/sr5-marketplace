@@ -29,11 +29,46 @@
             <input type="text" 
                    name="name" 
                    value="{{displayItem.name}}" 
-                   class="item-name-input" /> 
+                   class="item-name-input" 
+                   placeholder="{{localize 'SR5.Name'}}" /> 
         {{else}}
             <h4>{{displayItem.name}}</h4>
         {{/if}}
     </div>
+
+    {{!-- Aliases & Company Tags Badges (Read-Only) --}}
+    {{#unless isEditingBaseItem}}
+        {{#if displayItem.flags.sr5-marketplace.aliases.length}}
+            <div class="alias-pill-badges">
+                {{#each displayItem.flags.sr5-marketplace.aliases}}
+                    <span class="alias-pill-badge" title="Alternative Branding">
+                        <i class="fas fa-tag"></i> <b>{{this.name}}</b>{{#if this.company}} <span class="badge-company">({{this.company}})</span>{{/if}}
+                    </span>
+                {{/each}}
+            </div>
+        {{/if}}
+    {{/unless}}
+
+    {{!-- Aliases & Company Tags Editor (Edit Mode) --}}
+    {{#if isEditingBaseItem}}
+        <div class="aliases-section">
+            <div class="aliases-header">
+                <span><i class="fas fa-tags"></i> Alternative Brandings / Aliases</span>
+            </div>
+            <div class="aliases-list">
+                {{#each displayItem.flags.sr5-marketplace.aliases}}
+                    <div class="alias-tag-row" data-index="{{@index}}">
+                        <input type="text" class="alias-name-input" data-action="updateAliasName" data-index="{{@index}}" value="{{this.name}}" placeholder="Model Tag (e.g. Ares Roadmaster)" />
+                        <input type="text" class="alias-company-input" data-action="updateAliasCompany" data-index="{{@index}}" value="{{this.company}}" placeholder="Company (e.g. Ares Macrotechnology)" />
+                        <button type="button" class="remove-alias-btn" data-action="removeAlias" data-index="{{@index}}" title="Remove"><i class="fas fa-trash"></i></button>
+                    </div>
+                {{/each}}
+            </div>
+            <button type="button" class="add-alias-btn" data-action="addAlias">
+                <i class="fas fa-plus"></i> Add Model / Company Tag
+            </button>
+        </div>
+    {{/if}}
 
     {{!-- Handling --}}
     <div class="stat-block">

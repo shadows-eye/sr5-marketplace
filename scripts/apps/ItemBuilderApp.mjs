@@ -561,6 +561,19 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
             const modMountFilter = this.element.querySelector("#mod-mount-filter");
             if (modMountFilter) {
                 modMountFilter.value = this.selectedMountPointFilter || "";
+                modMountFilter.addEventListener("change", (e) => {
+                    this.selectedMountPointFilter = (e.target.value || "").toLowerCase().trim();
+                    const allSlots = this.element.querySelectorAll(".mod-slot[data-action='clickSlotFilter']");
+                    allSlots.forEach(s => {
+                        const sm = (s.dataset.mountPoint || "").toLowerCase().trim();
+                        if (this.selectedMountPointFilter && sm === this.selectedMountPointFilter) {
+                            s.classList.add("filter-active");
+                        } else {
+                            s.classList.remove("filter-active");
+                        }
+                    });
+                    this._filterItemsDOM('.mod-selector-section .item-content-grid', this.modSearchTags, this.modSearchQuery);
+                });
             }
 
             if (this.selectedMountPointFilter) {
@@ -1321,9 +1334,14 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 }
                 partialContext.selectedKey = this.selectedKey;
 
-                let selectedItems = this.selectedKey ? (itemsByType[this.selectedKey]?.items || []) : [];
+                const enhanceWithRepresentativeImg = (item) => {
+                    if (!item) return item;
+                    const rep = this.itemData.getRepresentativeImage(item);
+                    return { ...item, representativeImg: rep };
+                };
 
-                partialContext.selectedItems = selectedItems;
+                let selectedItems = this.selectedKey ? (itemsByType[this.selectedKey]?.items || []) : [];
+                partialContext.selectedItems = selectedItems.map(enhanceWithRepresentativeImg);
 
                 // --- Logic for when a Base Item IS Selected ---
                 if (builderData.baseItem) {
@@ -1364,18 +1382,18 @@ export class ItemBuilderApp extends HandlebarsApplicationMixin(ApplicationV2) {
                         specific: {
                             label: weaponTypes.includes(baseItemType) ? 'Weapon Modifications' :
                                 (baseItemType === 'armor' ? 'Armor Modifications' : 'Vehicle Modifications'),
-                            items: specificMods
+                            items: specificMods.map(enhanceWithRepresentativeImg)
                         },
                         general: {
                             label: "General Modifications",
-                            items: generalMods
+                            items: generalMods.map(enhanceWithRepresentativeImg)
                         }
                     };
 
                 } else {
                     // --- Logic for when NO Base Item is Selected ---
                     // Show the entire master list, uncategorized
-                    partialContext.mods = allMods;
+                    partialContext.mods = allMods.map(enhanceWithRepresentativeImg);
                 }
 
                 tabContent = await render("modules/sr5-marketplace/templates/apps/itemBuilder/partials/Builder.html", partialContext);

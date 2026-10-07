@@ -301,7 +301,7 @@ export default class ItemDataServices {
      */
     static ITEM_TYPE_ICONS = {
         armor: "modules/sr5-marketplace/assets/icons/types/armor.webp",
-        device: "modules/sr5-marketplace/assets/icons/types/commlink.webp",
+        device: "modules/sr5-marketplace/assets/icons/types/comlink.webp",
         cyberware: "modules/sr5-marketplace/assets/icons/types/cyberware.webp",
         bioware: "modules/sr5-marketplace/assets/icons/types/bioware.webp",
         equipment: "modules/sr5-marketplace/assets/icons/types/equipment.webp",
@@ -316,13 +316,21 @@ export default class ItemDataServices {
             heavyPistol: "modules/sr5-marketplace/assets/icons/weapons/heavy_pistol.webp",
             machinePistol: "modules/sr5-marketplace/assets/icons/weapons/machine_pistol.webp",
             smg: "modules/sr5-marketplace/assets/icons/weapons/smg.webp",
-            assaultRifle: "modules/sr5-marketplace/assets/icons/weapons/stormgun.webp",
+            assaultRifle: "modules/sr5-marketplace/assets/icons/weapons/StormGun.webp",
             shotgun: "modules/sr5-marketplace/assets/icons/weapons/shotgun.webp",
             sniperRifle: "modules/sr5-marketplace/assets/icons/weapons/sniper_rifle.webp",
+            sportingRifle: "modules/sr5-marketplace/assets/icons/weapons/sniper_rifle.webp",
+            lightMachinegun: "modules/sr5-marketplace/assets/icons/weapons/StormGun.webp",
+            mediumHeavyMachinegun: "modules/sr5-marketplace/assets/icons/weapons/StormGun.webp",
+            assaultCannon: "modules/sr5-marketplace/assets/icons/weapons/shotgun.webp",
+            grenadeLauncher: "modules/sr5-marketplace/assets/icons/weapons/shotgun.webp",
+            missileLauncher: "modules/sr5-marketplace/assets/icons/weapons/shotgun.webp",
             bow: "modules/sr5-marketplace/assets/icons/weapons/bow.webp",
-            blades: "modules/sr5-marketplace/assets/icons/weapons/melee_blade.webp",
-            clubs: "modules/sr5-marketplace/assets/icons/weapons/melee_club.webp",
-            thrown: "modules/sr5-marketplace/assets/icons/weapons/thrown.webp",
+            crossbow: "modules/sr5-marketplace/assets/icons/weapons/bow.webp",
+            harpoonGun: "modules/sr5-marketplace/assets/icons/weapons/bow.webp",
+            blades: "modules/sr5-marketplace/assets/icons/weapons/default.webp",
+            clubs: "modules/sr5-marketplace/assets/icons/weapons/club.webp",
+            thrown: "modules/sr5-marketplace/assets/icons/weapons/default.webp",
             default: "modules/sr5-marketplace/assets/icons/weapons/default.webp"
         },
         default: "modules/sr5-marketplace/assets/icons/types/equipment.webp"
@@ -372,7 +380,14 @@ export default class ItemDataServices {
         const icons = this.constructor.ITEM_TYPE_ICONS;
         if (!itemData) return icons.default;
     
-        const type = itemData.type;
+        let type = itemData.type;
+        if (type === 'vehicle') {
+            const isDrone = itemData.system?.isDrone || itemData.system?.isdrone || false;
+            type = isDrone ? 'drone' : 'vehicle';
+        } else if (type === 'rangedWeapon' || type === 'meleeWeapon') {
+            type = 'weapon';
+        }
+
         const iconMapping = icons[type];
     
         if (typeof iconMapping === 'string') {
@@ -381,17 +396,18 @@ export default class ItemDataServices {
     
         if (typeof iconMapping === 'object') {
             let subKey = null;
-            if (type === 'weapon') {
+            if (type === 'weapon' || itemData.type === 'weapon' || itemData.type === 'rangedWeapon' || itemData.type === 'meleeWeapon') {
                 const category = itemData.system?.category;
-                if (category === 'range') {
-                    subKey = getNested(itemData, 'system.range.ranges.category');
-                } else if (category === 'melee') {
-                    subKey = itemData.system?.type;
+                const rangeCat = getNested(itemData, 'system.range.ranges.category') || itemData.system?.range?.category || itemData.system?.range_category;
+                if (category === 'range' || rangeCat || itemData.type === 'rangedWeapon') {
+                    subKey = rangeCat || getNested(itemData, 'system.range.ranges.category');
+                } else if (category === 'melee' || itemData.type === 'meleeWeapon') {
+                    subKey = itemData.system?.type || itemData.system?.melee_type || 'blades';
                 } else {
                     subKey = category; // for 'thrown'
                 }
             }
-            return iconMapping[subKey] || iconMapping.default || icons.default;
+            return (subKey && iconMapping[subKey]) || iconMapping.default || icons.default;
         }
     
         return icons.default;

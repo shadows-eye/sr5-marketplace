@@ -673,43 +673,65 @@ a.builder-tabs.item.active:hover {
 /* 10) COMPACT ITEM CARD (SIDEBAR) ---------------------------------- */
 /* ================================================================== */
 
+.itemBuilder .item-content-grid .item-card,
 .itemBuilder .item-card {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 5px;
-  padding: 4px;
-  min-height: 40px;
+  justify-content: flex-start;
+  gap: 2px;
+  padding: 4px 3px 2px 3px;
+  min-height: 52px;
   overflow: hidden;
-  border: 1px solid var(--card-border-color);
-  background-color: var(--collapsible-content-bg);
-  border-radius: 5px;
+  border: 1px solid var(--border-color-medium);
+  background-color: var(--Form-background-group);
+  border-radius: 4px;
   min-width: 0;
-  /* cards can’t force the column wider */
+  position: relative;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .itemBuilder .item-card:hover {
   border-color: var(--border-color-highlight);
   background: var(--bg-dark-section-hover);
+  box-shadow: 0 0 6px var(--color-gold-glow);
 }
 
 .itemBuilder .item-card .item-image {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.itemBuilder .item-card .item-image:hover {
+  transform: scale(1.18);
+  filter: drop-shadow(0 0 4px var(--color-gold-glow));
 }
 
 .itemBuilder .item-card .item-name {
-  font-size: 12px;
-  white-space: nowrap;
+  font-size: 9.5px;
+  line-height: 1.15;
+  font-weight: 500;
+  text-align: center;
+  width: 100%;
+  max-width: 100%;
+  color: var(--text-color-header);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-align: left;
-  min-width: 0;
-  /* text won’t expand the grid */
+  word-break: break-word;
+  pointer-events: none;
 }
 
-.itemBuilder .item-card .select-icon {
-  font-size: 14px;
+.itemBuilder .item-card:hover .item-name {
+  color: var(--text-color-subheader);
 }
 
 /* ================================================================== */
@@ -1467,4 +1489,125 @@ h4.category-header.mods-header {
   width: 20px;
   height: 20px;
   display: block;
+}
+
+/* ================================================================== */
+/* 13) ALIAS & COMPANY TAGS EDITOR                                   */
+/* ================================================================== */
+
+.itemBuilder .aliases-section {
+  width: 100%;
+  margin-top: 6px;
+  padding: 6px 8px;
+  background: var(--attribute-group-bg);
+  border: 1px solid var(--border-color-medium);
+  border-radius: 4px;
+}
+
+.itemBuilder .aliases-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-color-header);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.itemBuilder .alias-tag-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.itemBuilder .alias-name-input {
+  flex: 1;
+  background: var(--input-bg-transparent);
+  border: 1px solid var(--input-border-dark);
+  border-radius: 3px;
+  color: var(--input-color);
+  padding: 2px 6px;
+  font-size: 11px;
+}
+
+.itemBuilder .alias-company-input {
+  flex: 1.2;
+  background: var(--input-bg-transparent);
+  border: 1px solid var(--input-border-dark);
+  border-radius: 3px;
+  color: var(--text-color-subheader);
+  padding: 2px 6px;
+  font-size: 11px;
+}
+
+.itemBuilder .remove-alias-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-red-bright);
+  cursor: pointer;
+  padding: 2px 5px;
+  font-size: 11px;
+  transition: transform 0.1s ease;
+}
+
+.itemBuilder .remove-alias-btn:hover {
+  transform: scale(1.15);
+}
+
+.itemBuilder .add-alias-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--input-bg-transparent);
+  border: 1px dashed var(--border-color-medium);
+  border-radius: 3px;
+  color: var(--text-color-link);
+  font-size: 10px;
+  padding: 3px 8px;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: all 0.15s ease;
+}
+
+.itemBuilder .add-alias-btn:hover {
+  background: var(--drop-target-bg-hover);
+  border-color: var(--border-color-highlight);
+  color: var(--text-color-link-hover);
+}
+
+.itemBuilder .alias-pill-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.itemBuilder .alias-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-item-stat-badge);
+  border: 1px solid var(--border-item-stat-badge);
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-size: 10px;
+  color: var(--text-color-primary);
+}
+
+.itemBuilder .alias-pill-badge .badge-company {
+  color: var(--text-color-subheader);
+  font-weight: 600;
+}
+
+.itemBuilder .item-type-select {
+  background: var(--input-bg-transparent);
+  border: 1px solid var(--input-border-dark);
+  border-radius: 3px;
+  color: var(--text-color-subheader);
+  padding: 2px 6px;
+  font-size: 11px;
+  cursor: pointer;
 }
