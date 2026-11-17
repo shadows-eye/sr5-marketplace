@@ -2315,3 +2315,63 @@ hr.marketplace-settings-hr {
 .shadows-theme .itemBuilder .weapon-stats-hud .stat-icon-segment i {
     color: var(--color-gold-title);
 }
+
+/* ================================================================== */
+/* 11. Dark-Mode Chat Log Contrast Guard                              */
+/* Foundry core hardcodes .chat-log.themed.theme-light while the      */
+/* Shadowrun 5e system styles .chat-message with a dark surface in    */
+/* dark mode. Reset Foundry's light-mode typography/button tokens     */
+/* inside dark chat cards so headings, links, and buttons stay legible */
+/* without altering light mode or SR5 card styling.                   */
+/* ================================================================== */
+
+body.theme-dark .chat-log.themed.theme-light,
+#interface.theme-dark .chat-log.themed.theme-light,
+#chat.theme-dark .chat-log.themed.theme-light {
+    color: var(--sr5-theme-text-primary, var(--color-light-2));
+}
+
+body.theme-dark .chat-log.themed.theme-light .chat-message,
+#interface.theme-dark .chat-log.themed.theme-light .chat-message,
+#chat.theme-dark .chat-log.themed.theme-light .chat-message {
+    --color-scheme: dark;
+    --color-text-emphatic: var(--sr5-theme-text-primary, var(--color-light-1));
+    --color-text-primary: var(--sr5-theme-text-primary, var(--color-light-2));
+    --color-text-secondary: var(--sr5-theme-text-secondary, var(--color-light-3));
+    --color-text-subtle: var(--sr5-theme-text-muted, var(--color-light-5));
+    --color-text-accent: var(--sr5-theme-label, var(--color-warm-1));
+    --color-text-hyperlink: var(--sr5-theme-label, var(--color-warm-1));
+    --color-text-dark-primary: var(--sr5-theme-text-primary, var(--color-light-2));
+    --color-text-dark-secondary: var(--sr5-theme-text-secondary, var(--color-light-3));
+    --color-text-dark-header: var(--sr5-theme-text-primary, var(--color-light-1));
+    --color-text-dark-inactive: var(--sr5-theme-text-muted, var(--color-light-5));
+    --color-text-selection: var(--color-light-1);
+    --color-text-selection-bg: var(--color-cool-3);
+    --content-link-background: var(--color-cool-5-90);
+    --content-link-border-color: var(--color-light-6);
+    --content-link-icon-color: var(--color-light-4);
+    --content-link-text-color: var(--color-light-2);
+    --table-background-color: var(--color-cool-5-50);
+    --table-header-bg-color: var(--color-cool-4);
+    --table-header-border-color: var(--color-cool-4);
+    --table-row-color-even: var(--color-white-transparent-10);
+    --table-row-color-odd: transparent;
+    --table-row-color-highlight: var(--color-cool-3);
+}
+
+body.theme-dark .chat-log.themed.theme-light .chat-message a.button,
+body.theme-dark .chat-log.themed.theme-light .chat-message button,
+body.theme-dark .chat-log.themed.theme-light .chat-message kbd,
+#interface.theme-dark .chat-log.themed.theme-light .chat-message a.button,
+#interface.theme-dark .chat-log.themed.theme-light .chat-message button,
+#interface.theme-dark .chat-log.themed.theme-light .chat-message kbd,
+#chat.theme-dark .chat-log.themed.theme-light .chat-message a.button,
+#chat.theme-dark .chat-log.themed.theme-light .chat-message button,
+#chat.theme-dark .chat-log.themed.theme-light .chat-message kbd {
+    --button-background-color: var(--sr5-theme-chat-button-bg, var(--color-cool-5-50));
+    --button-border-color: var(--sr5-theme-chat-button-border, var(--color-light-5));
+    --button-text-color: var(--sr5-theme-text-primary, var(--color-light-3));
+    --button-hover-background-color: var(--sr5-theme-chat-hover-bg, var(--color-warm-2));
+    --button-hover-border-color: var(--sr5-theme-label, var(--color-light-3));
+    --button-hover-text-color: var(--sr5-theme-chat-hover-text, var(--color-light-1));
+}
