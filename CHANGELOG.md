@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [14.006.2] - 2026-11-17
+
+🎲 **What's New & Fixed:**
+• **Dedicated Ammunition Category**: Added a dedicated Ammo / Ammunition filter to the Marketplace Type dropdown, letting players and GMs easily browse, filter, and purchase all ammunition types directly from the catalogue.
+• **Seamless MarketShouter Navigation**: Searching for or selecting ammunition, vehicles, or drones in the quick-search bar now instantly navigates directly to the matching category view.
+• **Readable Dark Mode Chat**: Fixed dark, hard-to-read text, headings, and buttons in the chat log and message box when playing in Dark Mode or using the Shadows Theme.
+
+Update directly in Foundry VTT via the **Add-on Modules** tab!
+More info & modules at **https://shadowplays.de** 🎲⚡
+
+---
+
 ## [14.006.1] - 2026-10-02
 
 ### 🐛 Bug Fixes
