@@ -501,7 +501,8 @@
 /* 3.1 Shadows HUD (Carbon Glass & Gold) Theme - DEFAULT              */
 /* ================================================================== */
 
-.shadows-theme {
+.shadows-theme,
+.theme-shadows-theme {
     --bg-basket-summary: var(--color-carbon-panel);
     --Form-background-group: var(--color-carbon-slot);
     --Form-background-group-hover: var(--color-carbon-panel);

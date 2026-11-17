@@ -584,29 +584,13 @@ function wrapConfigureUI() {
 
     const originalConfigureUI = game.configureUI;
     game.configureUI = function (config) {
-        const ourThemeClasses = ["shadows-theme", "theme-shadows", "theme-neon", "theme-neon-light", "theme-silicon"];
-
-        // Remove from body
-        if (document.body) {
-            document.body.classList.remove(...ourThemeClasses);
-        }
-
-        // Remove from interface element
-        const interfaceEl = document.getElementById("interface");
-        if (interfaceEl) {
-            interfaceEl.classList.remove(...ourThemeClasses);
-        }
+        services.ThemeService.clearCustomInterfaceClasses();
 
         // Call core configureUI
         const result = originalConfigureUI.call(this, config);
 
-        // Ensure custom light themes also inherit the core light theme settings for the global UI
-        const uiTheme = config?.colorScheme?.interface;
-        if (uiTheme === "silicon" || uiTheme === "neon-light") {
-            if (document.body) document.body.classList.add("theme-light");
-            const interfaceEl = document.getElementById("interface");
-            if (interfaceEl) interfaceEl.classList.add("theme-light");
-        }
+        // Ensure custom themes inherit Foundry core dark/light base variables on body and interface elements
+        services.ThemeService.syncCustomInterfaceThemes(config);
 
         // Dynamically apply theme changes to active custom applications
         if (typeof foundry !== "undefined" && foundry.applications?.instances) {
@@ -617,7 +601,7 @@ function wrapConfigureUI() {
 
                 if (isMarketplace || isItemBuilder || isShopSheet) {
                     if (app.element) {
-                        app.element.classList.remove(...ourThemeClasses, "theme-light", "theme-dark");
+                        app.element.classList.remove(...services.ThemeService.ALL_THEME_CLASSES);
 
                         let newTheme = "shadows-theme";
                         const appColorTheme = config?.colorScheme?.applications;
@@ -625,14 +609,14 @@ function wrapConfigureUI() {
                         if (isShopSheet && app.document) {
                             const sheetTheme = foundry.applications.apps.DocumentSheetConfig.getSheetThemeForDocument(app.document);
                             newTheme = sheetTheme
-                                ? ((sheetTheme === "shadows-theme" || sheetTheme === "shadows") ? "shadows-theme" : `theme-${sheetTheme}`)
-                                : ((appColorTheme === "shadows-theme" || appColorTheme === "shadows") ? "shadows-theme" : `theme-${appColorTheme || "dark"}`);
+                                ? services.ThemeService.normalizeThemeClass(sheetTheme)
+                                : services.ThemeService.normalizeThemeClass(appColorTheme || "dark");
                         } else if (isMarketplace) {
                             newTheme = app.constructor._getThemeFromSetting(app.shopActorUuid);
                         } else {
-                            newTheme = (appColorTheme === "shadows-theme" || appColorTheme === "shadows")
-                                ? "shadows-theme"
-                                : (appColorTheme ? `theme-${appColorTheme}` : "shadows-theme");
+                            newTheme = appColorTheme
+                                ? services.ThemeService.normalizeThemeClass(appColorTheme)
+                                : "shadows-theme";
                         }
 
                         app.element.classList.add(newTheme);
@@ -642,7 +626,7 @@ function wrapConfigureUI() {
                         }
 
                         if (app.options?.classes) {
-                            app.options.classes = app.options.classes.filter(c => !ourThemeClasses.includes(c) && c !== "theme-light" && c !== "theme-dark");
+                            app.options.classes = app.options.classes.filter(c => !services.ThemeService.ALL_THEME_CLASSES.includes(c));
                             app.options.classes.push(newTheme);
                             if (newTheme === "theme-silicon" || newTheme === "theme-neon-light") {
                                 app.options.classes.push("theme-light");
@@ -926,6 +910,7 @@ Hooks.on("ready", async () => {
     console.log("SR5 Marketplace | Module is ready - Registering MarketplaceEquipmentSheet extending SR5ItemSheet...");
     registerMarketplaceEquipmentSheet();
     injectThemeChoices();
+    services.ThemeService.syncCustomInterfaceThemes();
     MarketplaceSettingsService.updateCompendiumSettingChoices();
 
     try {
